@@ -345,9 +345,9 @@ let peer = null;
 let isMultiplayer = false;
 let isHost = false;
 let currentLobbyCode = null;
-let hostConn = null;               // Client's direct channel to host
-let clientConnections = [];        // Host's channels to clients (max 5)
-let lobbyRoster = [];              // Track players in lobby: [{ id, hero, isHost }]
+let hostConn = null;
+let clientConnections = [];
+let lobbyRoster = [];
 let myNetId = "local";
 let netBroadcastTimer = 0;
 
@@ -905,7 +905,7 @@ let itemSpawnTimer = 0, countdown = 3.0;
 function mk(ci, x, z, playerNum, netId = null) {
   const c = HEROES[ci];
   const isLocalP1 = (playerNum === 1);
-  const ai = (isLocalP1 || netId) ? null : {
+  const ai = (isLocalP1 || netId || isMultiplayer) ? null : {
     state: "WANDER", timer: 0,
     react: 0.22 + Math.random()*0.22,
     err: 0.04 + Math.random()*0.12,
@@ -1481,7 +1481,12 @@ window.hostMultiplayerLobby = function() {
         menu(`Hosting Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] - (${lobbyRoster.length}/6 Players)`);
       } else if(data.type === "CLIENT_INPUT") {
         const ent = E.find(e => e.netId === conn.peer);
-        if(ent) ent.netInputs = data.inputs;
+        if(ent) {
+          ent.netInputs = data.inputs;
+          if(data.inputs.at && ent.c1 <= 0) attack(ent);
+          if(data.inputs.ab1 && ent.c2 <= 0) ability1(ent);
+          if(data.inputs.ab2 && ent.c3 <= 0) ability2(ent);
+        }
       }
     });
 
@@ -1556,7 +1561,6 @@ function broadcastToLobby(obj) {
   }
 }
 
-// Host packs world snapshot and sends to connected clients
 function hostBroadcastSnapshot() {
   if(!isHost || clientConnections.length === 0) return;
   const snapshot = {
@@ -1573,13 +1577,15 @@ function hostBroadcastSnapshot() {
       a: e.a,
       hp: e.hp,
       mhp: e.mhp,
+      c1: e.c1,
+      c2: e.c2,
+      c3: e.c3,
       dead: e.dead
     }))
   };
   broadcastToLobby(snapshot);
 }
 
-// Client applies authoritative state received from host
 function applyHostSnapshot(snap) {
   stormRadius = snap.stormRadius;
   stormMesh.scale.set(stormRadius, 1, stormRadius);
@@ -1594,28 +1600,32 @@ function applyHostSnapshot(snap) {
   }
 
   for(const d of snap.entities) {
-    let ent = E.find(e => (e.netId && e.netId === d.netId) || (d.netId === "host" && e.pNum === 99));
+    let ent = E.find(e => e.netId === d.netId);
     if(ent) {
-      ent.x = d.x;
-      ent.z = d.z;
-      ent.a = d.a;
       ent.hp = d.hp;
       ent.dead = d.dead;
+      ent.c1 = d.c1;
+      ent.c2 = d.c2;
+      ent.c3 = d.c3;
 
-      ent.mesh.position.set(ent.x, 0, ent.z);
-      ent.mesh.rotation.y = -ent.a + Math.PI / 2;
-      const ratio = Math.max(0, ent.hp / ent.mhp);
-      ent.mesh.hpBar.scale.x = ratio;
-      ent.mesh.hpBar.position.x = -13 * (1 - ratio);
-      ent.mesh.hpGrp.lookAt(cameraHolder.position);
-      ent.mesh.visible = (ent !== pl) && !ent.dead;
+      if(ent !== pl) {
+        ent.x = d.x;
+        ent.z = d.z;
+        ent.a = d.a;
+        ent.mesh.position.set(ent.x, 0, ent.z);
+        ent.mesh.rotation.y = -ent.a + Math.PI / 2;
+        const ratio = Math.max(0, ent.hp / ent.mhp);
+        ent.mesh.hpBar.scale.x = ratio;
+        ent.mesh.hpBar.position.x = -13 * (1 - ratio);
+        ent.mesh.hpGrp.lookAt(cameraHolder.position);
+        ent.mesh.visible = !ent.dead;
+      }
     }
   }
 }
 
-// Client sends inputs to the host 30 times a second
 function clientSendInputs() {
-  if(!hostConn || !hostConn.open) return;
+  if(!hostConn || !hostConn.open || !pl) return;
   const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
   const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
   const sin = Math.sin(yaw), cos = Math.cos(yaw);
@@ -1648,7 +1658,7 @@ function startClientMatch(data) {
   E = [];
   data.players.forEach((p, idx) => {
     const isMe = (p.id === myNetId);
-    const spawned = mk(p.hero, p.x, p.z, isMe ? 1 : (p.id === "host" ? 99 : 2), p.id);
+    const spawned = mk(p.hero, p.x, p.z, isMe ? 1 : 2, p.id);
     E.push(spawned);
     if(isMe) {
       pl = spawned;
@@ -1694,46 +1704,77 @@ function upd(dt) {
     }
   }
 
-  // Client skips local physics/combat calculations, deferring to Host
-  if(isMultiplayer && !isHost) {
-    if(pl && !pl.dead) {
-      cameraHolder.position.x = pl.x;
-      cameraHolder.position.z = pl.z;
-      cameraHolder.position.y = 22 + (screenShake > 0 ? (Math.random()-0.5)*screenShake*0.35 : 0);
-    }
-    return;
+  // Camera tracking
+  if(pl && !pl.dead) {
+    cameraHolder.position.x = pl.x;
+    cameraHolder.position.z = pl.z;
+    cameraHolder.position.y = 22 + (screenShake > 0 ? (Math.random()-0.5)*screenShake*0.35 : 0);
   }
+
+  // Viewmodel animations
+  if(viewmodelHolder.wep) {
+    const isAttacking = pl && (pl.swing > 0 || pl.fire > 0);
+    const isMoving = pl && (K.KeyW || K.KeyS || K.KeyA || K.KeyD);
+    const bob = isMoving ? Math.sin(matchTime * 9) * 0.1 : Math.sin(matchTime * 2.5) * 0.03;
+    const sideBob = isMoving ? Math.cos(matchTime * 4.5) * 0.06 : 0;
+
+    const targetX = 3.2 + sideBob - Math.min(0.5, Math.max(-0.5, curSwayX * 0.07));
+    const targetY = -3.2 + bob + Math.min(0.35, Math.max(-0.35, curSwayY * 0.05));
+    const targetZ = isAttacking ? -4.7 : -5.5;
+
+    viewmodelHolder.position.x += (targetX - viewmodelHolder.position.x) * 0.18;
+    viewmodelHolder.position.y += (targetY - viewmodelHolder.position.y) * 0.18;
+    viewmodelHolder.position.z += (targetZ - viewmodelHolder.position.z) * 0.18;
+
+    const targetRotX = isAttacking ? -0.28 : (-curSwayY * 0.018);
+    const targetRotY = curSwayX * 0.02;
+    const targetRotZ = isAttacking ? -0.15 : 0;
+
+    viewmodelHolder.rotation.x += (targetRotX - viewmodelHolder.rotation.x) * 0.18;
+    viewmodelHolder.rotation.y += (targetRotY - viewmodelHolder.rotation.y) * 0.18;
+    viewmodelHolder.rotation.z += (targetRotZ - viewmodelHolder.rotation.z) * 0.18;
+  }
+
+  // Local movement & input for player (works for Host, Client, and Solo)
+  if(pl && !pl.dead) {
+    pl.slow -= dt; pl.fire -= dt; pl.c1 -= dt; pl.c2 -= dt; pl.c3 -= dt;
+    pl.fl -= dt; pl.swing -= dt; pl.speedBoost -= dt;
+
+    if(countdown <= 0.25) {
+      const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
+      const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
+      const sin = Math.sin(yaw), cos = Math.cos(yaw);
+      const mx = -sin * forward + cos * strafe;
+      const mz = -cos * forward - sin * strafe;
+      pl.a = -yaw - Math.PI / 2;
+
+      const baseSpd = HEROES[pl.ci].sp * (pl.speedBoost > 0 ? 1.35 : 1.0);
+      const slowMod = (pl.sporePoison > 0) ? 0.55 : (pl.slow > 0 ? 0.6 : 1.0);
+      const s = baseSpd * slowMod * (pl.fire > 0 ? 0.8 : 1.0);
+      const l = Math.hypot(mx, mz) || 1;
+
+      pl.x += (mx/l) * s * dt;
+      pl.z += (mz/l) * s * dt;
+      pushCollisions(pl);
+
+      // Solo & Host run attack logic directly
+      if(!isMultiplayer || isHost) {
+        if(M.down && pl.c1 <= 0) attack(pl);
+        if(P1_ab1 && pl.c2 <= 0) ability1(pl);
+        if(P1_ab2 && pl.c3 <= 0) ability2(pl);
+      }
+    }
+    P1_ab1 = 0; P1_ab2 = 0;
+  }
+
+  // Non-host clients only simulate their own view and defer global world logic to the Host
+  if(isMultiplayer && !isHost) return;
 
   // Authoritative host simulation or Solo vs AI play
   if(countdown > 0) {
     countdown -= dt;
     centerMsg.style.display = "block";
     centerMsg.innerText = countdown > 0.4 ? Math.ceil(countdown) : "BRAWL!";
-
-    if(pl) {
-      cameraHolder.position.x = pl.x;
-      cameraHolder.position.z = pl.z;
-      cameraHolder.position.y = 22;
-      pl.a = -yaw - Math.PI / 2;
-
-      if(countdown <= 0.25) {
-        const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
-        const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
-        const sin = Math.sin(yaw), cos = Math.cos(yaw);
-        const pmx = -sin * forward + cos * strafe;
-        const pmz = -cos * forward - sin * strafe;
-        const baseSpd = HEROES[pl.ci].sp;
-        const l = Math.hypot(pmx, pmz) || 1;
-        pl.x += (pmx/l) * baseSpd * dt;
-        pl.z += (pmz/l) * baseSpd * dt;
-        pushCollisions(pl);
-
-        if(M.down && pl.c1 <= 0) attack(pl);
-        if(P1_ab1 && pl.c2 <= 0) ability1(pl);
-        if(P1_ab2 && pl.c3 <= 0) ability2(pl);
-        P1_ab1 = 0; P1_ab2 = 0;
-      }
-    }
 
     for(const e of E) {
       e.mesh.position.set(e.x, 0, e.z);
@@ -1897,43 +1938,32 @@ function upd(dt) {
     if(e.stun > 0) {
       e.stun -= dt;
     } else if(e === pl) {
-      const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
-      const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
-      const sin = Math.sin(yaw), cos = Math.cos(yaw);
-      mx = -sin * forward + cos * strafe;
-      mz = -cos * forward - sin * strafe;
-
-      e.a = -yaw - Math.PI / 2;
-      at = M.down;
-      ab1 = P1_ab1;
-      ab2 = P1_ab2;
+      // Local movement handled above
     } else if(e.netId) {
       // Remote Client controlled by network packet
       mx = e.netInputs.mx;
       mz = e.netInputs.mz;
       e.a = e.netInputs.a;
-      at = e.netInputs.at;
-      ab1 = e.netInputs.ab1;
-      ab2 = e.netInputs.ab2;
-      e.netInputs.ab1 = 0;
-      e.netInputs.ab2 = 0;
-    } else {
+      
+      const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
+      const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
+      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
+      const l = Math.hypot(mx, mz) || 1;
+      e.x += (mx/l) * s * dt;
+      e.z += (mz/l) * s * dt;
+    } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
+      const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
+      const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
+      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
+      const l = Math.hypot(mx, mz) || 1;
+      e.x += (mx/l) * s * dt;
+      e.z += (mz/l) * s * dt;
+
+      if(at && e.c1 <= 0) attack(e);
+      if(ab1 && e.c2 <= 0) ability1(e);
+      if(ab2 && e.c3 <= 0) ability2(e);
     }
-
-    if(e === pl) { P1_ab1 = 0; P1_ab2 = 0; }
-
-    const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
-    const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
-    const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
-    const l = Math.hypot(mx, mz) || 1;
-
-    e.x += (mx/l) * s * dt;
-    e.z += (mz/l) * s * dt;
-
-    if(at && e.c1 <= 0) attack(e);
-    if(ab1 && e.c2 <= 0) ability1(e);
-    if(ab2 && e.c3 <= 0) ability2(e);
 
     e.x += e.kx * dt;
     e.z += e.kz * dt;
@@ -1970,35 +2000,6 @@ function upd(dt) {
     e.mesh.hpBar.scale.x = ratio;
     e.mesh.hpBar.position.x = -13 * (1 - ratio);
     e.mesh.hpGrp.lookAt(cameraHolder.position);
-  }
-
-  if(pl && !pl.dead) {
-    cameraHolder.position.x = pl.x;
-    cameraHolder.position.z = pl.z;
-    cameraHolder.position.y = 22 + (screenShake > 0 ? (Math.random()-0.5)*screenShake*0.35 : 0);
-  }
-
-  if(viewmodelHolder.wep) {
-    const isAttacking = pl && (pl.swing > 0 || pl.fire > 0);
-    const isMoving = pl && (K.KeyW || K.KeyS || K.KeyA || K.KeyD);
-    const bob = isMoving ? Math.sin(matchTime * 9) * 0.1 : Math.sin(matchTime * 2.5) * 0.03;
-    const sideBob = isMoving ? Math.cos(matchTime * 4.5) * 0.06 : 0;
-
-    const targetX = 3.2 + sideBob - Math.min(0.5, Math.max(-0.5, curSwayX * 0.07));
-    const targetY = -3.2 + bob + Math.min(0.35, Math.max(-0.35, curSwayY * 0.05));
-    const targetZ = isAttacking ? -4.7 : -5.5;
-
-    viewmodelHolder.position.x += (targetX - viewmodelHolder.position.x) * 0.18;
-    viewmodelHolder.position.y += (targetY - viewmodelHolder.position.y) * 0.18;
-    viewmodelHolder.position.z += (targetZ - viewmodelHolder.position.z) * 0.18;
-
-    const targetRotX = isAttacking ? -0.28 : (-curSwayY * 0.018);
-    const targetRotY = curSwayX * 0.02;
-    const targetRotZ = isAttacking ? -0.15 : 0;
-
-    viewmodelHolder.rotation.x += (targetRotX - viewmodelHolder.rotation.x) * 0.18;
-    viewmodelHolder.rotation.y += (targetRotY - viewmodelHolder.rotation.y) * 0.18;
-    viewmodelHolder.rotation.z += (targetRotZ - viewmodelHolder.rotation.z) * 0.18;
   }
 
   for(let i = P.length - 1; i >= 0; i--) {
@@ -2100,11 +2101,11 @@ function menu(msg) {
           <button class="lobby-btn" onclick="joinMultiplayerLobby()">Join Room</button>
         </div>
       ` : (isHost ? `
-        <span style="font-size:13px; font-weight:800; color:#45d988;">ROOM CODE: ${currentLobbyCode} (${lobbyRoster.length}/6)</span>
+        <span style="font-size:13px; font-weight:800; color:#45d988;">ROOM CODE: ${currentLobbyCode} (${lobbyRoster.length}/6 Players)</span>
         <button class="lobby-btn action-primary" onclick="launchHostMultiplayerMatch()">🚀 Start Match</button>
         <button class="lobby-btn" onclick="cancelLobby()">Cancel</button>
       ` : `
-        <span style="font-size:13px; font-weight:800; color:#3db8f5;">LOBBY: ${currentLobbyCode} (${lobbyRoster.length}/6)</span>
+        <span style="font-size:13px; font-weight:800; color:#3db8f5;">LOBBY: ${currentLobbyCode} (${lobbyRoster.length}/6 Players)</span>
         <span style="font-size:12px; color:var(--text-muted);">Waiting for host to launch...</span>
         <button class="lobby-btn" onclick="cancelLobby()">Leave</button>
       `)}
@@ -2213,7 +2214,7 @@ window.launchSoloMatch = function() {
   initMatchView();
 };
 
-// 2. HOST MULTIPLAYER LAUNCH
+// 2. HOST MULTIPLAYER LAUNCH (NO BOTS - Humans Only!)
 window.launchHostMultiplayerMatch = function() {
   clearSceneEntities();
   const chosenMap = MAPS[selectedMapIndex];
@@ -2231,25 +2232,13 @@ window.launchHostMultiplayerMatch = function() {
   setupViewmodel(p1HeroChoice);
   playerInitPayload.push({ id: "host", hero: p1HeroChoice, x: spawns[0][0], z: spawns[0][1] });
 
-  // Remote human players
+  // Only spawn the human peers who joined the lobby
   clientConnections.forEach((conn, idx) => {
     const clientHero = lobbyRoster.find(r => r.id === conn.peer)?.hero || 0;
     const sx = spawns[idx + 1][0], sz = spawns[idx + 1][1];
     E.push(mk(clientHero, sx, sz, idx + 2, conn.peer));
     playerInitPayload.push({ id: conn.peer, hero: clientHero, x: sx, z: sz });
   });
-
-  // If under 4 players, fill remaining spots with bots up to 4 total
-  const totalHumans = 1 + clientConnections.length;
-  if(totalHumans < 4) {
-    for(let i = totalHumans; i < 4; i++) {
-      const randomHero = Math.floor(Math.random() * HEROES.length);
-      const sx = spawns[i][0], sz = spawns[i][1];
-      const bot = mk(randomHero, sx, sz, null, null);
-      E.push(bot);
-      playerInitPayload.push({ id: "bot_" + i, hero: randomHero, x: sx, z: sz });
-    }
-  }
 
   broadcastToLobby({
     type: "START_MATCH",
