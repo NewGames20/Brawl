@@ -340,16 +340,14 @@ let matchTime = 0;
 let mouseVelX = 0, mouseVelY = 0;
 let curSwayX = 0, curSwayY = 0;
 
-// --- MULTIPLAYER P2P (PEERJS) STATE ---
+// --- DECENTRALIZED MESH MULTIPLAYER STATE ---
 let peer = null;
 let isMultiplayer = false;
-let isHost = false;
+let isLobbyLeader = false;
 let currentLobbyCode = null;
-let hostConn = null;
-let clientConnections = [];
-let lobbyRoster = [];
-let myNetId = "local";
-let netBroadcastTimer = 0;
+let myNetId = "local_" + Math.random().toString(36).substring(2, 7);
+let peerConnections = new Map(); // netId -> DataConnection
+let roster = []; // [{ id, hero }]
 
 // --- HERO ATTRIBUTES ---
 const HEROES = [
@@ -929,7 +927,6 @@ function mk(ci, x, z, playerNum, netId = null) {
     kx: 0, kz: 0, fl: 0, swing: 0,
     pNum: playerNum,
     netId: netId,
-    netInputs: { mx: 0, mz: 0, at: 0, ab1: 0, ab2: 0, a: 0 },
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
     chargeVx: 0, chargeVz: 0, chargeT: 0,
@@ -995,6 +992,8 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   if(t === pl) {
     screenShake = Math.min(18, screenShake + (rawDmg * 0.45));
     damageVignetteT = Math.min(1.0, damageVignetteT + (rawDmg * 0.04) + 0.32);
+    // Tell all peers our updated health
+    broadcastToPeers({ type: "SYNC_HP", id: myNetId, hp: t.hp, dead: t.dead });
   } else {
     screenShake = Math.min(8, screenShake + (rawDmg * 0.12));
   }
@@ -1077,7 +1076,7 @@ function shot(e, a, o) {
   }, o));
 }
 
-function attack(e) {
+function executeAttack(e) {
   const c = HEROES[e.ci];
   e.c1 = c.cd;
   if(c.melee) {
@@ -1097,7 +1096,14 @@ function attack(e) {
   }
 }
 
-function ability1(e) {
+function attack(e) {
+  executeAttack(e);
+  if(isMultiplayer && e === pl) {
+    broadcastToPeers({ type: "ACT", act: "ATTACK", id: myNetId, a: e.a, x: e.x, z: e.z });
+  }
+}
+
+function executeAbility1(e) {
   const c = HEROES[e.ci];
   if(e.ci === 0) {
     e.c2 = c.a1cd;
@@ -1208,7 +1214,14 @@ function ability1(e) {
   }
 }
 
-function ability2(e) {
+function ability1(e) {
+  executeAbility1(e);
+  if(isMultiplayer && e === pl) {
+    broadcastToPeers({ type: "ACT", act: "AB1", id: myNetId, a: e.a, x: e.x, z: e.z });
+  }
+}
+
+function executeAbility2(e) {
   const c = HEROES[e.ci];
   e.c3 = c.a2cd;
   if(e.ci === 0) {
@@ -1277,6 +1290,13 @@ function ability2(e) {
         }
       }
     });
+  }
+}
+
+function ability2(e) {
+  executeAbility2(e);
+  if(isMultiplayer && e === pl) {
+    broadcastToPeers({ type: "ACT", act: "AB2", id: myNetId, a: e.a, x: e.x, z: e.z });
   }
 }
 
@@ -1442,7 +1462,7 @@ window.returnToMenu = function() {
   menu("Select a champion to battle in the arena!");
 };
 
-// --- PEERJS MULTIPLAYER NETWORKING LOGIC ---
+// --- MESH P2P NETWORKING (DECENTRALIZED & RESILIENT) ---
 function gen4LetterCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let res = "";
@@ -1450,57 +1470,133 @@ function gen4LetterCode() {
   return res;
 }
 
+function setupConnectionEvents(conn) {
+  conn.on("open", () => {
+    peerConnections.set(conn.peer, conn);
+    // Send my current chosen hero to the connected peer
+    conn.send({ type: "HELLO", id: myNetId, hero: p1HeroChoice });
+  });
+
+  conn.on("data", data => {
+    handleIncomingData(conn, data);
+  });
+
+  conn.on("close", () => {
+    peerConnections.delete(conn.peer);
+    roster = roster.filter(r => r.id !== conn.peer);
+    const ent = E.find(e => e.netId === conn.peer);
+    if(ent) {
+      ent.dead = true;
+      scene.remove(ent.mesh);
+    }
+    if(state === "menu") refreshLobbyMenu();
+  });
+}
+
+function handleIncomingData(conn, data) {
+  if(data.type === "HELLO") {
+    let r = roster.find(x => x.id === data.id);
+    if(!r) {
+      roster.push({ id: data.id, hero: data.hero });
+      // If leader, inform all peers about new roster
+      if(isLobbyLeader) {
+        broadcastToPeers({ type: "ROSTER_SYNC", roster });
+      }
+    } else {
+      r.hero = data.hero;
+    }
+    if(state === "menu") refreshLobbyMenu();
+  }
+  else if(data.type === "ROSTER_SYNC") {
+    roster = data.roster;
+    // Connect to any new peers in roster that we don't have a direct connection with yet
+    for(const r of roster) {
+      if(r.id !== myNetId && !peerConnections.has(r.id)) {
+        const c = peer.connect(r.id, { reliable: true });
+        setupConnectionEvents(c);
+      }
+    }
+    if(state === "menu") refreshLobbyMenu();
+  }
+  else if(data.type === "START_GAME") {
+    selectedMapIndex = data.mapIndex;
+    launchMeshMatch(data.spawns);
+  }
+  else if(data.type === "SYNC_POS") {
+    const ent = E.find(e => e.netId === data.id);
+    if(ent) {
+      ent.x = data.x;
+      ent.z = data.z;
+      ent.a = data.a;
+    }
+  }
+  else if(data.type === "SYNC_HP") {
+    const ent = E.find(e => e.netId === data.id);
+    if(ent) {
+      ent.hp = data.hp;
+      ent.dead = data.dead;
+      if(ent.dead) ent.mesh.visible = false;
+    }
+  }
+  else if(data.type === "ACT") {
+    const ent = E.find(e => e.netId === data.id);
+    if(ent) {
+      ent.x = data.x;
+      ent.z = data.z;
+      ent.a = data.a;
+      if(data.act === "ATTACK") executeAttack(ent);
+      else if(data.act === "AB1") executeAbility1(ent);
+      else if(data.act === "AB2") executeAbility2(ent);
+    }
+  }
+}
+
+function broadcastToPeers(obj) {
+  peerConnections.forEach(conn => {
+    if(conn.open) conn.send(obj);
+  });
+}
+
+// Background-safe interval for transmitting local player's transform (30 times/sec)
+setInterval(() => {
+  if(isMultiplayer && (state === "play" || state === "countdown") && pl && !pl.dead) {
+    broadcastToPeers({
+      type: "SYNC_POS",
+      id: myNetId,
+      x: pl.x,
+      z: pl.z,
+      a: pl.a
+    });
+  }
+}, 33);
+
 window.hostMultiplayerLobby = function() {
   currentLobbyCode = gen4LetterCode();
-  const peerId = "itembrawl-room-" + currentLobbyCode;
+  const leaderId = "itembrawl-room-" + currentLobbyCode;
   if(peer) peer.destroy();
 
-  peer = new Peer(peerId);
-  isHost = true;
+  myNetId = leaderId;
+  peer = new Peer(leaderId);
+  isLobbyLeader = true;
   isMultiplayer = true;
-  myNetId = "host";
+  roster = [{ id: myNetId, hero: p1HeroChoice }];
 
   peer.on("open", () => {
-    lobbyRoster = [{ id: "host", hero: p1HeroChoice, isHost: true }];
-    menu(`Hosting Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] - Waiting for players...`);
+    refreshLobbyMenu();
   });
 
   peer.on("connection", conn => {
-    if(lobbyRoster.length >= 6 || state !== "menu") {
-      conn.send({ type: "REJECT", reason: "Lobby full or game in progress" });
+    if(roster.length >= 6 || state !== "menu") {
+      conn.send({ type: "REJECT", reason: "Lobby full or match underway" });
       setTimeout(() => conn.close(), 200);
       return;
     }
-
-    clientConnections.push(conn);
-
-    conn.on("data", data => {
-      if(data.type === "JOIN_REQ") {
-        lobbyRoster.push({ id: conn.peer, hero: data.hero, isHost: false });
-        broadcastToLobby({ type: "ROSTER_SYNC", roster: lobbyRoster });
-        menu(`Hosting Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] - (${lobbyRoster.length}/6 Players)`);
-      } else if(data.type === "CLIENT_INPUT") {
-        const ent = E.find(e => e.netId === conn.peer);
-        if(ent) {
-          ent.netInputs = data.inputs;
-          if(data.inputs.at && ent.c1 <= 0) attack(ent);
-          if(data.inputs.ab1 && ent.c2 <= 0) ability1(ent);
-          if(data.inputs.ab2 && ent.c3 <= 0) ability2(ent);
-        }
-      }
-    });
-
-    conn.on("close", () => {
-      clientConnections = clientConnections.filter(c => c !== conn);
-      lobbyRoster = lobbyRoster.filter(r => r.id !== conn.peer);
-      broadcastToLobby({ type: "ROSTER_SYNC", roster: lobbyRoster });
-      if(state === "menu") menu(`Hosting Lobby [ ${currentLobbyCode} ] - (${lobbyRoster.length}/6 Players)`);
-    });
+    setupConnectionEvents(conn);
   });
 
   peer.on("error", () => {
-    alert("Connection error or room code already in use. Please try hosting again!");
-    menu("Select a champion to battle in the arena!");
+    alert("Could not register room code. Try hosting again!");
+    returnToMenu();
   });
 };
 
@@ -1515,138 +1611,195 @@ window.joinMultiplayerLobby = function() {
   currentLobbyCode = code;
   if(peer) peer.destroy();
 
-  peer = new Peer();
-  isHost = false;
+  myNetId = "itembrawl-client-" + Math.random().toString(36).substring(2, 8);
+  peer = new Peer(myNetId);
+  isLobbyLeader = false;
   isMultiplayer = true;
 
-  peer.on("open", id => {
-    myNetId = id;
-    hostConn = peer.connect("itembrawl-room-" + currentLobbyCode, { reliable: true });
+  peer.on("open", () => {
+    const leaderConn = peer.connect("itembrawl-room-" + currentLobbyCode, { reliable: true });
+    setupConnectionEvents(leaderConn);
+    menu(`Connecting to lobby [ ${currentLobbyCode} ]...`);
+  });
 
-    hostConn.on("open", () => {
-      hostConn.send({ type: "JOIN_REQ", hero: p1HeroChoice });
-      menu(`Connected to lobby [ ${currentLobbyCode} ]. Waiting for host to launch...`);
-    });
-
-    hostConn.on("data", data => {
-      if(data.type === "REJECT") {
-        alert(data.reason);
-        hostConn.close();
-        returnToMenu();
-      } else if(data.type === "ROSTER_SYNC") {
-        lobbyRoster = data.roster;
-        if(state === "menu") menu(`Connected to lobby [ ${currentLobbyCode} ] (${lobbyRoster.length}/6 Players). Waiting for host...`);
-      } else if(data.type === "START_MATCH") {
-        selectedMapIndex = data.mapIndex;
-        startClientMatch(data);
-      } else if(data.type === "HOST_SNAPSHOT") {
-        applyHostSnapshot(data);
-      }
-    });
-
-    hostConn.on("close", () => {
-      alert("Disconnected from lobby host.");
-      returnToMenu();
-    });
+  peer.on("connection", conn => {
+    setupConnectionEvents(conn);
   });
 
   peer.on("error", () => {
     alert("Could not find lobby. Double-check your code!");
+    returnToMenu();
   });
 };
 
-function broadcastToLobby(obj) {
-  for(const c of clientConnections) {
-    if(c.open) c.send(obj);
-  }
+function refreshLobbyMenu() {
+  menu(`Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] - (${roster.length}/6 Players)`);
 }
 
-function hostBroadcastSnapshot() {
-  if(!isHost || clientConnections.length === 0) return;
-  const snapshot = {
-    type: "HOST_SNAPSHOT",
-    stormRadius: stormRadius,
-    countdown: countdown,
-    state: state,
-    entities: E.map(e => ({
-      netId: e.netId,
-      pNum: e.pNum,
-      ci: e.ci,
-      x: e.x,
-      z: e.z,
-      a: e.a,
-      hp: e.hp,
-      mhp: e.mhp,
-      c1: e.c1,
-      c2: e.c2,
-      c3: e.c3,
-      dead: e.dead
-    }))
-  };
-  broadcastToLobby(snapshot);
-}
+// --- MENUS & MATCH START ---
+window.selectMap = function(idx) {
+  selectedMapIndex = idx;
+  ov.querySelectorAll(".map-btn").forEach((b, i) => {
+    b.classList.toggle("selected", i === idx);
+  });
+};
 
-function applyHostSnapshot(snap) {
-  stormRadius = snap.stormRadius;
-  stormMesh.scale.set(stormRadius, 1, stormRadius);
+function menu(msg) {
+  ov.style.display = "flex";
+  hud.style.display = "none";
+  crosshair.style.display = "none";
+  lockPrompt.style.display = "none";
+  resultModal.style.display = "none";
+  damageOverlay.style.opacity = 0;
 
-  if(state === "countdown" && snap.countdown !== undefined) {
-    countdown = snap.countdown;
-    centerMsg.innerText = countdown > 0.4 ? Math.ceil(countdown) : "BRAWL!";
-    if(countdown <= 0) {
-      state = "play";
-      centerMsg.style.display = "none";
-    }
-  }
+  ov.innerHTML = `
+    <div>
+      <div class="brand-title">ITEM BRAWL 3D</div>
+      <div class="subtitle">${msg}</div>
+    </div>
 
-  for(const d of snap.entities) {
-    let ent = E.find(e => e.netId === d.netId);
-    if(ent) {
-      ent.hp = d.hp;
-      ent.dead = d.dead;
-      if(ent !== pl) {
-        ent.c1 = d.c1;
-        ent.c2 = d.c2;
-        ent.c3 = d.c3;
-        ent.x = d.x;
-        ent.z = d.z;
-        ent.a = d.a;
-        ent.mesh.position.set(ent.x, 0, ent.z);
-        ent.mesh.rotation.y = -ent.a + Math.PI / 2;
-        const ratio = Math.max(0, ent.hp / ent.mhp);
-        ent.mesh.hpBar.scale.x = ratio;
-        ent.mesh.hpBar.position.x = -13 * (1 - ratio);
-        ent.mesh.hpGrp.lookAt(cameraHolder.position);
-        ent.mesh.visible = !ent.dead;
+    <div class="map-selector">
+      ${MAPS.map((m, i) => `
+        <button class="map-btn ${i === selectedMapIndex ? 'selected' : ''}" onclick="selectMap(${i})">${m.name}</button>
+      `).join("")}
+    </div>
+
+    <div class="lobby-panel">
+      ${!isMultiplayer ? `
+        <button class="lobby-btn action-primary" onclick="launchSoloMatch()">⚔️ Play Solo (vs AI)</button>
+        <button class="lobby-btn" onclick="hostMultiplayerLobby()">👑 Host Online Lobby</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <input type="text" id="lobby-code-in" class="lobby-input" placeholder="CODE" maxlength="4">
+          <button class="lobby-btn" onclick="joinMultiplayerLobby()">Join Room</button>
+        </div>
+      ` : (isLobbyLeader ? `
+        <span style="font-size:13px; font-weight:800; color:#45d988;">ROOM CODE: ${currentLobbyCode} (${roster.length}/6)</span>
+        <button class="lobby-btn action-primary" onclick="startLobbyMatch()">🚀 Start Match</button>
+        <button class="lobby-btn" onclick="cancelLobby()">Cancel</button>
+      ` : `
+        <span style="font-size:13px; font-weight:800; color:#3db8f5;">LOBBY: ${currentLobbyCode} (${roster.length}/6)</span>
+        <span style="font-size:12px; color:var(--text-muted);">Waiting for leader to launch...</span>
+        <button class="lobby-btn" onclick="cancelLobby()">Leave</button>
+      `)}
+    </div>
+
+    <div class="hero-grid">
+      ${HEROES.map((c, i) => `
+        <div class="hero-card ${i === p1HeroChoice ? 'chosen' : ''}" data-i="${i}" style="--card-border:${c.roleCol};">
+          <div class="card-header">
+            <div class="card-title">
+              <span>${c.e}</span>
+              <span>${c.n}</span>
+            </div>
+            <span class="card-role" style="color:${c.roleCol}; border-color:${c.roleCol}40">${c.role}</span>
+          </div>
+
+          <div class="card-stats">
+            <span>HP <b>${c.hp}</b></span>
+            <span>SPD <b>${c.sp}</b></span>
+            <span>WEAPON <b>${c.w} ${c.wn}</b></span>
+          </div>
+
+          <div class="ability-line"><strong>[E] ${c.a1n}:</strong> ${c.a1d}</div>
+          <div class="ability-line"><strong>[Q] ${c.a2n}:</strong> ${c.a2d}</div>
+        </div>
+      `).join("")}
+    </div>
+
+    <div class="footer-bar">
+      <span><span class="key-badge">MOUSE</span> Look</span> ·
+      <span><span class="key-badge">WASD</span> Move</span> ·
+      <span><span class="key-badge">L-CLICK</span> Attack</span> ·
+      <span><span class="key-badge">E</span> Ability 1</span> ·
+      <span><span class="key-badge">Q</span> Ability 2</span> ·
+      <span style="color:#45d988">⚔️ Kills restore 15% Max HP</span>
+    </div>
+  `;
+
+  ov.querySelectorAll(".hero-card").forEach(b => {
+    b.onclick = () => {
+      p1HeroChoice = +b.dataset.i;
+      ov.querySelectorAll(".hero-card").forEach((card, ci) => {
+        card.classList.toggle("chosen", ci === p1HeroChoice);
+      });
+      if(isMultiplayer) {
+        const me = roster.find(x => x.id === myNetId);
+        if(me) me.hero = p1HeroChoice;
+        broadcastToPeers({ type: "HELLO", id: myNetId, hero: p1HeroChoice });
       }
-    }
-  }
+    };
+  });
 }
 
-function clientSendInputs() {
-  if(!hostConn || !hostConn.open || !pl) return;
-  const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
-  const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
-  const sin = Math.sin(yaw), cos = Math.cos(yaw);
-  const mx = -sin * forward + cos * strafe;
-  const mz = -cos * forward - sin * strafe;
-  const a = -yaw - Math.PI / 2;
+window.cancelLobby = function() {
+  if(peer) peer.destroy();
+  peer = null;
+  isMultiplayer = false;
+  isLobbyLeader = false;
+  peerConnections.clear();
+  roster = [];
+  menu("Select a champion to battle in the arena!");
+};
 
-  hostConn.send({
-    type: "CLIENT_INPUT",
-    inputs: {
-      mx, mz, a,
-      at: M.down,
-      ab1: P1_ab1,
-      ab2: P1_ab2
-    }
+function clearSceneEntities() {
+  for(const e of E) { scene.remove(e.mesh); }
+  for(const p of P) { scene.remove(p.mesh); }
+  for(const f of F) { scene.remove(f.mesh); }
+  for(const z of Zones) { scene.remove(z.mesh); }
+  for(const pk of Pickups) { scene.remove(pk.mesh); }
+  for(const dn of DamageNumbers) { scene.remove(dn.sprite); }
+  E = []; P = []; F = []; Zones = []; Pickups = []; DamageNumbers = [];
+}
+
+const SPAWNS = [
+  [70, 70], [W-70, H-70], [W-70, 70], [70, H-70],
+  [W/2, 60], [W/2, H-60], [70, H/2], [W-70, H/2]
+];
+
+// 1. SOLO LAUNCH (With Bots)
+window.launchSoloMatch = function() {
+  isMultiplayer = false;
+  isLobbyLeader = false;
+  document.getElementById("room-badge").innerText = "ARENA ZONE";
+
+  clearSceneEntities();
+  const chosenMap = MAPS[selectedMapIndex];
+  currentRects = chosenMap.rects;
+  build3DMap(chosenMap);
+
+  const spawns = SPAWNS.slice().sort(() => Math.random() - 0.5);
+
+  E = [mk(p1HeroChoice, spawns[0][0], spawns[0][1], 1)];
+  pl = E[0];
+  setupViewmodel(p1HeroChoice);
+
+  const botCount = Math.floor(Math.random() * 3) + 2;
+  for(let i = 1; i <= botCount; i++) {
+    const randomHero = Math.floor(Math.random() * HEROES.length);
+    E.push(mk(randomHero, spawns[i][0], spawns[i][1], null));
+  }
+
+  initMatchView();
+};
+
+// 2. MULTIPLAYER LAUNCH (Strictly Humans Only - Resilient Mesh)
+window.startLobbyMatch = function() {
+  const spawns = SPAWNS.slice().sort(() => 0.5 - Math.random());
+  const spawnMap = {};
+  roster.forEach((r, idx) => {
+    spawnMap[r.id] = spawns[idx % spawns.length];
   });
 
-  P1_ab1 = 0;
-  P1_ab2 = 0;
-}
+  broadcastToPeers({
+    type: "START_GAME",
+    mapIndex: selectedMapIndex,
+    spawns: spawnMap
+  });
 
-function startClientMatch(data) {
+  launchMeshMatch(spawnMap);
+};
+
+function launchMeshMatch(spawnMap) {
   clearSceneEntities();
   const chosenMap = MAPS[selectedMapIndex];
   currentRects = chosenMap.rects;
@@ -1655,20 +1808,26 @@ function startClientMatch(data) {
   document.getElementById("room-badge").innerText = `ROOM: ${currentLobbyCode}`;
 
   E = [];
-  data.players.forEach((p) => {
-    const isMe = (p.id === myNetId);
-    const spawned = mk(p.hero, p.x, p.z, isMe ? 1 : 2, p.id);
-    E.push(spawned);
+  roster.forEach(r => {
+    const sp = spawnMap[r.id] || [W/2, H/2];
+    const isMe = (r.id === myNetId);
+    const ent = mk(r.hero, sp[0], sp[1], isMe ? 1 : 2, r.id);
+    E.push(ent);
     if(isMe) {
-      pl = spawned;
-      setupViewmodel(p.hero);
+      pl = ent;
+      setupViewmodel(r.hero);
     }
   });
 
+  initMatchView();
+}
+
+function initMatchView() {
   yaw = 0; pitch = 0;
   cameraHolder.rotation.y = yaw;
   camera.rotation.x = pitch;
 
+  itemSpawnTimer = 0; matchTime = 0;
   stormRadius = 380;
   stormMesh.scale.set(stormRadius, 1, stormRadius);
   countdown = 3.0;
@@ -1681,6 +1840,7 @@ function startClientMatch(data) {
   hud.style.display = "block";
   crosshair.style.display = "block";
   resultModal.style.display = "none";
+
   canvas3D.requestPointerLock();
 }
 
@@ -1693,17 +1853,7 @@ function upd(dt) {
 
   syncHUD();
 
-  // Network sync ticks
-  if(isMultiplayer) {
-    netBroadcastTimer += dt;
-    if(netBroadcastTimer >= 0.033) {
-      netBroadcastTimer = 0;
-      if(isHost) hostBroadcastSnapshot();
-      else clientSendInputs();
-    }
-  }
-
-  // Camera tracking
+  // Local View Tracking
   if(pl && !pl.dead) {
     cameraHolder.position.x = pl.x;
     cameraHolder.position.z = pl.z;
@@ -1734,46 +1884,26 @@ function upd(dt) {
     viewmodelHolder.rotation.z += (targetRotZ - viewmodelHolder.rotation.z) * 0.18;
   }
 
-  // Local movement & input for player (works for Host, Client, and Solo)
-  if(pl && !pl.dead) {
-    pl.slow -= dt; pl.fire -= dt; pl.c1 -= dt; pl.c2 -= dt; pl.c3 -= dt;
-    pl.fl -= dt; pl.swing -= dt; pl.speedBoost -= dt;
-
-    if(countdown <= 0.25) {
-      const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
-      const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
-      const sin = Math.sin(yaw), cos = Math.cos(yaw);
-      const mx = -sin * forward + cos * strafe;
-      const mz = -cos * forward - sin * strafe;
-      pl.a = -yaw - Math.PI / 2;
-
-      const baseSpd = HEROES[pl.ci].sp * (pl.speedBoost > 0 ? 1.35 : 1.0);
-      const slowMod = (pl.sporePoison > 0) ? 0.55 : (pl.slow > 0 ? 0.6 : 1.0);
-      const s = baseSpd * slowMod * (pl.fire > 0 ? 0.8 : 1.0);
-      const l = Math.hypot(mx, mz) || 1;
-
-      pl.x += (pmx = (mx/l)) * s * dt;
-      pl.z += (pmz = (mz/l)) * s * dt;
-      pushCollisions(pl);
-
-      // Local player attack logic
-      if(M.down && pl.c1 <= 0) attack(pl);
-      if(P1_ab1 && pl.c2 <= 0) ability1(pl);
-      if(P1_ab2 && pl.c3 <= 0) ability2(pl);
-    }
-    P1_ab1 = 0; P1_ab2 = 0;
-  }
-
-  // Non-host clients simulate their own visuals and defer world/AI ticks to the host
-  if(isMultiplayer && !isHost) {
-    updateProjectiles(dt);
-    return;
-  }
-
   if(countdown > 0) {
     countdown -= dt;
     centerMsg.style.display = "block";
     centerMsg.innerText = countdown > 0.4 ? Math.ceil(countdown) : "BRAWL!";
+
+    if(pl) {
+      pl.a = -yaw - Math.PI / 2;
+      if(countdown <= 0.25) {
+        const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
+        const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
+        const sin = Math.sin(yaw), cos = Math.cos(yaw);
+        const pmx = -sin * forward + cos * strafe;
+        const pmz = -cos * forward - sin * strafe;
+        const baseSpd = HEROES[pl.ci].sp;
+        const l = Math.hypot(pmx, pmz) || 1;
+        pl.x += (pmx/l) * baseSpd * dt;
+        pl.z += (pmz/l) * baseSpd * dt;
+        pushCollisions(pl);
+      }
+    }
 
     for(const e of E) {
       e.mesh.position.set(e.x, 0, e.z);
@@ -1937,18 +2067,26 @@ function upd(dt) {
     if(e.stun > 0) {
       e.stun -= dt;
     } else if(e === pl) {
-      // Local player moved above
-    } else if(e.netId) {
-      mx = e.netInputs.mx;
-      mz = e.netInputs.mz;
-      e.a = e.netInputs.a;
-      
+      const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
+      const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
+      const sin = Math.sin(yaw), cos = Math.cos(yaw);
+      mx = -sin * forward + cos * strafe;
+      mz = -cos * forward - sin * strafe;
+      e.a = -yaw - Math.PI / 2;
+      at = M.down;
+      ab1 = P1_ab1;
+      ab2 = P1_ab2;
+
       const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       e.x += (mx/l) * s * dt;
       e.z += (mz/l) * s * dt;
+
+      if(at && e.c1 <= 0) attack(e);
+      if(ab1 && e.c2 <= 0) ability1(e);
+      if(ab2 && e.c3 <= 0) ability2(e);
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
       const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
@@ -1962,6 +2100,8 @@ function upd(dt) {
       if(ab1 && e.c2 <= 0) ability1(e);
       if(ab2 && e.c3 <= 0) ability2(e);
     }
+
+    if(e === pl) { P1_ab1 = 0; P1_ab2 = 0; }
 
     e.x += e.kx * dt;
     e.z += e.kz * dt;
@@ -2000,21 +2140,7 @@ function upd(dt) {
     e.mesh.hpGrp.lookAt(cameraHolder.position);
   }
 
-  updateProjectiles(dt);
-
-  if(screenShake > 0) screenShake = Math.max(0, screenShake - dt * 22);
-
-  const alive = E.filter(e => !e.dead);
-  if(state === "play") {
-    if(pl && pl.dead) {
-      showResultScreen(false);
-    } else if(alive.length === 1 && alive[0] === pl) {
-      showResultScreen(true);
-    }
-  }
-}
-
-function updateProjectiles(dt) {
+  // Projectiles
   for(let i = P.length - 1; i >= 0; i--) {
     const p = P[i];
     if(p.t === "b") {
@@ -2064,213 +2190,17 @@ function updateProjectiles(dt) {
       P.splice(i, 1);
     }
   }
-}
 
-// --- MENUS & LAUNCH MATCH ---
-window.selectMap = function(idx) {
-  selectedMapIndex = idx;
-  ov.querySelectorAll(".map-btn").forEach((b, i) => {
-    b.classList.toggle("selected", i === idx);
-  });
-};
+  if(screenShake > 0) screenShake = Math.max(0, screenShake - dt * 22);
 
-function menu(msg) {
-  ov.style.display = "flex";
-  hud.style.display = "none";
-  crosshair.style.display = "none";
-  lockPrompt.style.display = "none";
-  resultModal.style.display = "none";
-  damageOverlay.style.opacity = 0;
-
-  ov.innerHTML = `
-    <div>
-      <div class="brand-title">ITEM BRAWL 3D</div>
-      <div class="subtitle">${msg}</div>
-    </div>
-
-    <div class="map-selector">
-      ${MAPS.map((m, i) => `
-        <button class="map-btn ${i === selectedMapIndex ? 'selected' : ''}" onclick="selectMap(${i})">${m.name}</button>
-      `).join("")}
-    </div>
-
-    <div class="lobby-panel">
-      ${!isMultiplayer ? `
-        <button class="lobby-btn action-primary" onclick="launchSoloMatch()">⚔️ Play Solo (vs AI)</button>
-        <button class="lobby-btn" onclick="hostMultiplayerLobby()">👑 Host Online Lobby</button>
-        <div style="display:flex; gap:6px; align-items:center;">
-          <input type="text" id="lobby-code-in" class="lobby-input" placeholder="CODE" maxlength="4">
-          <button class="lobby-btn" onclick="joinMultiplayerLobby()">Join Room</button>
-        </div>
-      ` : (isHost ? `
-        <span style="font-size:13px; font-weight:800; color:#45d988;">ROOM CODE: ${currentLobbyCode} (${lobbyRoster.length}/6 Players)</span>
-        <button class="lobby-btn action-primary" onclick="launchHostMultiplayerMatch()">🚀 Start Match</button>
-        <button class="lobby-btn" onclick="cancelLobby()">Cancel</button>
-      ` : `
-        <span style="font-size:13px; font-weight:800; color:#3db8f5;">LOBBY: ${currentLobbyCode} (${lobbyRoster.length}/6 Players)</span>
-        <span style="font-size:12px; color:var(--text-muted);">Waiting for host to launch...</span>
-        <button class="lobby-btn" onclick="cancelLobby()">Leave</button>
-      `)}
-    </div>
-
-    <div class="hero-grid">
-      ${HEROES.map((c, i) => `
-        <div class="hero-card ${i === p1HeroChoice ? 'chosen' : ''}" data-i="${i}" style="--card-border:${c.roleCol};">
-          <div class="card-header">
-            <div class="card-title">
-              <span>${c.e}</span>
-              <span>${c.n}</span>
-            </div>
-            <span class="card-role" style="color:${c.roleCol}; border-color:${c.roleCol}40">${c.role}</span>
-          </div>
-
-          <div class="card-stats">
-            <span>HP <b>${c.hp}</b></span>
-            <span>SPD <b>${c.sp}</b></span>
-            <span>WEAPON <b>${c.w} ${c.wn}</b></span>
-          </div>
-
-          <div class="ability-line"><strong>[E] ${c.a1n}:</strong> ${c.a1d}</div>
-          <div class="ability-line"><strong>[Q] ${c.a2n}:</strong> ${c.a2d}</div>
-        </div>
-      `).join("")}
-    </div>
-
-    <div class="footer-bar">
-      <span><span class="key-badge">MOUSE</span> Look</span> ·
-      <span><span class="key-badge">WASD</span> Move</span> ·
-      <span><span class="key-badge">L-CLICK</span> Attack</span> ·
-      <span><span class="key-badge">E</span> Ability 1</span> ·
-      <span><span class="key-badge">Q</span> Ability 2</span> ·
-      <span style="color:#45d988">⚔️ Kills restore 15% Max HP</span>
-    </div>
-  `;
-
-  ov.querySelectorAll(".hero-card").forEach(b => {
-    b.onclick = () => {
-      p1HeroChoice = +b.dataset.i;
-      ov.querySelectorAll(".hero-card").forEach((card, ci) => {
-        card.classList.toggle("chosen", ci === p1HeroChoice);
-      });
-      if(isMultiplayer) {
-        if(isHost) {
-          lobbyRoster[0].hero = p1HeroChoice;
-          broadcastToLobby({ type: "ROSTER_SYNC", roster: lobbyRoster });
-        } else if(hostConn && hostConn.open) {
-          hostConn.send({ type: "JOIN_REQ", hero: p1HeroChoice });
-        }
-      }
-    };
-  });
-}
-
-window.cancelLobby = function() {
-  if(peer) peer.destroy();
-  peer = null;
-  isMultiplayer = false;
-  isHost = false;
-  clientConnections = [];
-  hostConn = null;
-  lobbyRoster = [];
-  menu("Select a champion to battle in the arena!");
-};
-
-function clearSceneEntities() {
-  for(const e of E) { scene.remove(e.mesh); }
-  for(const p of P) { scene.remove(p.mesh); }
-  for(const f of F) { scene.remove(f.mesh); }
-  for(const z of Zones) { scene.remove(z.mesh); }
-  for(const pk of Pickups) { scene.remove(pk.mesh); }
-  for(const dn of DamageNumbers) { scene.remove(dn.sprite); }
-  E = []; P = []; F = []; Zones = []; Pickups = []; DamageNumbers = [];
-}
-
-const SPAWNS = [
-  [70, 70], [W-70, H-70], [W-70, 70], [70, H-70],
-  [W/2, 60], [W/2, H-60], [70, H/2], [W-70, H/2]
-];
-
-// 1. SOLO LAUNCH (With Bots)
-window.launchSoloMatch = function() {
-  isMultiplayer = false;
-  isHost = false;
-  document.getElementById("room-badge").innerText = "ARENA ZONE";
-
-  clearSceneEntities();
-  const chosenMap = MAPS[selectedMapIndex];
-  currentRects = chosenMap.rects;
-  build3DMap(chosenMap);
-
-  const spawns = SPAWNS.slice().sort(() => Math.random() - 0.5);
-
-  E = [mk(p1HeroChoice, spawns[0][0], spawns[0][1], 1)];
-  pl = E[0];
-  setupViewmodel(p1HeroChoice);
-
-  const botCount = Math.floor(Math.random() * 3) + 2;
-  for(let i = 1; i <= botCount; i++) {
-    const randomHero = Math.floor(Math.random() * HEROES.length);
-    E.push(mk(randomHero, spawns[i][0], spawns[i][1], null));
+  const alive = E.filter(e => !e.dead);
+  if(state === "play") {
+    if(pl && pl.dead) {
+      showResultScreen(false);
+    } else if(alive.length === 1 && alive[0] === pl) {
+      showResultScreen(true);
+    }
   }
-
-  initMatchView();
-};
-
-// 2. HOST MULTIPLAYER LAUNCH (Strictly NO BOTS - Humans Only!)
-window.launchHostMultiplayerMatch = function() {
-  clearSceneEntities();
-  const chosenMap = MAPS[selectedMapIndex];
-  currentRects = chosenMap.rects;
-  build3DMap(chosenMap);
-
-  document.getElementById("room-badge").innerText = `ROOM: ${currentLobbyCode}`;
-
-  const spawns = SPAWNS.slice().sort(() => Math.random() - 0.5);
-  const playerInitPayload = [];
-
-  // Host player (P1)
-  E = [mk(p1HeroChoice, spawns[0][0], spawns[0][1], 1, "host")];
-  pl = E[0];
-  setupViewmodel(p1HeroChoice);
-  playerInitPayload.push({ id: "host", hero: p1HeroChoice, x: spawns[0][0], z: spawns[0][1] });
-
-  // Only spawn the humans who connected to this room
-  clientConnections.forEach((conn, idx) => {
-    const clientHero = lobbyRoster.find(r => r.id === conn.peer)?.hero || 0;
-    const sx = spawns[idx + 1][0], sz = spawns[idx + 1][1];
-    E.push(mk(clientHero, sx, sz, idx + 2, conn.peer));
-    playerInitPayload.push({ id: conn.peer, hero: clientHero, x: sx, z: sz });
-  });
-
-  broadcastToLobby({
-    type: "START_MATCH",
-    mapIndex: selectedMapIndex,
-    players: playerInitPayload
-  });
-
-  initMatchView();
-};
-
-function initMatchView() {
-  yaw = 0; pitch = 0;
-  cameraHolder.rotation.y = yaw;
-  camera.rotation.x = pitch;
-
-  itemSpawnTimer = 0; matchTime = 0;
-  stormRadius = 380;
-  stormMesh.scale.set(stormRadius, 1, stormRadius);
-  countdown = 3.0;
-  damageVignetteT = 0;
-  state = "countdown";
-
-  syncHUD();
-
-  ov.style.display = "none";
-  hud.style.display = "block";
-  crosshair.style.display = "block";
-  resultModal.style.display = "none";
-
-  canvas3D.requestPointerLock();
 }
 
 let lastT = performance.now();
