@@ -72,13 +72,13 @@ html, body {
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   display: flex; flex-direction: column;
   align-items: center; justify-content: flex-start;
-  gap: 14px; padding: 28px 24px;
+  gap: 14px; padding: 24px 20px;
   text-align: center; overflow-y: auto;
   z-index: 20;
 }
 .brand-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(28px, 4vw, 42px);
+  font-size: clamp(28px, 4vw, 38px);
   letter-spacing: 3px; font-weight: 900;
   text-transform: uppercase;
   background: linear-gradient(135deg, #fff 10%, #ff8342 60%, #ff3b30 100%);
@@ -86,8 +86,8 @@ html, body {
   filter: drop-shadow(0 4px 18px var(--primary-glow));
 }
 .subtitle {
-  font-size: 14px; font-weight: 600; color: var(--text-muted);
-  letter-spacing: 0.5px; margin-top: -6px;
+  font-size: 13px; font-weight: 600; color: var(--text-muted);
+  letter-spacing: 0.5px; margin-top: -4px;
 }
 
 .map-selector {
@@ -97,8 +97,8 @@ html, body {
 }
 .map-btn {
   background: transparent; border: none; color: var(--text-muted);
-  font-family: inherit; font-size: 13px; font-weight: 700;
-  padding: 8px 20px; border-radius: 9px; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 700;
+  padding: 8px 18px; border-radius: 9px; cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .map-btn.selected {
@@ -106,47 +106,76 @@ html, body {
   color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 0 1px var(--border-highlight);
 }
 
+.lobby-panel {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 18px; max-width: 960px; width: 100%;
+}
+.lobby-btn {
+  background: #252433; border: 1px solid var(--border-highlight);
+  color: #fff; font-family: inherit; font-weight: 700; font-size: 12px;
+  padding: 8px 16px; border-radius: 8px; cursor: pointer;
+  transition: all 0.2s ease;
+}
+.lobby-btn:hover { background: #37354d; transform: translateY(-1px); }
+.lobby-btn.action-primary {
+  background: linear-gradient(135deg, #ff5533, #e63920);
+  border: none;
+}
+.lobby-input {
+  background: rgba(0,0,0,0.6); border: 1px solid var(--border);
+  color: #fff; font-family: 'Space Grotesk', monospace; font-size: 14px;
+  font-weight: 700; padding: 7px 12px; border-radius: 8px;
+  text-align: center; width: 110px; text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
 .hero-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px; width: 100%; max-width: 960px;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 10px; width: 100%; max-width: 960px;
 }
 .hero-card {
   position: relative;
   background: var(--panel-bg);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px 16px;
+  border-radius: 12px;
+  padding: 12px 14px;
   text-align: left;
   cursor: pointer;
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex; flex-direction: column; gap: 6px;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
+.hero-card.chosen {
+  border-color: #45d988 !important;
+  box-shadow: 0 0 16px rgba(69, 217, 136, 0.35);
+}
 .hero-card:hover {
   border-color: var(--card-border, var(--primary));
-  transform: translateY(-2px) scale(1.015);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.6), 0 0 20px var(--card-glow, var(--primary-glow));
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6), 0 0 15px var(--card-glow, var(--primary-glow));
 }
 .card-header {
   display: flex; align-items: center; justify-content: space-between;
 }
 .card-title {
   display: flex; align-items: center; gap: 8px;
-  font-size: 16px; font-weight: 800; color: #fff;
+  font-size: 15px; font-weight: 800; color: #fff;
 }
 .card-role {
-  font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
-  text-transform: uppercase; padding: 3px 8px; border-radius: 6px;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 5px;
   background: rgba(255,255,255,0.06); border: 1px solid var(--border);
 }
 .card-stats {
-  display: flex; gap: 14px; font-size: 12px; font-weight: 700;
+  display: flex; gap: 12px; font-size: 11px; font-weight: 700;
   color: #d1cddb;
 }
 .card-stats span b { color: #fff; font-weight: 900; }
 .ability-line {
-  font-size: 12px; color: var(--text-muted); line-height: 1.35;
+  font-size: 11px; color: var(--text-muted); line-height: 1.35;
 }
 .ability-line strong { color: #e6e2f0; }
 
@@ -154,11 +183,11 @@ html, body {
   display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border); border-radius: 12px;
-  padding: 8px 18px; font-size: 12px; font-weight: 600; color: #aaa6bb;
+  padding: 8px 18px; font-size: 11px; font-weight: 600; color: #aaa6bb;
 }
 .key-badge {
   background: rgba(255, 255, 255, 0.14); color: #fff;
-  border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 800;
+  border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 800;
 }
 
 #hud {
@@ -250,6 +279,7 @@ html, body {
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -264,7 +294,7 @@ html, body {
       <div id="hud-player-hp">HP: 100 / 100</div>
     </div>
     <div id="compass">
-      <span>ARENA ZONE</span>
+      <span id="room-badge">ARENA ZONE</span>
       <span id="storm-timer-disp">STORM: 380m</span>
     </div>
     <div id="hud-cooldowns">
@@ -309,6 +339,17 @@ let matchTime = 0;
 
 let mouseVelX = 0, mouseVelY = 0;
 let curSwayX = 0, curSwayY = 0;
+
+// --- MULTIPLAYER P2P (PEERJS) STATE ---
+let peer = null;
+let isMultiplayer = false;
+let isHost = false;
+let currentLobbyCode = null;
+let hostConn = null;               // Client's direct channel to host
+let clientConnections = [];        // Host's channels to clients (max 5)
+let lobbyRoster = [];              // Track players in lobby: [{ id, hero, isHost }]
+let myNetId = "local";
+let netBroadcastTimer = 0;
 
 // --- HERO ATTRIBUTES ---
 const HEROES = [
@@ -861,9 +902,10 @@ let E = [], P = [], F = [], Pickups = [], Zones = [], DamageNumbers = [];
 let state = "menu", pl = null;
 let itemSpawnTimer = 0, countdown = 3.0;
 
-function mk(ci, x, z, playerNum) {
+function mk(ci, x, z, playerNum, netId = null) {
   const c = HEROES[ci];
-  const ai = playerNum ? null : {
+  const isLocalP1 = (playerNum === 1);
+  const ai = (isLocalP1 || netId) ? null : {
     state: "WANDER", timer: 0,
     react: 0.22 + Math.random()*0.22,
     err: 0.04 + Math.random()*0.12,
@@ -871,13 +913,13 @@ function mk(ci, x, z, playerNum) {
     mx:0, mz:0, at:0, ab1:0, ab2:0,
     strafeDir: Math.random() > 0.5 ? 1 : -1,
     strafeTimer: 0,
-    fov: (96 * Math.PI) / 180, // Human-like 96-degree Field of View
+    fov: (96 * Math.PI) / 180,
     currentTarget: null,
     alertTimer: 0
   };
 
-  const mesh = createDetailedHeroModel(ci, playerNum === 1);
-  if(playerNum === 1) mesh.visible = false;
+  const mesh = createDetailedHeroModel(ci, isLocalP1);
+  if(isLocalP1) mesh.visible = false;
 
   return {
     ci, x, z, r:16,
@@ -886,11 +928,13 @@ function mk(ci, x, z, playerNum) {
     c1: 0, c2: 0, c3: 0, stun: 0,
     kx: 0, kz: 0, fl: 0, swing: 0,
     pNum: playerNum,
+    netId: netId,
+    netInputs: { mx: 0, mz: 0, at: 0, ab1: 0, ab2: 0, a: 0 },
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
     chargeVx: 0, chargeVz: 0, chargeT: 0,
     activePod: null,
-    sporePoison: 0, // Lingering spore poison timer
+    sporePoison: 0,
     sporeAttacker: null,
     mesh
   };
@@ -937,10 +981,8 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   t.kx += Math.cos(a) * kb;
   t.kz += Math.sin(a) * kb;
 
-  // AI Reacts Realistically When Damaged: Turn to face the source of damage!
   if(t.ai) {
     t.ai.alertTimer = 2.4;
-    // Turn toward where the shot arrived from
     t.a = a + Math.PI;
     if(attacker && !attacker.dead) {
       t.ai.currentTarget = attacker;
@@ -950,7 +992,7 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
 
   if(rawDmg >= 1) spawnDamageNumber(t.x, t.z, "-" + Math.round(rawDmg), "#ff4438");
 
-  if(t.pNum === 1) {
+  if(t === pl) {
     screenShake = Math.min(18, screenShake + (rawDmg * 0.45));
     damageVignetteT = Math.min(1.0, damageVignetteT + (rawDmg * 0.04) + 0.32);
   } else {
@@ -1120,13 +1162,13 @@ function ability1(e) {
     spawn3DRing(e.x, e.z, 28, 0x36c0eb);
   } else if(e.ci === 5) {
     if(e.activePod) return;
-    e.c2 = 999; // Suspended until detonated or expires
+    e.c2 = 999;
 
     const px = e.x + Math.cos(e.a) * 45;
     const pz = e.z + Math.sin(e.a) * 45;
     const trapGrp = new THREE.Group();
 
-    if(e.pNum === 1) {
+    if(e === pl) {
       const geo = new THREE.SphereGeometry(6, 12, 12);
       const mat = new THREE.MeshStandardMaterial({
         color: 0x9a55cc, transparent: true, opacity: 0.55, roughness: 0.3
@@ -1238,17 +1280,15 @@ function ability2(e) {
   }
 }
 
-// Check if a point is within an AI's forward vision cone
-function inVisionCone(observer, tx, tz, maxFov = 1.67) { // ~96 degrees FOV
+function inVisionCone(observer, tx, tz, maxFov = 1.67) {
   const dx = tx - observer.x;
   const dz = tz - observer.z;
   const angleToTarget = Math.atan2(dz, dx);
   let diff = angleToTarget - observer.a;
-  diff = Math.atan2(Math.sin(diff), Math.cos(diff)); // Normalize to -PI .. PI
+  diff = Math.atan2(Math.sin(diff), Math.cos(diff));
   return Math.abs(diff) <= (maxFov / 2);
 }
 
-// --- REALISTIC FOV AI LOGIC ---
 function updateAI(e, dt) {
   e.ai.timer -= dt;
   e.ai.strafeTimer -= dt;
@@ -1259,13 +1299,11 @@ function updateAI(e, dt) {
     e.ai.strafeTimer = 0.8 + Math.random()*1.0;
   }
 
-  // Find targets within visual field of view (or currently alerted to from getting hit)
   if(!e.ai.currentTarget || e.ai.currentTarget.dead) {
     let bestDist = 1e9, found = null;
     for(const o of E) {
       if(o !== e && !o.dead) {
         const d = Math.hypot(o.x - e.x, o.z - e.z);
-        // Can only perceive target if within human-like FOV or very close proximity sound
         const visible = (inVisionCone(e, o.x, o.z, e.ai.fov) || d < 65) && hasLOS(e.x, e.z, o.x, o.z);
         if(visible && d < bestDist) {
           bestDist = d;
@@ -1275,8 +1313,6 @@ function updateAI(e, dt) {
     }
     e.ai.currentTarget = found;
   } else {
-    // Check if target broke line of sight
-    const d = Math.hypot(e.ai.currentTarget.x - e.x, e.ai.currentTarget.z - e.z);
     const hasSight = hasLOS(e.x, e.z, e.ai.currentTarget.x, e.ai.currentTarget.z);
     if(!hasSight && e.ai.alertTimer <= 0) {
       e.ai.currentTarget = null;
@@ -1313,7 +1349,6 @@ function updateAI(e, dt) {
     moveAng = Math.atan2(nearestPickup.z - e.z, nearestPickup.x - e.x);
     targetAng = moveAng;
   } else if(e.ai.state === "WANDER") {
-    // Naturally looks and patrols forward
     if(Math.random() < 0.15) {
       e.a += (Math.random() - 0.5) * 1.2;
     }
@@ -1334,7 +1369,6 @@ function updateAI(e, dt) {
     }
   }
 
-  // Smooth turn rotation rather than instant snapping
   let da = targetAng - e.a;
   da = Math.atan2(Math.sin(da), Math.cos(da));
   e.a += da * 0.45;
@@ -1348,7 +1382,6 @@ function updateAI(e, dt) {
   e.ai.mx += (targetVx - e.ai.mx) * 0.35;
   e.ai.mz += (targetVz - e.ai.mz) * 0.35;
 
-  // Attacks only occur if target is seen in vision cone
   const target = e.ai.currentTarget;
   const canSeeTarget = target && inVisionCone(e, target.x, target.z, e.ai.fov) && hasLOS(e.x, e.z, target.x, target.z);
   const targetDist = target ? Math.hypot(target.x - e.x, target.z - e.z) : 999;
@@ -1409,6 +1442,239 @@ window.returnToMenu = function() {
   menu("Select a champion to battle in the arena!");
 };
 
+// --- PEERJS MULTIPLAYER NETWORKING LOGIC ---
+function gen4LetterCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let res = "";
+  for(let i = 0; i < 4; i++) res += chars[Math.floor(Math.random() * chars.length)];
+  return res;
+}
+
+window.hostMultiplayerLobby = function() {
+  currentLobbyCode = gen4LetterCode();
+  const peerId = "itembrawl-room-" + currentLobbyCode;
+  if(peer) peer.destroy();
+
+  peer = new Peer(peerId);
+  isHost = true;
+  isMultiplayer = true;
+  myNetId = "host";
+
+  peer.on("open", () => {
+    lobbyRoster = [{ id: "host", hero: p1HeroChoice, isHost: true }];
+    menu(`Hosting Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] - Waiting for players...`);
+  });
+
+  peer.on("connection", conn => {
+    if(lobbyRoster.length >= 6 || state !== "menu") {
+      conn.send({ type: "REJECT", reason: "Lobby full or game in progress" });
+      setTimeout(() => conn.close(), 200);
+      return;
+    }
+
+    clientConnections.push(conn);
+
+    conn.on("data", data => {
+      if(data.type === "JOIN_REQ") {
+        lobbyRoster.push({ id: conn.peer, hero: data.hero, isHost: false });
+        broadcastToLobby({ type: "ROSTER_SYNC", roster: lobbyRoster });
+        menu(`Hosting Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] - (${lobbyRoster.length}/6 Players)`);
+      } else if(data.type === "CLIENT_INPUT") {
+        const ent = E.find(e => e.netId === conn.peer);
+        if(ent) ent.netInputs = data.inputs;
+      }
+    });
+
+    conn.on("close", () => {
+      clientConnections = clientConnections.filter(c => c !== conn);
+      lobbyRoster = lobbyRoster.filter(r => r.id !== conn.peer);
+      broadcastToLobby({ type: "ROSTER_SYNC", roster: lobbyRoster });
+      if(state === "menu") menu(`Hosting Lobby [ ${currentLobbyCode} ] - (${lobbyRoster.length}/6 Players)`);
+    });
+  });
+
+  peer.on("error", (err) => {
+    alert("Connection error or room code already in use. Please try hosting again!");
+    menu("Select a champion to battle in the arena!");
+  });
+};
+
+window.joinMultiplayerLobby = function() {
+  const codeIn = document.getElementById("lobby-code-in");
+  const code = (codeIn ? codeIn.value : "").trim().toUpperCase();
+  if(code.length !== 4) {
+    alert("Please enter a valid 4-character code!");
+    return;
+  }
+
+  currentLobbyCode = code;
+  if(peer) peer.destroy();
+
+  peer = new Peer();
+  isHost = false;
+  isMultiplayer = true;
+
+  peer.on("open", id => {
+    myNetId = id;
+    hostConn = peer.connect("itembrawl-room-" + currentLobbyCode, { reliable: true });
+
+    hostConn.on("open", () => {
+      hostConn.send({ type: "JOIN_REQ", hero: p1HeroChoice });
+      menu(`Connected to lobby [ ${currentLobbyCode} ]. Waiting for host to launch...`);
+    });
+
+    hostConn.on("data", data => {
+      if(data.type === "REJECT") {
+        alert(data.reason);
+        hostConn.close();
+        returnToMenu();
+      } else if(data.type === "ROSTER_SYNC") {
+        lobbyRoster = data.roster;
+        if(state === "menu") menu(`Connected to lobby [ ${currentLobbyCode} ] (${lobbyRoster.length}/6 Players). Waiting for host...`);
+      } else if(data.type === "START_MATCH") {
+        selectedMapIndex = data.mapIndex;
+        startClientMatch(data);
+      } else if(data.type === "HOST_SNAPSHOT") {
+        applyHostSnapshot(data);
+      }
+    });
+
+    hostConn.on("close", () => {
+      alert("Disconnected from lobby host.");
+      returnToMenu();
+    });
+  });
+
+  peer.on("error", () => {
+    alert("Could not find lobby. Double-check your code!");
+  });
+};
+
+function broadcastToLobby(obj) {
+  for(const c of clientConnections) {
+    if(c.open) c.send(obj);
+  }
+}
+
+// Host packs world snapshot and sends to connected clients
+function hostBroadcastSnapshot() {
+  if(!isHost || clientConnections.length === 0) return;
+  const snapshot = {
+    type: "HOST_SNAPSHOT",
+    stormRadius: stormRadius,
+    countdown: countdown,
+    state: state,
+    entities: E.map(e => ({
+      netId: e.netId,
+      pNum: e.pNum,
+      ci: e.ci,
+      x: e.x,
+      z: e.z,
+      a: e.a,
+      hp: e.hp,
+      mhp: e.mhp,
+      dead: e.dead
+    }))
+  };
+  broadcastToLobby(snapshot);
+}
+
+// Client applies authoritative state received from host
+function applyHostSnapshot(snap) {
+  stormRadius = snap.stormRadius;
+  stormMesh.scale.set(stormRadius, 1, stormRadius);
+
+  if(state === "countdown" && snap.countdown !== undefined) {
+    countdown = snap.countdown;
+    centerMsg.innerText = countdown > 0.4 ? Math.ceil(countdown) : "BRAWL!";
+    if(countdown <= 0) {
+      state = "play";
+      centerMsg.style.display = "none";
+    }
+  }
+
+  for(const d of snap.entities) {
+    let ent = E.find(e => (e.netId && e.netId === d.netId) || (d.netId === "host" && e.pNum === 99));
+    if(ent) {
+      ent.x = d.x;
+      ent.z = d.z;
+      ent.a = d.a;
+      ent.hp = d.hp;
+      ent.dead = d.dead;
+
+      ent.mesh.position.set(ent.x, 0, ent.z);
+      ent.mesh.rotation.y = -ent.a + Math.PI / 2;
+      const ratio = Math.max(0, ent.hp / ent.mhp);
+      ent.mesh.hpBar.scale.x = ratio;
+      ent.mesh.hpBar.position.x = -13 * (1 - ratio);
+      ent.mesh.hpGrp.lookAt(cameraHolder.position);
+      ent.mesh.visible = (ent !== pl) && !ent.dead;
+    }
+  }
+}
+
+// Client sends inputs to the host 30 times a second
+function clientSendInputs() {
+  if(!hostConn || !hostConn.open) return;
+  const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
+  const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
+  const sin = Math.sin(yaw), cos = Math.cos(yaw);
+  const mx = -sin * forward + cos * strafe;
+  const mz = -cos * forward - sin * strafe;
+  const a = -yaw - Math.PI / 2;
+
+  hostConn.send({
+    type: "CLIENT_INPUT",
+    inputs: {
+      mx, mz, a,
+      at: M.down,
+      ab1: P1_ab1,
+      ab2: P1_ab2
+    }
+  });
+
+  P1_ab1 = 0;
+  P1_ab2 = 0;
+}
+
+function startClientMatch(data) {
+  clearSceneEntities();
+  const chosenMap = MAPS[selectedMapIndex];
+  currentRects = chosenMap.rects;
+  build3DMap(chosenMap);
+
+  document.getElementById("room-badge").innerText = `ROOM: ${currentLobbyCode}`;
+
+  E = [];
+  data.players.forEach((p, idx) => {
+    const isMe = (p.id === myNetId);
+    const spawned = mk(p.hero, p.x, p.z, isMe ? 1 : (p.id === "host" ? 99 : 2), p.id);
+    E.push(spawned);
+    if(isMe) {
+      pl = spawned;
+      setupViewmodel(p.hero);
+    }
+  });
+
+  yaw = 0; pitch = 0;
+  cameraHolder.rotation.y = yaw;
+  camera.rotation.x = pitch;
+
+  stormRadius = 380;
+  stormMesh.scale.set(stormRadius, 1, stormRadius);
+  countdown = 3.0;
+  damageVignetteT = 0;
+  state = "countdown";
+
+  syncHUD();
+
+  ov.style.display = "none";
+  hud.style.display = "block";
+  crosshair.style.display = "block";
+  resultModal.style.display = "none";
+  canvas3D.requestPointerLock();
+}
+
 // --- MAIN LOOP ---
 function upd(dt) {
   curSwayX += (mouseVelX - curSwayX) * 0.15;
@@ -1418,6 +1684,27 @@ function upd(dt) {
 
   syncHUD();
 
+  // Network sync ticks
+  if(isMultiplayer) {
+    netBroadcastTimer += dt;
+    if(netBroadcastTimer >= 0.033) {
+      netBroadcastTimer = 0;
+      if(isHost) hostBroadcastSnapshot();
+      else clientSendInputs();
+    }
+  }
+
+  // Client skips local physics/combat calculations, deferring to Host
+  if(isMultiplayer && !isHost) {
+    if(pl && !pl.dead) {
+      cameraHolder.position.x = pl.x;
+      cameraHolder.position.z = pl.z;
+      cameraHolder.position.y = 22 + (screenShake > 0 ? (Math.random()-0.5)*screenShake*0.35 : 0);
+    }
+    return;
+  }
+
+  // Authoritative host simulation or Solo vs AI play
   if(countdown > 0) {
     countdown -= dt;
     centerMsg.style.display = "block";
@@ -1525,7 +1812,6 @@ function upd(dt) {
           e.kz += Math.sin(pullAngle) * 400 * dt;
           e.slow = 0.5;
         } else if(z.kind === "spore_pod") {
-          // Trigger Spore Pod explosion
           spawn3DRing(z.x, z.z, 55, 0x9955ff);
           const geo = new THREE.CylinderGeometry(55, 55, 1.5, 24);
           const mat = new THREE.MeshBasicMaterial({ color: 0x8844ee, transparent: true, opacity: 0.35 });
@@ -1533,10 +1819,8 @@ function upd(dt) {
           mesh.position.set(z.x, 1, z.z);
           scene.add(mesh);
 
-          // Aesthetic lingering gas cloud
           Zones.push({ kind: "spore_cloud", x: z.x, z: z.z, r: 55, life: 3.0, owner: z.owner, mesh });
 
-          // Inflict sticky spore poison on target (10 damage over 3 seconds regardless of where they move)
           e.sporePoison = 3.0;
           e.sporeAttacker = z.owner;
           spawnDamageNumber(e.x, e.z, "BLIGHTED", "#a855f7");
@@ -1547,7 +1831,6 @@ function upd(dt) {
           }
           z.life = 0;
         } else if(z.kind === "spore_cloud") {
-          // If any other enemy walks into the smoke cloud, they also contract the 3-second blight
           if(e.sporePoison < 0.5) {
             e.sporePoison = 3.0;
             e.sporeAttacker = z.owner;
@@ -1578,11 +1861,10 @@ function upd(dt) {
       e.mesh.visible = false;
       continue;
     }
-    if(e.pNum !== 1) e.mesh.visible = true;
+    if(e !== pl) e.mesh.visible = true;
     e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt;
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
 
-    // Lingering Spore Poison: 10 damage across 3 seconds (3.33 DPS) anywhere on the map
     if(e.sporePoison > 0) {
       e.sporePoison -= dt;
       hurt(e, (10 / 3) * dt, 0, 0, e.sporeAttacker);
@@ -1614,7 +1896,7 @@ function upd(dt) {
 
     if(e.stun > 0) {
       e.stun -= dt;
-    } else if(e.pNum === 1) {
+    } else if(e === pl) {
       const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
       const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
       const sin = Math.sin(yaw), cos = Math.cos(yaw);
@@ -1625,14 +1907,23 @@ function upd(dt) {
       at = M.down;
       ab1 = P1_ab1;
       ab2 = P1_ab2;
+    } else if(e.netId) {
+      // Remote Client controlled by network packet
+      mx = e.netInputs.mx;
+      mz = e.netInputs.mz;
+      e.a = e.netInputs.a;
+      at = e.netInputs.at;
+      ab1 = e.netInputs.ab1;
+      ab2 = e.netInputs.ab2;
+      e.netInputs.ab1 = 0;
+      e.netInputs.ab2 = 0;
     } else {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
     }
 
-    if(e.pNum === 1) { P1_ab1 = 0; P1_ab2 = 0; }
+    if(e === pl) { P1_ab1 = 0; P1_ab2 = 0; }
 
     const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
-    // Spore Poison slows to 55% speed regardless of position
     const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
     const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
     const l = Math.hypot(mx, mz) || 1;
@@ -1764,7 +2055,7 @@ function upd(dt) {
 
   const alive = E.filter(e => !e.dead);
   if(state === "play") {
-    if(pl.dead) {
+    if(pl && pl.dead) {
       showResultScreen(false);
     } else if(alive.length === 1 && alive[0] === pl) {
       showResultScreen(true);
@@ -1800,9 +2091,28 @@ function menu(msg) {
       `).join("")}
     </div>
 
+    <div class="lobby-panel">
+      ${!isMultiplayer ? `
+        <button class="lobby-btn action-primary" onclick="launchSoloMatch()">⚔️ Play Solo (vs AI)</button>
+        <button class="lobby-btn" onclick="hostMultiplayerLobby()">👑 Host Online Lobby</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <input type="text" id="lobby-code-in" class="lobby-input" placeholder="CODE" maxlength="4">
+          <button class="lobby-btn" onclick="joinMultiplayerLobby()">Join Room</button>
+        </div>
+      ` : (isHost ? `
+        <span style="font-size:13px; font-weight:800; color:#45d988;">ROOM CODE: ${currentLobbyCode} (${lobbyRoster.length}/6)</span>
+        <button class="lobby-btn action-primary" onclick="launchHostMultiplayerMatch()">🚀 Start Match</button>
+        <button class="lobby-btn" onclick="cancelLobby()">Cancel</button>
+      ` : `
+        <span style="font-size:13px; font-weight:800; color:#3db8f5;">LOBBY: ${currentLobbyCode} (${lobbyRoster.length}/6)</span>
+        <span style="font-size:12px; color:var(--text-muted);">Waiting for host to launch...</span>
+        <button class="lobby-btn" onclick="cancelLobby()">Leave</button>
+      `)}
+    </div>
+
     <div class="hero-grid">
       ${HEROES.map((c, i) => `
-        <div class="hero-card" data-i="${i}" style="--card-border:${c.roleCol};">
+        <div class="hero-card ${i === p1HeroChoice ? 'chosen' : ''}" data-i="${i}" style="--card-border:${c.roleCol};">
           <div class="card-header">
             <div class="card-title">
               <span>${c.e}</span>
@@ -1836,10 +2146,31 @@ function menu(msg) {
   ov.querySelectorAll(".hero-card").forEach(b => {
     b.onclick = () => {
       p1HeroChoice = +b.dataset.i;
-      launchMatch();
+      ov.querySelectorAll(".hero-card").forEach((card, ci) => {
+        card.classList.toggle("chosen", ci === p1HeroChoice);
+      });
+      if(isMultiplayer) {
+        if(isHost) {
+          lobbyRoster[0].hero = p1HeroChoice;
+          broadcastToLobby({ type: "ROSTER_SYNC", roster: lobbyRoster });
+        } else if(hostConn && hostConn.open) {
+          hostConn.send({ type: "JOIN_REQ", hero: p1HeroChoice });
+        }
+      }
     };
   });
 }
+
+window.cancelLobby = function() {
+  if(peer) peer.destroy();
+  peer = null;
+  isMultiplayer = false;
+  isHost = false;
+  clientConnections = [];
+  hostConn = null;
+  lobbyRoster = [];
+  menu("Select a champion to battle in the arena!");
+};
 
 function clearSceneEntities() {
   for(const e of E) { scene.remove(e.mesh); }
@@ -1851,17 +2182,23 @@ function clearSceneEntities() {
   E = []; P = []; F = []; Zones = []; Pickups = []; DamageNumbers = [];
 }
 
-function launchMatch() {
+const SPAWNS = [
+  [70, 70], [W-70, H-70], [W-70, 70], [70, H-70],
+  [W/2, 60], [W/2, H-60], [70, H/2], [W-70, H/2]
+];
+
+// 1. SOLO LAUNCH (AI Match)
+window.launchSoloMatch = function() {
+  isMultiplayer = false;
+  isHost = false;
+  document.getElementById("room-badge").innerText = "ARENA ZONE";
+
   clearSceneEntities();
   const chosenMap = MAPS[selectedMapIndex];
   currentRects = chosenMap.rects;
   build3DMap(chosenMap);
 
-  const spawns = [
-    [70, 70], [W-70, H-70], [W-70, 70], [70, H-70],
-    [W/2, 60], [W/2, H-60], [70, H/2], [W-70, H/2]
-  ];
-  spawns.sort(() => Math.random() - 0.5);
+  const spawns = SPAWNS.slice().sort(() => Math.random() - 0.5);
 
   E = [mk(p1HeroChoice, spawns[0][0], spawns[0][1], 1)];
   pl = E[0];
@@ -1873,6 +2210,57 @@ function launchMatch() {
     E.push(mk(randomHero, spawns[i][0], spawns[i][1], null));
   }
 
+  initMatchView();
+};
+
+// 2. HOST MULTIPLAYER LAUNCH
+window.launchHostMultiplayerMatch = function() {
+  clearSceneEntities();
+  const chosenMap = MAPS[selectedMapIndex];
+  currentRects = chosenMap.rects;
+  build3DMap(chosenMap);
+
+  document.getElementById("room-badge").innerText = `ROOM: ${currentLobbyCode}`;
+
+  const spawns = SPAWNS.slice().sort(() => Math.random() - 0.5);
+  const playerInitPayload = [];
+
+  // Host player (P1)
+  E = [mk(p1HeroChoice, spawns[0][0], spawns[0][1], 1, "host")];
+  pl = E[0];
+  setupViewmodel(p1HeroChoice);
+  playerInitPayload.push({ id: "host", hero: p1HeroChoice, x: spawns[0][0], z: spawns[0][1] });
+
+  // Remote human players
+  clientConnections.forEach((conn, idx) => {
+    const clientHero = lobbyRoster.find(r => r.id === conn.peer)?.hero || 0;
+    const sx = spawns[idx + 1][0], sz = spawns[idx + 1][1];
+    E.push(mk(clientHero, sx, sz, idx + 2, conn.peer));
+    playerInitPayload.push({ id: conn.peer, hero: clientHero, x: sx, z: sz });
+  });
+
+  // If under 4 players, fill remaining spots with bots up to 4 total
+  const totalHumans = 1 + clientConnections.length;
+  if(totalHumans < 4) {
+    for(let i = totalHumans; i < 4; i++) {
+      const randomHero = Math.floor(Math.random() * HEROES.length);
+      const sx = spawns[i][0], sz = spawns[i][1];
+      const bot = mk(randomHero, sx, sz, null, null);
+      E.push(bot);
+      playerInitPayload.push({ id: "bot_" + i, hero: randomHero, x: sx, z: sz });
+    }
+  }
+
+  broadcastToLobby({
+    type: "START_MATCH",
+    mapIndex: selectedMapIndex,
+    players: playerInitPayload
+  });
+
+  initMatchView();
+};
+
+function initMatchView() {
   yaw = 0; pitch = 0;
   cameraHolder.rotation.y = yaw;
   camera.rotation.x = pitch;
