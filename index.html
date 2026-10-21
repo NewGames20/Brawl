@@ -905,7 +905,7 @@ let itemSpawnTimer = 0, countdown = 3.0;
 function mk(ci, x, z, playerNum, netId = null) {
   const c = HEROES[ci];
   const isLocalP1 = (playerNum === 1);
-  const ai = (isLocalP1 || netId || isMultiplayer) ? null : {
+  const ai = (isLocalP1 || isMultiplayer || netId) ? null : {
     state: "WANDER", timer: 0,
     react: 0.22 + Math.random()*0.22,
     err: 0.04 + Math.random()*0.12,
@@ -1498,7 +1498,7 @@ window.hostMultiplayerLobby = function() {
     });
   });
 
-  peer.on("error", (err) => {
+  peer.on("error", () => {
     alert("Connection error or room code already in use. Please try hosting again!");
     menu("Select a champion to battle in the arena!");
   });
@@ -1604,11 +1604,10 @@ function applyHostSnapshot(snap) {
     if(ent) {
       ent.hp = d.hp;
       ent.dead = d.dead;
-      ent.c1 = d.c1;
-      ent.c2 = d.c2;
-      ent.c3 = d.c3;
-
       if(ent !== pl) {
+        ent.c1 = d.c1;
+        ent.c2 = d.c2;
+        ent.c3 = d.c3;
         ent.x = d.x;
         ent.z = d.z;
         ent.a = d.a;
@@ -1656,7 +1655,7 @@ function startClientMatch(data) {
   document.getElementById("room-badge").innerText = `ROOM: ${currentLobbyCode}`;
 
   E = [];
-  data.players.forEach((p, idx) => {
+  data.players.forEach((p) => {
     const isMe = (p.id === myNetId);
     const spawned = mk(p.hero, p.x, p.z, isMe ? 1 : 2, p.id);
     E.push(spawned);
@@ -1753,24 +1752,24 @@ function upd(dt) {
       const s = baseSpd * slowMod * (pl.fire > 0 ? 0.8 : 1.0);
       const l = Math.hypot(mx, mz) || 1;
 
-      pl.x += (mx/l) * s * dt;
-      pl.z += (mz/l) * s * dt;
+      pl.x += (pmx = (mx/l)) * s * dt;
+      pl.z += (pmz = (mz/l)) * s * dt;
       pushCollisions(pl);
 
-      // Solo & Host run attack logic directly
-      if(!isMultiplayer || isHost) {
-        if(M.down && pl.c1 <= 0) attack(pl);
-        if(P1_ab1 && pl.c2 <= 0) ability1(pl);
-        if(P1_ab2 && pl.c3 <= 0) ability2(pl);
-      }
+      // Local player attack logic
+      if(M.down && pl.c1 <= 0) attack(pl);
+      if(P1_ab1 && pl.c2 <= 0) ability1(pl);
+      if(P1_ab2 && pl.c3 <= 0) ability2(pl);
     }
     P1_ab1 = 0; P1_ab2 = 0;
   }
 
-  // Non-host clients only simulate their own view and defer global world logic to the Host
-  if(isMultiplayer && !isHost) return;
+  // Non-host clients simulate their own visuals and defer world/AI ticks to the host
+  if(isMultiplayer && !isHost) {
+    updateProjectiles(dt);
+    return;
+  }
 
-  // Authoritative host simulation or Solo vs AI play
   if(countdown > 0) {
     countdown -= dt;
     centerMsg.style.display = "block";
@@ -1938,9 +1937,8 @@ function upd(dt) {
     if(e.stun > 0) {
       e.stun -= dt;
     } else if(e === pl) {
-      // Local movement handled above
+      // Local player moved above
     } else if(e.netId) {
-      // Remote Client controlled by network packet
       mx = e.netInputs.mx;
       mz = e.netInputs.mz;
       e.a = e.netInputs.a;
@@ -2002,6 +2000,21 @@ function upd(dt) {
     e.mesh.hpGrp.lookAt(cameraHolder.position);
   }
 
+  updateProjectiles(dt);
+
+  if(screenShake > 0) screenShake = Math.max(0, screenShake - dt * 22);
+
+  const alive = E.filter(e => !e.dead);
+  if(state === "play") {
+    if(pl && pl.dead) {
+      showResultScreen(false);
+    } else if(alive.length === 1 && alive[0] === pl) {
+      showResultScreen(true);
+    }
+  }
+}
+
+function updateProjectiles(dt) {
   for(let i = P.length - 1; i >= 0; i--) {
     const p = P[i];
     if(p.t === "b") {
@@ -2049,17 +2062,6 @@ function upd(dt) {
       p.mesh.geometry.dispose();
       p.mesh.material.dispose();
       P.splice(i, 1);
-    }
-  }
-
-  if(screenShake > 0) screenShake = Math.max(0, screenShake - dt * 22);
-
-  const alive = E.filter(e => !e.dead);
-  if(state === "play") {
-    if(pl && pl.dead) {
-      showResultScreen(false);
-    } else if(alive.length === 1 && alive[0] === pl) {
-      showResultScreen(true);
     }
   }
 }
@@ -2188,7 +2190,7 @@ const SPAWNS = [
   [W/2, 60], [W/2, H-60], [70, H/2], [W-70, H/2]
 ];
 
-// 1. SOLO LAUNCH (AI Match)
+// 1. SOLO LAUNCH (With Bots)
 window.launchSoloMatch = function() {
   isMultiplayer = false;
   isHost = false;
@@ -2214,7 +2216,7 @@ window.launchSoloMatch = function() {
   initMatchView();
 };
 
-// 2. HOST MULTIPLAYER LAUNCH (NO BOTS - Humans Only!)
+// 2. HOST MULTIPLAYER LAUNCH (Strictly NO BOTS - Humans Only!)
 window.launchHostMultiplayerMatch = function() {
   clearSceneEntities();
   const chosenMap = MAPS[selectedMapIndex];
@@ -2232,7 +2234,7 @@ window.launchHostMultiplayerMatch = function() {
   setupViewmodel(p1HeroChoice);
   playerInitPayload.push({ id: "host", hero: p1HeroChoice, x: spawns[0][0], z: spawns[0][1] });
 
-  // Only spawn the human peers who joined the lobby
+  // Only spawn the humans who connected to this room
   clientConnections.forEach((conn, idx) => {
     const clientHero = lobbyRoster.find(r => r.id === conn.peer)?.hero || 0;
     const sx = spawns[idx + 1][0], sz = spawns[idx + 1][1];
