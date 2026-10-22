@@ -345,6 +345,7 @@ let peer = null;
 let isMultiplayer = false;
 let isLobbyLeader = false;
 let currentLobbyCode = null;
+let leaderId = null;
 let myNetId = "local_" + Math.random().toString(36).substring(2, 7);
 let peerConnections = new Map(); // netId -> DataConnection
 let roster = []; // [{ id, hero }]
@@ -354,7 +355,7 @@ const HEROES = [
  {
    n:"Bruno the Bear", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
-   hp: 240, sp: 130, col: 0x5e381b, cd: 1.1,
+   hp: 240, sp: 125, col: 0x5e381b, cd: 1.1, // SPEED SET TO 125
    a1n:"Slam", a1cd: 12.0, a1d:"Shockwave slam that stuns foes.",
    a2n:"Charge", a2cd: 12.5, a2d:"Rushes forward, bowling over enemies.",
    melee: true, d:"High health tank. Heavy hammer deflects incoming shots."
@@ -364,7 +365,7 @@ const HEROES = [
    role: "Bruiser", roleCol: "#d66b96",
    hp: 180, sp: 150, col: 0xdf84a5, cd: 0.98,
    a1n:"Vortex Anchor", a1cd: 8.5, a1d:"Gravity anchor pulling foes inward.",
-   a2n:"Cannonball", a2cd: 8.0, a2d:"Explosive shell with huge knockback.",
+   a2n:"Cannonball", a2cd: 9.0, a2d:"Explosive shell with huge knockback.", // CD increased to 9.0
    melee: false, d:"Medium-heavy brawler. Controls zones with gravitational anchors."
  },
  {
@@ -992,7 +993,6 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   if(t === pl) {
     screenShake = Math.min(18, screenShake + (rawDmg * 0.45));
     damageVignetteT = Math.min(1.0, damageVignetteT + (rawDmg * 0.04) + 0.32);
-    // Tell all peers our updated health
     broadcastToPeers({ type: "SYNC_HP", id: myNetId, hp: t.hp, dead: t.dead });
   } else {
     screenShake = Math.min(8, screenShake + (rawDmg * 0.12));
@@ -1129,7 +1129,8 @@ function executeAbility1(e) {
     mesh.position.set(placeX, 1, placeZ);
     scene.add(mesh);
 
-    Zones.push({ kind: "anchor_vortex", x: placeX, z: placeZ, r: 90, life: c.a1cd, owner: e, mesh });
+    // 1 SECOND LESS DURATION (from 8.5s down to 7.5s)
+    Zones.push({ kind: "anchor_vortex", x: placeX, z: placeZ, r: 90, life: c.a1cd - 1.0, owner: e, mesh });
   } else if(e.ci === 2) {
     e.c2 = c.a1cd;
     shot(e, e.a, {
@@ -1137,10 +1138,11 @@ function executeAbility1(e) {
       onDeath: (bx, bz) => {
         screenShake = Math.max(screenShake, 6);
         spawn3DRing(bx, bz, 65, 0xffe853);
+        // SHOOTS OUT BANANAS ("b") UPON HITTING A PLAYER OR WALL
         for(let i = 0; i < 6; i++) {
-          const ang = (Math.PI * 2 / 6) * i + (Math.random() - 0.5) * 0.3;
+          const ang = (Math.PI * 2 / 6) * i + (Math.random() - 0.5) * 0.2;
           shot(e, ang, {
-            t: "s", s: 290, d: 9, kb: 70, life: 0.38,
+            t: "b", s: 330, d: 12, kb: 110, life: 99,
             x: bx, z: bz
           });
         }
@@ -1230,14 +1232,16 @@ function executeAbility2(e) {
     e.chargeVz = Math.sin(e.a) * 460;
     spawn3DRing(e.x, e.z, 32, 0x8c5835);
   } else if(e.ci === 1) {
+    // REDUCED DIRECT DAMAGE FROM 32 TO 27
     shot(e, e.a, {
-      t:"cannonball", s:420, d:32, kb:440, life:0.9,
+      t:"cannonball", s:420, d:27, kb:440, life:0.9,
       onDeath: (bx, bz) => {
         screenShake = Math.max(screenShake, 8);
         spawn3DRing(bx, bz, 80, 0xff9933);
         for(const t of E) {
           if(t !== e && !t.dead && Math.hypot(t.x - bx, t.z - bz) < 80 + t.r) {
-            hurt(t, 20, Math.atan2(t.z - bx, t.x - bx), 380, e);
+            // REDUCED AOE FROM 20 TO 15
+            hurt(t, 15, Math.atan2(t.z - bx, t.x - bx), 380, e);
             t.stun = 0.5;
           }
         }
@@ -1271,9 +1275,10 @@ function executeAbility2(e) {
       Zones.push({ kind: "flame", x: fx, z: fz, r: 20, life: 2.2, owner: e, mesh });
     }
   } else if(e.ci === 4) {
+    // QUACKBOT BARRAGE: INCREASED DAMAGE FROM 6.5 TO 7.5 (+1)
     for(let i=0; i<7; i++) {
       setTimeout(() => {
-        if(!e.dead) shot(e, e.a + (Math.random()-0.5)*0.1, {t:"s", s:540, d:6.5, kb:32, life:0.4});
+        if(!e.dead) shot(e, e.a + (Math.random()-0.5)*0.1, {t:"s", s:540, d:7.5, kb:32, life:0.4});
       }, i * 55);
     }
   } else if(e.ci === 5) {
@@ -1470,10 +1475,29 @@ function gen4LetterCode() {
   return res;
 }
 
+// HOST MIGRATION LOGIC
+function electNewLeader(deadLeaderId) {
+  const remaining = roster.filter(r => r.id !== deadLeaderId);
+  if(remaining.length === 0) {
+    cancelLobby();
+    return;
+  }
+  // Deterministic election: pick the lowest peer ID lexicographically
+  remaining.sort((a, b) => a.id.localeCompare(b.id));
+  const newLeader = remaining[0];
+  leaderId = newLeader.id;
+  isLobbyLeader = (myNetId === newLeader.id);
+
+  if(isLobbyLeader) {
+    broadcastToPeers({ type: "LEADER_ELECTED", leaderId: myNetId });
+  }
+
+  if(state === "menu") refreshLobbyMenu();
+}
+
 function setupConnectionEvents(conn) {
   conn.on("open", () => {
     peerConnections.set(conn.peer, conn);
-    // Send my current chosen hero to the connected peer
     conn.send({ type: "HELLO", id: myNetId, hero: p1HeroChoice });
   });
 
@@ -1489,6 +1513,10 @@ function setupConnectionEvents(conn) {
       ent.dead = true;
       scene.remove(ent.mesh);
     }
+    // If the disconnecting peer was the host, migrate host randomly/deterministically
+    if(conn.peer === leaderId) {
+      electNewLeader(conn.peer);
+    }
     if(state === "menu") refreshLobbyMenu();
   });
 }
@@ -1498,9 +1526,8 @@ function handleIncomingData(conn, data) {
     let r = roster.find(x => x.id === data.id);
     if(!r) {
       roster.push({ id: data.id, hero: data.hero });
-      // If leader, inform all peers about new roster
       if(isLobbyLeader) {
-        broadcastToPeers({ type: "ROSTER_SYNC", roster });
+        broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId });
       }
     } else {
       r.hero = data.hero;
@@ -1509,13 +1536,20 @@ function handleIncomingData(conn, data) {
   }
   else if(data.type === "ROSTER_SYNC") {
     roster = data.roster;
-    // Connect to any new peers in roster that we don't have a direct connection with yet
+    if(data.leaderId) leaderId = data.leaderId;
+    isLobbyLeader = (myNetId === leaderId);
+
     for(const r of roster) {
       if(r.id !== myNetId && !peerConnections.has(r.id)) {
         const c = peer.connect(r.id, { reliable: true });
         setupConnectionEvents(c);
       }
     }
+    if(state === "menu") refreshLobbyMenu();
+  }
+  else if(data.type === "LEADER_ELECTED") {
+    leaderId = data.leaderId;
+    isLobbyLeader = (myNetId === leaderId);
     if(state === "menu") refreshLobbyMenu();
   }
   else if(data.type === "START_GAME") {
@@ -1525,8 +1559,9 @@ function handleIncomingData(conn, data) {
   else if(data.type === "SYNC_POS") {
     const ent = E.find(e => e.netId === data.id);
     if(ent) {
-      ent.x = data.x;
-      ent.z = data.z;
+      // Smooth interpolation to avoid teleporting lags
+      ent.x += (data.x - ent.x) * 0.4;
+      ent.z += (data.z - ent.z) * 0.4;
       ent.a = data.a;
     }
   }
@@ -1572,11 +1607,12 @@ setInterval(() => {
 
 window.hostMultiplayerLobby = function() {
   currentLobbyCode = gen4LetterCode();
-  const leaderId = "itembrawl-room-" + currentLobbyCode;
+  const roomLeaderId = "itembrawl-room-" + currentLobbyCode;
   if(peer) peer.destroy();
 
-  myNetId = leaderId;
-  peer = new Peer(leaderId);
+  myNetId = roomLeaderId;
+  leaderId = myNetId;
+  peer = new Peer(roomLeaderId);
   isLobbyLeader = true;
   isMultiplayer = true;
   roster = [{ id: myNetId, hero: p1HeroChoice }];
@@ -1612,12 +1648,13 @@ window.joinMultiplayerLobby = function() {
   if(peer) peer.destroy();
 
   myNetId = "itembrawl-client-" + Math.random().toString(36).substring(2, 8);
+  leaderId = "itembrawl-room-" + currentLobbyCode;
   peer = new Peer(myNetId);
   isLobbyLeader = false;
   isMultiplayer = true;
 
   peer.on("open", () => {
-    const leaderConn = peer.connect("itembrawl-room-" + currentLobbyCode, { reliable: true });
+    const leaderConn = peer.connect(leaderId, { reliable: true });
     setupConnectionEvents(leaderConn);
     menu(`Connecting to lobby [ ${currentLobbyCode} ]...`);
   });
@@ -1633,7 +1670,7 @@ window.joinMultiplayerLobby = function() {
 };
 
 function refreshLobbyMenu() {
-  menu(`Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] - (${roster.length}/6 Players)`);
+  menu(`Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] - (${roster.length}/6 Players) ${isLobbyLeader ? '👑 (Host)' : ''}`);
 }
 
 // --- MENUS & MATCH START ---
@@ -1736,6 +1773,7 @@ window.cancelLobby = function() {
   peer = null;
   isMultiplayer = false;
   isLobbyLeader = false;
+  leaderId = null;
   peerConnections.clear();
   roster = [];
   menu("Select a champion to battle in the arena!");
@@ -1782,7 +1820,7 @@ window.launchSoloMatch = function() {
   initMatchView();
 };
 
-// 2. MULTIPLAYER LAUNCH (Strictly Humans Only - Resilient Mesh)
+// 2. MULTIPLAYER LAUNCH
 window.startLobbyMatch = function() {
   const spawns = SPAWNS.slice().sort(() => 0.5 - Math.random());
   const spawnMap = {};
@@ -1853,14 +1891,12 @@ function upd(dt) {
 
   syncHUD();
 
-  // Local View Tracking
   if(pl && !pl.dead) {
     cameraHolder.position.x = pl.x;
     cameraHolder.position.z = pl.z;
     cameraHolder.position.y = 22 + (screenShake > 0 ? (Math.random()-0.5)*screenShake*0.35 : 0);
   }
 
-  // Viewmodel animations
   if(viewmodelHolder.wep) {
     const isAttacking = pl && (pl.swing > 0 || pl.fire > 0);
     const isMoving = pl && (K.KeyW || K.KeyS || K.KeyA || K.KeyD);
@@ -1972,7 +2008,8 @@ function upd(dt) {
           e.slow = 0.4;
           hurt(e, 19 * dt, Math.atan2(e.z - z.z, e.x - z.x), 25, z.owner);
         } else if(z.kind === "peel") {
-          e.stun = 1.0;
+          // PEEL TRAP STUN EXTENDED TO 1.6s
+          e.stun = 1.6;
           hurt(e, 9, Math.atan2(e.z - z.z, e.x - z.x), 150, z.owner);
           spawn3DRing(z.x, z.z, 34, 0xffe853);
           z.life = 0;
@@ -1991,6 +2028,7 @@ function upd(dt) {
 
           Zones.push({ kind: "spore_cloud", x: z.x, z: z.z, r: 55, life: 3.0, owner: z.owner, mesh });
 
+          // MYCELIS FULL 10 DAMAGE OVER 3 SECONDS
           e.sporePoison = 3.0;
           e.sporeAttacker = z.owner;
           spawnDamageNumber(e.x, e.z, "BLIGHTED", "#a855f7");
@@ -2036,8 +2074,9 @@ function upd(dt) {
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
 
     if(e.sporePoison > 0) {
+      const tickDamage = (10 / 3.0) * dt; // Exactly 10 damage across 3 seconds
       e.sporePoison -= dt;
-      hurt(e, (10 / 3) * dt, 0, 0, e.sporeAttacker);
+      hurt(e, tickDamage, 0, 0, e.sporeAttacker);
     }
 
     if(e.ci !== 5 || !e.activePod) {
