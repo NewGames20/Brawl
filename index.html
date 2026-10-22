@@ -385,7 +385,7 @@ const HEROES = [
  {
    n:"Bruno the Bear", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
-   hp: 230, sp: 120, col: 0x5e381b, cd: 1.2,
+   hp: 230, sp: 125, col: 0x5e381b, cd: 1.2,
    a1n:"Slam", a1cd: 11.5, a1d:"Shockwave slam that stuns foes.",
    a2n:"Charge", a2cd: 13.5, a2d:"Rushes forward, bowling over enemies.",
    melee: true, d:"High health tank. Heavy hammer deflects incoming shots."
@@ -537,9 +537,16 @@ let pitch = 0, yaw = 0;
 const K = {}, M = { down: 0 };
 let P1_ab1 = 0, P1_ab2 = 0;
 
+function safeRequestPointerLock() {
+  const promise = canvas3D.requestPointerLock();
+  if (promise && promise.catch) {
+    promise.catch(() => {});
+  }
+}
+
 canvas3D.addEventListener("click", () => {
   if((state === "play" || state === "countdown") && !isLocked) {
-    canvas3D.requestPointerLock();
+    safeRequestPointerLock();
   }
 });
 
@@ -1385,7 +1392,7 @@ function syncHUD() {
 
 function showResultScreen(isVictory) {
   state = "result";
-  document.exitPointerLock();
+  if(document.pointerLockElement) document.exitPointerLock();
   resultModal.style.display = "flex";
   hud.style.display = "none";
   crosshair.style.display = "none";
@@ -1423,7 +1430,7 @@ function sendActionIntent(act, a, x, z) {
     broadcastToPeers(packet);
   } else if(leaderId && peerConnections.has(leaderId)) {
     const conn = peerConnections.get(leaderId);
-    if(conn.open) conn.send(packet);
+    if(conn && conn.open) conn.send(packet);
   }
 }
 
@@ -1465,17 +1472,30 @@ function setupConnectionEvents(conn) {
     roster = roster.filter(r => r.id !== conn.peer);
     removePeerEntity(conn.peer);
 
-    if(conn.peer === leaderId) {
+    // Only elect leader if the actual host disconnected
+    if(conn.peer === leaderId && isMultiplayer && !isLobbyLeader) {
       electNewLeader(conn.peer);
     }
     if(state === "menu") refreshLobbyMenu();
+  });
+
+  conn.on("error", () => {
+    peerConnections.delete(conn.peer);
   });
 }
 
 function handleIncomingData(conn, data) {
   if(!data || !data.type) return;
 
-  // Stale packet drop
+  if(data.type === "PING") {
+    conn.send({ type: "PONG" });
+    return;
+  }
+  if(data.type === "PONG") {
+    return;
+  }
+
+  // Stale packet drop for sequenced state updates
   if(data.seq !== undefined && data.id && !isNewPacket(data.id, data.type, data.seq)) {
     return;
   }
@@ -1484,25 +1504,20 @@ function handleIncomingData(conn, data) {
     let r = roster.find(x => x.id === data.id);
     if(!r) {
       roster.push({ id: data.id, hero: data.hero });
-      if(isLobbyLeader) {
-        outgoingSeq++;
-        broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, seq: outgoingSeq });
-      }
     } else {
       r.hero = data.hero;
+    }
+    if(isLobbyLeader) {
+      outgoingSeq++;
+      broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, seq: outgoingSeq });
     }
     if(state === "menu") refreshLobbyMenu();
   }
   else if(data.type === "ROSTER_SYNC") {
     roster = data.roster;
-    if(data.leaderId) leaderId = data.leaderId;
-    isLobbyLeader = (myNetId === leaderId);
-
-    for(const r of roster) {
-      if(r.id !== myNetId && !peerConnections.has(r.id)) {
-        const c = peer.connect(r.id, { reliable: true });
-        setupConnectionEvents(c);
-      }
+    if(data.leaderId) {
+      leaderId = data.leaderId;
+      isLobbyLeader = (myNetId === leaderId);
     }
     if(state === "menu") refreshLobbyMenu();
   }
@@ -1564,16 +1579,20 @@ function handleIncomingData(conn, data) {
       else if(data.act === "AB1") executeAbility1(ent);
       else if(data.act === "AB2") executeAbility2(ent);
     }
-    // Host relays intent to other clients
+    // Host relays action intents to all other clients
     if(isLobbyLeader) {
-      broadcastToPeers(data);
+      peerConnections.forEach((pConn, pid) => {
+        if(pid !== conn.peer && pConn.open) {
+          pConn.send(data);
+        }
+      });
     }
   }
 }
 
 function broadcastToPeers(obj) {
   peerConnections.forEach(conn => {
-    if(conn.open) conn.send(obj);
+    if(conn && conn.open) conn.send(obj);
   });
 }
 
@@ -1612,27 +1631,44 @@ setInterval(() => {
     };
     if(leaderId && peerConnections.has(leaderId)) {
       const conn = peerConnections.get(leaderId);
-      if(conn.open) conn.send(packet);
+      if(conn && conn.open) conn.send(packet);
     }
   }
 }, 33);
 
-// 3. Heartbeat & Silent Peer Timeout cleaner (evicts silent ghosts after 2.5s)
+// 3. Heartbeat Pings (1 Hz)
 setInterval(() => {
+  if(isMultiplayer) {
+    const pingPacket = { type: "PING" };
+    if(isLobbyLeader) {
+      broadcastToPeers(pingPacket);
+    } else if(leaderId && peerConnections.has(leaderId)) {
+      const conn = peerConnections.get(leaderId);
+      if(conn && conn.open) conn.send(pingPacket);
+    }
+  }
+}, 1000);
+
+// 4. Silent Peer Timeout cleaner (evicts silent peers after 6s)
+setInterval(() => {
+  if(!isMultiplayer) return;
   const now = Date.now();
   for(const [id, lastSeen] of lastSeenByPeer.entries()) {
-    if(now - lastSeen > 2500) {
+    if(now - lastSeen > 6000) {
       removePeerEntity(id);
       roster = roster.filter(r => r.id !== id);
+      const conn = peerConnections.get(id);
+      if(conn) conn.close();
       peerConnections.delete(id);
       lastSeenByPeer.delete(id);
-      if(id === leaderId) {
+
+      if(id === leaderId && !isLobbyLeader) {
         electNewLeader(id);
       }
       if(state === "menu") refreshLobbyMenu();
     }
   }
-}, 1000);
+}, 1500);
 
 window.hostMultiplayerLobby = function() {
   currentLobbyCode = gen4LetterCode();
@@ -1659,7 +1695,8 @@ window.hostMultiplayerLobby = function() {
     setupConnectionEvents(conn);
   });
 
-  peer.on("error", () => {
+  peer.on("error", err => {
+    console.warn("Peer error:", err);
     alert("Could not register room code. Try hosting again!");
     returnToMenu();
   });
@@ -1692,7 +1729,8 @@ window.joinMultiplayerLobby = function() {
     setupConnectionEvents(conn);
   });
 
-  peer.on("error", () => {
+  peer.on("error", err => {
+    console.warn("Peer error:", err);
     alert("Could not find lobby. Double-check your code!");
     returnToMenu();
   });
@@ -1826,8 +1864,18 @@ const SPAWNS = [
 ];
 
 window.launchSoloMatch = function() {
+  if(peer) {
+    peer.destroy();
+    peer = null;
+  }
   isMultiplayer = false;
   isLobbyLeader = false;
+  leaderId = null;
+  peerConnections.clear();
+  roster = [];
+  lastSeenByPeer.clear();
+  lastSeqByPeer.clear();
+
   document.getElementById("room-badge").innerText = "ARENA ZONE";
 
   clearSceneEntities();
@@ -1910,7 +1958,7 @@ function initMatchView() {
   crosshair.style.display = "block";
   resultModal.style.display = "none";
 
-  canvas3D.requestPointerLock();
+  safeRequestPointerLock();
 }
 
 // --- MAIN LOOP ---
