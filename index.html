@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Item Brawl 3D - Host Authoritative Edition</title>
+<title>Item Brawl 3D - Fixed Edition</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Space+Grotesk:wght@600;700;900&display=swap');
 
@@ -286,7 +286,7 @@ html, body {
   <canvas id="c3d"></canvas>
   <div id="damage-overlay"></div>
   <div id="crosshair"></div>
-  <div id="lock-prompt">Click to lock camera & play</div>
+  <div id="lock-prompt">Click arena to capture mouse</div>
   <div id="hud">
     <div id="hud-player">
       <div id="hud-player-name">Hero Name</div>
@@ -347,11 +347,11 @@ let isLobbyLeader = false;
 let currentLobbyCode = null;
 let leaderId = null;
 let myNetId = "local_" + Math.random().toString(36).substring(2, 7);
-let peerConnections = new Map(); // netId -> DataConnection
-let roster = []; // [{ id, hero }]
+let peerConnections = new Map(); 
+let roster = []; 
 let outgoingSeq = 0;
-const lastSeqByPeer = new Map(); // peerId:type -> highest seq seen
-const lastSeenByPeer = new Map(); // peerId -> timestamp
+const lastSeqByPeer = new Map();
+const lastSeenByPeer = new Map();
 
 function isNewPacket(senderId, packetType, seq) {
   const key = senderId + ":" + packetType;
@@ -385,7 +385,7 @@ const HEROES = [
  {
    n:"Bruno the Bear", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
-   hp: 230, sp: 125, col: 0x5e381b, cd: 1.2,
+   hp: 230, sp: 120, col: 0x5e381b, cd: 1.2,
    a1n:"Slam", a1cd: 11.5, a1d:"Shockwave slam that stuns foes.",
    a2n:"Charge", a2cd: 13.5, a2d:"Rushes forward, bowling over enemies.",
    melee: true, d:"High health tank. Heavy hammer deflects incoming shots."
@@ -531,27 +531,27 @@ const stormMesh = new THREE.Mesh(stormGeo, stormMat);
 stormMesh.position.set(W/2, 90, H/2);
 scene.add(stormMesh);
 
-// --- POINTER LOCK & INPUT ---
+// --- INPUT & POINTER CONTROLS ---
 let isLocked = false;
 let pitch = 0, yaw = 0;
 const K = {}, M = { down: 0 };
 let P1_ab1 = 0, P1_ab2 = 0;
 
-function safeRequestPointerLock() {
-  const promise = canvas3D.requestPointerLock();
-  if (promise && promise.catch) {
-    promise.catch(() => {});
-  }
+function tryLockPointer() {
+  try {
+    const res = canvas3D.requestPointerLock();
+    if(res && typeof res.catch === 'function') res.catch(() => {});
+  } catch(e) {}
 }
 
 canvas3D.addEventListener("click", () => {
   if((state === "play" || state === "countdown") && !isLocked) {
-    safeRequestPointerLock();
+    tryLockPointer();
   }
 });
 
 document.addEventListener("pointerlockchange", () => {
-  isLocked = document.pointerLockElement === canvas3D;
+  isLocked = (document.pointerLockElement === canvas3D);
   lockPrompt.style.display = (!isLocked && (state === "play" || state === "countdown")) ? "block" : "none";
 });
 
@@ -652,7 +652,7 @@ function build3DMap(mapDef) {
   }
 }
 
-// --- ITEM & WEAPON BUILDER ---
+// --- HERO & WEAPON BUILDER ---
 function createHighQualityWeapon(heroIndex, isViewmodel = false) {
   const root = new THREE.Group();
 
@@ -808,11 +808,14 @@ function spawnPickup() {
     { k:"speed", color: 0xffd000, apply:(ent)=>{ ent.speedBoost = 3.5; } }
   ];
   const choice = types[Math.floor(Math.random()*types.length)];
-  let attempts = 0, rx = 0, rz = 0;
-  while(attempts++ < 30) {
-    rx = 60 + Math.random()*(W-120);
-    rz = 60 + Math.random()*(H-120);
-    if(!blocked(rx, rz, 18)) break;
+  let rx = W/2, rz = H/2;
+  for(let attempt = 0; attempt < 15; attempt++) {
+    const tx = 60 + Math.random()*(W-120);
+    const tz = 60 + Math.random()*(H-120);
+    if(!blocked(tx, tz, 18)) {
+      rx = tx; rz = tz;
+      break;
+    }
   }
 
   const geo = new THREE.OctahedronGeometry(8.5);
@@ -844,7 +847,7 @@ function removePeerEntity(peerId) {
 function mk(ci, x, z, playerNum, netId = null) {
   const c = HEROES[ci];
   const isLocalP1 = (playerNum === 1);
-  const ai = (isLocalP1 || isMultiplayer || netId) ? null : {
+  const ai = (isLocalP1 || isMultiplayer || (netId && !netId.startsWith("bot_"))) ? null : {
     state: "WANDER", timer: 0,
     react: 0.22 + Math.random()*0.22,
     err: 0.04 + Math.random()*0.12,
@@ -913,10 +916,8 @@ function pushCollisions(e) {
   }
 }
 
-// HOST-AUTHORITATIVE DAMAGE
 function hurt(t, rawDmg, a, kb, attacker = null) {
   if(t.dead) return;
-  // If in MP and not host, damage calculation is authoritative on the host
   if(isMultiplayer && !isLobbyLeader) return;
 
   t.hp -= rawDmg;
@@ -1045,9 +1046,7 @@ function executeAttack(e) {
 
 function attack(e) {
   executeAttack(e);
-  if(isMultiplayer) {
-    sendActionIntent("ATTACK", e.a, e.x, e.z);
-  }
+  if(isMultiplayer) sendActionIntent("ATTACK", e.a, e.x, e.z);
 }
 
 function executeAbility1(e) {
@@ -1165,9 +1164,7 @@ function executeAbility1(e) {
 
 function ability1(e) {
   executeAbility1(e);
-  if(isMultiplayer) {
-    sendActionIntent("AB1", e.a, e.x, e.z);
-  }
+  if(isMultiplayer) sendActionIntent("AB1", e.a, e.x, e.z);
 }
 
 function executeAbility2(e) {
@@ -1248,9 +1245,7 @@ function executeAbility2(e) {
 
 function ability2(e) {
   executeAbility2(e);
-  if(isMultiplayer) {
-    sendActionIntent("AB2", e.a, e.x, e.z);
-  }
+  if(isMultiplayer) sendActionIntent("AB2", e.a, e.x, e.z);
 }
 
 function inVisionCone(observer, tx, tz, maxFov = 1.67) {
@@ -1392,7 +1387,9 @@ function syncHUD() {
 
 function showResultScreen(isVictory) {
   state = "result";
-  if(document.pointerLockElement) document.exitPointerLock();
+  if(document.pointerLockElement) {
+    try { document.exitPointerLock(); } catch(e){}
+  }
   resultModal.style.display = "flex";
   hud.style.display = "none";
   crosshair.style.display = "none";
@@ -1472,7 +1469,6 @@ function setupConnectionEvents(conn) {
     roster = roster.filter(r => r.id !== conn.peer);
     removePeerEntity(conn.peer);
 
-    // Only elect leader if the actual host disconnected
     if(conn.peer === leaderId && isMultiplayer && !isLobbyLeader) {
       electNewLeader(conn.peer);
     }
@@ -1491,11 +1487,8 @@ function handleIncomingData(conn, data) {
     conn.send({ type: "PONG" });
     return;
   }
-  if(data.type === "PONG") {
-    return;
-  }
+  if(data.type === "PONG") return;
 
-  // Stale packet drop for sequenced state updates
   if(data.seq !== undefined && data.id && !isNewPacket(data.id, data.type, data.seq)) {
     return;
   }
@@ -1530,7 +1523,6 @@ function handleIncomingData(conn, data) {
     selectedMapIndex = data.mapIndex;
     launchMeshMatch(data.spawns);
   }
-  // CLIENT MOVEMENT SNAPSHOT TO HOST
   else if(data.type === "CLIENT_INPUT") {
     if(!isLobbyLeader) return;
     const ent = getRemoteActorByNetId(data.id);
@@ -1540,9 +1532,8 @@ function handleIncomingData(conn, data) {
       ent.targetA = data.a;
     }
   }
-  // HOST-AUTHORITATIVE WORLD SNAPSHOT
   else if(data.type === "SNAPSHOT") {
-    if(isLobbyLeader) return; // Host dictates snapshot, does not ingest it
+    if(isLobbyLeader) return;
     for(const item of data.entities) {
       if(item.id === myNetId) {
         if(pl) {
@@ -1579,7 +1570,6 @@ function handleIncomingData(conn, data) {
       else if(data.act === "AB1") executeAbility1(ent);
       else if(data.act === "AB2") executeAbility2(ent);
     }
-    // Host relays action intents to all other clients
     if(isLobbyLeader) {
       peerConnections.forEach((pConn, pid) => {
         if(pid !== conn.peer && pConn.open) {
@@ -1596,7 +1586,7 @@ function broadcastToPeers(obj) {
   });
 }
 
-// 1. Host snapshot broadcast (authoritative positions + health, ~25 Hz)
+// Host snapshot broadcast (~25 Hz)
 setInterval(() => {
   if(isMultiplayer && isLobbyLeader && (state === "play" || state === "countdown")) {
     outgoingSeq++;
@@ -1617,7 +1607,7 @@ setInterval(() => {
   }
 }, 40);
 
-// 2. Client movement intent upload to host (~30 Hz)
+// Client movement upload (~30 Hz)
 setInterval(() => {
   if(isMultiplayer && !isLobbyLeader && pl && !pl.dead && (state === "play" || state === "countdown")) {
     outgoingSeq++;
@@ -1636,7 +1626,7 @@ setInterval(() => {
   }
 }, 33);
 
-// 3. Heartbeat Pings (1 Hz)
+// Heartbeat
 setInterval(() => {
   if(isMultiplayer) {
     const pingPacket = { type: "PING" };
@@ -1649,7 +1639,7 @@ setInterval(() => {
   }
 }, 1000);
 
-// 4. Silent Peer Timeout cleaner (evicts silent peers after 6s)
+// Peer disconnect cleaner
 setInterval(() => {
   if(!isMultiplayer) return;
   const now = Date.now();
@@ -1892,7 +1882,8 @@ window.launchSoloMatch = function() {
   const botCount = Math.floor(Math.random() * 3) + 2;
   for(let i = 1; i <= botCount; i++) {
     const randomHero = Math.floor(Math.random() * HEROES.length);
-    E.push(mk(randomHero, spawns[i][0], spawns[i][1], null, "bot_" + i));
+    const sp = spawns[i % spawns.length];
+    E.push(mk(randomHero, sp[0], sp[1], null, "bot_" + i));
   }
 
   initMatchView();
@@ -1958,7 +1949,8 @@ function initMatchView() {
   crosshair.style.display = "block";
   resultModal.style.display = "none";
 
-  safeRequestPointerLock();
+  // Prompt user to click rather than immediately forcing pointer lock
+  lockPrompt.style.display = "block";
 }
 
 // --- MAIN LOOP ---
@@ -2006,18 +1998,6 @@ function upd(dt) {
 
     if(pl) {
       pl.a = -yaw - Math.PI / 2;
-      if(countdown <= 0.25) {
-        const forward = (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0);
-        const strafe = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0);
-        const sin = Math.sin(yaw), cos = Math.cos(yaw);
-        const pmx = -sin * forward + cos * strafe;
-        const pmz = -cos * forward - sin * strafe;
-        const baseSpd = HEROES[pl.ci].sp;
-        const l = Math.hypot(pmx, pmz) || 1;
-        pl.x += (pmx/l) * baseSpd * dt;
-        pl.z += (pmz/l) * baseSpd * dt;
-        pushCollisions(pl);
-      }
     }
 
     for(const e of E) {
@@ -2148,7 +2128,6 @@ function upd(dt) {
 
     if(e !== pl && e.mesh) {
       e.mesh.visible = true;
-      // SMOOTH CLIENT INTERPOLATION (LERP)
       e.x += (e.targetX - e.x) * 0.22;
       e.z += (e.targetZ - e.z) * 0.22;
       e.a = lerpAngle(e.a, e.targetA, 0.22);
@@ -2242,7 +2221,7 @@ function upd(dt) {
     }
     pushCollisions(e);
 
-    // Pickups (Authoritative on Host/Local)
+    // Pickups
     if(!isMultiplayer || isLobbyLeader) {
       for(let i = Pickups.length-1; i >= 0; i--) {
         const p = Pickups[i];
@@ -2338,7 +2317,7 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 
-// Initial setup
+// Initial launch
 currentRects = MAPS[0].rects;
 build3DMap(MAPS[0]);
 menu("Select a champion to battle in the arena!");
