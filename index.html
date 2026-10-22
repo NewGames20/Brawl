@@ -370,7 +370,11 @@ function lerpAngle(a, b, t) {
 
 function disposeHierarchy(node) {
   if(!node) return;
-  scene.remove(node);
+  if(node.parent) {
+    node.parent.remove(node);
+  } else {
+    scene.remove(node);
+  }
   node.traverse(child => {
     if(child.geometry) child.geometry.dispose();
     if(child.material) {
@@ -379,6 +383,7 @@ function disposeHierarchy(node) {
     }
   });
 }
+
 
 // --- HERO ATTRIBUTES ---
 const HEROES = [
