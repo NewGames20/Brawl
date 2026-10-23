@@ -295,7 +295,7 @@ html, body {
   <div id="crosshair"></div>
   <div id="lock-prompt">Click arena to capture mouse</div>
   <div id="hud">
-    <div id="spectator-banner">SPECTATING (PRESS SPACE FOR MENU)</div>
+    <div id="spectator-banner">SPECTATING</div>
     <div id="hud-player">
       <div id="hud-player-name">Hero Name</div>
       <div id="hud-hp-bar"><div id="hud-hp-fill"></div></div>
@@ -352,6 +352,9 @@ let curSwayX = 0, curSwayY = 0;
 
 let isSpectating = false;
 let spectateTarget = null;
+let matchOver = false;
+let viewmodelCi = null;
+let specSwayTarget = null, lastSpecYaw = 0, lastSpecPitch = 0;
 
 // --- HOST AUTHORITATIVE NETWORKING STATE ---
 let peer = null;
@@ -573,7 +576,7 @@ document.addEventListener("pointerlockchange", () => {
 });
 
 window.addEventListener("mousemove", e => {
-  if(!isLocked) return;
+  if(!isLocked || isSpectating) return;
   const sens = 0.0022;
   yaw -= e.movementX * sens;
   pitch -= e.movementY * sens;
@@ -589,11 +592,15 @@ window.addEventListener("mousemove", e => {
 addEventListener("keydown", e => {
   K[e.code] = 1;
   if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Slash"].includes(e.code)) e.preventDefault();
-  
+
+  // Solo: Space leaves spectating. Online: the host must keep simulating, so Space is ignored.
   if(isSpectating && e.code === "Space") {
-    returnToMenu();
+    if(!isMultiplayer) returnToMenu();
     return;
   }
+
+  // Ignore ability keys outside active play (prevents a stuck press firing at match start)
+  if(state !== "play" || isSpectating) return;
 
   if(controlScheme === "wasd") {
     if(e.code === "KeyE") P1_ab1 = 1;
@@ -610,6 +617,10 @@ addEventListener("keyup", e => {
 
 canvas3D.addEventListener("mousedown", e => {
   if(!isLocked) return;
+  if(isSpectating) {
+    if(e.button === 0) findNextSpectateTarget(1); // click = switch spectated player
+    return;
+  }
   if(e.button === 0) M.down = 1;
 });
 canvas3D.addEventListener("mouseup", e => {
@@ -774,6 +785,8 @@ function setupViewmodel(heroIndex) {
   while(viewmodelHolder.children.length > 0) {
     disposeHierarchy(viewmodelHolder.children[0]);
   }
+  viewmodelHolder.wep = null;
+  viewmodelCi = heroIndex;
   if(heroIndex === null) return;
   const wep = createHighQualityWeapon(heroIndex, true);
   wep.scale.set(0.48, 0.48, 0.48);
@@ -894,6 +907,7 @@ function mk(ci, x, z, playerNum, netId = null) {
   return {
     ci, x, z, r:16,
     targetX: x, targetZ: z, targetA: 0,
+    pitch: 0, targetP: 0, moveSpd: 0,
     hp: c.hp, mhp: c.hp,
     a: Math.random() * Math.PI * 2,
     c1: 0, c2: 0, c3: 0, stun: 0,
@@ -944,20 +958,26 @@ function pushCollisions(e) {
   }
 }
 
+// --- SPECTATING (first-person view through the spectated player's eyes) ---
 function startSpectating() {
   isSpectating = true;
+  spectateTarget = null;
+  M.down = 0;
+  spectatorBanner.innerText = isMultiplayer
+    ? "SPECTATING · CLICK TO SWITCH PLAYER"
+    : "SPECTATING · CLICK TO SWITCH · SPACE FOR MENU";
   spectatorBanner.style.display = "block";
-  setupViewmodel(null); // remove viewmodel
-  findNextSpectateTarget();
+  findNextSpectateTarget(1);
 }
 
-function findNextSpectateTarget() {
+function findNextSpectateTarget(step = 1) {
   const aliveOthers = E.filter(e => !e.dead && e !== pl);
-  if(aliveOthers.length > 0) {
-    spectateTarget = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
-  } else {
+  if(aliveOthers.length === 0) {
     spectateTarget = null;
+    return;
   }
+  const idx = aliveOthers.indexOf(spectateTarget);
+  spectateTarget = aliveOthers[(idx + step + aliveOthers.length) % aliveOthers.length];
 }
 
 function hurt(t, rawDmg, a, kb, attacker = null) {
@@ -1001,16 +1021,8 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
       spawn3DRing(attacker.x, attacker.z, 28, 0x45d988);
     }
 
-    if(t === pl) {
-      const aliveOthers = E.filter(e => !e.dead && e !== pl);
-      if(aliveOthers.length > 0) {
-        startSpectating();
-      } else {
-        showResultScreen(false);
-      }
-    } else if(t === spectateTarget) {
-      findNextSpectateTarget();
-    }
+    // Spectating / match-end handling happens at the end of upd()
+    if(t === spectateTarget) findNextSpectateTarget(1);
   }
 }
 
@@ -1239,7 +1251,7 @@ function executeAbility2(e) {
         if(!isMultiplayer || isLobbyLeader) {
           for(const t of E) {
             if(t !== e && !t.dead && Math.hypot(t.x - bx, t.z - bz) < 80 + t.r) {
-              hurt(t, 15, Math.atan2(t.z - bx, t.x - bx), 380, e);
+              hurt(t, 15, Math.atan2(t.z - bz, t.x - bx), 380, e);
               t.stun = 0.5;
             }
           }
@@ -1445,8 +1457,10 @@ function syncHUD() {
   stormTimerDisp.innerText = `STORM: ${Math.round(stormRadius)}m`;
 }
 
-function showResultScreen(isVictory) {
+function showResultScreen(isVictory, winnerId = null) {
   state = "result";
+  matchOver = true;
+  M.down = 0;
   if(document.pointerLockElement) {
     try { document.exitPointerLock(); } catch(e){}
   }
@@ -1454,6 +1468,9 @@ function showResultScreen(isVictory) {
   hud.style.display = "none";
   crosshair.style.display = "none";
   lockPrompt.style.display = "none";
+  damageOverlay.style.opacity = 0;
+
+  const w = winnerId ? E.find(e => e.netId === winnerId) : null;
 
   if(isVictory) {
     resultTitle.innerText = "VICTORY!";
@@ -1462,8 +1479,21 @@ function showResultScreen(isVictory) {
   } else {
     resultTitle.innerText = "DEFEATED";
     resultTitle.style.color = "#ff4438";
-    resultDesc.innerText = "You were eliminated from the arena brawl. Regroup and try again!";
+    resultDesc.innerText = w
+      ? `${HEROES[w.ci].e} ${HEROES[w.ci].n} won the brawl. Regroup and try again!`
+      : "Nobody survived the arena. Regroup and try again!";
   }
+}
+
+// The host (or solo play) decides the winner and tells every connected player.
+function endMatch(winnerId) {
+  if(matchOver) return;
+  matchOver = true;
+  if(isMultiplayer && isLobbyLeader) {
+    outgoingSeq++;
+    broadcastToPeers({ type: "MATCH_END", winnerId: winnerId, seq: outgoingSeq });
+  }
+  showResultScreen(!!winnerId && winnerId === myNetId, winnerId);
 }
 
 window.returnToMenu = function() {
@@ -1596,18 +1626,19 @@ function handleIncomingData(conn, data) {
       ent.targetX = data.x;
       ent.targetZ = data.z;
       ent.targetA = data.a;
+      ent.targetP = data.p || 0;
     }
   }
   else if(data.type === "SNAPSHOT") {
     if(isLobbyLeader) return;
+    if(state !== "play" && state !== "countdown") return;
     for(const item of data.entities) {
       if(item.id === myNetId) {
         if(pl) {
           pl.hp = item.hp;
-          if(!pl.dead && item.dead) {
+          if(item.dead && !pl.dead) {
             pl.dead = true;
             if(pl.mesh) pl.mesh.visible = false;
-            startSpectating();
           }
         }
         continue;
@@ -1622,12 +1653,17 @@ function handleIncomingData(conn, data) {
         ent.targetX = item.x;
         ent.targetZ = item.z;
         ent.targetA = item.a;
+        ent.targetP = item.p || 0;
         ent.hp = item.hp;
         ent.dead = item.dead;
         if(ent.dead && ent.mesh) ent.mesh.visible = false;
-        else if(ent.mesh && !ent.dead) ent.mesh.visible = true;
       }
     }
+  }
+  else if(data.type === "MATCH_END") {
+    if(isLobbyLeader) return;
+    if(state !== "play" && state !== "countdown") return;
+    showResultScreen(data.winnerId === myNetId, data.winnerId);
   }
   else if(data.type === "ACTION_INTENT") {
     const ent = getRemoteActorByNetId(data.id);
@@ -1635,6 +1671,9 @@ function handleIncomingData(conn, data) {
       ent.x = data.x;
       ent.z = data.z;
       ent.a = data.a;
+      ent.targetX = data.x;
+      ent.targetZ = data.z;
+      ent.targetA = data.a;
       if(data.act === "ATTACK") executeAttack(ent);
       else if(data.act === "AB1") executeAbility1(ent);
       else if(data.act === "AB2") executeAbility2(ent);
@@ -1665,6 +1704,7 @@ setInterval(() => {
       x: e.x,
       z: e.z,
       a: e.a,
+      p: e.pitch,
       hp: e.hp,
       dead: e.dead
     }));
@@ -1686,7 +1726,8 @@ setInterval(() => {
       seq: outgoingSeq,
       x: pl.x,
       z: pl.z,
-      a: pl.a
+      a: pl.a,
+      p: pl.pitch
     };
     if(leaderId && peerConnections.has(leaderId)) {
       const conn = peerConnections.get(leaderId);
@@ -2024,6 +2065,7 @@ function initMatchView() {
   yaw = 0; pitch = 0;
   cameraHolder.rotation.y = yaw;
   camera.rotation.x = pitch;
+  matchOver = false; M.down = 0; P1_ab1 = 0; P1_ab2 = 0; specSwayTarget = null;
 
   isSpectating = false;
   spectateTarget = null;
@@ -2048,6 +2090,26 @@ function initMatchView() {
 
 // --- MAIN LOOP ---
 function upd(dt) {
+  if(isSpectating && (!spectateTarget || spectateTarget.dead)) findNextSpectateTarget(1);
+
+  // Your facing always follows the mouse (even while stunned) so spectators see what you see
+  if(pl && !pl.dead && !isSpectating) {
+    pl.a = -yaw - Math.PI / 2;
+    pl.pitch = pitch;
+  }
+
+  // While spectating, feed the target's look movement into the weapon sway
+  if(isSpectating && spectateTarget) {
+    const ty = -spectateTarget.a - Math.PI / 2, tp = spectateTarget.pitch || 0;
+    if(specSwayTarget === spectateTarget) {
+      let dy = ty - lastSpecYaw;
+      dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      mouseVelX += Math.max(-4, Math.min(4, -dy * 18));
+      mouseVelY += Math.max(-4, Math.min(4, -(tp - lastSpecPitch) * 18));
+    }
+    specSwayTarget = spectateTarget; lastSpecYaw = ty; lastSpecPitch = tp;
+  } else specSwayTarget = null;
+
   curSwayX += (mouseVelX - curSwayX) * 0.15;
   curSwayY += (mouseVelY - curSwayY) * 0.15;
   mouseVelX *= 0.8;
@@ -2055,29 +2117,31 @@ function upd(dt) {
 
   syncHUD();
 
-  if(!isSpectating && pl && !pl.dead) {
+  if(isSpectating) {
+    const st = spectateTarget;
+    if(st) {
+      cameraHolder.position.set(st.x, 22 + (screenShake > 0 ? (Math.random()-0.5)*screenShake*0.35 : 0), st.z);
+      cameraHolder.rotation.y = -st.a - Math.PI / 2;
+      camera.rotation.x = st.pitch || 0;
+      if(viewmodelCi !== st.ci) setupViewmodel(st.ci);
+    } else if(viewmodelCi !== null) {
+      setupViewmodel(null);
+    }
+  } else if(pl && !pl.dead) {
     cameraHolder.position.x = pl.x;
     cameraHolder.position.z = pl.z;
     cameraHolder.position.y = 22 + (screenShake > 0 ? (Math.random()-0.5)*screenShake*0.35 : 0);
-  } else if(isSpectating) {
-    if(!spectateTarget || spectateTarget.dead) {
-      findNextSpectateTarget();
-    }
-    if(spectateTarget) {
-      cameraHolder.position.x += (spectateTarget.x - cameraHolder.position.x) * 0.15;
-      cameraHolder.position.z += (spectateTarget.z - cameraHolder.position.z) * 0.15;
-      cameraHolder.position.y = 26;
-    }
   }
 
-  if(viewmodelHolder.wep && !isSpectating) {
-    const isAttacking = pl && (pl.swing > 0 || pl.fire > 0);
+  const vmEnt = isSpectating ? spectateTarget : pl;
+  if(viewmodelHolder.wep && vmEnt) {
+    const isAttacking = vmEnt.swing > 0 || vmEnt.fire > 0;
     const forwardKey = controlScheme === "wasd" ? K.KeyW : K.ArrowUp;
     const backKey = controlScheme === "wasd" ? K.KeyS : K.ArrowDown;
     const leftKey = controlScheme === "wasd" ? K.KeyA : K.ArrowLeft;
     const rightKey = controlScheme === "wasd" ? K.KeyD : K.ArrowRight;
 
-    const isMoving = pl && (forwardKey || backKey || leftKey || rightKey);
+    const isMoving = isSpectating ? vmEnt.moveSpd > 15 : !!(forwardKey || backKey || leftKey || rightKey);
     const bob = isMoving ? Math.sin(matchTime * 9) * 0.1 : Math.sin(matchTime * 2.5) * 0.03;
     const sideBob = isMoving ? Math.cos(matchTime * 4.5) * 0.06 : 0;
 
@@ -2102,10 +2166,6 @@ function upd(dt) {
     countdown -= dt;
     centerMsg.style.display = "block";
     centerMsg.innerText = countdown > 0.4 ? Math.ceil(countdown) : "BRAWL!";
-
-    if(pl) {
-      pl.a = -yaw - Math.PI / 2;
-    }
 
     for(const e of E) {
       if(e.mesh) {
@@ -2233,11 +2293,17 @@ function upd(dt) {
       continue;
     }
 
+    const prevX = e.x, prevZ = e.z;
+
     if(e !== pl && e.mesh) {
-      e.mesh.visible = true;
-      e.x += (e.targetX - e.x) * 0.22;
-      e.z += (e.targetZ - e.z) * 0.22;
-      e.a = lerpAngle(e.a, e.targetA, 0.22);
+      // Hide the body of the player whose eyes we're looking through
+      e.mesh.visible = !(isSpectating && e === spectateTarget);
+      if(!e.ai) { // remote players follow network targets; bots drive themselves
+        e.x += (e.targetX - e.x) * 0.22;
+        e.z += (e.targetZ - e.z) * 0.22;
+        e.a = lerpAngle(e.a, e.targetA, 0.22);
+        e.pitch += ((e.targetP || 0) - e.pitch) * 0.22;
+      }
     }
 
     e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt;
@@ -2346,6 +2412,9 @@ function upd(dt) {
       }
     }
 
+    // Movement speed (drives the weapon bob when this player is being spectated)
+    e.moveSpd += (Math.hypot(e.x - prevX, e.z - prevZ) / Math.max(dt, 0.0001) - e.moveSpd) * 0.25;
+
     if(e.mesh) {
       e.mesh.position.set(e.x, 0, e.z);
       e.mesh.rotation.y = -e.a + Math.PI / 2;
@@ -2408,23 +2477,17 @@ function upd(dt) {
 
   if(screenShake > 0) screenShake = Math.max(0, screenShake - dt * 22);
 
-  const alive = E.filter(e => !e.dead);
-  if(state === "play") {
-    if(isSpectating) {
+  if(state === "play" && !matchOver) {
+    // Only the host (or solo play) decides when the match is over
+    if(!isMultiplayer || isLobbyLeader) {
+      const alive = E.filter(e => !e.dead);
       if(alive.length <= 1) {
-        showResultScreen(false);
-      }
-    } else {
-      if(pl && pl.dead) {
-        if(alive.length > 0) {
-          startSpectating();
-        } else {
-          showResultScreen(false);
-        }
-      } else if(alive.length === 1 && alive[0] === pl) {
-        showResultScreen(true);
+        endMatch(alive.length === 1 ? alive[0].netId : null);
+        return;
       }
     }
+    // Anyone who has died (host or client) switches to spectating
+    if(pl && pl.dead && !isSpectating) startSpectating();
   }
 }
 
