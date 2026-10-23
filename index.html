@@ -622,7 +622,7 @@ const HEROES = [
  {
    n:"Bruno the Bear", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
-   hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
+   hp: 250, sp: 120, col: 0x5e381b, cd: 1.2,
    a1n:"Slam", a1cd: 11.5, a1d:"Shockwave slam that stuns foes.",
    a2n:"Charge", a2cd: 13.5,
    ad:"Wide melee swing that also deflects incoming projectiles.", a2d:"Rushes forward, bowling over enemies.",
@@ -631,19 +631,18 @@ const HEROES = [
  {
    n:"Captain Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
-   hp: 18-, sp: 140, col: 0xdf84a5, cd: 1,
+   hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
    a1n:"Vortex Anchor", a1cd: 9.0, a1d:"Gravity anchor pulling foes inward.",
-   a2n:"Cannonball", a2cd: 10.0,
+   a2n:"Cannonball", a2cd: 9.5,
    ad:"Scrap shotgun — fires a 5-pellet spread.", a2d:"Explosive shell with huge knockback.",
    melee: false, d:"Medium-heavy brawler. Controls zones with gravitational anchors."
  },
  {
    n:"Mango the Monkey", e:"🐵", w:"🍌", wn:"Twin Crescent Boomerang",
    role: "Skirmisher", roleCol: "#d6a71e",
-   hp: 150, sp: 175, col: 0xa87132, cd: 0.9
-   ,
+   hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
    a1n:"Cluster Bomb", a1cd: 9.0, a1d:"Lobs a fruit bomb that shatters into bananas.",
-   a2n:"Peel Trap", a2cd: 10.0,
+   a2n:"Peel Trap", a2cd: 10.5,
    ad:"Boomerang that curves out and returns to you.", a2d:"Drops a banana peel in front to slip foes.",
    melee: false, d:"Agile skirmisher with returning banana curves and traps."
  },
@@ -659,7 +658,7 @@ const HEROES = [
  {
    n:"Quackbot", e:"🤖", w:"🦆", wn:"Cybernetic Plasma Blaster",
    role: "Assassin", roleCol: "#2b9bc4",
-   hp: 110, sp: 185, col: 0x309bb0, cd: 0.22,
+   hp: 110, sp: 185, col: 0x309bb0, cd: 0.25,
    a1n:"Blink", a1cd: 6.0, a1d:"Instant short-range teleport.",
    a2n:"Barrage", a2cd: 8.5,
    ad:"Rapid-fire plasma darts.", a2d:"Unleashes a rapid stream of quacking darts.",
@@ -1811,7 +1810,7 @@ function executeAbility1(e) {
     mesh.position.set(placeX, 1, placeZ);
     scene.add(mesh);
 
-    Zones.push({ kind: "anchor_vortex", x: placeX, z: placeZ, r: 90, life: c.a1cd - 1.5, owner: e, mesh });
+    Zones.push({ kind: "anchor_vortex", x: placeX, z: placeZ, r: 90, life: c.a1cd - 1.0, owner: e, mesh });
   } else if(e.ci === 2) {
     e.c2 = c.a1cd;
     shot(e, e.a, {
