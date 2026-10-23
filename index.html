@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Item Brawl 3D - Fixed Edition</title>
+<title>BRAWLBOUND — Arena Brawler</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Space+Grotesk:wght@600;700;900&display=swap');
 
@@ -87,7 +87,7 @@ html, body {
 }
 .subtitle {
   font-size: 13px; font-weight: 600; color: var(--text-muted);
-  letter-spacing: 0.5px; margin-top: -4px;
+  letter-spacing: 0.5px; margin-top: 6px;
 }
 
 .map-selector, .control-selector {
@@ -173,7 +173,10 @@ html, body {
   display: flex; gap: 12px; font-size: 11px; font-weight: 700;
   color: #d1cddb;
 }
-.card-stats span b { color: #fff; font-weight: 900; }
+.card-stats.weapon-line { margin-top: 0; }
+.card-stats span { white-space: nowrap; }
+.card-stats.weapon-line span { white-space: normal; }
+.card-stats b { color: #fff; font-weight: 900; }
 .ability-line {
   font-size: 11px; color: var(--text-muted); line-height: 1.35;
 }
@@ -284,6 +287,42 @@ html, body {
   transform: translateY(-2px);
   filter: brightness(1.1);
 }
+
+#minimap {
+  position: absolute; bottom: 28px; right: 28px;
+  background: rgba(15, 14, 20, 0.85);
+  border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+  z-index: 5; pointer-events: none;
+}
+#killfeed {
+  position: absolute; top: 72px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 4px; align-items: center;
+  z-index: 5; pointer-events: none;
+}
+.kf-entry {
+  background: rgba(10, 9, 14, 0.85); border: 1px solid var(--border);
+  border-radius: 8px; padding: 4px 14px; font-size: 12px; font-weight: 700;
+  animation: kfpop 0.18s ease-out;
+}
+@keyframes kfpop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.stats-table {
+  width: 100%; text-align: left; font-size: 12px; font-weight: 700;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stats-row {
+  display: flex; justify-content: space-between; gap: 18px;
+  background: rgba(255, 255, 255, 0.05); border-radius: 6px; padding: 5px 10px;
+}
+.stats-row.me { border: 1px solid #45d988; }
+.settings-panel {
+  display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 18px; max-width: 960px; width: 100%;
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+}
+.settings-panel input[type=range] { accent-color: #ff5533; width: 120px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -305,6 +344,8 @@ html, body {
       <span id="room-badge">ARENA ZONE</span>
       <span id="storm-timer-disp">STORM: 380m</span>
     </div>
+    <canvas id="minimap" width="170" height="115"></canvas>
+    <div id="killfeed"></div>
     <div id="hud-cooldowns">
       <div class="cd-bar"><div id="cd1-fill" class="cd-fill"></div><span id="cd1-label" class="cd-text">[E] A1</span></div>
       <div class="cd-bar"><div id="cd2-fill" class="cd-fill"></div><span id="cd2-label" class="cd-text">[Q] A2</span></div>
@@ -315,7 +356,8 @@ html, body {
   <div id="result-modal">
     <div class="result-card">
       <div id="result-title" class="result-title">VICTORY</div>
-      <div id="result-desc" style="color:var(--text-muted); font-size:14px; font-weight:600;">You survived the item brawl!</div>
+      <div id="result-desc" style="color:var(--text-muted); font-size:14px; font-weight:600;">You survived the brawl!</div>
+      <div id="result-stats"></div>
       <button class="result-btn" onclick="returnToMenu()">CONTINUE</button>
     </div>
   </div>
@@ -346,6 +388,24 @@ let damageVignetteT = 0;
 let stormRadius = 380;
 const minStormRadius = 60;
 let matchTime = 0;
+let teamMode = false;      // kept for internal guards; always free-for-all now
+
+// --- QUICK MATCH STATE ---
+let quickMatchRooms = null;    // room IDs left to try while joining (null = not in quick match)
+let quickMatchHosted = false;  // we created this lobby via Quick Match
+let quickMatchAutoStart = null; // epoch ms when the quick-match lobby auto-starts
+let qmClientCountdown = null;   // seconds until auto-start (clients, set by host broadcast)
+let qmSeq = 0;                   // join-attempt sequence (guards stale timeouts)
+let qmRendezvousStarted = false; // guards against double rendezvous (listing error + callback)
+
+// In-memory settings store (localStorage is unavailable in sandboxed preview iframes)
+const Store = {
+  mem: {},
+  get(k, d) { return this.mem[k] !== undefined ? this.mem[k] : d; },
+  set(k, v) { this.mem[k] = v; }
+};
+
+let mouseSens = parseFloat(Store.get("bb_sens", "0.0022"));
 
 let mouseVelX = 0, mouseVelY = 0;
 let curSwayX = 0, curSwayY = 0;
@@ -384,6 +444,80 @@ function lerpAngle(a, b, t) {
   return a + diff * t;
 }
 
+function shuffle(arr) {
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// --- SOUND (WebAudio synth, no asset files needed) ---
+const Snd = {
+  ctx: null, master: null,
+  vol: parseFloat(Store.get("bb_vol", "0.6")) || 0,
+  ensure() {
+    if(this.ctx) return;
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = this.vol;
+      this.master.connect(this.ctx.destination);
+    } catch(e) {}
+  },
+  setVol(v) {
+    this.vol = v;
+    Store.set("bb_vol", String(v));
+    if(this.master) this.master.gain.value = v;
+  },
+  tone(freq, dur, type = "sine", vol = 0.5, slide = 0) {
+    if(!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq + slide), t + dur);
+    g.gain.setValueAtTime(vol * 0.28, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t + dur + 0.02);
+  },
+  noise(dur, vol = 0.5, freq = 1200) {
+    if(!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const len = Math.max(1, Math.floor(this.ctx.sampleRate * dur));
+    const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    const src = this.ctx.createBufferSource(); src.buffer = buf;
+    const f = this.ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = freq;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(vol * 0.3, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(f); f.connect(g); g.connect(this.master);
+    src.start(t);
+  },
+  play(name) {
+    if(!this.ctx) return;
+    switch(name) {
+      case "shoot": this.tone(520, 0.09, "square", 0.3, -300); break;
+      case "melee": this.noise(0.12, 0.5, 700); this.tone(140, 0.1, "sine", 0.5, -60); break;
+      case "hit": this.noise(0.07, 0.4, 2400); this.tone(200, 0.08, "triangle", 0.35, -80); break;
+      case "ability": this.tone(240, 0.16, "sawtooth", 0.25, 420); break;
+      case "bounce": this.tone(900, 0.04, "square", 0.2, 200); break;
+      case "death": this.noise(0.3, 0.6, 900); this.tone(160, 0.35, "sine", 0.6, -110); break;
+      case "pickup": this.tone(660, 0.08, "sine", 0.35); setTimeout(() => this.tone(880, 0.1, "sine", 0.35), 70); break;
+      case "beep": this.tone(440, 0.09, "sine", 0.45); break;
+      case "go": this.tone(880, 0.18, "sine", 0.55); break;
+      case "win": [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => this.tone(f, 0.16, "triangle", 0.45), i * 110)); break;
+      case "lose": [392, 330, 262, 196].forEach((f, i) => setTimeout(() => this.tone(f, 0.18, "triangle", 0.45), i * 130)); break;
+    }
+  }
+};
+document.addEventListener("pointerdown", () => Snd.ensure());
+document.addEventListener("keydown", () => Snd.ensure());
+
 function disposeHierarchy(node) {
   if(!node) return;
   if(node.parent) {
@@ -405,7 +539,7 @@ const HEROES = [
  {
    n:"Bruno the Bear", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
-   hp: 230, sp: 125, col: 0x5e381b, cd: 1.2,
+   hp: 230, sp: 120, col: 0x5e381b, cd: 1.2,
    a1n:"Slam", a1cd: 11.5, a1d:"Shockwave slam that stuns foes.",
    a2n:"Charge", a2cd: 13.5, a2d:"Rushes forward, bowling over enemies.",
    melee: true, d:"High health tank. Heavy hammer deflects incoming shots."
@@ -449,6 +583,14 @@ const HEROES = [
    a1n:"Spore Pod", a1cd: 6.5, a1d:"Invisible trap (7s). Inflicts 10 dmg over 3s and slows.",
    a2n:"Root Entangle", a2cd: 9.0, a2d:"Overgrowth projectile that immobilizes foes on impact.",
    melee: false, d:"Blight shaman wielding lingering spore poisons and root binds."
+ },
+ {
+  n:"Rico the Rabbit", e:"🐰", w:"🎱", wn:"Cue Sphere",
+  role: "Trickster", roleCol: "#c9d4e8",
+  hp: 150, sp: 165, col: 0xb9c4d6, cd: 0.75,
+  a1n:"Bumper", a1cd: 8.0, a1d:"Drops a bouncer pad that flings players and ricochets shots.",
+  a2n:"Break Shot", a2cd: 9.0, a2d:"Heavy 8-ball that gains +35% damage per wall bounce.",
+  melee: false, d:"Trick-shot artist banking shots off walls and bumpers."
  }
 ];
 
@@ -554,15 +696,33 @@ scene.add(stormMesh);
 // --- INPUT & POINTER CONTROLS ---
 let isLocked = false;
 let pitch = 0, yaw = 0;
+let fallbackLook = false; // cursor-steer mode for environments without Pointer Lock (e.g. sandboxed iframes)
+let fbMouse = { x: 0, y: 0 };
 const K = {}, M = { down: 0 };
 let P1_ab1 = 0, P1_ab2 = 0;
 
+function enableFallbackLook() {
+  if(fallbackLook) return;
+  fallbackLook = true;
+  lockPrompt.style.display = "none";
+}
+
 function tryLockPointer() {
+  if(fallbackLook) return;
   try {
     const res = canvas3D.requestPointerLock();
-    if(res && typeof res.catch === 'function') res.catch(() => {});
-  } catch(e) {}
+    if(res && typeof res.catch === 'function') res.catch(() => enableFallbackLook());
+  } catch(e) {
+    enableFallbackLook();
+    return;
+  }
+  // If the lock doesn't engage shortly (unsupported or blocked), switch to cursor-steer look
+  setTimeout(() => {
+    if(!isLocked && !fallbackLook && (state === "play" || state === "countdown")) enableFallbackLook();
+  }, 700);
 }
+
+document.addEventListener("pointerlockerror", () => enableFallbackLook());
 
 canvas3D.addEventListener("click", () => {
   if((state === "play" || state === "countdown") && !isLocked) {
@@ -572,12 +732,28 @@ canvas3D.addEventListener("click", () => {
 
 document.addEventListener("pointerlockchange", () => {
   isLocked = (document.pointerLockElement === canvas3D);
+  if(!isLocked) clearHeldInputs();
   lockPrompt.style.display = (!isLocked && (state === "play" || state === "countdown")) ? "block" : "none";
+});
+
+function clearHeldInputs() {
+  for(const k in K) K[k] = 0;
+  M.down = 0;
+  P1_ab1 = 0;
+  P1_ab2 = 0;
+}
+window.addEventListener("blur", clearHeldInputs);
+
+window.addEventListener("mousemove", e => {
+  if(isLocked || isSpectating) return;
+  // Fallback cursor-steer look: remember cursor offset from screen center
+  fbMouse.x = e.clientX - window.innerWidth / 2;
+  fbMouse.y = e.clientY - window.innerHeight / 2;
 });
 
 window.addEventListener("mousemove", e => {
   if(!isLocked || isSpectating) return;
-  const sens = 0.0022;
+  const sens = mouseSens;
   yaw -= e.movementX * sens;
   pitch -= e.movementY * sens;
   pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
@@ -616,14 +792,14 @@ addEventListener("keyup", e => {
 });
 
 canvas3D.addEventListener("mousedown", e => {
-  if(!isLocked) return;
+  if(!isLocked && !fallbackLook) return;
   if(isSpectating) {
     if(e.button === 0) findNextSpectateTarget(1); // click = switch spectated player
     return;
   }
   if(e.button === 0) M.down = 1;
 });
-canvas3D.addEventListener("mouseup", e => {
+window.addEventListener("mouseup", e => {
   if(e.button === 0) M.down = 0;
 });
 canvas3D.addEventListener("contextmenu", e => e.preventDefault());
@@ -642,6 +818,73 @@ function makeTextSprite(message, color = "#ffffff", size = 32) {
   const sprite = new THREE.Sprite(mat);
   sprite.scale.set(30, 7.5, 1);
   return sprite;
+}
+
+function makeNameplate(message, color = "#ffffff") {
+  const can = document.createElement("canvas");
+  can.width = 256; can.height = 48;
+  const ctx = can.getContext("2d");
+  ctx.font = "700 22px 'Outfit', system-ui";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.strokeStyle = "rgba(0,0,0,0.85)";
+  ctx.lineWidth = 5;
+  ctx.strokeText(message, 128, 24);
+  ctx.fillStyle = color;
+  ctx.fillText(message, 128, 24);
+  const tex = new THREE.CanvasTexture(can);
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(24, 4.5, 1);
+  return sprite;
+}
+
+function addKillFeed(attacker, victim) {
+  const feed = document.getElementById("killfeed");
+  if(!feed) return;
+  const v = HEROES[victim.ci];
+  const el = document.createElement("div");
+  el.className = "kf-entry";
+  if(attacker && attacker !== victim) {
+    const k = HEROES[attacker.ci];
+    el.innerHTML = `${k.e} ${k.n} <span style="color:#ff5544">eliminated</span> ${v.e} ${v.n}`;
+  } else {
+    el.innerHTML = `⛈️ The Storm claimed ${v.e} ${v.n}`;
+  }
+  feed.appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+  while(feed.children.length > 4) feed.firstChild.remove();
+}
+
+function applyLocalHitFeedback(dmg) {
+  screenShake = Math.min(18, screenShake + dmg * 0.45);
+  damageVignetteT = Math.min(1.0, damageVignetteT + dmg * 0.04 + 0.32);
+  Snd.play("hit");
+}
+
+const remotePickupMeshes = new Map();
+function syncRemotePickups(list) {
+  const seen = new Set();
+  for(const pk of list) {
+    seen.add(pk.id);
+    if(!remotePickupMeshes.has(pk.id)) {
+      const color = pk.k === "hp" ? 0x45d988 : 0xffd000;
+      const mesh = new THREE.Mesh(
+        new THREE.OctahedronGeometry(8.5),
+        new THREE.MeshStandardMaterial({ color, metalness: 0.35, roughness: 0.2 })
+      );
+      mesh.userData.k = pk.k;
+      mesh.position.set(pk.x, 14, pk.z);
+      scene.add(mesh);
+      remotePickupMeshes.set(pk.id, mesh);
+    }
+  }
+  for(const [id, mesh] of remotePickupMeshes) {
+    if(!seen.has(id)) {
+      disposeHierarchy(mesh);
+      remotePickupMeshes.delete(id);
+    }
+  }
 }
 
 // --- 3D MAP BUILDER ---
@@ -741,6 +984,12 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
     shaft.position.y = 8;
     root.add(shaft);
   }
+  else if(heroIndex === 6) {
+    const feltMat = new THREE.MeshStandardMaterial({ color: 0x2c4a3a, roughness: 0.6 });
+    const cue = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.75, 34, 10), feltMat);
+    cue.rotation.x = Math.PI / 2.4;
+    root.add(cue);
+  }
   return root;
 }
 
@@ -771,6 +1020,12 @@ function createDetailedHeroModel(heroIndex, isPlayer) {
   grp.add(hpGrp);
   grp.hpBar = hpBar;
   grp.hpGrp = hpGrp;
+
+  if(!isPlayer) {
+    const tag = makeNameplate(`${HEROES[heroIndex].e} ${HEROES[heroIndex].n}`);
+    tag.position.y = 56;
+    grp.add(tag);
+  }
 
   const wep = createHighQualityWeapon(heroIndex, false);
   wep.position.set(12, 16, 8);
@@ -815,6 +1070,10 @@ function spawnProjectileMesh(type) {
   } else if(type === "vine") {
     mesh = new THREE.Mesh(new THREE.TorusGeometry(5, 1.8, 8, 16), new THREE.MeshBasicMaterial({color: 0x55aa33}));
     mesh.rotation.x = Math.PI / 2;
+  } else if(type === "cue") {
+    mesh = new THREE.Mesh(new THREE.SphereGeometry(4.8, 14, 14), new THREE.MeshStandardMaterial({ color: 0xf5f2ea, roughness: 0.2 }));
+  } else if(type === "eight") {
+    mesh = new THREE.Mesh(new THREE.SphereGeometry(7, 16, 16), new THREE.MeshStandardMaterial({ color: 0x14141a, roughness: 0.25 }));
   } else {
     mesh = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 9, 8), new THREE.MeshBasicMaterial({color: 0x00f0ff}));
     mesh.rotation.x = Math.PI / 2;
@@ -865,7 +1124,7 @@ function spawnPickup() {
   mesh.position.set(rx, 14, rz);
   scene.add(mesh);
 
-  Pickups.push({ x: rx, z: rz, r: 14, mesh, apply: choice.apply, life: 20 });
+  Pickups.push({ uid: "pk_" + Math.random().toString(36).slice(2, 8), kind: choice.k, x: rx, z: rz, r: 14, mesh, apply: choice.apply, life: 20 });
 }
 
 let E = [], P = [], F = [], Pickups = [], Zones = [], DamageNumbers = [];
@@ -885,7 +1144,7 @@ function removePeerEntity(peerId) {
   }
 }
 
-function mk(ci, x, z, playerNum, netId = null) {
+function mk(ci, x, z, playerNum, netId = null, team = null) {
   const c = HEROES[ci];
   const isLocalP1 = (playerNum === 1);
   const ai = (isLocalP1 || isMultiplayer || (netId && !netId.startsWith("bot_"))) ? null : {
@@ -914,6 +1173,7 @@ function mk(ci, x, z, playerNum, netId = null) {
     kx: 0, kz: 0, fl: 0, swing: 0,
     pNum: playerNum,
     netId: netId,
+    team, kills: 0, dmg: 0, deathTime: null, killedBy: null, pending: [],
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
     chargeVx: 0, chargeVz: 0, chargeT: 0,
@@ -958,6 +1218,65 @@ function pushCollisions(e) {
   }
 }
 
+// Reflect a projectile off arena walls (borders + obstacle rects), returns true if it bounced
+function reflectOffWalls(p) {
+  const R = p.pr || 4.8; // per-projectile collision radius (cue 4.8, 8-ball 7)
+  let hit = false;
+  if(p.x < B + R) { p.x = B + R; if(p.vx < 0) p.vx = -p.vx; hit = true; }
+  if(p.x > W - B - R) { p.x = W - B - R; if(p.vx > 0) p.vx = -p.vx; hit = true; }
+  if(p.z < B + R) { p.z = B + R; if(p.vz < 0) p.vz = -p.vz; hit = true; }
+  if(p.z > H - B - R) { p.z = H - B - R; if(p.vz > 0) p.vz = -p.vz; hit = true; }
+  for(const [rx, ry, rw, rh] of currentRects) {
+    const cx = Math.max(rx, Math.min(p.x, rx + rw));
+    const cz = Math.max(ry, Math.min(p.z, ry + rh));
+    const dx = p.x - cx, dz = p.z - cz;
+    const d2 = dx*dx + dz*dz;
+    if(d2 < R * R) {
+      if(d2 === 0) {
+        // Center stepped fully inside the rect — exit through the nearest face,
+        // reflecting only that axis so the ball never gets stuck or double-bounces.
+        const left = p.x - rx, right = rx + rw - p.x;
+        const top = p.z - ry, bottom = ry + rh - p.z;
+        const minOv = Math.min(left, right, top, bottom);
+        if(minOv === left) { p.x = rx - R; p.vx = -Math.abs(p.vx); }
+        else if(minOv === right) { p.x = rx + rw + R; p.vx = Math.abs(p.vx); }
+        else if(minOv === top) { p.z = ry - R; p.vz = -Math.abs(p.vz); }
+        else { p.z = ry + rh + R; p.vz = Math.abs(p.vz); }
+      }
+      else {
+        const d = Math.sqrt(d2), nx = dx/d, nz = dz/d;
+        const dot = p.vx*nx + p.vz*nz;
+        if(dot < 0) { p.vx -= 2*dot*nx; p.vz -= 2*dot*nz; }
+        p.x = cx + nx * R; p.z = cz + nz * R;
+      }
+      hit = true;
+    }
+  }
+  return hit;
+}
+
+// Bounce a projectile off any active bumper pad, returns true if it bounced
+function bounceOffBumpers(p) {
+  for(const z of Zones) {
+    if(z.kind !== "bumper") continue;
+    const dx = p.x - z.x, dz = p.z - z.z;
+    const d = Math.hypot(dx, dz);
+    if(d < z.r + 6) {
+      if(d < 0.01) { p.vx = -p.vx; return true; }
+      const nx = dx/d, nz = dz/d;
+      const dot = p.vx*nx + p.vz*nz;
+      if(dot < 0) { p.vx -= 2*dot*nx; p.vz -= 2*dot*nz; }
+      p.x = z.x + nx * (z.r + 7);
+      p.z = z.z + nz * (z.r + 7);
+      const spd = Math.hypot(p.vx, p.vz);
+      if(spd > 0) { p.vx *= (spd + 60) / spd; p.vz *= (spd + 60) / spd; }
+      p.hit.clear();
+      return true;
+    }
+  }
+  return false;
+}
+
 // --- SPECTATING (first-person view through the spectated player's eyes) ---
 function startSpectating() {
   isSpectating = true;
@@ -980,11 +1299,19 @@ function findNextSpectateTarget(step = 1) {
   spectateTarget = aliveOthers[(idx + step + aliveOthers.length) % aliveOthers.length];
 }
 
+function areEnemies(a, b) {
+  if(!a || !b || a === b) return false;
+  if(teamMode) return a.team !== b.team;
+  return true;
+}
+
 function hurt(t, rawDmg, a, kb, attacker = null) {
   if(t.dead) return;
   if(isMultiplayer && !isLobbyLeader) return;
+  if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
 
   t.hp -= rawDmg;
+  if(attacker && attacker !== t && rawDmg > 0) attacker.dmg += rawDmg;
   t.fl = 0.12;
   t.kx += Math.cos(a) * kb;
   t.kz += Math.sin(a) * kb;
@@ -1001,8 +1328,7 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   if(rawDmg >= 1) spawnDamageNumber(t.x, t.z, "-" + Math.round(rawDmg), "#ff4438");
 
   if(t === pl) {
-    screenShake = Math.min(18, screenShake + (rawDmg * 0.45));
-    damageVignetteT = Math.min(1.0, damageVignetteT + (rawDmg * 0.04) + 0.32);
+    applyLocalHitFeedback(rawDmg);
   } else {
     screenShake = Math.min(8, screenShake + (rawDmg * 0.12));
   }
@@ -1010,6 +1336,11 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   if(t.hp <= 0) {
     t.hp = 0;
     t.dead = true;
+    t.deathTime = matchTime;
+    t.killedBy = attacker ? attacker.netId : "storm";
+    if(attacker && attacker !== t) attacker.kills++;
+    Snd.play("death");
+    addKillFeed(attacker && attacker !== t ? attacker : null, t);
     if(t.mesh) t.mesh.visible = false;
     screenShake = Math.max(screenShake, 16);
     spawn3DRing(t.x, t.z, 50, 0xff3838);
@@ -1037,7 +1368,7 @@ function melee(e, rng, d, kb) {
       if(Math.hypot(dx, dz) < rng + t.r) {
         let da = Math.atan2(dz, dx) - e.a;
         da = Math.atan2(Math.sin(da), Math.cos(da));
-        if(Math.abs(da) < 1.15 && hasLOS(e.x, e.z, t.x, t.z)) {
+        if(Math.abs(da) < 1.15 && hasLOS(e.x, e.z, t.x, t.z) && areEnemies(e, t)) {
           hurt(t, d, Math.atan2(dz, dx), kb, e);
           t.slow = 0.7;
         }
@@ -1094,6 +1425,7 @@ function shot(e, a, o) {
 function executeAttack(e) {
   const c = HEROES[e.ci];
   e.c1 = c.cd;
+  Snd.play(c.melee ? "melee" : "shoot");
   if(c.melee) {
     melee(e, 80, 32, 360);
   } else if(e.ci === 1) {
@@ -1108,23 +1440,28 @@ function executeAttack(e) {
     shot(e, e.a + (Math.random()-0.5)*0.14, {t:"s", s:540, d:8, kb:35, life:0.48});
   } else if(e.ci === 5) {
     shot(e, e.a, {t:"spore", s:410, d:20, kb:80, life:0.85});
+  } else if(e.ci === 6) {
+    shot(e, e.a, {t:"cue", s:430, d:16, kb:90, life:1.7, bounces:2, pr:4.8});
   }
 }
 
 function attack(e) {
-  executeAttack(e);
+  // Send the intent BEFORE executing locally so movement abilities (Blink, Backdraft)
+  // aren't applied twice on remote machines from the post-move position.
   if(isMultiplayer) sendActionIntent("ATTACK", e.a, e.x, e.z);
+  executeAttack(e);
 }
 
 function executeAbility1(e) {
   const c = HEROES[e.ci];
+  Snd.play("ability");
   if(e.ci === 0) {
     e.c2 = c.a1cd;
     screenShake = Math.max(screenShake, 7);
     spawn3DRing(e.x, e.z, 110, 0xffb042);
     if(!isMultiplayer || isLobbyLeader) {
       for(const t of E) {
-        if(t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < 110 + t.r) {
+        if(t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < 110 + t.r && areEnemies(e, t)) {
           if(hasLOS(e.x, e.z, t.x, t.z)) {
             hurt(t, 16, Math.atan2(t.z-e.z, t.x-e.x), 280, e);
             t.stun = 1.0;
@@ -1226,16 +1563,40 @@ function executeAbility1(e) {
 
     e.activePod = podZone;
     Zones.push(podZone);
+  } else if(e.ci === 6) {
+    e.c2 = c.a1cd;
+    const bx = e.x + Math.cos(e.a) * 55;
+    const bz = e.z + Math.sin(e.a) * 55;
+
+    const pad = new THREE.Group();
+    const padGeo = new THREE.CylinderGeometry(22, 24, 4, 20);
+    const padMat = new THREE.MeshStandardMaterial({ color: 0x9be07a, metalness: 0.4, roughness: 0.3 });
+    const padMesh = new THREE.Mesh(padGeo, padMat);
+    padMesh.position.y = 2;
+    pad.add(padMesh);
+
+    const ringGeo = new THREE.RingGeometry(22, 24, 24);
+    ringGeo.rotateX(-Math.PI / 2);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x65ff88, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.y = 4.5;
+    pad.add(ring);
+
+    pad.position.set(bx, 0, bz);
+    scene.add(pad);
+
+    Zones.push({ kind: "bumper", x: bx, z: bz, r: 24, life: 6.0, owner: e, mesh: pad });
   }
 }
 
 function ability1(e) {
-  executeAbility1(e);
   if(isMultiplayer) sendActionIntent("AB1", e.a, e.x, e.z);
+  executeAbility1(e);
 }
 
 function executeAbility2(e) {
   const c = HEROES[e.ci];
+  Snd.play("ability");
   e.c3 = c.a2cd;
   if(e.ci === 0) {
     e.chargeT = 0.32;
@@ -1250,7 +1611,7 @@ function executeAbility2(e) {
         spawn3DRing(bx, bz, 80, 0xff9933);
         if(!isMultiplayer || isLobbyLeader) {
           for(const t of E) {
-            if(t !== e && !t.dead && Math.hypot(t.x - bx, t.z - bz) < 80 + t.r) {
+            if(t !== e && !t.dead && Math.hypot(t.x - bx, t.z - bz) < 80 + t.r && areEnemies(e, t)) {
               hurt(t, 15, Math.atan2(t.z - bz, t.x - bx), 380, e);
               t.stun = 0.5;
             }
@@ -1286,10 +1647,10 @@ function executeAbility2(e) {
       Zones.push({ kind: "flame", x: fx, z: fz, r: 20, life: 2.2, owner: e, mesh });
     }
   } else if(e.ci === 4) {
-    for(let i=0; i<7; i++) {
-      setTimeout(() => {
-        if(!e.dead) shot(e, e.a + (Math.random()-0.5)*0.1, {t:"s", s:540, d:7.5, kb:32, life:0.4});
-      }, i * 55);
+    // Barrage is simulated inside the game loop (scheduleShot) instead of setTimeout,
+    // so pending shots can never leak out of a finished match.
+    for(let i = 0; i < 7; i++) {
+      scheduleShot(e, i * 0.055, {t:"s", s:540, d:7.5, kb:32, life:0.4});
     }
   } else if(e.ci === 5) {
     shot(e, e.a, {
@@ -1298,7 +1659,7 @@ function executeAbility2(e) {
         spawn3DRing(vx, vz, 45, 0x55bb33);
         if(!isMultiplayer || isLobbyLeader) {
           for(const t of E) {
-            if(t !== e && !t.dead && Math.hypot(t.x - vx, t.z - vz) < 45 + t.r) {
+            if(t !== e && !t.dead && Math.hypot(t.x - vx, t.z - vz) < 45 + t.r && areEnemies(e, t)) {
               hurt(t, 12, Math.atan2(t.z - vz, t.x - vx), 20, e);
               t.stun = 1.4;
               spawnDamageNumber(t.x, t.z, "ROOTED", "#55dd44");
@@ -1307,12 +1668,22 @@ function executeAbility2(e) {
         }
       }
     });
+  } else if(e.ci === 6) {
+    shot(e, e.a, {
+      t: "eight", s: 400, d: 16, kb: 170, life: 2.4, bounces: 5, pr: 7,
+      onDeath: (ex, ez) => spawn3DRing(ex, ez, 30, 0xdddddd)
+    });
   }
 }
 
 function ability2(e) {
-  executeAbility2(e);
   if(isMultiplayer) sendActionIntent("AB2", e.a, e.x, e.z);
+  executeAbility2(e);
+}
+
+function scheduleShot(e, delay, opts) {
+  if(!e.pending) e.pending = [];
+  e.pending.push({ t: delay, opts });
 }
 
 function inVisionCone(observer, tx, tz, maxFov = 1.67) {
@@ -1334,10 +1705,10 @@ function updateAI(e, dt) {
     e.ai.strafeTimer = 0.8 + Math.random()*1.0;
   }
 
-  if(!e.ai.currentTarget || e.ai.currentTarget.dead) {
+  if(!e.ai.currentTarget || e.ai.currentTarget.dead || (teamMode && e.ai.currentTarget.team === e.team)) {
     let bestDist = 1e9, found = null;
     for(const o of E) {
-      if(o !== e && !o.dead) {
+      if(o !== e && !o.dead && !(teamMode && o.team === e.team)) {
         const d = Math.hypot(o.x - e.x, o.z - e.z);
         const visible = (inVisionCone(e, o.x, o.z, e.ai.fov) || d < 65) && hasLOS(e.x, e.z, o.x, o.z);
         if(visible && d < bestDist) {
@@ -1457,7 +1828,7 @@ function syncHUD() {
   stormTimerDisp.innerText = `STORM: ${Math.round(stormRadius)}m`;
 }
 
-function showResultScreen(isVictory, winnerId = null) {
+function showResultScreen(isVictory, winnerId = null, stats = []) {
   state = "result";
   matchOver = true;
   M.down = 0;
@@ -1469,13 +1840,14 @@ function showResultScreen(isVictory, winnerId = null) {
   crosshair.style.display = "none";
   lockPrompt.style.display = "none";
   damageOverlay.style.opacity = 0;
+  Snd.play(isVictory ? "win" : "lose");
 
   const w = winnerId ? E.find(e => e.netId === winnerId) : null;
 
   if(isVictory) {
     resultTitle.innerText = "VICTORY!";
     resultTitle.style.color = "#45d988";
-    resultDesc.innerText = "Outstanding combat! You were the last champion standing.";
+    resultDesc.innerText = teamMode ? "Your team swept the arena. Outstanding brawl!" : "Outstanding combat! You were the last champion standing.";
   } else {
     resultTitle.innerText = "DEFEATED";
     resultTitle.style.color = "#ff4438";
@@ -1483,17 +1855,37 @@ function showResultScreen(isVictory, winnerId = null) {
       ? `${HEROES[w.ci].e} ${HEROES[w.ci].n} won the brawl. Regroup and try again!`
       : "Nobody survived the arena. Regroup and try again!";
   }
+
+  const statsEl = document.getElementById("result-stats");
+  if(statsEl) {
+    const sorted = stats.slice().sort((a, b) => b.k - a.k || b.d - a.d);
+    statsEl.innerHTML = stats.length
+      ? `<div class="stats-table">` + sorted.map(s => {
+          const c = HEROES[s.ci];
+          const me = s.id === myNetId;
+          const mm = Math.floor(s.t / 60), ss = String(s.t % 60).padStart(2, "0");
+          return `<div class="stats-row ${me ? 'me' : ''}"><span>${c.e} ${c.n}${me ? " (YOU)" : ""}</span><span>${s.k} K · ${s.d} DMG · ${mm}:${ss}</span></div>`;
+        }).join("") + `</div>`
+      : "";
+  }
 }
 
 // The host (or solo play) decides the winner and tells every connected player.
-function endMatch(winnerId) {
+function endMatch(winnerId, winnerTeam = null) {
   if(matchOver) return;
   matchOver = true;
+  const stats = E.map(e => ({
+    id: e.netId, ci: e.ci, k: e.kills, d: Math.round(e.dmg),
+    t: Math.round(e.dead ? (e.deathTime || 0) : matchTime), dead: e.dead
+  }));
   if(isMultiplayer && isLobbyLeader) {
     outgoingSeq++;
-    broadcastToPeers({ type: "MATCH_END", winnerId: winnerId, seq: outgoingSeq });
+    broadcastToPeers({ type: "MATCH_END", winnerId, winnerTeam, stats, seq: outgoingSeq });
   }
-  showResultScreen(!!winnerId && winnerId === myNetId, winnerId);
+  const iWon = teamMode
+    ? (winnerTeam !== null && winnerTeam !== undefined && pl && pl.team === winnerTeam)
+    : (winnerId !== null && winnerId !== undefined && winnerId === myNetId);
+  showResultScreen(iWon, winnerId, stats);
 }
 
 window.returnToMenu = function() {
@@ -1527,23 +1919,36 @@ function sendActionIntent(act, a, x, z) {
   }
 }
 
-function electNewLeader(deadLeaderId) {
-  const remaining = roster.filter(r => r.id !== deadLeaderId);
-  if(remaining.length === 0) {
-    cancelLobby();
-    return;
+function leaveLobby(msg) {
+  if(peer) peer.destroy();
+  peer = null;
+  isMultiplayer = false;
+  isLobbyLeader = false;
+  leaderId = null;
+  peerConnections.clear();
+  roster = [];
+  lastSeenByPeer.clear();
+  lastSeqByPeer.clear();
+  quickMatchRooms = null;
+  quickMatchHosted = false;
+  quickMatchAutoStart = null;
+  qmClientCountdown = null;
+  qmRendezvousStarted = false;
+  remotePickupMeshes.forEach(m => disposeHierarchy(m));
+  remotePickupMeshes.clear();
+  // Full teardown: stop the simulation and clear match state before showing the menu
+  matchOver = true;
+  state = "menu";
+  isSpectating = false;
+  spectateTarget = null;
+  clearHeldInputs();
+  if(document.pointerLockElement) {
+    try { document.exitPointerLock(); } catch(e) {}
   }
-  remaining.sort((a, b) => a.id.localeCompare(b.id));
-  const newLeader = remaining[0];
-  leaderId = newLeader.id;
-  isLobbyLeader = (myNetId === newLeader.id);
-
-  if(isLobbyLeader) {
-    outgoingSeq++;
-    broadcastToPeers({ type: "LEADER_ELECTED", leaderId: myNetId, seq: outgoingSeq });
-  }
-
-  if(state === "menu") refreshLobbyMenu();
+  clearSceneEntities();
+  pl = null;
+  setupViewmodel(null);
+  menu(msg);
 }
 
 function setupConnectionEvents(conn) {
@@ -1565,8 +1970,24 @@ function setupConnectionEvents(conn) {
     roster = roster.filter(r => r.id !== conn.peer);
     removePeerEntity(conn.peer);
 
+    // Keep every client's roster in sync when someone leaves
+    if(isLobbyLeader) {
+      outgoingSeq++;
+      broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, seq: outgoingSeq });
+    }
+
+    // A failed Quick Match join attempt (room gone or rejected) — try the next room
+    if(quickMatchRooms && !isLobbyLeader) {
+      qmSeq++;
+      tryNextQuickMatchRoom();
+      return;
+    }
+
+    // Clients only ever connect to the host, so a real host migration isn't
+    // possible — end the session cleanly instead of pretending to elect a new leader.
     if(conn.peer === leaderId && isMultiplayer && !isLobbyLeader) {
-      electNewLeader(conn.peer);
+      leaveLobby("The host left the lobby.");
+      return;
     }
     if(state === "menu") refreshLobbyMenu();
   });
@@ -1584,6 +2005,13 @@ function handleIncomingData(conn, data) {
     return;
   }
   if(data.type === "PONG") return;
+  if(data.type === "REJECT") {
+    // During Quick Match, a full/underway lobby just means "try the next room";
+    // the host closes the connection right after, which triggers the next attempt.
+    if(quickMatchRooms) return;
+    leaveLobby(data.reason || "Lobby full or match underway.");
+    return;
+  }
 
   if(data.seq !== undefined && data.id && !isNewPacket(data.id, data.type, data.seq)) {
     return;
@@ -1603,6 +2031,7 @@ function handleIncomingData(conn, data) {
     if(state === "menu") refreshLobbyMenu();
   }
   else if(data.type === "ROSTER_SYNC") {
+    quickMatchRooms = null; // joined successfully — normal lobby behavior from here
     roster = data.roster;
     if(data.leaderId) {
       leaderId = data.leaderId;
@@ -1613,6 +2042,10 @@ function handleIncomingData(conn, data) {
   else if(data.type === "LEADER_ELECTED") {
     leaderId = data.leaderId;
     isLobbyLeader = (myNetId === leaderId);
+    if(state === "menu") refreshLobbyMenu();
+  }
+  else if(data.type === "QM_COUNTDOWN") {
+    qmClientCountdown = data.remaining;
     if(state === "menu") refreshLobbyMenu();
   }
   else if(data.type === "START_GAME") {
@@ -1635,10 +2068,24 @@ function handleIncomingData(conn, data) {
     for(const item of data.entities) {
       if(item.id === myNetId) {
         if(pl) {
+          // Local hit feedback + death handling from the authoritative host state
+          if(item.hp < pl.hp && !pl.dead) applyLocalHitFeedback(pl.hp - item.hp);
           pl.hp = item.hp;
+          // Replicate host-applied status effects so stuns/slows/poison actually stop a client
+          pl.stun = Math.max(pl.stun, item.st || 0);
+          pl.slow = Math.max(pl.slow, item.sl || 0);
+          pl.sporePoison = Math.max(pl.sporePoison, item.po || 0);
+          pl.speedBoost = Math.max(pl.speedBoost, item.sb || 0);
+          pl.kx = item.kx || 0;
+          pl.kz = item.kz || 0;
           if(item.dead && !pl.dead) {
             pl.dead = true;
+            pl.deathTime = matchTime;
+            pl.killedBy = item.kl || "storm";
             if(pl.mesh) pl.mesh.visible = false;
+            Snd.play("death");
+            const killer = (item.kl && item.kl !== "storm") ? getRemoteActorByNetId(item.kl) : null;
+            addKillFeed(killer, pl);
           }
         }
         continue;
@@ -1650,33 +2097,40 @@ function handleIncomingData(conn, data) {
         E.push(ent);
       }
       if(ent) {
+        if(item.dead && !ent.dead) {
+          ent.dead = true;
+          ent.deathTime = matchTime;
+          Snd.play("death");
+          const killer = (item.kl && item.kl !== "storm") ? getRemoteActorByNetId(item.kl) : null;
+          addKillFeed(killer, ent);
+        }
         ent.targetX = item.x;
         ent.targetZ = item.z;
         ent.targetA = item.a;
         ent.targetP = item.p || 0;
         ent.hp = item.hp;
         ent.dead = item.dead;
+        ent.stun = item.st || 0;
+        ent.slow = item.sl || 0;
         if(ent.dead && ent.mesh) ent.mesh.visible = false;
       }
     }
+    syncRemotePickups(data.pickups || []);
   }
   else if(data.type === "MATCH_END") {
     if(isLobbyLeader) return;
     if(state !== "play" && state !== "countdown") return;
-    showResultScreen(data.winnerId === myNetId, data.winnerId);
+    const iWon = data.winnerId === myNetId ||
+      (data.winnerTeam != null && data.winnerTeam !== undefined && pl && pl.team === data.winnerTeam);
+    showResultScreen(iWon, data.winnerId, data.stats || []);
   }
   else if(data.type === "ACTION_INTENT") {
     const ent = getRemoteActorByNetId(data.id);
     if(ent && !ent.dead) {
-      ent.x = data.x;
-      ent.z = data.z;
-      ent.a = data.a;
-      ent.targetX = data.x;
-      ent.targetZ = data.z;
-      ent.targetA = data.a;
-      if(data.act === "ATTACK") executeAttack(ent);
-      else if(data.act === "AB1") executeAbility1(ent);
-      else if(data.act === "AB2") executeAbility2(ent);
+      // Validate cooldowns on the host; don't trust the supplied coordinates
+      if(data.act === "ATTACK" && ent.c1 <= 0) executeAttack(ent);
+      else if(data.act === "AB1" && ent.c2 <= 0) executeAbility1(ent);
+      else if(data.act === "AB2" && ent.c3 <= 0) executeAbility2(ent);
     }
     if(isLobbyLeader) {
       peerConnections.forEach((pConn, pid) => {
@@ -1706,12 +2160,20 @@ setInterval(() => {
       a: e.a,
       p: e.pitch,
       hp: e.hp,
-      dead: e.dead
+      dead: e.dead,
+      st: e.stun > 0 ? e.stun : 0,
+      sl: e.slow > 0 ? e.slow : 0,
+      po: e.sporePoison > 0 ? e.sporePoison : 0,
+      sb: e.speedBoost > 0 ? e.speedBoost : 0,
+      kx: Math.round(e.kx),
+      kz: Math.round(e.kz),
+      kl: e.killedBy
     }));
     broadcastToPeers({
       type: "SNAPSHOT",
       seq: outgoingSeq,
-      entities: snapEntities
+      entities: snapEntities,
+      pickups: Pickups.map(pk => ({ id: pk.uid, k: pk.kind, x: pk.x, z: pk.z }))
     });
   }
 }, 40);
@@ -1763,16 +2225,57 @@ setInterval(() => {
       lastSeenByPeer.delete(id);
 
       if(id === leaderId && !isLobbyLeader) {
-        electNewLeader(id);
+        // No client-to-client connections exist, so migration is impossible — close out.
+        leaveLobby("The host left the lobby.");
+        return;
+      }
+      if(isLobbyLeader) {
+        outgoingSeq++;
+        broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, seq: outgoingSeq });
       }
       if(state === "menu") refreshLobbyMenu();
     }
   }
 }, 1500);
 
+// Shared host-side wiring: lobby rejection, room-code collision retry, error handling
+function wireHostPeer() {
+  peer.on("open", () => {
+    refreshLobbyMenu();
+  });
+
+  peer.on("connection", conn => {
+    if(roster.length >= 6 || state !== "menu") {
+      // Wait for the connection to open before sending the rejection
+      conn.on("open", () => {
+        try { conn.send({ type: "REJECT", reason: "Lobby full or match underway" }); } catch(e) {}
+        setTimeout(() => { try { conn.close(); } catch(e) {} }, 200);
+      });
+      setTimeout(() => { try { conn.close(); } catch(e) {} }, 2500);
+      return;
+    }
+    setupConnectionEvents(conn);
+  });
+
+  peer.on("error", err => {
+    console.warn("Peer error:", err);
+    if(err && err.type === "unavailable-id") {
+      // Room code collision — immediately retry with a fresh code
+      const wasQM = quickMatchHosted;
+      hostMultiplayerLobby();
+      if(wasQM) quickMatchHosted = true;
+      return;
+    }
+    alert("Could not register room code. Try hosting again!");
+    leaveLobby("Select a champion to battle in the arena!");
+  });
+}
+
 window.hostMultiplayerLobby = function() {
+  quickMatchHosted = false;
+  quickMatchAutoStart = null;
   currentLobbyCode = gen4LetterCode();
-  const roomLeaderId = "itembrawl-room-" + currentLobbyCode;
+  const roomLeaderId = "brawlbound-room-" + currentLobbyCode;
   if(peer) peer.destroy();
 
   myNetId = roomLeaderId;
@@ -1781,25 +2284,12 @@ window.hostMultiplayerLobby = function() {
   isLobbyLeader = true;
   isMultiplayer = true;
   roster = [{ id: myNetId, hero: p1HeroChoice }];
+  peerConnections.clear();
+  lastSeenByPeer.clear();
+  lastSeqByPeer.clear();
 
-  peer.on("open", () => {
-    refreshLobbyMenu();
-  });
-
-  peer.on("connection", conn => {
-    if(roster.length >= 6 || state !== "menu") {
-      conn.send({ type: "REJECT", reason: "Lobby full or match underway" });
-      setTimeout(() => conn.close(), 200);
-      return;
-    }
-    setupConnectionEvents(conn);
-  });
-
-  peer.on("error", err => {
-    console.warn("Peer error:", err);
-    alert("Could not register room code. Try hosting again!");
-    returnToMenu();
-  });
+  wireHostPeer();
+  refreshLobbyMenu();
 };
 
 window.joinMultiplayerLobby = function() {
@@ -1813,8 +2303,8 @@ window.joinMultiplayerLobby = function() {
   currentLobbyCode = code;
   if(peer) peer.destroy();
 
-  myNetId = "itembrawl-client-" + Math.random().toString(36).substring(2, 8);
-  leaderId = "itembrawl-room-" + currentLobbyCode;
+  myNetId = "brawlbound-client-" + Math.random().toString(36).substring(2, 8);
+  leaderId = "brawlbound-room-" + currentLobbyCode;
   peer = new Peer(myNetId);
   isLobbyLeader = false;
   isMultiplayer = true;
@@ -1832,12 +2322,232 @@ window.joinMultiplayerLobby = function() {
   peer.on("error", err => {
     console.warn("Peer error:", err);
     alert("Could not find lobby. Double-check your code!");
-    returnToMenu();
+    leaveLobby("Select a champion to battle in the arena!");
   });
 };
 
+// --- QUICK MATCH: join a random open lobby (max 6 players), or host one if none exist ---
+const QM_CODES = ["QM01", "QM02", "QM03", "QM04", "QM05", "QM06"];
+
+function handleQuickMatchPeerError(err) {
+  console.warn("Peer error:", err);
+  // A dead room during quick-match joining — immediately try the next one
+  if(err && err.type === "peer-unavailable" && quickMatchRooms) {
+    qmSeq++;
+    tryNextQuickMatchRoom();
+    return;
+  }
+  // The public broker rejects peer listing with a server-error — fall back to rendezvous
+  if(err && err.type === "server-error" && !quickMatchRooms && !quickMatchHosted && !isLobbyLeader) {
+    startQuickMatchRendezvous();
+    return;
+  }
+  alert("Quick Match connection error. Try again!");
+  leaveLobby("Select a champion to battle in the arena!");
+}
+
+// The broker's listing server-error DISCONNECTS our peer, and a disconnected peer's
+// connect() returns undefined — so rebuild a fresh peer before joining through it
+function ensureLivePeer(then) {
+  if(peer && !peer.destroyed && !peer.disconnected) { then(); return; }
+  try { if(peer) peer.destroy(); } catch(e) {}
+  myNetId = "brawlbound-client-" + Math.random().toString(36).substring(2, 8);
+  peer = new Peer(myNetId);
+  peer.on("connection", conn => setupConnectionEvents(conn));
+  peer.on("error", err => handleQuickMatchPeerError(err));
+  if(peer.open) then();
+  else peer.on("open", () => then());
+}
+
+window.quickMatch = function() {
+  if(peer) peer.destroy();
+  peer = null;
+  quickMatchRooms = null;
+  quickMatchHosted = false;
+  quickMatchAutoStart = null;
+  qmClientCountdown = null;
+  qmSeq++;
+  qmRendezvousStarted = false;
+
+  isMultiplayer = true;
+  isLobbyLeader = false;
+  leaderId = null;
+  currentLobbyCode = null;
+  peerConnections.clear();
+  roster = [];
+  lastSeenByPeer.clear();
+  lastSeqByPeer.clear();
+
+  myNetId = "brawlbound-client-" + Math.random().toString(36).substring(2, 8);
+  peer = new Peer(myNetId);
+  menu("\u26A1 Quick Match: searching for open lobbies...");
+
+  peer.on("connection", conn => setupConnectionEvents(conn));
+  peer.on("error", err => handleQuickMatchPeerError(err));
+
+  peer.on("open", () => {
+    // 1) Try listing rooms through the broker (works when the broker allows it)
+    try {
+      peer.listAllPeers(allPeers => {
+        const rooms = (allPeers || []).filter(id => typeof id === "string" && id.startsWith("brawlbound-room-"));
+        if(rooms.length > 0) {
+          quickMatchRooms = shuffle(rooms);
+          tryNextQuickMatchRoom();
+        } else {
+          // No rooms listed (or listing unsupported) — use quick-match rendezvous codes
+          startQuickMatchRendezvous();
+        }
+      });
+    } catch(e) {
+      startQuickMatchRendezvous();
+    }
+  });
+};
+
+function startQuickMatchRendezvous() {
+  if(qmRendezvousStarted) return;
+  qmRendezvousStarted = true;
+  // FIXED order: everyone tries the same code first, so players stack into one room
+  // instead of spreading across codes. A full room rejects, and we cascade to the next.
+  quickMatchRendezvous(QM_CODES.slice());
+}
+
+// 2) Rendezvous: try to CLAIM a quick-match room code. A taken code means a host is
+//    already waiting there — join them. If we claim it, we become the host.
+function quickMatchRendezvous(codes) {
+  if(codes.length === 0) { hostQuickMatchLobby(); return; }
+  const code = codes.shift();
+  const roomId = "brawlbound-room-" + code;
+  const claim = new Peer(roomId);
+  let settled = false;
+  const settle = fn => { if(settled) return; settled = true; fn(); };
+
+  claim.on("open", () => settle(() => {
+    // We own this room code — become the quick-match host
+    if(peer) peer.destroy();
+    peer = claim;
+    myNetId = roomId;
+    leaderId = myNetId;
+    isLobbyLeader = true;
+    isMultiplayer = true;
+    roster = [{ id: myNetId, hero: p1HeroChoice }];
+    currentLobbyCode = code;
+    quickMatchRooms = null;
+    quickMatchHosted = true;
+    quickMatchAutoStart = null;
+    qmClientCountdown = null;
+    peerConnections.clear();
+    lastSeenByPeer.clear();
+    lastSeqByPeer.clear();
+    wireHostPeer();
+    refreshLobbyMenu();
+  }));
+
+  claim.on("error", err => settle(() => {
+    try { claim.destroy(); } catch(e) {}
+    if(err && err.type === "unavailable-id") {
+      // A host already holds this code — join their lobby (remaining codes are fallbacks)
+      joinQuickRoom(roomId, codes);
+    } else {
+      // Broker hiccup on this code — try the next one
+      quickMatchRendezvous(codes);
+    }
+  }));
+}
+
+function joinQuickRoom(roomId, remainingCodes) {
+  leaderId = roomId;
+  currentLobbyCode = roomId.replace("brawlbound-room-", "");
+  quickMatchRooms = remainingCodes.map(c => "brawlbound-room-" + c);
+  ensureLivePeer(() => {
+    const conn = peer.connect(roomId, { reliable: true });
+    if(!conn) { tryNextQuickMatchRoom(); return; } // fail safe: dead peer
+    setupConnectionEvents(conn);
+    menu(`\u26A1 Quick Match: joining lobby [ ${currentLobbyCode} ]...`);
+
+    const attempt = ++qmSeq;
+    const roomTimeout = setTimeout(() => {
+      if(attempt !== qmSeq || !quickMatchRooms) return;
+      qmSeq++;
+      try { conn.close(); } catch(e) {}
+      tryNextQuickMatchRoom();
+    }, 5000);
+    conn.on("open", () => { if(attempt === qmSeq) clearTimeout(roomTimeout); });
+    // Joined! ROSTER_SYNC will clear quickMatchRooms and show the lobby
+  });
+}
+
+function tryNextQuickMatchRoom() {
+  if(!quickMatchRooms) return;
+  if(quickMatchRooms.length === 0) {
+    // Tried every open room without success — host our own
+    hostQuickMatchLobby();
+    return;
+  }
+  const roomId = quickMatchRooms.shift();
+  ensureLivePeer(() => {
+    if(!quickMatchRooms) return; // joined/ended while waiting for a live peer
+    leaderId = roomId;
+    currentLobbyCode = roomId.replace("brawlbound-room-", "");
+    menu(`\u26A1 Quick Match: joining lobby [ ${currentLobbyCode} ]...`);
+
+    const conn = peer.connect(roomId, { reliable: true });
+    if(!conn) { tryNextQuickMatchRoom(); return; } // fail safe: dead peer
+    setupConnectionEvents(conn);
+
+    const attempt = ++qmSeq;
+    // If this room never opens (host gone / connection stuck), move on to the next one
+    const roomTimeout = setTimeout(() => {
+      if(attempt !== qmSeq || !quickMatchRooms) return;
+      qmSeq++; // invalidate this attempt
+      try { conn.close(); } catch(e) {}
+      tryNextQuickMatchRoom();
+    }, 5000);
+    conn.on("open", () => {
+      if(attempt === qmSeq) clearTimeout(roomTimeout);
+    });
+  });
+}
+
+function hostQuickMatchLobby() {
+  quickMatchRooms = null;
+  quickMatchHosted = true;
+  hostMultiplayerLobby(); // registers a brawlbound-room-XXXX that other quick-matchers can find
+  quickMatchHosted = true;
+  menu(`\u26A1 Quick Match: lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] created \u2014 waiting for brawlers...`);
+}
+
+// Quick Match lobbies auto-start 20s after a second player joins (host side)
+let qmLastShown = -1;
+setInterval(() => {
+  if(quickMatchHosted && isMultiplayer && isLobbyLeader && state === "menu" && roster.length >= 2) {
+    if(!quickMatchAutoStart) quickMatchAutoStart = Date.now() + 20000;
+    const remaining = Math.max(0, Math.ceil((quickMatchAutoStart - Date.now()) / 1000));
+    if(remaining <= 0) {
+      quickMatchAutoStart = null;
+      qmClientCountdown = null;
+      startLobbyMatch();
+      return;
+    }
+    if(remaining !== qmLastShown) {
+      qmLastShown = remaining;
+      qmClientCountdown = remaining;
+      refreshLobbyMenu();
+    }
+    outgoingSeq++;
+    broadcastToPeers({ type: "QM_COUNTDOWN", remaining, seq: outgoingSeq });
+  } else if(quickMatchAutoStart) {
+    quickMatchAutoStart = null;
+    qmLastShown = -1;
+    qmClientCountdown = null;
+  }
+}, 1000);
+
 function refreshLobbyMenu() {
-  menu(`Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] - (${roster.length}/6 Players) ${isLobbyLeader ? '👑 (Host)' : ''}`);
+  const qmLine = qmClientCountdown !== null
+    ? ` <span style="color:#ffd000;">⏳ Match starts in ${qmClientCountdown}s</span>`
+    : "";
+  menu(`Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode || "..."}</span> ] - (${roster.length}/6 Players) ${isLobbyLeader ? '👑 (Host)' : ''}${qmLine}`);
 }
 
 window.selectMap = function(idx) {
@@ -1868,10 +2578,12 @@ function menu(msg) {
   resultModal.style.display = "none";
   damageOverlay.style.opacity = 0;
   spectatorBanner.style.display = "none";
+  const kf = document.getElementById("killfeed");
+  if(kf) kf.innerHTML = "";
 
   ov.innerHTML = `
     <div>
-      <div class="brand-title">ITEM BRAWL 3D</div>
+      <div class="brand-title">BRAWLBOUND</div>
       <div class="subtitle">${msg}</div>
     </div>
 
@@ -1888,9 +2600,15 @@ function menu(msg) {
       </div>
     </div>
 
+    <div class="settings-panel">
+      <span>🖱️ Sensitivity <input type="range" id="sens-slider" min="0.0008" max="0.005" step="0.0001" value="${mouseSens}"> <span id="sens-val">${mouseSens.toFixed(4)}</span></span>
+      <span>🔊 Volume <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="${Snd.vol}"></span>
+    </div>
+
     <div class="lobby-panel">
       ${!isMultiplayer ? `
         <button class="lobby-btn action-primary" onclick="launchSoloMatch()">⚔️ Play Solo (vs AI)</button>
+        <button class="lobby-btn action-primary" style="background:linear-gradient(135deg,#3db8f5,#1d8fd6);" onclick="quickMatch()">⚡ Quick Match</button>
         <button class="lobby-btn" onclick="hostMultiplayerLobby()">👑 Host Online Lobby</button>
         <div style="display:flex; gap:6px; align-items:center;">
           <input type="text" id="lobby-code-in" class="lobby-input" placeholder="CODE" maxlength="4">
@@ -1921,6 +2639,8 @@ function menu(msg) {
           <div class="card-stats">
             <span>HP <b>${c.hp}</b></span>
             <span>SPD <b>${c.sp}</b></span>
+          </div>
+          <div class="card-stats weapon-line">
             <span>WEAPON <b>${c.w} ${c.wn}</b></span>
           </div>
 
@@ -1954,6 +2674,16 @@ function menu(msg) {
       }
     };
   });
+
+  const sensSlider = document.getElementById("sens-slider");
+  if(sensSlider) sensSlider.oninput = () => {
+    mouseSens = parseFloat(sensSlider.value);
+    Store.set("bb_sens", String(mouseSens));
+    const sv = document.getElementById("sens-val");
+    if(sv) sv.innerText = mouseSens.toFixed(4);
+  };
+  const volSlider = document.getElementById("vol-slider");
+  if(volSlider) volSlider.oninput = () => Snd.setVol(parseFloat(volSlider.value));
 }
 
 window.cancelLobby = function() {
@@ -1966,6 +2696,11 @@ window.cancelLobby = function() {
   roster = [];
   lastSeenByPeer.clear();
   lastSeqByPeer.clear();
+  quickMatchRooms = null;
+  quickMatchHosted = false;
+  quickMatchAutoStart = null;
+  qmClientCountdown = null;
+  qmRendezvousStarted = false;
   menu("Select a champion to battle in the arena!");
 };
 
@@ -1976,6 +2711,8 @@ function clearSceneEntities() {
   for(const z of Zones) { disposeHierarchy(z.mesh); }
   for(const pk of Pickups) { disposeHierarchy(pk.mesh); }
   for(const dn of DamageNumbers) { disposeHierarchy(dn.sprite); }
+  remotePickupMeshes.forEach(m => disposeHierarchy(m));
+  remotePickupMeshes.clear();
   E = []; P = []; F = []; Zones = []; Pickups = []; DamageNumbers = [];
 }
 
@@ -2000,11 +2737,12 @@ window.launchSoloMatch = function() {
   document.getElementById("room-badge").innerText = "ARENA ZONE";
 
   clearSceneEntities();
+  teamMode = false;
   const chosenMap = MAPS[selectedMapIndex];
   currentRects = chosenMap.rects;
   build3DMap(chosenMap);
 
-  const spawns = SPAWNS.slice().sort(() => Math.random() - 0.5);
+  const spawns = shuffle(SPAWNS);
 
   E = [mk(p1HeroChoice, spawns[0][0], spawns[0][1], 1, myNetId)];
   pl = E[0];
@@ -2021,7 +2759,11 @@ window.launchSoloMatch = function() {
 };
 
 window.startLobbyMatch = function() {
-  const spawns = SPAWNS.slice().sort(() => 0.5 - Math.random());
+  if(roster.length < 2) {
+    alert("Need at least 2 players in the lobby to start a match!");
+    return;
+  }
+  const spawns = shuffle(SPAWNS);
   const spawnMap = {};
   roster.forEach((r, idx) => {
     spawnMap[r.id] = spawns[idx % spawns.length];
@@ -2040,6 +2782,7 @@ window.startLobbyMatch = function() {
 
 function launchMeshMatch(spawnMap) {
   clearSceneEntities();
+  teamMode = false;
   const chosenMap = MAPS[selectedMapIndex];
   currentRects = chosenMap.rects;
   build3DMap(chosenMap);
@@ -2071,6 +2814,9 @@ function initMatchView() {
   spectateTarget = null;
   spectatorBanner.style.display = "none";
 
+  const kf = document.getElementById("killfeed");
+  if(kf) kf.innerHTML = "";
+
   itemSpawnTimer = 0; matchTime = 0;
   stormRadius = 380;
   stormMesh.scale.set(stormRadius, 1, stormRadius);
@@ -2091,6 +2837,18 @@ function initMatchView() {
 // --- MAIN LOOP ---
 function upd(dt) {
   if(isSpectating && (!spectateTarget || spectateTarget.dead)) findNextSpectateTarget(1);
+
+  // Cursor-steer fallback look (used when Pointer Lock is unavailable)
+  if(fallbackLook && !isLocked && !isSpectating && (state === "play" || state === "countdown")) {
+    const dead = 70;
+    const ex = Math.min(Math.max(0, Math.abs(fbMouse.x) - dead), 420);
+    const ey = Math.min(Math.max(0, Math.abs(fbMouse.y) - dead), 300);
+    if(ex) yaw -= Math.sign(fbMouse.x) * ex * 0.0028 * dt * 60;
+    if(ey) pitch -= Math.sign(fbMouse.y) * ey * 0.0022 * dt * 60;
+    pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
+    cameraHolder.rotation.y = yaw;
+    camera.rotation.x = pitch;
+  }
 
   // Your facing always follows the mouse (even while stunned) so spectators see what you see
   if(pl && !pl.dead && !isSpectating) {
@@ -2163,7 +2921,9 @@ function upd(dt) {
   }
 
   if(countdown > 0) {
+    const prevCeil = Math.ceil(countdown);
     countdown -= dt;
+    if(countdown > 0 && Math.ceil(countdown) < prevCeil) Snd.play("beep");
     centerMsg.style.display = "block";
     centerMsg.innerText = countdown > 0.4 ? Math.ceil(countdown) : "BRAWL!";
 
@@ -2176,8 +2936,10 @@ function upd(dt) {
 
     if(countdown <= 0) {
       state = "play";
+      Snd.play("go");
       centerMsg.style.display = "none";
     }
+    drawMinimap();
     return;
   }
 
@@ -2192,6 +2954,14 @@ function upd(dt) {
     if(itemSpawnTimer > 12.0 && Pickups.length < 3) {
       itemSpawnTimer = 0;
       spawnPickup();
+    }
+    // Pickups expire after 20s so the arena doesn't clog up
+    for(let i = Pickups.length - 1; i >= 0; i--) {
+      Pickups[i].life -= dt;
+      if(Pickups[i].life <= 0) {
+        disposeHierarchy(Pickups[i].mesh);
+        Pickups.splice(i, 1);
+      }
     }
   }
 
@@ -2227,7 +2997,7 @@ function upd(dt) {
     z.life -= dt;
 
     for(const e of E) {
-      if(!e.dead && e !== z.owner && Math.hypot(e.x - z.x, e.z - z.z) < z.r + e.r) {
+      if(!e.dead && e !== z.owner && !(teamMode && z.owner && e.team === z.owner.team) && Math.hypot(e.x - z.x, e.z - z.z) < z.r + e.r) {
         if(z.kind === "marinara") {
           e.slow = 0.5;
           hurt(e, 13 * dt, Math.atan2(e.z - z.z, e.x - z.x), 0, z.owner);
@@ -2239,6 +3009,11 @@ function upd(dt) {
           hurt(e, 9, Math.atan2(e.z - z.z, e.x - z.x), 150, z.owner);
           spawn3DRing(z.x, z.z, 34, 0xffe853);
           z.life = 0;
+        } else if(z.kind === "bumper") {
+          const pushAngle = Math.atan2(e.z - z.z, e.x - z.x);
+          e.kx = Math.cos(pushAngle) * 620;
+          e.kz = Math.sin(pushAngle) * 620;
+          e.stun = Math.max(e.stun, 0.25);
         } else if(z.kind === "anchor_vortex") {
           const pullAngle = Math.atan2(z.z - e.z, z.x - e.x);
           e.kx += Math.cos(pullAngle) * 400 * dt;
@@ -2290,10 +3065,24 @@ function upd(dt) {
   for(const e of E) {
     if(e.dead) {
       if(e.mesh) e.mesh.visible = false;
+      e.pending = [];
       continue;
     }
 
     const prevX = e.x, prevZ = e.z;
+
+    // Simulated delayed shots (Quackbot Barrage) — lives inside the loop,
+    // so it can never fire after the match is over or the entity is gone.
+    if(e.pending && e.pending.length) {
+      for(let pi = e.pending.length - 1; pi >= 0; pi--) {
+        const ps = e.pending[pi];
+        ps.t -= dt;
+        if(ps.t <= 0) {
+          shot(e, e.a + (Math.random()-0.5)*0.1, ps.opts);
+          e.pending.splice(pi, 1);
+        }
+      }
+    }
 
     if(e !== pl && e.mesh) {
       // Hide the body of the player whose eyes we're looking through
@@ -2332,7 +3121,7 @@ function upd(dt) {
       e.z += e.chargeVz * dt;
       pushCollisions(e);
       for(const t of E) {
-        if(t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6) {
+        if(t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6 && areEnemies(e, t)) {
           hurt(t, 14, Math.atan2(t.z-e.z, t.x-e.x), 420, e);
           t.stun = 0.8;
         }
@@ -2399,11 +3188,12 @@ function upd(dt) {
     }
     pushCollisions(e);
 
-    // Pickups
+    // Pickups (host-authoritative: only the host or solo play collects; clients see them via snapshots)
     if(!isMultiplayer || isLobbyLeader) {
-      for(let i = Pickups.length-1; i >= 0; i--) {
+      for(let i = Pickups.length - 1; i >= 0; i--) {
         const p = Pickups[i];
         if(Math.hypot(e.x - p.x, e.z - p.z) < e.r + p.r) {
+          Snd.play("pickup");
           p.apply(e);
           spawn3DRing(p.x, p.z, 26, 0x65ff88);
           disposeHierarchy(p.mesh);
@@ -2419,6 +3209,10 @@ function upd(dt) {
       e.mesh.position.set(e.x, 0, e.z);
       e.mesh.rotation.y = -e.a + Math.PI / 2;
 
+      // Team-colored HP bars: green for you/allies, red for enemies
+      const hpCol = (e === pl || (teamMode && pl && e.team === pl.team)) ? 0x45d988 : 0xff5544;
+      e.mesh.hpBar.material.color.setHex(hpCol);
+
       const ratio = Math.max(0, e.hp / e.mhp);
       e.mesh.hpBar.scale.x = ratio;
       e.mesh.hpBar.position.x = -13 * (1 - ratio);
@@ -2426,9 +3220,13 @@ function upd(dt) {
     }
   }
 
-  // Projectiles
+  // Projectiles — all termination paths funnel through one finalize step so
+  // onDeath fires exactly once (lifetime, wall, or player hit) and no further
+  // collisions are processed after a projectile is marked dead.
   for(let i = P.length - 1; i >= 0; i--) {
     const p = P[i];
+    let finalize = false;
+
     if(p.t === "b") {
       p.age += dt;
       if(p.out && p.age > 0.48) { p.out = false; p.hit.clear(); }
@@ -2436,10 +3234,13 @@ function upd(dt) {
         const a = Math.atan2(p.o.z - p.z, p.o.x - p.x);
         p.vx = Math.cos(a)*390;
         p.vz = Math.sin(a)*390;
-        if(Math.hypot(p.o.x - p.x, p.o.z - p.z) < 22) p.life = 0;
+        if(Math.hypot(p.o.x - p.x, p.o.z - p.z) < 22) finalize = true;
       }
+      // Bruno's hammer deflect destroys boomerangs mid-flight (reflect() zeroes life)
+      if(p.life <= 0) finalize = true;
     } else {
       p.life -= dt;
+      if(p.life <= 0) finalize = true;
     }
 
     p.x += p.vx * dt;
@@ -2449,27 +3250,58 @@ function upd(dt) {
     p.mesh.position.set(p.x, 14, p.z);
     p.mesh.rotation.y = p.rot;
 
-    if(p.out && blocked(p.x, p.z, 2)) {
-      if(p.t === "b") { p.out = false; p.hit.clear(); p.age = 1; }
-      else {
-        if(p.onDeath) p.onDeath(p.x, p.z);
-        p.life = 0;
+    // Wall handling: boomerangs switch to their return phase, ricochet balls bank,
+    // everything else dies (with its onDeath firing exactly once at finalize)
+    if(!finalize && p.out && blocked(p.x, p.z, 2)) {
+      if(p.t === "b") {
+        p.out = false;
+        p.hit.clear();
+        p.age = 1;
+      } else if(p.t === "cue" || p.t === "eight") {
+        if(p.bounces > 0) {
+          if(reflectOffWalls(p)) {
+            p.bounces--;
+            Snd.play("bounce");
+            spawn3DRing(p.x, p.z, 10, 0xffffff);
+            if(p.t === "eight") {
+              p.d *= 1.35;
+              spawnDamageNumber(p.x, p.z, "×" + Math.round(p.d), "#dddddd");
+            }
+          }
+        } else {
+          finalize = true;
+        }
+      } else {
+        finalize = true;
       }
     }
 
-    for(const t of E) {
-      if(t !== p.o && !t.dead && !p.hit.has(t) && Math.hypot(t.x - p.x, t.z - p.z) < t.r + 9) {
-        p.hit.add(t);
-        hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o);
-        if(p.t !== "b") {
-          if(p.onDeath) p.onDeath(p.x, p.z);
-          p.life = 0;
+    // Bumper pads ricochet any projectile (even boomerangs)
+    if(!finalize && bounceOffBumpers(p)) {
+      Snd.play("bounce");
+      spawn3DRing(p.x, p.z, 12, 0x65ff88);
+    }
+
+    if(!finalize) {
+      for(const t of E) {
+        if(t !== p.o && !t.dead && !p.hit.has(t)
+           && areEnemies(p.o, t)
+           && Math.hypot(t.x - p.x, t.z - p.z) < t.r + 9) {
+          p.hit.add(t);
+          hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o);
+          if(p.t !== "b") {
+            finalize = true;
+            break; // a terminating hit stops further collisions this frame
+          }
         }
       }
     }
 
-    if(p.life <= 0) {
-      if(p.onDeath && p.t !== "cannonball" && p.t !== "bomb") p.onDeath(p.x, p.z);
+    if(finalize) {
+      if(p.onDeath && !p.finalized) {
+        p.finalized = true;
+        p.onDeath(p.x, p.z);
+      }
       disposeHierarchy(p.mesh);
       P.splice(i, 1);
     }
@@ -2481,13 +3313,69 @@ function upd(dt) {
     // Only the host (or solo play) decides when the match is over
     if(!isMultiplayer || isLobbyLeader) {
       const alive = E.filter(e => !e.dead);
-      if(alive.length <= 1) {
+      if(teamMode) {
+        const teamsAlive = [...new Set(alive.map(e => e.team))];
+        if(teamsAlive.length <= 1) {
+          const wTeam = teamsAlive.length === 1 ? teamsAlive[0] : null;
+          endMatch(alive.length >= 1 ? alive[0].netId : null, wTeam);
+          return;
+        }
+      } else if(alive.length <= 1) {
         endMatch(alive.length === 1 ? alive[0].netId : null);
         return;
       }
     }
     // Anyone who has died (host or client) switches to spectating
     if(pl && pl.dead && !isSpectating) startSpectating();
+  }
+
+  drawMinimap();
+}
+
+// --- MINIMAP ---
+const minimapCanvas = document.getElementById("minimap");
+function drawMinimap() {
+  if(!minimapCanvas || hud.style.display === "none") return;
+  const ctx = minimapCanvas.getContext("2d");
+  const sx = minimapCanvas.width / W, sz = minimapCanvas.height / H;
+
+  ctx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+  ctx.fillStyle = "rgba(10, 9, 14, 0.55)";
+  ctx.fillRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+
+  // Walls
+  ctx.fillStyle = "rgba(255,255,255,0.3)";
+  for(const [rx, ry, rw, rh] of currentRects) {
+    ctx.fillRect(rx * sx, ry * sz, rw * sx, rh * sz);
+  }
+
+  // Storm circle
+  ctx.strokeStyle = "rgba(255,85,68,0.9)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(W/2 * sx, H/2 * sz, stormRadius * sx, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Pickups (host has the authoritative list; clients use synced meshes)
+  ctx.fillStyle = "#ffd000";
+  for(const pk of Pickups) {
+    ctx.beginPath();
+    ctx.arc(pk.x * sx, pk.z * sz, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  for(const [, m] of remotePickupMeshes) {
+    ctx.beginPath();
+    ctx.arc(m.position.x * sx, m.position.z * sz, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Players: white = you, green = ally, red = enemy
+  for(const e of E) {
+    if(e.dead) continue;
+    ctx.fillStyle = (e === pl) ? "#ffffff" : (teamMode && pl && e.team === pl.team) ? "#45d988" : "#ff5544";
+    ctx.beginPath();
+    ctx.arc(e.x * sx, e.z * sz, 3, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
@@ -2501,7 +3389,6 @@ function loop(now) {
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
-
 // Initial launch
 currentRects = MAPS[0].rects;
 build3DMap(MAPS[0]);
