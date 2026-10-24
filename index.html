@@ -97,7 +97,8 @@ html, body {
   letter-spacing: 0.5px; margin-top: 2px; min-height: 16px;
 }
 
-.map-selector, .control-selector {
+.gfx-selector .tab-btn { padding: 4px 10px; font-size: 11px; }
+.map-selector, .control-selector, .gfx-selector {
   display: flex; flex-wrap: wrap; background: rgba(10,9,15,0.72);
   border: 1px solid var(--border); border-radius: 12px;
   padding: 4px; gap: 6px;
@@ -481,12 +482,29 @@ let qmClientCountdown = null;   // seconds until auto-start (clients, set by hos
 let qmSeq = 0;                   // join-attempt sequence (guards stale timeouts)
 let qmRendezvousStarted = false; // guards against double rendezvous (listing error + callback)
 
-// In-memory settings store (localStorage is unavailable in sandboxed preview iframes)
+// Settings store: uses localStorage when the browser allows it, otherwise stays in memory
 const Store = {
   mem: {},
-  get(k, d) { return this.mem[k] !== undefined ? this.mem[k] : d; },
-  set(k, v) { this.mem[k] = v; }
+  get(k, d) {
+    try { const v = window.localStorage.getItem(k); if(v !== null) return v; } catch(e) {}
+    return this.mem[k] !== undefined ? this.mem[k] : d;
+  },
+  set(k, v) {
+    this.mem[k] = v;
+    try { window.localStorage.setItem(k, v); } catch(e) {}
+  }
 };
+
+// --- GRAPHICS PRESETS ---
+// scale = render resolution (1 = full). Lower presets also drop shadows, extra light, dust, sparks and glows.
+const GFX = {
+  low:    { scale: 0.6, shadow: 0,    soft: false, rim: false, dust: 0,   sparks: 0.3, glow: false, grid: false, amb: 1.5 },
+  medium: { scale: 0.8, shadow: 512,  soft: false, rim: true,  dust: 70,  sparks: 0.6, glow: true,  grid: true,  amb: 1.05 },
+  high:   { scale: 1,   shadow: 1024, soft: true,  rim: true,  dust: 150, sparks: 1,   glow: true,  grid: true,  amb: 1.05 }
+};
+let gfxLevel = Store.get("bb_gfx", "high");
+if(!GFX[gfxLevel]) gfxLevel = "high";
+let gfxSizeKey = "";
 
 let mouseSens = parseFloat(Store.get("bb_sens", "0.0022"));
 
@@ -540,6 +558,7 @@ function shuffle(arr) {
 const Snd = {
   ctx: null, master: null,
   vol: parseFloat(Store.get("bb_vol", "0.6")) || 0,
+  stormLvl: 0, stormGain: null,
   ensure() {
     if(this.ctx) return;
     try {
@@ -581,6 +600,34 @@ const Snd = {
     src.connect(f); f.connect(g); g.connect(this.master);
     src.start(t);
   },
+  // Storm ambience: a soft, slowly swelling low wind (loops forever, volume follows how close you are to the storm)
+  stormInit() {
+    if(!this.ctx || this.stormGain) return;
+    const ctx = this.ctx, N = 4410, len = Math.floor(ctx.sampleRate * 3);
+    const raw = new Float32Array(len + N);
+    let last = 0;
+    for(let i = 0; i < len + N; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; raw[i] = last * 3.5; }
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate), data = buf.getChannelData(0);
+    // crossfade the loop seam so there is no click
+    for(let i = 0; i < len; i++) data[i] = i < N ? raw[i] * (i / N) + raw[len + i] * (1 - i / N) : raw[i];
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 320; lp.Q.value = 0.6;
+    const lfo = ctx.createOscillator(), lfoGain = ctx.createGain();
+    lfo.frequency.value = 0.17; lfoGain.gain.value = 130;
+    lfo.connect(lfoGain); lfoGain.connect(lp.frequency);
+    const g = ctx.createGain(); g.gain.value = 0;
+    src.connect(lp); lp.connect(g); g.connect(this.master);
+    src.start(); lfo.start();
+    this.stormGain = g;
+  },
+  storm(level) {
+    level = Math.round(level * 20) / 20;
+    if(!this.ctx || level === this.stormLvl) return;
+    this.stormInit();
+    if(!this.stormGain) return;
+    this.stormLvl = level;
+    this.stormGain.gain.setTargetAtTime(level * 0.6, this.ctx.currentTime, 0.35);
+  },
   play(name) {
     if(!this.ctx || demoActive) return;
     switch(name) {
@@ -591,6 +638,7 @@ const Snd = {
       case "bounce": this.tone(900, 0.04, "square", 0.2, 200); break;
       case "death": this.noise(0.3, 0.6, 900); this.tone(160, 0.35, "sine", 0.6, -110); break;
       case "pickup": this.tone(660, 0.08, "sine", 0.35); setTimeout(() => this.tone(880, 0.1, "sine", 0.35), 70); break;
+      case "stormwarn": this.tone(300, 0.7, "sine", 0.22, -120); setTimeout(() => this.tone(220, 0.8, "sine", 0.2, -60), 220); break;
       case "beep": this.tone(440, 0.09, "sine", 0.45); break;
       case "go": this.tone(880, 0.18, "sine", 0.55); break;
       case "win": [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => this.tone(f, 0.16, "triangle", 0.45), i * 110)); break;
@@ -609,6 +657,8 @@ function disposeHierarchy(node) {
     scene.remove(node);
   }
   node.traverse(child => {
+    // Damage numbers / nameplates own their texture; free it (the shared glow texture is kept)
+    if(child.isSprite && child.material && child.material.map && child.material.map !== _glowTex) child.material.map.dispose();
     if(child.geometry) child.geometry.dispose();
     if(child.material) {
       if(Array.isArray(child.material)) child.material.forEach(m => m.dispose());
@@ -672,8 +722,26 @@ const HEROES = [
    a2n:"Root Entangle", a2cd: 9.0,
    ad:"Spore bolt that inflicts lingering blight.", a2d:"Overgrowth projectile that immobilizes foes on impact.",
    melee: false, d:"Blight shaman wielding lingering spore poisons and root binds."
+ },
+ {
+   n:"Kamo the Chameleon", e:"🦎", w:"🌿", wn:"Shifting Claws",
+   role: "Shapeshifter", roleCol: "#4fc96a",
+   hp: 140, sp: 185, col: 0x3fae5a, cd: 0.4,
+   a1n:"Shift", a1cd: 7, a1d:"Swap Swift ↔ Colossus. You're frozen and take +25% damage while you transform.",
+   a2n:"Afterimage / Tail Slam", a2cd: 8,
+   ad:"Swift (green claws): rapid jabs, 9 dmg. Colossus (orange claws): heavy swings, 34 dmg + knockback.",
+   a2d:"Swift: dash + decoy, next hit +60% (8s). Colossus: AOE slam, 0.8s stun (9.5s).",
+   melee: true, d:"Style-swapping brawler: fast and fragile, or slow and massive."
  }
 ];
+
+// Kamo's two forms. Swapping converts HP by percentage (never a heal).
+const KAMO = [
+  { name:"Swift",    hp:140, sp:185, cd:0.4, col:0x3fae5a, a2n:"Afterimage", a2cd:8 },
+  { name:"Colossus", hp:220, sp:105, cd:1.3, col:0xe07a2b, a2n:"Tail Slam",  a2cd:9.5 }
+];
+const KAMO_SHIFT_TIME = 0.5;   // seconds Kamo is frozen while transforming
+const KAMO_SHIFT_VULN = 1.25;  // damage multiplier taken while transforming
 
 // --- MAP CONFIGURATIONS ---
 const MAPS = [
@@ -728,7 +796,7 @@ cameraHolder.position.set(W/2, 22, H/2);
 cameraHolder.add(camera);
 scene.add(cameraHolder);
 
-const renderer = new THREE.WebGLRenderer({ canvas: canvas3D, antialias: true, powerPreference: "high-performance" });
+const renderer = new THREE.WebGLRenderer({ canvas: canvas3D, antialias: gfxLevel !== "low", powerPreference: "high-performance" });
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -760,7 +828,8 @@ camera.add(viewmodelHolder);
 
 function resize() {
   const w = window.innerWidth, h = window.innerHeight;
-  if(canvas3D.width !== w || canvas3D.height !== h) {
+  if(gfxSizeKey !== w + "x" + h + "@" + gfxLevel) {
+    gfxSizeKey = w + "x" + h + "@" + gfxLevel;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -802,6 +871,31 @@ const stormMat = new THREE.MeshBasicMaterial({
 const stormMesh = new THREE.Mesh(stormGeo, stormMat);
 stormMesh.position.set(W/2, 90, H/2);
 scene.add(stormMesh);
+
+// --- GRAPHICS SETTING (Low / Medium / High) ---
+function applyGraphics(level) {
+  if(!GFX[level]) level = "high";
+  gfxLevel = level;
+  Store.set("bb_gfx", level);
+  const g = GFX[level];
+  renderer.setPixelRatio(g.scale);
+  gfxSizeKey = ""; // forces resize() to re-apply the new render resolution
+  renderer.shadowMap.enabled = g.shadow > 0;
+  renderer.shadowMap.type = g.soft ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+  dirLight.castShadow = g.shadow > 0;
+  if(g.shadow > 0) dirLight.shadow.mapSize.set(g.shadow, g.shadow);
+  if(dirLight.shadow.map) { dirLight.shadow.map.dispose(); dirLight.shadow.map = null; }
+  rimLight.visible = g.rim;
+  ambientLight.intensity = g.amb;
+  dust.visible = g.dust > 0;
+  dustGeo.setDrawRange(0, g.dust);
+  mapGroup.traverse(o => { if(o.isGridHelper) o.visible = g.grid; });
+  scene.traverse(o => {
+    const m = o.material;
+    if(m) (Array.isArray(m) ? m : [m]).forEach(x => { x.needsUpdate = true; });
+  });
+}
+applyGraphics(gfxLevel);
 
 // --- INPUT & POINTER CONTROLS ---
 let isLocked = false;
@@ -966,10 +1060,28 @@ function addKillFeed(attacker, victim) {
   while(feed.children.length > 4) feed.firstChild.remove();
 }
 
+// Storm ambience follows the player you're watching: swells near the edge, full volume inside the storm
+let wasInStorm = false;
+function updateStormAudio() {
+  const t = isSpectating ? spectateTarget : pl;
+  if(demoActive || matchOver || !t || t.dead) { Snd.storm(0); wasInStorm = false; return; }
+  const dist = Math.hypot(t.x - W/2, t.z - H/2);
+  const inside = dist > stormRadius;
+  Snd.storm(Math.max(0, Math.min(1, (dist - (stormRadius - 60)) / 60)));
+  if(inside && !wasInStorm && t === pl) Snd.play("stormwarn");
+  wasInStorm = inside;
+}
+
+let lastHitSfx = 0;
 function applyLocalHitFeedback(dmg) {
+  // Tiny per-frame damage (storm, poison, fire) only tints the screen edge: no hit sound spam
+  if(dmg < 1) { damageVignetteT = Math.max(damageVignetteT, 0.3); return; }
+  const nowT = performance.now();
+  const quiet = nowT - lastHitSfx < 90; // several pellets in one frame = one hit sound
+  if(!quiet) lastHitSfx = nowT;
   screenShake = Math.min(18, screenShake + dmg * 0.45);
   damageVignetteT = Math.min(1.0, damageVignetteT + dmg * 0.04 + 0.32);
-  Snd.play("hit");
+  if(!quiet) Snd.play("hit");
 }
 
 const remotePickupMeshes = new Map();
@@ -1119,6 +1231,7 @@ function build3DMap(mapDef) {
   grid.position.set(W/2, 0.1, H/2);
   grid.material.opacity = 0.09;
   grid.material.transparent = true;
+  grid.visible = GFX[gfxLevel].grid;
   mapGroup.add(grid);
 
   const waTex = wallTexture(mapDef.id);
@@ -1201,9 +1314,21 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
   }
   else if(heroIndex === 5) {
     const woodMat = new THREE.MeshStandardMaterial({ color: 0x2e2038, roughness: 0.7 });
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.1, 32, 12), woodMat);
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.0 + 0.1, 32, 12), woodMat);
     shaft.position.y = 8;
     root.add(shaft);
+  }
+  else if(heroIndex === 6) {
+    // Kamo's claws. The material is recolored every frame: green = Swift, orange = Colossus
+    const clawMat = new THREE.MeshStandardMaterial({
+      color: 0xbff5c8, emissive: 0x1d7a3a, emissiveIntensity: 0.7, metalness: 0.3, roughness: 0.35
+    });
+    for(let i = -1; i <= 1; i++) {
+      const claw = new THREE.Mesh(new THREE.ConeGeometry(1.1, 14, 6), clawMat);
+      claw.position.set(i * 2.8, 8, 0);
+      root.add(claw);
+    }
+    root.userData.clawMat = clawMat;
   }
   return root;
 }
@@ -1281,6 +1406,16 @@ function addHeroDetails(grp, headGrp, heroIndex) {
       dot.position.set(Math.cos(a) * 5.8, 9.4, Math.sin(a) * 5.8);
       headGrp.add(dot);
     }
+  } else if(heroIndex === 6) { // Kamo: head crest + curled tail
+    const tail = new THREE.Mesh(new THREE.TorusGeometry(6, 1.5, 6, 14, Math.PI * 1.5), M(0x2f8a45));
+    tail.position.set(0, 9, -12);
+    tail.rotation.y = Math.PI / 2;
+    grp.add(tail);
+    for(let i = -1; i <= 1; i++) {
+      const spike = new THREE.Mesh(new THREE.ConeGeometry(1.5, 5, 6), M(0x6fe08a));
+      spike.position.set(0, 9.2 - Math.abs(i) * 0.8, i * 3.2);
+      headGrp.add(spike);
+    }
   }
 }
 
@@ -1347,6 +1482,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false) {
   wep.position.set(12, 16, 8);
   grp.add(wep);
   grp.weapon = wep;
+  grp.bodyMat = bodyMat;
 
   scene.add(grp);
   return grp;
@@ -1426,6 +1562,8 @@ function initSparkPool() {
   }
 }
 function spawnSparks(x, z, color, n) {
+  n = Math.round(n * GFX[gfxLevel].sparks);
+  if(n < 1) return;
   if(!SparkPool.length) initSparkPool();
   let c = 0;
   for(const s of SparkPool) {
@@ -1557,6 +1695,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null) {
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
     chargeVx: 0, chargeVz: 0, chargeT: 0,
+    style: 0, shiftT: 0, shiftTo: 0, altC3: 0, empT: 0, // Kamo only
     activePod: null,
     sporePoison: 0,
     sporeAttacker: null,
@@ -1631,6 +1770,15 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   if(isMultiplayer && !isLobbyLeader) return;
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
 
+  // Kamo's Afterimage: the next hit within 2s deals +60%
+  if(attacker && attacker !== t && attacker.empT > 0 && rawDmg >= 1) {
+    rawDmg *= 1.6;
+    attacker.empT = 0;
+    spawnDamageNumber(t.x, t.z, "+60%", "#ffd000");
+  }
+  // Kamo is exposed while transforming
+  if(t.shiftT > 0) rawDmg *= KAMO_SHIFT_VULN;
+
   t.hp -= rawDmg;
   if(attacker && attacker !== t && rawDmg > 0) attacker.dmg += rawDmg;
   t.fl = 0.12;
@@ -1680,7 +1828,7 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   }
 }
 
-function melee(e, rng, d, kb) {
+function melee(e, rng, d, kb, deflect = true) {
   e.swing = 0.25;
   spawn3DRing(e.x, e.z, rng, 0xffb042);
   if(isMultiplayer && !isLobbyLeader) return;
@@ -1698,7 +1846,7 @@ function melee(e, rng, d, kb) {
       }
     }
   }
-  reflect(e, rng);
+  if(deflect) reflect(e, rng);
 }
 
 function reflect(e, r) {
@@ -1730,7 +1878,7 @@ function shot(e, a, o) {
 
   const mesh = spawnProjectileMesh(o.t);
   mesh.position.set(startX, 14, startZ);
-  if(GLOW_COLORS[o.t]) {
+  if(GFX[gfxLevel].glow && GLOW_COLORS[o.t]) {
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({
       map: glowTexture(), color: GLOW_COLORS[o.t], transparent: true, opacity: 0.85,
       blending: THREE.AdditiveBlending, depthWrite: false
@@ -1754,6 +1902,7 @@ function shot(e, a, o) {
 }
 
 function executeAttack(e) {
+  if(e.ci === 6) { kamoAttack(e); return; }
   const c = HEROES[e.ci];
   e.c1 = c.cd;
   Snd.play(c.melee ? "melee" : "shoot");
@@ -1782,6 +1931,7 @@ function attack(e) {
 }
 
 function executeAbility1(e) {
+  if(e.ci === 6) { kamoAbility1(e); return; }
   const c = HEROES[e.ci];
   Snd.play("ability");
   if(e.ci === 0) {
@@ -1901,6 +2051,7 @@ function ability1(e) {
 }
 
 function executeAbility2(e) {
+  if(e.ci === 6) { kamoAbility2(e); return; }
   const c = HEROES[e.ci];
   Snd.play("ability");
   e.c3 = c.a2cd;
@@ -1981,6 +2132,93 @@ function ability2(e) {
   if(isMultiplayer) sendActionIntent("AB2", e.a, e.x, e.z);
   executeAbility2(e);
 }
+
+// --- KAMO THE CHAMELEON ---
+// Which form to *show*: flashes between both forms while transforming
+function kamoVisStyle(e) {
+  return e.shiftT > 0 ? (Math.floor(matchTime * 12) % 2) : e.style;
+}
+
+// Claws are green in Swift and orange in Colossus
+function tintKamoClaws(wep, style) {
+  const m = wep && wep.userData && wep.userData.clawMat;
+  if(!m) return;
+  m.color.setHex(style ? 0xff8a1f : 0xbff5c8);
+  m.emissive.setHex(style ? 0xb04a00 : 0x1d7a3a);
+}
+
+function kamoAttack(e) {
+  e.c1 = KAMO[e.style].cd;
+  Snd.play("melee");
+  if(e.style === 0) melee(e, 66, 9, 110, false);   // Swift: rapid jabs
+  else melee(e, 92, 34, 400, false);                // Colossus: heavy swing + knockback
+}
+
+// Shift: start transforming. Kamo is frozen, can't act, and takes extra damage until it finishes.
+function kamoAbility1(e) {
+  if(e.stun > 0 || e.shiftT > 0) return;
+  e.c2 = HEROES[6].a1cd;
+  e.shiftT = KAMO_SHIFT_TIME;
+  e.shiftTo = e.style ? 0 : 1;
+  e.chargeT = 0;
+  Snd.play("ability");
+  spawn3DRing(e.x, e.z, 34, KAMO[e.shiftTo].col);
+  if(e === pl) screenShake = Math.max(screenShake, 3);
+}
+
+function setKamoStyle(e, to) {
+  e.style = to;
+  e.mhp = KAMO[to].hp;
+  e.r = to ? 19 : 16;
+  if(e.hp > e.mhp) e.hp = e.mhp;
+  if(e.mesh) {
+    if(e.mesh.bodyMat) e.mesh.bodyMat.color.setHex(KAMO[to].col);
+    e.mesh.scale.setScalar(to ? 1.22 : 1);
+  }
+}
+
+function finishKamoShift(e) {
+  const to = e.shiftTo;
+  if(e.style === to) { setKamoStyle(e, to); return; }
+  const pct = e.hp / e.mhp;
+  setKamoStyle(e, to);
+  const tmp = e.c3; e.c3 = e.altC3; e.altC3 = tmp; // each form keeps its own Ability 2 cooldown
+  if(!isMultiplayer || isLobbyLeader) e.hp = Math.max(0.5, pct * e.mhp); // HP % carries over, never a heal
+  spawn3DRing(e.x, e.z, 40, KAMO[to].col);
+}
+
+function kamoAbility2(e) {
+  e.c3 = KAMO[e.style].a2cd;
+  Snd.play("ability");
+  if(e.style === 0) { // Afterimage: dash, leave a decoy, empower the next hit
+    const ghost = createDetailedHeroModel(6, false, true);
+    ghost.position.set(e.x, 0, e.z);
+    ghost.rotation.y = -e.a + Math.PI / 2;
+    ghost.traverse(o => { if(o.material) { o.material.transparent = true; o.material.opacity = 0.4; } });
+    Zones.push({ kind: "decoy", x: e.x, z: e.z, r: 1, life: 2.0, owner: e, mesh: ghost });
+    e.chargeT = 0.18;
+    e.chargeVx = Math.cos(e.a) * 640;
+    e.chargeVz = Math.sin(e.a) * 640;
+    e.empT = 2.0;
+    spawn3DRing(e.x, e.z, 30, 0x66ff99);
+  } else { // Tail Slam: AOE stun + knockback
+    screenShake = Math.max(screenShake, 9);
+    spawn3DRing(e.x, e.z, 105, 0xe07a2b);
+    if(!isMultiplayer || isLobbyLeader) {
+      for(const t of E) {
+        if(t !== e && !t.dead && Math.hypot(t.x - e.x, t.z - e.z) < 105 + t.r && areEnemies(e, t) && hasLOS(e.x, e.z, t.x, t.z)) {
+          hurt(t, 14, Math.atan2(t.z - e.z, t.x - e.x), 360, e);
+          t.stun = 0.8;
+        }
+      }
+    }
+  }
+}
+
+window.setGraphics = function(level) {
+  applyGraphics(level);
+  ov.querySelectorAll(".gfx-selector .tab-btn").forEach(b => b.classList.toggle("selected", b.dataset.gfx === level));
+};
 
 function scheduleShot(e, delay, opts) {
   if(!e.pending) e.pending = [];
@@ -2108,7 +2346,7 @@ function syncHUD() {
   const ab1LabelKey = controlScheme === "wasd" ? "[E]" : "[R-SHIFT]";
   const ab2LabelKey = controlScheme === "wasd" ? "[Q]" : "[/]";
 
-  document.getElementById("hud-player-name").innerText = `${c.e} ${c.n} ${isSpectating ? '(SPECTATING)' : ''}`;
+  document.getElementById("hud-player-name").innerText = `${c.e} ${c.n}${targetEnt.ci === 6 ? ' · ' + KAMO[targetEnt.style].name : ''} ${isSpectating ? '(SPECTATING)' : ''}`;
   document.getElementById("hud-player-hp").innerText = `HP: ${Math.ceil(targetEnt.hp)} / ${targetEnt.mhp}`;
   document.getElementById("hud-hp-fill").style.width = Math.max(0, (targetEnt.hp / targetEnt.mhp) * 100) + "%";
 
@@ -2119,12 +2357,13 @@ function syncHUD() {
   } else {
     const cd1Prog = targetEnt.c2 <= 0 ? 1 : Math.max(0, (1 - targetEnt.c2 / c.a1cd));
     document.getElementById("cd1-fill").style.width = (cd1Prog * 100) + "%";
-    document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${c.a1n}`;
+    document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${targetEnt.ci === 6 ? "Shift ▸ " + KAMO[1 - targetEnt.style].name : c.a1n}`;
   }
 
-  const cd2Prog = targetEnt.c3 <= 0 ? 1 : (1 - targetEnt.c3 / c.a2cd);
+  const kd = targetEnt.ci === 6 ? KAMO[targetEnt.style] : null;
+  const cd2Prog = targetEnt.c3 <= 0 ? 1 : Math.max(0, 1 - targetEnt.c3 / (kd ? kd.a2cd : c.a2cd));
   document.getElementById("cd2-fill").style.width = (cd2Prog * 100) + "%";
-  document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${c.a2n}`;
+  document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${kd ? kd.a2n : c.a2n}`;
 
   stormTimerDisp.innerText = `STORM: ${Math.round(stormRadius)}m`;
 }
@@ -2410,6 +2649,8 @@ function handleIncomingData(conn, data) {
         ent.targetZ = item.z;
         ent.targetA = item.a;
         ent.targetP = item.p || 0;
+        // Kamo's current form comes from the host (set before hp so max HP is right)
+        if(ent.ci === 6 && item.sy !== undefined && ent.style !== item.sy) setKamoStyle(ent, item.sy);
         ent.hp = item.hp;
         ent.dead = item.dead;
         ent.stun = item.st || 0;
@@ -2467,6 +2708,7 @@ setInterval(() => {
       sl: e.slow > 0 ? e.slow : 0,
       po: e.sporePoison > 0 ? e.sporePoison : 0,
       sb: e.speedBoost > 0 ? e.speedBoost : 0,
+      sy: e.style,
       kx: Math.round(e.kx),
       kz: Math.round(e.kz),
       kl: e.killedBy
@@ -2822,11 +3064,11 @@ function hostQuickMatchLobby() {
   menu(`\u26A1 Quick Match: lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] created \u2014 waiting for brawlers...`);
 }
 
-// Quick Match lobbies auto-start 20s after a second player joins (host side)
+// Quick Match lobbies auto-start 15s after a second player joins (host side)
 let qmLastShown = -1;
 setInterval(() => {
   if(quickMatchHosted && isMultiplayer && isLobbyLeader && state === "menu" && roster.length >= 2) {
-    if(!quickMatchAutoStart) quickMatchAutoStart = Date.now() + 20000;
+    if(!quickMatchAutoStart) quickMatchAutoStart = Date.now() + 15000;
     const remaining = Math.max(0, Math.ceil((quickMatchAutoStart - Date.now()) / 1000));
     if(remaining <= 0) {
       quickMatchAutoStart = null;
@@ -2955,6 +3197,7 @@ function menu(msg) {
         <div class="settings-panel">
           <span>🖱️ Sensitivity <input type="range" id="sens-slider" min="0.0008" max="0.005" step="0.0001" value="${mouseSens}"> <span id="sens-val">${mouseSens.toFixed(4)}</span></span>
           <span>🔊 Volume <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="${Snd.vol}"></span>
+          <span>🖥️ Graphics <span class="gfx-selector">${["low", "medium", "high"].map(l => `<button class="tab-btn ${gfxLevel === l ? 'selected' : ''}" data-gfx="${l}" onclick="setGraphics('${l}')">${l[0].toUpperCase() + l.slice(1)}</button>`).join("")}</span></span>
         </div>
 
         <div style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
@@ -3229,6 +3472,7 @@ function initMatchView() {
   stormMesh.scale.set(stormRadius, 1, stormRadius);
   countdown = 3.0; // 3 second timer before movement & match start
   damageVignetteT = 0;
+  wasInStorm = false;
   state = "countdown";
 
   syncHUD();
@@ -3300,6 +3544,9 @@ function upd(dt) {
 
   const vmEnt = isSpectating ? spectateTarget : pl;
   if(viewmodelHolder.wep && vmEnt) {
+    // Kamo's claws show which form you're in (green = Swift, orange = Colossus, flashing = transforming)
+    if(vmEnt.ci === 6) tintKamoClaws(viewmodelHolder.wep, kamoVisStyle(vmEnt));
+
     const isAttacking = vmEnt.swing > 0 || vmEnt.fire > 0;
     const forwardKey = controlScheme === "wasd" ? K.KeyW : K.ArrowUp;
     const backKey = controlScheme === "wasd" ? K.KeyS : K.ArrowDown;
@@ -3351,6 +3598,7 @@ function upd(dt) {
   }
 
   matchTime += dt;
+  updateStormAudio();
   if(!demoActive && matchTime > 4.0 && stormRadius > minStormRadius) {
     stormRadius -= dt * 5.0;
   }
@@ -3499,6 +3747,8 @@ function upd(dt) {
 
     e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt;
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
+    e.altC3 -= dt; e.empT -= dt;
+    if(e.shiftT > 0) { e.shiftT -= dt; if(e.shiftT <= 0) finishKamoShift(e); }
 
     if(e.sporePoison > 0) {
       const tickDamage = (10 / 3.0) * dt;
@@ -3523,7 +3773,8 @@ function upd(dt) {
       e.z += e.chargeVz * dt;
       pushCollisions(e);
       for(const t of E) {
-        if(t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6 && areEnemies(e, t)) {
+        // (Kamo's Afterimage dash is a pure movement dash and never hits)
+        if(e.ci !== 6 && t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6 && areEnemies(e, t)) {
           hurt(t, 14, Math.atan2(t.z-e.z, t.x-e.x), 420, e);
           t.stun = 0.8;
         }
@@ -3532,6 +3783,8 @@ function upd(dt) {
 
     if(e.stun > 0) {
       e.stun -= dt;
+    } else if(e.shiftT > 0) {
+      // Kamo is mid-transformation: frozen in place, can't move or act (still takes knockback and extra damage)
     } else if(e === pl) {
       const forwardKey = controlScheme === "wasd" ? K.KeyW : K.ArrowUp;
       const backKey = controlScheme === "wasd" ? K.KeyS : K.ArrowDown;
@@ -3548,7 +3801,7 @@ function upd(dt) {
       ab1 = P1_ab1;
       ab2 = P1_ab2;
 
-      const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
+      const baseSpd = (e.ci === 6 ? KAMO[e.style].sp : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
       const l = Math.hypot(mx, mz) || 1;
@@ -3560,7 +3813,7 @@ function upd(dt) {
       if(ab2 && e.c3 <= 0) ability2(e);
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
-      const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
+      const baseSpd = (e.ci === 6 ? KAMO[e.style].sp : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
       const l = Math.hypot(mx, mz) || 1;
@@ -3611,6 +3864,13 @@ function upd(dt) {
       const bobY = (e === pl) ? 0 : Math.sin(matchTime * 2.1 + (e.bobPhase || 0)) * 1.2;
       e.mesh.position.set(e.x, bobY, e.z);
       e.mesh.rotation.y = -e.a + Math.PI / 2;
+
+      // Kamo: body flashes between forms while transforming; claws are green (Swift) / orange (Colossus)
+      if(e.ci === 6) {
+        const vs = kamoVisStyle(e);
+        if(e.shiftT > 0 && e.mesh.bodyMat) e.mesh.bodyMat.color.setHex(KAMO[vs].col);
+        tintKamoClaws(e.mesh.weapon, vs);
+      }
 
       // Team-colored HP bars + rings: green for you/allies, red for enemies
       const hpCol = (e === pl || (teamMode && pl && e.team === pl.team)) ? 0x45d988 : 0xff5544;
@@ -3804,6 +4064,7 @@ function loop(now) {
   stormMat.opacity = 0.3 + Math.sin(now / 450) * 0.07;
   stormMesh.rotation.y += dt * 0.03;
   updateSparks(dt);
+  if(state !== "play") Snd.storm(0); // storm wind only plays during an active match
 
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
