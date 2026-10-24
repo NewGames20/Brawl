@@ -683,7 +683,7 @@ const HEROES = [
    n:"Captain Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
    hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
-   a1n:"Chain Hook", a1cd: 10.0, a1d:"Throw a chain forward (you're invulnerable). Wall: you zip to it. Foe: yank them to you, stunned. Miss: you're exposed while it reels in.",
+   a1n:"Chain Hook", a1cd: 11.0, a1d:"Throw a chain forward (you're invulnerable). Wall: you zip to it. Foe: yank them to you, stunned. Miss: you're exposed while it reels in.",
    a2n:"Cannonball", a2cd: 9.5,
    ad:"Scrap shotgun — fires a 5-pellet spread.", a2d:"Explosive shell with huge knockback.",
    melee: false, d:"Medium-heavy brawler. Hooks enemies and walls with a chain."
@@ -701,7 +701,7 @@ const HEROES = [
    n:"Chef Sizzle", e:"🧑‍🍳", w:"🍝", wn:"Culinary Meatball Cannon",
    role: "Sniper", roleCol: "#d44722",
    hp: 130, sp: 155, col: 0xededed, cd: 1.1,
-   a1n:"Marinara", a1cd: 8.0, a1d:"Sauce pool placed ahead that slows & burns.",
+   a1n:"Marinara", a1cd: 7.5, a1d:"Sauce pool placed ahead that slows & burns.",
    a2n:"Backdraft", a2cd: 8.5,
    ad:"Long-range exploding meatball.", a2d:"Vaults far backward with an ignited trail.",
    melee: false, d:"Fragile long-range sniper with explosive zone control."
@@ -727,8 +727,8 @@ const HEROES = [
  {
    n:"Cinder the Dragon", e:"🐲", w:"🔥", wn:"Inferno Maw",
    role: "Juggernaut", roleCol: "#e8553a",
-   hp: 210, sp: 132, col: 0x9e2a2a, cd: 0.1,
-   a1n:"Dragonhide", a1cd: 11.0, a1d:"Take 65% less damage for 3.5s.",
+   hp: 220, sp: 130, col: 0x9e2a2a, cd: 0.1,
+   a1n:"Dragonhide", a1cd: 12.0, a1d:"Take 65% less damage for 3.5s.",
    a2n:"Fireball", a2cd: 9.0,
    ad:"HOLD to breathe a wide cone of fire. Very low damage per second, but it hits everyone in the cone.",
    a2d:"Hurls a fireball that explodes and leaves burning ground.",
@@ -2121,7 +2121,7 @@ function executeAbility1(e) {
     e.activePod = podZone;
     Zones.push(podZone);
   } else if(e.ci === 6) {
-    // Dragonhide: take 55% less damage for 3.5s
+    // Dragonhide: take 65% less damage for 3.5s
     e.c2 = c.a1cd;
     e.guard = 3.5;
     screenShake = Math.max(screenShake, 3);
@@ -2577,7 +2577,14 @@ function showResultScreen(isVictory, winnerId = null, stats = []) {
 
   const w = winnerId ? E.find(e => e.netId === winnerId) : null;
 
-  if(isVictory) {
+  if(!pl) {
+    // Mid-round joiner: they watched as a spectator and join the fight next round
+    resultTitle.innerText = "ROUND OVER";
+    resultTitle.style.color = "#3db8f5";
+    resultDesc.innerText = w
+      ? `You joined mid-match — ${HEROES[w.ci].e} ${HEROES[w.ci].n} won this round. You're in the lobby and will play the next one!`
+      : "You joined mid-match — nobody survived this round. You're in the lobby and will play the next one!";
+  } else if(isVictory) {
     resultTitle.innerText = "VICTORY!";
     resultTitle.style.color = "#45d988";
     resultDesc.innerText = teamMode ? "Your team swept the arena. Outstanding brawl!" : "Outstanding combat! You were the last champion standing.";
@@ -2631,6 +2638,13 @@ window.returnToMenu = function() {
   if(document.pointerLockElement) {
     try { document.exitPointerLock(); } catch(e){}
   }
+  // In a lobby the arena is shared state from the network — clear our local copy so
+  // fighters don't linger behind the menu until the next round starts
+  if(isMultiplayer) {
+    clearSceneEntities();
+    pl = null;
+    setupViewmodel(null);
+  }
   menu("Select a champion to battle in the arena!");
 };
 
@@ -2668,6 +2682,10 @@ function leaveLobby(msg) {
   quickMatchAutoStart = null;
   qmClientCountdown = null;
   qmRendezvousStarted = false;
+  qmQuerying = false;
+  qmActiveConn = null;
+  qmGen++; // invalidate all in-flight search callbacks (claims, probes, joins)
+  disarmQmWatchdog(); // search cancelled — disarm the watchdog
   remotePickupMeshes.forEach(m => disposeHierarchy(m));
   remotePickupMeshes.clear();
   // Full teardown: stop the simulation and clear match state before showing the menu
@@ -2710,8 +2728,12 @@ function setupConnectionEvents(conn) {
       broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, seq: outgoingSeq });
     }
 
-    // A failed Quick Match join attempt (room gone or rejected) — try the next room
+    // A failed Quick Match join attempt (room gone or rejected) — try the next room.
+    // Only the connection driving the CURRENT attempt may advance the search, so a
+    // stale close event (e.g. after a timeout already moved on) can't double-advance.
     if(quickMatchRooms && !isLobbyLeader) {
+      if(conn !== qmActiveConn) return;
+      qmActiveConn = null;
       qmSeq++;
       tryNextQuickMatchRoom();
       return;
@@ -2743,7 +2765,7 @@ function handleIncomingData(conn, data) {
     // During Quick Match, a full/underway lobby just means "try the next room";
     // the host closes the connection right after, which triggers the next attempt.
     if(quickMatchRooms) return;
-    leaveLobby(data.reason || "Lobby full or match underway.");
+    leaveLobby(data.reason || "Lobby full.");
     return;
   }
 
@@ -2754,6 +2776,12 @@ function handleIncomingData(conn, data) {
   if(data.type === "HELLO") {
     let r = roster.find(x => x.id === data.id);
     if(!r) {
+      // Seat check happens again here so two simultaneous joiners can't overfill the lobby
+      if(roster.length >= 6) {
+        try { conn.send({ type: "REJECT", reason: "Lobby full" }); } catch(e) {}
+        setTimeout(() => { try { conn.close(); } catch(e) {} }, 200);
+        return;
+      }
       roster.push({ id: data.id, hero: data.hero });
     } else {
       r.hero = data.hero;
@@ -2761,11 +2789,28 @@ function handleIncomingData(conn, data) {
     if(isLobbyLeader) {
       outgoingSeq++;
       broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, seq: outgoingSeq });
+      // A brand-new member who arrived mid-round spectates the live match until the next one
+      if(!r && (state === "play" || state === "countdown")) {
+        try {
+          conn.send({
+            type: "SPECTATE_MODE",
+            mapIndex: selectedMapIndex,
+            storm: Math.round(stormRadius),
+            mtime: Math.round(matchTime * 10) / 10
+          });
+        } catch(e) {}
+      }
     }
     if(state === "menu") refreshLobbyMenu();
   }
   else if(data.type === "ROSTER_SYNC") {
+    // The host broadcasts roster updates to every open connection — including joiners
+    // still waiting for admission. While quick-matching, only a roster that actually
+    // contains us counts as "joined"; otherwise keep waiting (a REJECT or the join
+    // timeout moves us on to the next room).
+    if(quickMatchRooms && !(data.roster || []).some(r => r.id === myNetId)) return;
     quickMatchRooms = null; // joined successfully — normal lobby behavior from here
+    disarmQmWatchdog();     // landed — disarm the search watchdog
     roster = data.roster;
     if(data.leaderId) {
       leaderId = data.leaderId;
@@ -2782,7 +2827,14 @@ function handleIncomingData(conn, data) {
     qmClientCountdown = data.remaining;
     if(state === "menu") refreshLobbyMenu();
   }
+  else if(data.type === "SPECTATE_MODE") {
+    if(isLobbyLeader) return;
+    quickMatchRooms = null; // joined successfully — normal lobby behavior from here
+    disarmQmWatchdog();     // landed — disarm the search watchdog
+    enterSpectateLobby(data);
+  }
   else if(data.type === "START_GAME") {
+    if(quickMatchRooms) return; // still joining — ignore games we haven't been admitted to
     selectedMapIndex = data.mapIndex;
     launchMeshMatch(data.spawns);
   }
@@ -2850,6 +2902,8 @@ function handleIncomingData(conn, data) {
       }
     }
     syncRemotePickups(data.pickups || []);
+    // Authoritative storm state (keeps mid-round spectators in sync with the host)
+    if(data.storm !== undefined) stormRadius = data.storm;
   }
   else if(data.type === "MATCH_END") {
     if(isLobbyLeader) return;
@@ -2908,7 +2962,8 @@ setInterval(() => {
       type: "SNAPSHOT",
       seq: outgoingSeq,
       entities: snapEntities,
-      pickups: Pickups.map(pk => ({ id: pk.uid, k: pk.kind, x: pk.x, z: pk.z }))
+      pickups: Pickups.map(pk => ({ id: pk.uid, k: pk.kind, x: pk.x, z: pk.z })),
+      storm: Math.round(stormRadius)
     });
   }
 }, 40);
@@ -2980,15 +3035,32 @@ function wireHostPeer() {
   });
 
   peer.on("connection", conn => {
-    if(roster.length >= 6 || state !== "menu") {
+    // Quick Match population probe: answer with lobby status, never touch the roster
+    if(conn.metadata && conn.metadata.qmQuery) {
+      conn.on("open", () => {
+        try {
+          conn.send({
+            type: "ROOM_INFO",
+            players: roster.length,
+            capacity: 6,
+            phase: (state === "play" || state === "countdown") ? "live" : "waiting"
+          });
+        } catch(e) {}
+        setTimeout(() => { try { conn.close(); } catch(e) {} }, 300);
+      });
+      setTimeout(() => { try { conn.close(); } catch(e) {} }, 2500);
+      return;
+    }
+    if(roster.length >= 6) {
       // Wait for the connection to open before sending the rejection
       conn.on("open", () => {
-        try { conn.send({ type: "REJECT", reason: "Lobby full or match underway" }); } catch(e) {}
+        try { conn.send({ type: "REJECT", reason: "Lobby full" }); } catch(e) {}
         setTimeout(() => { try { conn.close(); } catch(e) {} }, 200);
       });
       setTimeout(() => { try { conn.close(); } catch(e) {} }, 2500);
       return;
     }
+    // Match underway with open seats: the newcomer joins as a spectator of the live round
     setupConnectionEvents(conn);
   });
 
@@ -3063,20 +3135,117 @@ window.joinMultiplayerLobby = function() {
   });
 };
 
-// --- QUICK MATCH: join a random open lobby (max 6 players), or host one if none exist ---
+// --- QUICK MATCH: join the open lobby with the most players (max 6), or host one if none exist ---
 const QM_CODES = ["QM01", "QM02", "QM03", "QM04", "QM05", "QM06"];
+let qmQuerying = false; // true while probing room populations (suppresses join-attempt error handling)
+let qmActiveConn = null;  // the connection driving the current quick-match join attempt
+let qmWatchdog = null;   // safety net: if a search is still running after 20s, recover instead of hanging
+let qmRescued = false;   // first watchdog deadline already fired (recovery in progress)?
+let qmGen = 0;           // search generation — invalidates stale async callbacks (claims, probes, joins)
+
+// Arm/disarm the search watchdog. Disarmed on any successful landing (room admission,
+// spectator admission, hosting) and on cancellation.
+function armQmWatchdog(ms) {
+  if(qmWatchdog) clearTimeout(qmWatchdog);
+  // Timer-identity check: if this handle was replaced (re-arm / disarm) before it
+  // fired, the scheduled callback is a no-op
+  const t = setTimeout(() => { if(qmWatchdog === t) fireQmWatchdog(); }, ms);
+  qmWatchdog = t;
+}
+function disarmQmWatchdog() {
+  if(qmWatchdog) { clearTimeout(qmWatchdog); qmWatchdog = null; }
+  qmRescued = false;
+}
+function fireQmWatchdog() {
+  // Clear the scheduled timer before dropping its handle — a manually-fired
+  // watchdog (e.g. the ensureLivePeer deadline) must not leave the original
+  // deadline armed to fire again during recovery or a later search
+  if(qmWatchdog) { clearTimeout(qmWatchdog); qmWatchdog = null; }
+  // Landed (a REGISTERED host, or an admitted member) or cancelled — nothing to
+  // recover. A host whose peer hasn't opened yet is NOT a safe landing: the
+  // search must keep recovering rather than strand the player in an
+  // unregistered (and possibly undiscoverable) lobby.
+  const registeredHost = (quickMatchHosted || isLobbyLeader) && peer && peer.open;
+  const admittedMember = !isLobbyLeader && !quickMatchHosted && isMultiplayer &&
+                         roster.length > 0 && peerConnections.size > 0;
+  if(registeredHost || admittedMember || !isMultiplayer) return;
+  if(!qmRescued) {
+    // First deadline: the search is stuck. Invalidate everything in flight (a stale
+    // claim or join attempt must never take over after recovery) and retry with a
+    // discoverable QM-code claim cascade — bounded at 6s per code, and other
+    // quick-matchers probe these codes even when broker listing is down.
+    qmRescued = true;
+    qmGen++;                    // invalidate all in-flight search callbacks
+    quickMatchRooms = null;     // disarm stuck join-attempt timers
+    currentLobbyCode = null;    // no longer mid-join
+    qmRendezvousStarted = false; // allow a fresh rendezvous
+    // The old search peer is obsolete — destroy it so its late open/error callbacks
+    // can never resume old work or touch the recovery's replacement peer
+    try { if(peer) peer.destroy(); } catch(e) {}
+    peer = null;
+    console.warn("Quick Match search stalled — retrying with a room-code claim");
+    armQmWatchdog(15000);       // hard deadline for the recovery itself
+    quickMatchRendezvous(QM_CODES.slice());
+  } else {
+    // Recovery also failed — after ~35s the matchmaking service is most likely
+    // unreachable (or every claim stalled). Don't strand the player in a lobby
+    // nobody can discover or join: stop the search with a clear, retryable error.
+    console.warn("Quick Match recovery timed out — stopping the search");
+    leaveLobby("\u26A1 Quick Match couldn't reach the matchmaking service after several tries. \nPlease check your connection and try again!");
+  }
+}
+
+// Ask a room how full it is without joining: a tiny connection that never sends
+// HELLO and never touches the roster. Resolves {players, capacity, phase} or null.
+function queryRoomStatus(roomId) {
+  return new Promise(resolve => {
+    let done = false;
+    const finish = info => { if(done) return; done = true; resolve(info); };
+    let conn = null;
+    try { conn = peer.connect(roomId, { reliable: true, metadata: { qmQuery: true } }); } catch(e) {}
+    if(!conn) { finish(null); return; }
+    const timer = setTimeout(() => { try { conn.close(); } catch(e) {} finish(null); }, 2200);
+    conn.on("open", () => { try { conn.send({ type: "ROOM_QUERY" }); } catch(e) {} });
+    conn.on("data", d => {
+      if(d && d.type === "ROOM_INFO") {
+        clearTimeout(timer);
+        finish(d); // settle the successful result before closing (the close listener also resolves)
+        try { conn.close(); } catch(e) {}
+      }
+    });
+    conn.on("error", () => { clearTimeout(timer); finish(null); });
+    conn.on("close", () => { clearTimeout(timer); finish(null); });
+  });
+}
 
 function handleQuickMatchPeerError(err) {
   console.warn("Peer error:", err);
-  // A dead room during quick-match joining — immediately try the next one
-  if(err && err.type === "peer-unavailable" && quickMatchRooms) {
-    qmSeq++;
-    tryNextQuickMatchRoom();
+  // A search is active from the first Quick Match click until we land (join/host)
+  // or cancel — room-level errors during a search must never kill it
+  const searching = !quickMatchHosted && !isLobbyLeader && isMultiplayer &&
+                    (qmQuerying || quickMatchRooms || qmRendezvousStarted || qmWatchdog !== null);
+  // "peer-unavailable" just means a target room vanished (dead host, stale broker
+  // registration, or a probe straggler arriving late) — never fatal, and it never
+  // advances the search: the error can't be reliably tied to the current connection,
+  // so the join attempt's own 5s admission timeout decides when to move on.
+  if(err && err.type === "peer-unavailable") {
     return;
   }
   // The public broker rejects peer listing with a server-error — fall back to rendezvous
-  if(err && err.type === "server-error" && !quickMatchRooms && !quickMatchHosted && !isLobbyLeader) {
-    startQuickMatchRendezvous();
+  if(err && err.type === "server-error" && searching) {
+    // The listing failure also severs this peer's signaling socket, and the disconnected
+    // flag can lag behind — so destroy the peer outright; ensureLivePeer builds a fresh
+    // one for the rendezvous probes (a dead socket would make every probe fail silently)
+    try { if(peer) peer.destroy(); } catch(e) {}
+    peer = null;
+    if(!qmRendezvousStarted) startQuickMatchRendezvous();
+    // else: the rendezvous is already in flight — its claim timeout and the search
+    // watchdog guarantee the search can't hang forever from a second broker error
+    return;
+  }
+  if(searching) {
+    // Any other signaling error mid-search (network blip, disconnect): the watchdog
+    // bounds the search — don't boot the player out of it with a modal error
     return;
   }
   alert("Quick Match connection error. Try again!");
@@ -3089,11 +3258,38 @@ function ensureLivePeer(then) {
   if(peer && !peer.destroyed && !peer.disconnected) { then(); return; }
   try { if(peer) peer.destroy(); } catch(e) {}
   myNetId = "brawlbound-client-" + Math.random().toString(36).substring(2, 8);
-  peer = new Peer(myNetId);
-  peer.on("connection", conn => setupConnectionEvents(conn));
-  peer.on("error", err => handleQuickMatchPeerError(err));
-  if(peer.open) then();
-  else peer.on("open", () => then());
+  const p = new Peer(myNetId); // captured identity: callbacks only ever touch this peer
+  const gen = qmGen; // captured before waiting: this peer belongs to this search generation
+  peer = p;
+  p.on("connection", conn => setupConnectionEvents(conn));
+  p.on("error", err => { if(peer === p && gen === qmGen) handleQuickMatchPeerError(err); }); // ignore zombie peers/searches
+  if(p.open) { then(); return; }
+  let opened = false;
+  // A peer that never finishes opening must not hang the search — after 7s clean it
+  // up (only this captured instance) and let the watchdog's recovery take over.
+  // The captured peer is destroyed even on a stale generation; the watchdog fires
+  // only for a live generation.
+  const openDeadline = setTimeout(() => {
+    if(opened) return;
+    const stale = gen !== qmGen;
+    if(peer === p) peer = null;
+    try { p.destroy(); } catch(e) {}
+    if(stale) return;
+    fireQmWatchdog();
+  }, 7000);
+  p.on("open", () => {
+    if(opened) return;
+    opened = true;
+    clearTimeout(openDeadline);
+    // A stale generation (restart/recovery happened while opening) must never
+    // resume obsolete search work — reject the callback and clean up this peer
+    if(gen !== qmGen || peer !== p) {
+      if(peer === p) peer = null;
+      try { p.destroy(); } catch(e) {}
+      return;
+    }
+    then();
+  });
 }
 
 window.quickMatch = function() {
@@ -3120,17 +3316,44 @@ window.quickMatch = function() {
   peer = new Peer(myNetId);
   menu("\u26A1 Quick Match: searching for open lobbies...");
 
+  qmGen++;          // new search — invalidate all callbacks from previous searches
+  qmRescued = false;
+  armQmWatchdog(20000); // safety net: never leave the player searching forever
+
+  const searchPeer = peer;   // callbacks only act while this peer is still current
+  const searchGen = qmGen;   // captured BEFORE registering: recovery/restart must never
+                             // let this peer's late callbacks adopt a newer generation
   peer.on("connection", conn => setupConnectionEvents(conn));
-  peer.on("error", err => handleQuickMatchPeerError(err));
+  peer.on("error", err => { if(peer === searchPeer && searchGen === qmGen) handleQuickMatchPeerError(err); });
 
   peer.on("open", () => {
+    if(searchGen !== qmGen || peer !== searchPeer) return; // stale — invalidated while opening
+    const gen = searchGen;
     // 1) Try listing rooms through the broker (works when the broker allows it)
     try {
-      peer.listAllPeers(allPeers => {
+      peer.listAllPeers(async allPeers => {
+        if(gen !== qmGen) return; // search was invalidated (restart / recovery)
         const rooms = (allPeers || []).filter(id => typeof id === "string" && id.startsWith("brawlbound-room-"));
         if(rooms.length > 0) {
-          quickMatchRooms = shuffle(rooms);
-          tryNextQuickMatchRoom();
+          // Ask every room how full it is, then join the one with the most open seats.
+          // A lobby that's mid-match still counts — the newcomer spectates until it ends.
+          qmQuerying = true;
+          const statuses = await Promise.all(rooms.map(async roomId => {
+            const info = await queryRoomStatus(roomId);
+            return info ? { roomId, players: info.players, capacity: info.capacity || 6 } : null;
+          }));
+          qmQuerying = false;
+          if(gen !== qmGen) return; // search was invalidated while probing
+          const openRooms = statuses
+            .filter(s => s && s.players < s.capacity)
+            .sort((a, b) => b.players - a.players);
+          if(openRooms.length > 0) {
+            quickMatchRooms = openRooms.map(s => s.roomId);
+            tryNextQuickMatchRoom();
+          } else {
+            // Every listed room is full — use quick-match rendezvous codes
+            startQuickMatchRendezvous();
+          }
         } else {
           // No rooms listed (or listing unsupported) — use quick-match rendezvous codes
           startQuickMatchRendezvous();
@@ -3145,22 +3368,66 @@ window.quickMatch = function() {
 function startQuickMatchRendezvous() {
   if(qmRendezvousStarted) return;
   qmRendezvousStarted = true;
-  // FIXED order: everyone tries the same code first, so players stack into one room
-  // instead of spreading across codes. A full room rejects, and we cascade to the next.
-  quickMatchRendezvous(QM_CODES.slice());
+  // Probe the rendezvous codes first: if a host is already waiting on one, join the
+  // fullest non-full room. Only when no open room answers do we claim a code and host.
+  const gen = qmGen; // captured BEFORE waiting — a recovery/restart must not be adopted
+  ensureLivePeer(() => {
+    if(gen !== qmGen) return; // invalidated while waiting for a live peer
+    qmQuerying = true;
+    Promise.all(QM_CODES.map(async code => {
+      const info = await queryRoomStatus("brawlbound-room-" + code);
+      return info ? { code, players: info.players, capacity: info.capacity || 6 } : null;
+    })).then(statuses => {
+      if(gen !== qmGen) return; // search was invalidated while probing
+      qmQuerying = false;
+      const open = statuses
+        .filter(s => s && s.players < s.capacity)
+        .sort((a, b) => b.players - a.players);
+      if(open.length > 0) {
+        quickMatchRooms = open.map(s => "brawlbound-room-" + s.code);
+        tryNextQuickMatchRoom();
+      } else {
+        // No reachable open rendezvous room — claim a code and become the host
+        quickMatchRendezvous(QM_CODES.slice());
+      }
+    }).catch(() => {
+      qmQuerying = false;
+      quickMatchRendezvous(QM_CODES.slice());
+    });
+  });
 }
 
 // 2) Rendezvous: try to CLAIM a quick-match room code. A taken code means a host is
 //    already waiting there — join them. If we claim it, we become the host.
 function quickMatchRendezvous(codes) {
-  if(codes.length === 0) { hostQuickMatchLobby(); return; }
+  if(codes.length === 0) {
+    // Every QM code is taken or unreachable AND every join failed — the world is
+    // full or the matchmaking service is down. Stop with a retryable error instead
+    // of an undiscoverable random-code lobby (Quick Match clients only probe QM codes).
+    console.warn("Quick Match: no open room found and no QM code claimable");
+    leaveLobby("\u26A1 Quick Match couldn't find an open lobby (or create one) right now. \nPlease try again in a minute!");
+    return;
+  }
+  const gen = qmGen; // this claim belongs to the current search generation
   const code = codes.shift();
   const roomId = "brawlbound-room-" + code;
   const claim = new Peer(roomId);
   let settled = false;
-  const settle = fn => { if(settled) return; settled = true; fn(); };
+  let claimTimer = null;
+  const settle = fn => { if(settled) return; settled = true; if(claimTimer) clearTimeout(claimTimer); fn(); };
+
+  // A claim that neither opens nor errors (flaky network / unresponsive broker) must
+  // not hang the search forever — give up on this code after 6s and try the next one.
+  // The claim peer is always destroyed, even on a stale generation, so a late "open"
+  // can never retain the room code without becoming a functioning host
+  claimTimer = setTimeout(() => settle(() => {
+    try { claim.destroy(); } catch(e) {}
+    if(gen !== qmGen) return; // search was invalidated — do not recurse into a new claim
+    quickMatchRendezvous(codes);
+  }), 6000);
 
   claim.on("open", () => settle(() => {
+    if(gen !== qmGen) { try { claim.destroy(); } catch(e) {} return; } // stale claim — never take over
     // We own this room code — become the quick-match host
     if(peer) peer.destroy();
     peer = claim;
@@ -3178,11 +3445,13 @@ function quickMatchRendezvous(codes) {
     lastSeenByPeer.clear();
     lastSeqByPeer.clear();
     wireHostPeer();
+    disarmQmWatchdog(); // landed as host — disarm the search watchdog
     refreshLobbyMenu();
   }));
 
   claim.on("error", err => settle(() => {
     try { claim.destroy(); } catch(e) {}
+    if(gen !== qmGen) return; // search was invalidated — do not cascade
     if(err && err.type === "unavailable-id") {
       // A host already holds this code — join their lobby (remaining codes are fallbacks)
       joinQuickRoom(roomId, codes);
@@ -3194,23 +3463,38 @@ function quickMatchRendezvous(codes) {
 }
 
 function joinQuickRoom(roomId, remainingCodes) {
+  const gen = qmGen; // this join attempt belongs to the current search generation
   leaderId = roomId;
   currentLobbyCode = roomId.replace("brawlbound-room-", "");
   quickMatchRooms = remainingCodes.map(c => "brawlbound-room-" + c);
   ensureLivePeer(() => {
+    if(gen !== qmGen || !quickMatchRooms) return; // search was invalidated while waiting for a peer
     const conn = peer.connect(roomId, { reliable: true });
     if(!conn) { tryNextQuickMatchRoom(); return; } // fail safe: dead peer
+    qmActiveConn = conn; // this connection now drives the search
     setupConnectionEvents(conn);
     menu(`\u26A1 Quick Match: joining lobby [ ${currentLobbyCode} ]...`);
 
     const attempt = ++qmSeq;
-    const roomTimeout = setTimeout(() => {
-      if(attempt !== qmSeq || !quickMatchRooms) return;
+    // Armed until actual admission: a successful join clears quickMatchRooms
+    // (ROSTER_SYNC / SPECTATE_MODE), which neutralizes this safety timer
+    let roomTimeout = setTimeout(() => {
+      if(gen !== qmGen || attempt !== qmSeq || !quickMatchRooms) return;
       qmSeq++;
       try { conn.close(); } catch(e) {}
       tryNextQuickMatchRoom();
     }, 5000);
-    conn.on("open", () => { if(attempt === qmSeq) clearTimeout(roomTimeout); });
+    conn.on("open", () => {
+      if(gen !== qmGen || attempt !== qmSeq) return;
+      // Connected — now we wait for admission (ROSTER_SYNC / SPECTATE_MODE)
+      clearTimeout(roomTimeout);
+      roomTimeout = setTimeout(() => {
+        if(gen !== qmGen || attempt !== qmSeq || !quickMatchRooms) return;
+        qmSeq++;
+        try { conn.close(); } catch(e) {}
+        tryNextQuickMatchRoom();
+      }, 5000);
+    });
     // Joined! ROSTER_SYNC will clear quickMatchRooms and show the lobby
   });
 }
@@ -3218,41 +3502,45 @@ function joinQuickRoom(roomId, remainingCodes) {
 function tryNextQuickMatchRoom() {
   if(!quickMatchRooms) return;
   if(quickMatchRooms.length === 0) {
-    // Tried every open room without success — host our own
-    hostQuickMatchLobby();
+    // Tried every open room without success — claim a discoverable QM code and host
+    // there (bounded by the claim timeouts and the search watchdog). If the claim
+    // flow is exhausted too, it ends with a retryable error, never a random-code room.
+    quickMatchRendezvous(QM_CODES.slice());
     return;
   }
   const roomId = quickMatchRooms.shift();
+  const gen = qmGen; // this join attempt belongs to the current search generation
   ensureLivePeer(() => {
-    if(!quickMatchRooms) return; // joined/ended while waiting for a live peer
+    if(gen !== qmGen || !quickMatchRooms) return; // joined/ended while waiting for a live peer
     leaderId = roomId;
     currentLobbyCode = roomId.replace("brawlbound-room-", "");
     menu(`\u26A1 Quick Match: joining lobby [ ${currentLobbyCode} ]...`);
 
     const conn = peer.connect(roomId, { reliable: true });
     if(!conn) { tryNextQuickMatchRoom(); return; } // fail safe: dead peer
+    qmActiveConn = conn; // this connection now drives the search
     setupConnectionEvents(conn);
 
     const attempt = ++qmSeq;
-    // If this room never opens (host gone / connection stuck), move on to the next one
-    const roomTimeout = setTimeout(() => {
-      if(attempt !== qmSeq || !quickMatchRooms) return;
+    // Same admission-based safety timer as joinQuickRoom: armed until the room
+    // lets us in (ROSTER_SYNC / SPECTATE_MODE) or this attempt is invalidated
+    let roomTimeout = setTimeout(() => {
+      if(gen !== qmGen || attempt !== qmSeq || !quickMatchRooms) return;
       qmSeq++; // invalidate this attempt
       try { conn.close(); } catch(e) {}
       tryNextQuickMatchRoom();
     }, 5000);
     conn.on("open", () => {
-      if(attempt === qmSeq) clearTimeout(roomTimeout);
+      if(gen !== qmGen || attempt !== qmSeq) return;
+      clearTimeout(roomTimeout);
+      roomTimeout = setTimeout(() => {
+        if(gen !== qmGen || attempt !== qmSeq || !quickMatchRooms) return;
+        qmSeq++;
+        try { conn.close(); } catch(e) {}
+        tryNextQuickMatchRoom();
+      }, 5000);
     });
   });
-}
-
-function hostQuickMatchLobby() {
-  quickMatchRooms = null;
-  quickMatchHosted = true;
-  hostMultiplayerLobby(); // registers a brawlbound-room-XXXX that other quick-matchers can find
-  quickMatchHosted = true;
-  menu(`\u26A1 Quick Match: lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode}</span> ] created \u2014 waiting for brawlers...`);
 }
 
 // Quick Match lobbies auto-start 15s after a second player joins (host side)
@@ -3467,6 +3755,8 @@ window.cancelLobby = function() {
   quickMatchAutoStart = null;
   qmClientCountdown = null;
   qmRendezvousStarted = false;
+  qmQuerying = false;
+  qmActiveConn = null;
   menu("Select a champion to battle in the arena!");
 };
 
@@ -3640,6 +3930,48 @@ function launchMeshMatch(spawnMap) {
   });
 
   initMatchView();
+}
+
+// A player who joined while a round is live: they spectate the rest of that round
+// first-person, then play normally when the next round starts.
+function enterSpectateLobby(info) {
+  stopDemo();
+  demoActive = false;
+  clearSceneEntities();
+  pl = null;
+  setupViewmodel(null);
+  clearHeldInputs();
+
+  const chosenMap = MAPS[info.mapIndex] || MAPS[0];
+  selectedMapIndex = MAPS.indexOf(chosenMap);
+  currentRects = chosenMap.rects;
+  build3DMap(chosenMap);
+  document.getElementById("room-badge").innerText = `ROOM: ${currentLobbyCode}`;
+
+  // Inherit the host's live round state so the storm and clock match what's on screen
+  matchTime = info.mtime || 0;
+  stormRadius = info.storm || 380;
+  countdown = 0;
+  matchOver = false;
+  state = "play";
+
+  isSpectating = true;
+  spectateTarget = null;
+  spectatorBanner.innerText = "SPECTATING · NEXT ROUND YOU PLAY";
+  spectatorBanner.style.display = "block";
+
+  // Vantage point over the arena until the first snapshot brings the fighters in
+  cameraHolder.position.set(W/2, 150, H/2 + 200);
+  cameraHolder.rotation.set(0, 0, 0);
+  camera.rotation.set(0.6, 0, 0);
+
+  ov.style.display = "none";
+  hud.style.display = "block";
+  crosshair.style.display = "none";
+  resultModal.style.display = "none";
+  lockPrompt.style.display = "none";
+  damageOverlay.style.opacity = 0;
+  syncHUD();
 }
 
 function initMatchView() {
