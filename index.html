@@ -683,7 +683,7 @@ const HEROES = [
    n:"Captain Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
    hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
-   a1n:"Chain Hook", a1cd: 9.0, a1d:"Throw a chain forward (you're invulnerable). Wall: you zip to it. Foe: yank them to you, stunned. Miss: you're exposed while it reels in.",
+   a1n:"Chain Hook", a1cd: 10.0, a1d:"Throw a chain forward (you're invulnerable). Wall: you zip to it. Foe: yank them to you, stunned. Miss: you're exposed while it reels in.",
    a2n:"Cannonball", a2cd: 9.5,
    ad:"Scrap shotgun — fires a 5-pellet spread.", a2d:"Explosive shell with huge knockback.",
    melee: false, d:"Medium-heavy brawler. Hooks enemies and walls with a chain."
@@ -728,8 +728,8 @@ const HEROES = [
    n:"Cinder the Dragon", e:"🐲", w:"🔥", wn:"Inferno Maw",
    role: "Juggernaut", roleCol: "#e8553a",
    hp: 210, sp: 132, col: 0x9e2a2a, cd: 0.1,
-   a1n:"Dragonhide", a1cd: 12.0, a1d:"Take 55% less damage for 3.5s.",
-   a2n:"Fireball", a2cd: 10.0,
+   a1n:"Dragonhide", a1cd: 11.0, a1d:"Take 65% less damage for 3.5s.",
+   a2n:"Fireball", a2cd: 9.0,
    ad:"HOLD to breathe a wide cone of fire. Very low damage per second, but it hits everyone in the cone.",
    a2d:"Hurls a fireball that explodes and leaves burning ground.",
    melee: false, rangeLabel: "Short range",
@@ -739,10 +739,10 @@ const HEROES = [
 ];
 
 // Dragon flame cone: range / half-angle (radians) / damage per second to everyone inside the cone
-const DRAGON = { range: 150, half: 0.55, dps: 20 };
+const DRAGON = { range: 150, half: 0.55, dps: 23 };
 
 // Captain Oink's chain hook tuning
-const CHAIN = { max: 240, outSpd: 820, pullSelfSpd: 680, pullEnemySpd: 560, retractTime: 0.55 };
+const CHAIN = { max: 230, outSpd: 820, pullSelfSpd: 630, pullEnemySpd: 525, retractTime: 0.75 };
 
 // --- MAP CONFIGURATIONS ---
 const MAPS = [
@@ -1858,7 +1858,7 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   if(t.chain && t.chain.inv) return; // Captain Oink is invulnerable while his chain is out / hooking
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
 
-  if(t.guard > 0) rawDmg *= 0.45; // Cinder's Dragonhide: 55% less damage
+  if(t.guard > 0) rawDmg *= 0.35; // Cinder's Dragonhide: 65% less damage
 
   t.hp -= rawDmg;
   if(attacker && attacker !== t && rawDmg > 0) attacker.dmg += rawDmg;
