@@ -496,11 +496,11 @@ const Store = {
 };
 
 // --- GRAPHICS PRESETS ---
-// scale = render resolution (1 = full). Lower presets also drop shadows, extra light, dust, sparks and glows.
+// scale = render resolution (1 = full). Lower presets also drop shadows, extra light, dust, sparks, glows and flame particles.
 const GFX = {
-  low:    { scale: 0.6, shadow: 0,    soft: false, rim: false, dust: 0,   sparks: 0.3, glow: false, grid: false, amb: 1.5 },
-  medium: { scale: 0.8, shadow: 512,  soft: false, rim: true,  dust: 70,  sparks: 0.6, glow: true,  grid: true,  amb: 1.05 },
-  high:   { scale: 1,   shadow: 1024, soft: true,  rim: true,  dust: 150, sparks: 1,   glow: true,  grid: true,  amb: 1.05 }
+  low:    { scale: 0.6, shadow: 0,    soft: false, rim: false, dust: 0,   sparks: 0.3, glow: false, grid: false, amb: 1.5,  flame: 24 },
+  medium: { scale: 0.8, shadow: 512,  soft: false, rim: true,  dust: 70,  sparks: 0.6, glow: true,  grid: true,  amb: 1.05, flame: 40 },
+  high:   { scale: 1,   shadow: 1024, soft: true,  rim: true,  dust: 150, sparks: 1,   glow: true,  grid: true,  amb: 1.05, flame: 70 }
 };
 let gfxLevel = Store.get("bb_gfx", "high");
 if(!GFX[gfxLevel]) gfxLevel = "high";
@@ -636,6 +636,7 @@ const Snd = {
       case "hit": this.noise(0.07, 0.4, 2400); this.tone(200, 0.08, "triangle", 0.35, -80); break;
       case "ability": this.tone(240, 0.16, "sawtooth", 0.25, 420); break;
       case "bounce": this.tone(900, 0.04, "square", 0.2, 200); break;
+      case "flame": this.noise(0.22, 0.4, 480); break;
       case "death": this.noise(0.3, 0.6, 900); this.tone(160, 0.35, "sine", 0.6, -110); break;
       case "pickup": this.tone(660, 0.08, "sine", 0.35); setTimeout(() => this.tone(880, 0.1, "sine", 0.35), 70); break;
       case "stormwarn": this.tone(300, 0.7, "sine", 0.22, -120); setTimeout(() => this.tone(220, 0.8, "sine", 0.2, -60), 220); break;
@@ -682,10 +683,10 @@ const HEROES = [
    n:"Captain Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
    hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
-   a1n:"Vortex Anchor", a1cd: 9.0, a1d:"Gravity anchor pulling foes inward.",
+   a1n:"Chain Hook", a1cd: 9.0, a1d:"Throw a chain forward (you're invulnerable). Wall: you zip to it. Foe: yank them to you, stunned. Miss: you're exposed while it reels in.",
    a2n:"Cannonball", a2cd: 9.5,
    ad:"Scrap shotgun — fires a 5-pellet spread.", a2d:"Explosive shell with huge knockback.",
-   melee: false, d:"Medium-heavy brawler. Controls zones with gravitational anchors."
+   melee: false, d:"Medium-heavy brawler. Hooks enemies and walls with a chain."
  },
  {
    n:"Mango the Monkey", e:"🐵", w:"🍌", wn:"Twin Crescent Boomerang",
@@ -724,24 +725,24 @@ const HEROES = [
    melee: false, d:"Blight shaman wielding lingering spore poisons and root binds."
  },
  {
-   n:"Kamo the Chameleon", e:"🦎", w:"🌿", wn:"Shifting Claws",
-   role: "Shapeshifter", roleCol: "#4fc96a",
-   hp: 140, sp: 185, col: 0x3fae5a, cd: 0.4,
-   a1n:"Shift", a1cd: 7, a1d:"Swap Swift ↔ Colossus. You're frozen and take +25% damage while you transform.",
-   a2n:"Afterimage / Tail Slam", a2cd: 8,
-   ad:"Swift (green claws): rapid jabs, 9 dmg. Colossus (orange claws): heavy swings, 34 dmg + knockback.",
-   a2d:"Swift: dash + decoy, next hit +60% (8s). Colossus: AOE slam, 0.8s stun (9.5s).",
-   melee: true, d:"Style-swapping brawler: fast and fragile, or slow and massive."
+   n:"Cinder the Dragon", e:"🐲", w:"🔥", wn:"Inferno Maw",
+   role: "Juggernaut", roleCol: "#e8553a",
+   hp: 210, sp: 132, col: 0x9e2a2a, cd: 0.1,
+   a1n:"Dragonhide", a1cd: 12.0, a1d:"Take 55% less damage for 3.5s.",
+   a2n:"Fireball", a2cd: 10.0,
+   ad:"HOLD to breathe a wide cone of fire. Very low damage per second, but it hits everyone in the cone.",
+   a2d:"Hurls a fireball that explodes and leaves burning ground.",
+   melee: false, rangeLabel: "Short range",
+   atkRange: 150, prefDist: 95, ab1Range: 140, ab2Range: 300,
+   d:"Slow, sturdy tank that smothers an area in fire."
  }
 ];
 
-// Kamo's two forms. Swapping converts HP by percentage (never a heal).
-const KAMO = [
-  { name:"Swift",    hp:140, sp:185, cd:0.4, col:0x3fae5a, a2n:"Afterimage", a2cd:8 },
-  { name:"Colossus", hp:220, sp:105, cd:1.3, col:0xe07a2b, a2n:"Tail Slam",  a2cd:9.5 }
-];
-const KAMO_SHIFT_TIME = 0.5;   // seconds Kamo is frozen while transforming
-const KAMO_SHIFT_VULN = 1.25;  // damage multiplier taken while transforming
+// Dragon flame cone: range / half-angle (radians) / damage per second to everyone inside the cone
+const DRAGON = { range: 150, half: 0.55, dps: 20 };
+
+// Captain Oink's chain hook tuning
+const CHAIN = { max: 240, outSpd: 820, pullSelfSpd: 680, pullEnemySpd: 560, retractTime: 0.55 };
 
 // --- MAP CONFIGURATIONS ---
 const MAPS = [
@@ -1074,7 +1075,7 @@ function updateStormAudio() {
 
 let lastHitSfx = 0;
 function applyLocalHitFeedback(dmg) {
-  // Tiny per-frame damage (storm, poison, fire) only tints the screen edge: no hit sound spam
+  // Tiny per-frame damage (storm, poison, fire, dragon flame) only tints the screen edge: no hit sound spam
   if(dmg < 1) { damageVignetteT = Math.max(damageVignetteT, 0.3); return; }
   const nowT = performance.now();
   const quiet = nowT - lastHitSfx < 90; // several pellets in one frame = one hit sound
@@ -1314,21 +1315,22 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
   }
   else if(heroIndex === 5) {
     const woodMat = new THREE.MeshStandardMaterial({ color: 0x2e2038, roughness: 0.7 });
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.0 + 0.1, 32, 12), woodMat);
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.1, 32, 12), woodMat);
     shaft.position.y = 8;
     root.add(shaft);
   }
   else if(heroIndex === 6) {
-    // Kamo's claws. The material is recolored every frame: green = Swift, orange = Colossus
-    const clawMat = new THREE.MeshStandardMaterial({
-      color: 0xbff5c8, emissive: 0x1d7a3a, emissiveIntensity: 0.7, metalness: 0.3, roughness: 0.35
-    });
-    for(let i = -1; i <= 1; i++) {
-      const claw = new THREE.Mesh(new THREE.ConeGeometry(1.1, 14, 6), clawMat);
-      claw.position.set(i * 2.8, 8, 0);
-      root.add(claw);
+    // Cinder's Inferno Maw: a brass flame nozzle with glowing embers at both ends
+    const brass = new THREE.MeshStandardMaterial({ color: 0x8a5a2a, metalness: 0.8, roughness: 0.35 });
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 3.6, 18, 12), brass);
+    tube.rotation.x = Math.PI / 2;
+    root.add(tube);
+    const emberMat = new THREE.MeshBasicMaterial({ color: 0xff7a1f });
+    for(const sz of [-10, 10]) {
+      const ember = new THREE.Mesh(new THREE.SphereGeometry(2.4, 10, 8), emberMat);
+      ember.position.z = sz;
+      root.add(ember);
     }
-    root.userData.clawMat = clawMat;
   }
   return root;
 }
@@ -1406,16 +1408,32 @@ function addHeroDetails(grp, headGrp, heroIndex) {
       dot.position.set(Math.cos(a) * 5.8, 9.4, Math.sin(a) * 5.8);
       headGrp.add(dot);
     }
-  } else if(heroIndex === 6) { // Kamo: head crest + curled tail
-    const tail = new THREE.Mesh(new THREE.TorusGeometry(6, 1.5, 6, 14, Math.PI * 1.5), M(0x2f8a45));
-    tail.position.set(0, 9, -12);
-    tail.rotation.y = Math.PI / 2;
-    grp.add(tail);
-    for(let i = -1; i <= 1; i++) {
-      const spike = new THREE.Mesh(new THREE.ConeGeometry(1.5, 5, 6), M(0x6fe08a));
-      spike.position.set(0, 9.2 - Math.abs(i) * 0.8, i * 3.2);
-      headGrp.add(spike);
+  } else if(heroIndex === 6) { // Cinder the Dragon: horns, snout, belly, wings, tail
+    const hornMat = M(0xf0d9a0);
+    for(const sx of [-1, 1]) {
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(1.7, 8, 8), hornMat);
+      horn.position.set(sx * 4.6, 10, -1);
+      horn.rotation.z = -sx * 0.4;
+      headGrp.add(horn);
     }
+    const snout = new THREE.Mesh(new THREE.BoxGeometry(6.4, 4, 6), M(0x7a1d20));
+    snout.position.set(0, -1.8, 8.6);
+    headGrp.add(snout);
+    const belly = new THREE.Mesh(new THREE.SphereGeometry(8, 10, 8), M(0xe7c27a));
+    belly.scale.set(1, 1.3, 0.4);
+    belly.position.set(0, 12, 11);
+    grp.add(belly);
+    const wingMat = M(0x6e1a1c, { side: THREE.DoubleSide });
+    for(const sx of [-1, 1]) {
+      const wing = new THREE.Mesh(new THREE.BoxGeometry(15, 1.2, 10), wingMat);
+      wing.position.set(sx * 12, 22, -8);
+      wing.rotation.set(0, sx * -0.3, sx * 0.55);
+      grp.add(wing);
+    }
+    const tail = new THREE.Mesh(new THREE.ConeGeometry(4.5, 20, 8), M(0x9e2a2a));
+    tail.rotation.x = -Math.PI / 2;
+    tail.position.set(0, 6, -18);
+    grp.add(tail);
   }
 }
 
@@ -1522,6 +1540,8 @@ function spawnProjectileMesh(type) {
   } else if(type === "vine") {
     mesh = new THREE.Mesh(new THREE.TorusGeometry(5, 1.8, 8, 16), new THREE.MeshBasicMaterial({color: 0x55aa33}));
     mesh.rotation.x = Math.PI / 2;
+  } else if(type === "fireball") {
+    mesh = new THREE.Mesh(new THREE.SphereGeometry(7.5, 12, 10), new THREE.MeshBasicMaterial({ color: 0xff7a1f }));
   } else {
     mesh = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 9, 8), new THREE.MeshBasicMaterial({color: 0x00f0ff}));
     mesh.rotation.x = Math.PI / 2;
@@ -1593,6 +1613,61 @@ function updateSparks(dt) {
   }
 }
 
+// --- DRAGON FLAME PARTICLES (pooled, never disposed) ---
+const FlamePool = [];
+function initFlamePool() {
+  if(FlamePool.length) return;
+  const geo = new THREE.SphereGeometry(2.4, 6, 5);
+  for(let i = 0; i < 80; i++) {
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+      color: 0xffb030, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    m.visible = false;
+    scene.add(m);
+    FlamePool.push({ m, vx: 0, vy: 0, vz: 0, life: 0, max: 0.4 });
+  }
+}
+function emitFlame(e) {
+  if(!FlamePool.length) initFlamePool();
+  const f = FlamePool.find(p => p.life <= 0);
+  if(!f) return;
+  const a = e.a + (Math.random() * 2 - 1) * DRAGON.half * 0.9;
+  const sp = (e.flameLen / 0.4) * (0.7 + Math.random() * 0.3);
+  f.m.position.set(e.x + Math.cos(e.a) * 16, 14 + Math.random() * 4, e.z + Math.sin(e.a) * 16);
+  f.vx = Math.cos(a) * sp; f.vz = Math.sin(a) * sp; f.vy = 20 + Math.random() * 30;
+  f.life = f.max = 0.34 + Math.random() * 0.08;
+  f.m.scale.setScalar(0.6);
+  f.m.visible = true;
+}
+function updateFlames(dt) {
+  for(const f of FlamePool) {
+    if(f.life <= 0) continue;
+    f.life -= dt;
+    if(f.life <= 0) { f.m.visible = false; continue; }
+    const k = 1 - f.life / f.max; // 0 (fresh) -> 1 (dying)
+    f.m.position.x += f.vx * dt;
+    f.m.position.y += f.vy * dt;
+    f.m.position.z += f.vz * dt;
+    f.m.scale.setScalar(0.6 + k * 2.2);
+    f.m.material.opacity = 0.85 * (1 - k);
+    f.m.material.color.setRGB(1, 0.85 - k * 0.6, 0.25 - k * 0.2);
+  }
+}
+
+// Glowing floor shape that shows exactly where the dragon's flame cone reaches
+function makeFlameDecal() {
+  const geo = new THREE.CircleGeometry(1, 22, -DRAGON.half, DRAGON.half * 2);
+  geo.rotateX(-Math.PI / 2);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+    color: 0xff6a1a, transparent: true, opacity: 0.25, side: THREE.DoubleSide,
+    depthWrite: false, blending: THREE.AdditiveBlending
+  }));
+  m.position.y = 1.4;
+  m.visible = false;
+  scene.add(m);
+  return m;
+}
+
 // --- PROJECTILE GLOW ---
 let _glowTex = null;
 function glowTexture() {
@@ -1609,7 +1684,7 @@ function glowTexture() {
   _glowTex = new THREE.CanvasTexture(can);
   return _glowTex;
 }
-const GLOW_COLORS = { s: 0x36e0ff, b: 0xffd000, meatball: 0xff7733, spore: 0x9955ff, vine: 0x55dd44, cannonball: 0xff8833, bomb: 0xffd000 };
+const GLOW_COLORS = { s: 0x36e0ff, b: 0xffd000, meatball: 0xff7733, spore: 0x9955ff, vine: 0x55dd44, cannonball: 0xff8833, bomb: 0xffd000, fireball: 0xff7a22 };
 
 function spawnPickup() {
   const types = [
@@ -1652,9 +1727,19 @@ function getRemoteActorByNetId(id) {
   return E.find(e => e.netId === id) || null;
 }
 
+// Frees per-entity extras that live directly in the scene (Oink's chain, Cinder's flame decal)
+function endChain(e) {
+  if(e.chain) { disposeHierarchy(e.chain.mesh); e.chain = null; }
+}
+function disposeEntityExtras(e) {
+  endChain(e);
+  if(e.flameDecal) { disposeHierarchy(e.flameDecal); e.flameDecal = null; }
+}
+
 function removePeerEntity(peerId) {
   for (let i = E.length - 1; i >= 0; i--) {
     if (E[i].netId === peerId) {
+      disposeEntityExtras(E[i]);
       disposeHierarchy(E[i].mesh);
       E.splice(i, 1);
     }
@@ -1695,10 +1780,12 @@ function mk(ci, x, z, playerNum, netId = null, team = null) {
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
     chargeVx: 0, chargeVz: 0, chargeT: 0,
-    style: 0, shiftT: 0, shiftTo: 0, altC3: 0, empT: 0, // Kamo only
     activePod: null,
     sporePoison: 0,
     sporeAttacker: null,
+    chain: null,                                   // Captain Oink's chain hook
+    breathT: 0, breathTick: 0, flameAcc: 0, flameLen: DRAGON.range, guard: 0, // Cinder
+    flameDecal: ci === 6 ? makeFlameDecal() : null,
     mesh
   };
 }
@@ -1768,16 +1855,10 @@ function areEnemies(a, b) {
 function hurt(t, rawDmg, a, kb, attacker = null) {
   if(t.dead) return;
   if(isMultiplayer && !isLobbyLeader) return;
+  if(t.chain && t.chain.inv) return; // Captain Oink is invulnerable while his chain is out / hooking
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
 
-  // Kamo's Afterimage: the next hit within 2s deals +60%
-  if(attacker && attacker !== t && attacker.empT > 0 && rawDmg >= 1) {
-    rawDmg *= 1.6;
-    attacker.empT = 0;
-    spawnDamageNumber(t.x, t.z, "+60%", "#ffd000");
-  }
-  // Kamo is exposed while transforming
-  if(t.shiftT > 0) rawDmg *= KAMO_SHIFT_VULN;
+  if(t.guard > 0) rawDmg *= 0.45; // Cinder's Dragonhide: 55% less damage
 
   t.hp -= rawDmg;
   if(attacker && attacker !== t && rawDmg > 0) attacker.dmg += rawDmg;
@@ -1828,7 +1909,7 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   }
 }
 
-function melee(e, rng, d, kb, deflect = true) {
+function melee(e, rng, d, kb) {
   e.swing = 0.25;
   spawn3DRing(e.x, e.z, rng, 0xffb042);
   if(isMultiplayer && !isLobbyLeader) return;
@@ -1846,7 +1927,7 @@ function melee(e, rng, d, kb, deflect = true) {
       }
     }
   }
-  if(deflect) reflect(e, rng);
+  reflect(e, rng);
 }
 
 function reflect(e, r) {
@@ -1902,9 +1983,16 @@ function shot(e, a, o) {
 }
 
 function executeAttack(e) {
-  if(e.ci === 6) { kamoAttack(e); return; }
   const c = HEROES[e.ci];
   e.c1 = c.cd;
+  if(e.ci === 6) {
+    // Cinder's flame breath: this just keeps the flame "lit" while the button is held.
+    // Damage and visuals are applied every frame in updateDragon().
+    e.breathT = 0.2;
+    e.fire = 0.14; // walks slower while breathing
+    if(++e.breathTick % 2 === 0) Snd.play("flame");
+    return;
+  }
   Snd.play(c.melee ? "melee" : "shoot");
   if(c.melee) {
     melee(e, 80, 32, 360);
@@ -1931,7 +2019,6 @@ function attack(e) {
 }
 
 function executeAbility1(e) {
-  if(e.ci === 6) { kamoAbility1(e); return; }
   const c = HEROES[e.ci];
   Snd.play("ability");
   if(e.ci === 0) {
@@ -1949,29 +2036,20 @@ function executeAbility1(e) {
       }
     }
   } else if(e.ci === 1) {
+    // Chain Hook: see updateChain()
     e.c2 = c.a1cd;
-    const placeX = e.x + Math.cos(e.a) * 45;
-    const placeZ = e.z + Math.sin(e.a) * 45;
-    screenShake = Math.max(screenShake, 4);
-
-    const geo = new THREE.CylinderGeometry(90, 90, 2, 24);
-    const mat = new THREE.MeshBasicMaterial({ color: 0x3db8f5, transparent: true, opacity: 0.35 });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(placeX, 1, placeZ);
-    scene.add(mesh);
-
-    Zones.push({ kind: "anchor_vortex", x: placeX, z: placeZ, r: 90, life: c.a1cd - 1.0, owner: e, mesh });
+    startChain(e);
   } else if(e.ci === 2) {
     e.c2 = c.a1cd;
     shot(e, e.a, {
-      t: "bomb", s: 360, d: 15, kb: 130, life: 0.52,
+      t: "bomb", s: 360, d: 13, kb: 130, life: 0.52,
       onDeath: (bx, bz) => {
         screenShake = Math.max(screenShake, 6);
         spawn3DRing(bx, bz, 65, 0xffe853);
         for(let i = 0; i < 6; i++) {
           const ang = (Math.PI * 2 / 6) * i + (Math.random() - 0.5) * 0.2;
           shot(e, ang, {
-            t: "b", s: 330, d: 12, kb: 110, life: 99,
+            t: "b", s: 330, d: 10, kb: 110, life: 99,
             x: bx, z: bz
           });
         }
@@ -2042,6 +2120,12 @@ function executeAbility1(e) {
 
     e.activePod = podZone;
     Zones.push(podZone);
+  } else if(e.ci === 6) {
+    // Dragonhide: take 55% less damage for 3.5s
+    e.c2 = c.a1cd;
+    e.guard = 3.5;
+    screenShake = Math.max(screenShake, 3);
+    spawn3DRing(e.x, e.z, 38, 0xffb347);
   }
 }
 
@@ -2051,7 +2135,6 @@ function ability1(e) {
 }
 
 function executeAbility2(e) {
-  if(e.ci === 6) { kamoAbility2(e); return; }
   const c = HEROES[e.ci];
   Snd.play("ability");
   e.c3 = c.a2cd;
@@ -2125,6 +2208,29 @@ function executeAbility2(e) {
         }
       }
     });
+  } else if(e.ci === 6) {
+    // Fireball: explodes on impact and leaves burning ground
+    shot(e, e.a, {
+      t: "fireball", s: 330, d: 14, kb: 120, life: 0.95,
+      onDeath: (bx, bz) => {
+        screenShake = Math.max(screenShake, 6);
+        spawn3DRing(bx, bz, 70, 0xff7a22);
+        spawnSparks(bx, bz, 0xffa040, 10);
+        if(!isMultiplayer || isLobbyLeader) {
+          for(const t of E) {
+            if(t !== e && !t.dead && Math.hypot(t.x - bx, t.z - bz) < 70 + t.r && areEnemies(e, t)) {
+              hurt(t, 12, Math.atan2(t.z - bz, t.x - bx), 260, e);
+            }
+          }
+        }
+        const geo = new THREE.CylinderGeometry(50, 50, 1.5, 20);
+        const mat = new THREE.MeshBasicMaterial({ color: 0xff5a1a, transparent: true, opacity: 0.45 });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(bx, 1, bz);
+        scene.add(mesh);
+        Zones.push({ kind: "marinara", x: bx, z: bz, r: 50, life: 2.2, owner: e, mesh }); // slows + burns, like Marinara
+      }
+    });
   }
 }
 
@@ -2133,85 +2239,175 @@ function ability2(e) {
   executeAbility2(e);
 }
 
-// --- KAMO THE CHAMELEON ---
-// Which form to *show*: flashes between both forms while transforming
-function kamoVisStyle(e) {
-  return e.shiftT > 0 ? (Math.floor(matchTime * 12) % 2) : e.style;
+function scheduleShot(e, delay, opts) {
+  if(!e.pending) e.pending = [];
+  e.pending.push({ t: delay, opts });
 }
 
-// Claws are green in Swift and orange in Colossus
-function tintKamoClaws(wep, style) {
-  const m = wep && wep.userData && wep.userData.clawMat;
-  if(!m) return;
-  m.color.setHex(style ? 0xff8a1f : 0xbff5c8);
-  m.emissive.setHex(style ? 0xb04a00 : 0x1d7a3a);
+// --- CAPTAIN OINK: CHAIN HOOK ---
+// out:       chain flies forward (Oink is invulnerable and rooted)
+// pullSelf:  hit a wall -> Oink zips to it (invulnerable)
+// pullEnemy: hit a player -> that player is yanked to Oink and stunned (invulnerable)
+// retract:   hit nothing -> chain reels back in, Oink is VULNERABLE and rooted
+const _cUp = new THREE.Vector3(0, 1, 0), _cDir = new THREE.Vector3();
+
+function startChain(e) {
+  if(e.chain) return;
+  const grp = new THREE.Group();
+  const link = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.5, 1.5, 1, 6),
+    new THREE.MeshStandardMaterial({ color: 0xaab2c0, metalness: 0.9, roughness: 0.3 })
+  );
+  const hook = new THREE.Mesh(
+    new THREE.SphereGeometry(4.2, 8, 8),
+    new THREE.MeshStandardMaterial({ color: 0x4a5060, metalness: 0.9, roughness: 0.25 })
+  );
+  grp.add(link, hook);
+  grp.link = link; grp.hook = hook;
+  scene.add(grp);
+  e.chain = { phase: "out", a: e.a, len: 0, tx: e.x, tz: e.z, t: 0, target: null, inv: true, mesh: grp };
 }
 
-function kamoAttack(e) {
-  e.c1 = KAMO[e.style].cd;
-  Snd.play("melee");
-  if(e.style === 0) melee(e, 66, 9, 110, false);   // Swift: rapid jabs
-  else melee(e, 92, 34, 400, false);                // Colossus: heavy swing + knockback
+function drawChain(e) {
+  const c = e.chain, g = c.mesh;
+  _cDir.set(c.tx - e.x, 0, c.tz - e.z);
+  const L = _cDir.length();
+  g.hook.position.set(c.tx, 14, c.tz);
+  if(L < 0.5) { g.link.visible = false; return; }
+  g.link.visible = true;
+  _cDir.divideScalar(L);
+  g.link.quaternion.setFromUnitVectors(_cUp, _cDir);
+  g.link.scale.set(1, L, 1);
+  g.link.position.set((e.x + c.tx) / 2, 14, (e.z + c.tz) / 2);
 }
 
-// Shift: start transforming. Kamo is frozen, can't act, and takes extra damage until it finishes.
-function kamoAbility1(e) {
-  if(e.stun > 0 || e.shiftT > 0) return;
-  e.c2 = HEROES[6].a1cd;
-  e.shiftT = KAMO_SHIFT_TIME;
-  e.shiftTo = e.style ? 0 : 1;
-  e.chargeT = 0;
-  Snd.play("ability");
-  spawn3DRing(e.x, e.z, 34, KAMO[e.shiftTo].col);
-  if(e === pl) screenShake = Math.max(screenShake, 3);
-}
+function updateChain(e, dt) {
+  const c = e.chain;
+  if(c.inv) e.stun = 0; // invulnerable also means nothing can stun him mid-hook
+  const auth = !isMultiplayer || isLobbyLeader;
+  const cs = Math.cos(c.a), sn = Math.sin(c.a);
+  c.t += dt;
+  let done = false;
 
-function setKamoStyle(e, to) {
-  e.style = to;
-  e.mhp = KAMO[to].hp;
-  e.r = to ? 19 : 16;
-  if(e.hp > e.mhp) e.hp = e.mhp;
-  if(e.mesh) {
-    if(e.mesh.bodyMat) e.mesh.bodyMat.color.setHex(KAMO[to].col);
-    e.mesh.scale.setScalar(to ? 1.22 : 1);
+  if(c.phase === "out") {
+    let move = CHAIN.outSpd * dt;
+    while(move > 0 && c.phase === "out") {
+      const step = Math.min(8, move);
+      move -= step;
+      const nl = c.len + step;
+      const nx = e.x + cs * nl, nz = e.z + sn * nl;
+      if(blocked(nx, nz, 2)) { // hit a wall: pull yourself to it
+        c.phase = "pullSelf"; c.t = 0;
+        Snd.play("bounce");
+        spawnSparks(c.tx, c.tz, 0xdde4f0, 6);
+        break;
+      }
+      c.len = nl; c.tx = nx; c.tz = nz;
+      for(const t of E) {
+        if(t !== e && !t.dead && areEnemies(e, t) && Math.hypot(t.x - nx, t.z - nz) < t.r + 7) {
+          c.phase = "pullEnemy"; c.target = t; c.t = 0; // hit a player: pull them in
+          Snd.play("bounce");
+          break;
+        }
+      }
+      if(c.phase === "out" && c.len >= CHAIN.max) { // hit nothing: reel it back, vulnerable
+        c.phase = "retract"; c.t = 0; c.inv = false;
+      }
+    }
+  } else if(c.phase === "pullSelf") {
+    // Only the machine that controls Oink moves him; everyone else sees him arrive via the network
+    if(e === pl || e.ai) {
+      e.x += cs * CHAIN.pullSelfSpd * dt;
+      e.z += sn * CHAIN.pullSelfSpd * dt;
+    }
+    if(Math.hypot(c.tx - e.x, c.tz - e.z) <= e.r + 6 || c.t > 0.7) done = true;
+  } else if(c.phase === "pullEnemy") {
+    const t = c.target;
+    if(!t || t.dead) {
+      done = true;
+    } else {
+      const dx = e.x - t.x, dz = e.z - t.z, d = Math.hypot(dx, dz) || 1;
+      c.tx = t.x; c.tz = t.z;
+      const arrived = d <= e.r + t.r + 10;
+      if(auth) {
+        if(arrived) { t.kx *= 0.2; t.kz *= 0.2; }
+        else {
+          t.kx = dx / d * CHAIN.pullEnemySpd;
+          t.kz = dz / d * CHAIN.pullEnemySpd;
+          t.stun = Math.max(t.stun, 0.4);
+        }
+      }
+      if(arrived || c.t > 0.7) {
+        if(auth) t.stun = Math.max(t.stun, 0.9); // "a little bit" of stun once they land
+        done = true;
+      }
+    }
+  } else { // retract
+    const f = Math.min(1, c.t / CHAIN.retractTime);
+    const L = c.len * (1 - f);
+    c.tx = e.x + cs * L; c.tz = e.z + sn * L;
+    if(f >= 1) done = true;
   }
+
+  if(done) {
+    endChain(e);
+    spawn3DRing(e.x, e.z, 22, 0xaab2c0);
+    return;
+  }
+  drawChain(e);
 }
 
-function finishKamoShift(e) {
-  const to = e.shiftTo;
-  if(e.style === to) { setKamoStyle(e, to); return; }
-  const pct = e.hp / e.mhp;
-  setKamoStyle(e, to);
-  const tmp = e.c3; e.c3 = e.altC3; e.altC3 = tmp; // each form keeps its own Ability 2 cooldown
-  if(!isMultiplayer || isLobbyLeader) e.hp = Math.max(0.5, pct * e.mhp); // HP % carries over, never a heal
-  spawn3DRing(e.x, e.z, 40, KAMO[to].col);
+// --- CINDER THE DRAGON: FLAME BREATH ---
+// How far the flame can reach before a wall stops it
+function flameLength(e) {
+  const ca = Math.cos(e.a), sa = Math.sin(e.a);
+  for(let dd = 16; dd < DRAGON.range; dd += 8) {
+    if(blocked(e.x + ca * dd, e.z + sa * dd, 3)) return Math.max(24, dd);
+  }
+  return DRAGON.range;
 }
 
-function kamoAbility2(e) {
-  e.c3 = KAMO[e.style].a2cd;
-  Snd.play("ability");
-  if(e.style === 0) { // Afterimage: dash, leave a decoy, empower the next hit
-    const ghost = createDetailedHeroModel(6, false, true);
-    ghost.position.set(e.x, 0, e.z);
-    ghost.rotation.y = -e.a + Math.PI / 2;
-    ghost.traverse(o => { if(o.material) { o.material.transparent = true; o.material.opacity = 0.4; } });
-    Zones.push({ kind: "decoy", x: e.x, z: e.z, r: 1, life: 2.0, owner: e, mesh: ghost });
-    e.chargeT = 0.18;
-    e.chargeVx = Math.cos(e.a) * 640;
-    e.chargeVz = Math.sin(e.a) * 640;
-    e.empT = 2.0;
-    spawn3DRing(e.x, e.z, 30, 0x66ff99);
-  } else { // Tail Slam: AOE stun + knockback
-    screenShake = Math.max(screenShake, 9);
-    spawn3DRing(e.x, e.z, 105, 0xe07a2b);
+function updateDragon(e, dt) {
+  const breathing = e.breathT > 0;
+  if(breathing) {
+    e.flameLen = flameLength(e);
+    // Damage: everyone in the cone takes a small amount EVERY FRAME (smooth, no hit-sound spam)
     if(!isMultiplayer || isLobbyLeader) {
       for(const t of E) {
-        if(t !== e && !t.dead && Math.hypot(t.x - e.x, t.z - e.z) < 105 + t.r && areEnemies(e, t) && hasLOS(e.x, e.z, t.x, t.z)) {
-          hurt(t, 14, Math.atan2(t.z - e.z, t.x - e.x), 360, e);
-          t.stun = 0.8;
+        if(t === e || t.dead || !areEnemies(e, t)) continue;
+        const dx = t.x - e.x, dz = t.z - e.z, dd = Math.hypot(dx, dz);
+        if(dd > DRAGON.range + t.r) continue;
+        let da = Math.atan2(dz, dx) - e.a;
+        da = Math.atan2(Math.sin(da), Math.cos(da));
+        const tol = DRAGON.half + Math.asin(Math.min(1, t.r / Math.max(dd, t.r)));
+        if(Math.abs(da) < tol && hasLOS(e.x, e.z, t.x, t.z)) {
+          hurt(t, DRAGON.dps * dt, Math.atan2(dz, dx), 0, e);
         }
       }
     }
+    // Flame particles
+    const rate = GFX[gfxLevel].flame;
+    if(rate > 0) {
+      e.flameAcc += rate * dt;
+      while(e.flameAcc >= 1) { e.flameAcc -= 1; emitFlame(e); }
+    }
+  }
+  // Glowing floor cone
+  const dec = e.flameDecal;
+  if(dec) {
+    dec.visible = breathing;
+    if(breathing) {
+      dec.position.set(e.x, 1.4, e.z);
+      dec.rotation.y = -e.a;
+      dec.scale.set(e.flameLen, 1, e.flameLen);
+      dec.material.opacity = 0.2 + Math.sin(matchTime * 34) * 0.06;
+    }
+  }
+  // Dragonhide glow
+  if(e.mesh && e.mesh.bodyMat) {
+    const g = e.guard > 0;
+    e.mesh.bodyMat.emissive.setHex(g ? 0xff7a1f : 0x000000);
+    e.mesh.bodyMat.emissiveIntensity = g ? 0.55 + Math.sin(matchTime * 10) * 0.15 : 0;
   }
 }
 
@@ -2219,11 +2415,6 @@ window.setGraphics = function(level) {
   applyGraphics(level);
   ov.querySelectorAll(".gfx-selector .tab-btn").forEach(b => b.classList.toggle("selected", b.dataset.gfx === level));
 };
-
-function scheduleShot(e, delay, opts) {
-  if(!e.pending) e.pending = [];
-  e.pending.push({ t: delay, opts });
-}
 
 function inVisionCone(observer, tx, tz, maxFov = 1.67) {
   const dx = tx - observer.x;
@@ -2307,7 +2498,7 @@ function updateAI(e, dt) {
     if(e.ai.state === "RETREAT") {
       moveAng = targetAng + Math.PI + (e.ai.strafeDir * 0.4);
     } else {
-      const prefDist = c.melee ? 30 : 200 - (e.ai.aggro * 80);
+      const prefDist = c.prefDist !== undefined ? c.prefDist : (c.melee ? 30 : 200 - (e.ai.aggro * 80));
       if(targetDist < prefDist - 35) moveAng = targetAng + Math.PI;
       else if(targetDist > prefDist + 25) moveAng = targetAng;
       else moveAng = targetAng + (Math.PI/2 * e.ai.strafeDir);
@@ -2331,9 +2522,9 @@ function updateAI(e, dt) {
   const canSeeTarget = target && inVisionCone(e, target.x, target.z, e.ai.fov) && hasLOS(e.x, e.z, target.x, target.z);
   const targetDist = target ? Math.hypot(target.x - e.x, target.z - e.z) : 999;
 
-  e.ai.at = (canSeeTarget && targetDist < (c.melee ? 85 : 360) && Math.random() < 0.78) ? 1 : 0;
-  e.ai.ab1 = (canSeeTarget && targetDist < (c.melee ? 110 : 200) && Math.random() < 0.28) ? 1 : 0;
-  e.ai.ab2 = (canSeeTarget && targetDist < (c.melee ? 150 : 240) && Math.random() < 0.22) ? 1 : 0;
+  e.ai.at = (canSeeTarget && targetDist < (c.atkRange || (c.melee ? 85 : 360)) && Math.random() < 0.78) ? 1 : 0;
+  e.ai.ab1 = (canSeeTarget && targetDist < (c.ab1Range || (c.melee ? 110 : 200)) && Math.random() < 0.28) ? 1 : 0;
+  e.ai.ab2 = (canSeeTarget && targetDist < (c.ab2Range || (c.melee ? 150 : 240)) && Math.random() < 0.22) ? 1 : 0;
 
   return [e.ai.mx, e.ai.mz, e.ai.at, e.ai.ab1, e.ai.ab2];
 }
@@ -2346,7 +2537,7 @@ function syncHUD() {
   const ab1LabelKey = controlScheme === "wasd" ? "[E]" : "[R-SHIFT]";
   const ab2LabelKey = controlScheme === "wasd" ? "[Q]" : "[/]";
 
-  document.getElementById("hud-player-name").innerText = `${c.e} ${c.n}${targetEnt.ci === 6 ? ' · ' + KAMO[targetEnt.style].name : ''} ${isSpectating ? '(SPECTATING)' : ''}`;
+  document.getElementById("hud-player-name").innerText = `${c.e} ${c.n} ${isSpectating ? '(SPECTATING)' : ''}`;
   document.getElementById("hud-player-hp").innerText = `HP: ${Math.ceil(targetEnt.hp)} / ${targetEnt.mhp}`;
   document.getElementById("hud-hp-fill").style.width = Math.max(0, (targetEnt.hp / targetEnt.mhp) * 100) + "%";
 
@@ -2354,16 +2545,18 @@ function syncHUD() {
     const remainRatio = Math.max(0, targetEnt.activePod.life / targetEnt.activePod.maxLife);
     document.getElementById("cd1-fill").style.width = (remainRatio * 100) + "%";
     document.getElementById("cd1-label").innerText = `${ab1LabelKey} POD ACTIVE`;
+  } else if(targetEnt.ci === 6 && targetEnt.guard > 0) {
+    document.getElementById("cd1-fill").style.width = (Math.max(0, targetEnt.guard / 3.5) * 100) + "%";
+    document.getElementById("cd1-label").innerText = `${ab1LabelKey} DRAGONHIDE`;
   } else {
     const cd1Prog = targetEnt.c2 <= 0 ? 1 : Math.max(0, (1 - targetEnt.c2 / c.a1cd));
     document.getElementById("cd1-fill").style.width = (cd1Prog * 100) + "%";
-    document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${targetEnt.ci === 6 ? "Shift ▸ " + KAMO[1 - targetEnt.style].name : c.a1n}`;
+    document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${c.a1n}`;
   }
 
-  const kd = targetEnt.ci === 6 ? KAMO[targetEnt.style] : null;
-  const cd2Prog = targetEnt.c3 <= 0 ? 1 : Math.max(0, 1 - targetEnt.c3 / (kd ? kd.a2cd : c.a2cd));
+  const cd2Prog = targetEnt.c3 <= 0 ? 1 : (1 - targetEnt.c3 / c.a2cd);
   document.getElementById("cd2-fill").style.width = (cd2Prog * 100) + "%";
-  document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${kd ? kd.a2n : c.a2n}`;
+  document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${c.a2n}`;
 
   stormTimerDisp.innerText = `STORM: ${Math.round(stormRadius)}m`;
 }
@@ -2649,8 +2842,6 @@ function handleIncomingData(conn, data) {
         ent.targetZ = item.z;
         ent.targetA = item.a;
         ent.targetP = item.p || 0;
-        // Kamo's current form comes from the host (set before hp so max HP is right)
-        if(ent.ci === 6 && item.sy !== undefined && ent.style !== item.sy) setKamoStyle(ent, item.sy);
         ent.hp = item.hp;
         ent.dead = item.dead;
         ent.stun = item.st || 0;
@@ -2670,8 +2861,9 @@ function handleIncomingData(conn, data) {
   else if(data.type === "ACTION_INTENT") {
     const ent = getRemoteActorByNetId(data.id);
     if(ent && !ent.dead) {
-      // Validate cooldowns on the host; don't trust the supplied coordinates
-      if(data.act === "ATTACK" && ent.c1 <= 0) executeAttack(ent);
+      // Validate cooldowns on the host; don't trust the supplied coordinates.
+      // (Cinder's flame ticks every 0.1s, so give network jitter a little slack.)
+      if(data.act === "ATTACK" && ent.c1 <= (ent.ci === 6 ? 0.06 : 0)) executeAttack(ent);
       else if(data.act === "AB1" && ent.c2 <= 0) executeAbility1(ent);
       else if(data.act === "AB2" && ent.c3 <= 0) executeAbility2(ent);
     }
@@ -2708,7 +2900,6 @@ setInterval(() => {
       sl: e.slow > 0 ? e.slow : 0,
       po: e.sporePoison > 0 ? e.sporePoison : 0,
       sb: e.speedBoost > 0 ? e.speedBoost : 0,
-      sy: e.style,
       kx: Math.round(e.kx),
       kz: Math.round(e.kz),
       kl: e.killedBy
@@ -3127,7 +3318,7 @@ function champDetailHTML(ci) {
       <span class="cd-emoji">${c.e}</span>
       <div>
         <div class="cd-name">${c.n}</div>
-        <div class="cd-role" style="color:${c.roleCol};">${c.role} · ${c.melee ? "Melee" : "Ranged"}</div>
+        <div class="cd-role" style="color:${c.roleCol};">${c.role} · ${c.rangeLabel || (c.melee ? "Melee" : "Ranged")}</div>
       </div>
       <div class="cd-tag">YOUR CHAMPION</div>
     </div>
@@ -3280,7 +3471,7 @@ window.cancelLobby = function() {
 };
 
 function clearSceneEntities() {
-  for(const e of E) { disposeHierarchy(e.mesh); }
+  for(const e of E) { disposeEntityExtras(e); disposeHierarchy(e.mesh); }
   for(const p of P) { disposeHierarchy(p.mesh); }
   for(const f of F) { disposeHierarchy(f.mesh); }
   for(const z of Zones) { disposeHierarchy(z.mesh); }
@@ -3544,9 +3735,6 @@ function upd(dt) {
 
   const vmEnt = isSpectating ? spectateTarget : pl;
   if(viewmodelHolder.wep && vmEnt) {
-    // Kamo's claws show which form you're in (green = Swift, orange = Colossus, flashing = transforming)
-    if(vmEnt.ci === 6) tintKamoClaws(viewmodelHolder.wep, kamoVisStyle(vmEnt));
-
     const isAttacking = vmEnt.swing > 0 || vmEnt.fire > 0;
     const forwardKey = controlScheme === "wasd" ? K.KeyW : K.ArrowUp;
     const backKey = controlScheme === "wasd" ? K.KeyS : K.ArrowDown;
@@ -3664,11 +3852,6 @@ function upd(dt) {
           hurt(e, 9, Math.atan2(e.z - z.z, e.x - z.x), 150, z.owner);
           spawn3DRing(z.x, z.z, 34, 0xffe853);
           z.life = 0;
-        } else if(z.kind === "anchor_vortex") {
-          const pullAngle = Math.atan2(z.z - e.z, z.x - e.x);
-          e.kx += Math.cos(pullAngle) * 400 * dt;
-          e.kz += Math.sin(pullAngle) * 400 * dt;
-          e.slow = 0.5;
         } else if(z.kind === "spore_pod") {
           spawn3DRing(z.x, z.z, 55, 0x9955ff);
           const geo = new THREE.CylinderGeometry(55, 55, 1.5, 20);
@@ -3715,6 +3898,8 @@ function upd(dt) {
   for(const e of E) {
     if(e.dead) {
       if(e.mesh) e.mesh.visible = false;
+      if(e.flameDecal) e.flameDecal.visible = false;
+      if(e.chain) endChain(e);
       e.pending = [];
       continue;
     }
@@ -3747,8 +3932,9 @@ function upd(dt) {
 
     e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt;
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
-    e.altC3 -= dt; e.empT -= dt;
-    if(e.shiftT > 0) { e.shiftT -= dt; if(e.shiftT <= 0) finishKamoShift(e); }
+    e.guard -= dt; e.breathT -= dt;
+
+    if(e.chain) updateChain(e, dt);
 
     if(e.sporePoison > 0) {
       const tickDamage = (10 / 3.0) * dt;
@@ -3773,8 +3959,7 @@ function upd(dt) {
       e.z += e.chargeVz * dt;
       pushCollisions(e);
       for(const t of E) {
-        // (Kamo's Afterimage dash is a pure movement dash and never hits)
-        if(e.ci !== 6 && t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6 && areEnemies(e, t)) {
+        if(t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6 && areEnemies(e, t)) {
           hurt(t, 14, Math.atan2(t.z-e.z, t.x-e.x), 420, e);
           t.stun = 0.8;
         }
@@ -3783,8 +3968,8 @@ function upd(dt) {
 
     if(e.stun > 0) {
       e.stun -= dt;
-    } else if(e.shiftT > 0) {
-      // Kamo is mid-transformation: frozen in place, can't move or act (still takes knockback and extra damage)
+    } else if(e.chain) {
+      // Oink is committed to his chain: no moving or attacking until it finishes
     } else if(e === pl) {
       const forwardKey = controlScheme === "wasd" ? K.KeyW : K.ArrowUp;
       const backKey = controlScheme === "wasd" ? K.KeyS : K.ArrowDown;
@@ -3801,7 +3986,7 @@ function upd(dt) {
       ab1 = P1_ab1;
       ab2 = P1_ab2;
 
-      const baseSpd = (e.ci === 6 ? KAMO[e.style].sp : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
+      const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
       const l = Math.hypot(mx, mz) || 1;
@@ -3813,7 +3998,7 @@ function upd(dt) {
       if(ab2 && e.c3 <= 0) ability2(e);
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
-      const baseSpd = (e.ci === 6 ? KAMO[e.style].sp : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
+      const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
       const l = Math.hypot(mx, mz) || 1;
@@ -3860,17 +4045,13 @@ function upd(dt) {
     // Movement speed (drives the weapon bob when this player is being spectated)
     e.moveSpd += (Math.hypot(e.x - prevX, e.z - prevZ) / Math.max(dt, 0.0001) - e.moveSpd) * 0.25;
 
+    // Cinder: flame breath damage + particles + floor cone + Dragonhide glow
+    if(e.ci === 6) updateDragon(e, dt);
+
     if(e.mesh) {
       const bobY = (e === pl) ? 0 : Math.sin(matchTime * 2.1 + (e.bobPhase || 0)) * 1.2;
       e.mesh.position.set(e.x, bobY, e.z);
       e.mesh.rotation.y = -e.a + Math.PI / 2;
-
-      // Kamo: body flashes between forms while transforming; claws are green (Swift) / orange (Colossus)
-      if(e.ci === 6) {
-        const vs = kamoVisStyle(e);
-        if(e.shiftT > 0 && e.mesh.bodyMat) e.mesh.bodyMat.color.setHex(KAMO[vs].col);
-        tintKamoClaws(e.mesh.weapon, vs);
-      }
 
       // Team-colored HP bars + rings: green for you/allies, red for enemies
       const hpCol = (e === pl || (teamMode && pl && e.team === pl.team)) ? 0x45d988 : 0xff5544;
@@ -4064,6 +4245,7 @@ function loop(now) {
   stormMat.opacity = 0.3 + Math.sin(now / 450) * 0.07;
   stormMesh.rotation.y += dt * 0.03;
   updateSparks(dt);
+  updateFlames(dt);
   if(state !== "play") Snd.storm(0); // storm wind only plays during an active match
 
   renderer.render(scene, camera);
