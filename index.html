@@ -857,16 +857,16 @@ const HEROES = [
    n:"Bruno the Bear", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
    hp: 220, sp: 125, col: 0x5e381b, cd: 1.25,
-   a1n:"Slam", a1cd: 11.5, a1d:"Shockwave slam that stuns foes.",
+   a1n:"Slam", a1cd: 11.0, a1d:"Shockwave slam that stuns foes.",
    a2n:"Charge", a2cd: 14.0,
-   ad:"Wide melee swing that also deflects incoming projectiles.", a2d:"Rushes forward, bowling over enemies.",
+   ad:"Wide melee swing that also deflects incoming projectiles.", a2d:"Rushes forward, BOWLING over enemies.",
    melee: true, d:"High health tank. Heavy hammer deflects incoming shots."
  },
  {
    n:"Captain Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
    hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
-   a1n:"Chain Hook", a1cd: 11.0, a1d:"Throw a chain forward (you're invulnerable). Wall: you zip to it. Foe: yank them to you, stunned. Miss: you're exposed while it reels in.",
+   a1n:"Chain Hook", a1cd: 11.5, a1d:"Throw a chain forward (you're invulnerable). Wall: you zip to it. Foe: yank them to you, stunned. Miss: you're exposed while it reels in.",
    a2n:"Cannonball", a2cd: 9.5,
    ad:"Scrap shotgun — fires a 5-pellet spread.", a2d:"Explosive shell with huge knockback.",
    melee: false, d:"Medium-heavy brawler. Hooks enemies and walls with a chain."
@@ -904,17 +904,17 @@ const HEROES = [
    hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
    a1n:"Spore Pod", a1cd: 6.5, a1d:"Invisible trap (7s). Inflicts 10 dmg over 3s and slows.",
    a2n:"Root Entangle", a2cd: 9.0,
-   ad:"Spore bolt that inflicts lingering blight.", a2d:"Overgrowth projectile that immobilizes foes on impact.",
+   ad:"Spore bolt that inflicts lingering blight.", a2d:"Overgrowth projectile that immobilizes enemies on impact.",
    melee: false, d:"Blight shaman wielding lingering spore poisons and root binds."
  },
  {
    n:"Cinder the Dragon", e:"🐲", w:"🔥", wn:"Inferno Maw",
    role: "Juggernaut", roleCol: "#e8553a",
    hp: 270, sp: 110, col: 0x9e2a2a, cd: 0.1,
-   a1n:"Dragonhide", a1cd: 11.5, a1d:"Take 60% less damage for 4.0s.",
-   a2n:"Fireball", a2cd: 9.0,
+   a1n:"Dragonhide", a1cd: 12.0, a1d:"Take 60% less damage for 4.0s.",
+   a2n:"Fireball", a2cd: 8.5,
    ad:"HOLD to breathe a wide cone of fire. Very low damage per second, but it hits everyone in the cone.",
-   a2d:"Hurls a fireball that explodes and leaves burning ground.",
+   a2d:"Hurls a fireball that explodes and leaves the ground BURNING.",
    melee: false, rangeLabel: "Short range",
    atkRange: 150, prefDist: 95, ab1Range: 140, ab2Range: 300,
    d:"Slow, sturdy tank that smothers an area in fire."
@@ -4830,7 +4830,7 @@ function upd(dt) {
           e.slow = 0.4;
           hurt(e, 19 * dt, Math.atan2(e.z - z.z, e.x - z.x), 25, z.owner);
         } else if(z.kind === "peel") {
-          e.stun = 1.6;
+          e.stun = 1.5;
           hurt(e, 9, Math.atan2(e.z - z.z, e.x - z.x), 150, z.owner);
           spawn3DRing(z.x, z.z, 34, 0xffe853);
           z.life = 0;
@@ -4929,7 +4929,7 @@ function upd(dt) {
     if(e.chain) updateChain(e, dt);
 
     if(e.sporePoison > 0) {
-      const tickDamage = (10 / 3.0) * dt;
+      const tickDamage = (30 / 3.0) * dt;
       e.sporePoison -= dt;
       hurt(e, tickDamage, 0, 0, e.sporeAttacker);
     }
