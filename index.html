@@ -902,7 +902,7 @@ const HEROES = [
    n:"Mycelis", e:"🍄", w:"🪄", wn:"Chitinous Spore Staff",
    role: "Tactician", roleCol: "#7d5ba6",
    hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
-   a1n:"Spore Pod", a1cd: 6.5, a1d:"Invisible trap (7s). Inflicts 10 dmg over 3s and slows.",
+   a1n:"Spore Pod", a1cd: 6.5, a1d:"Invisible trap (7s). Inflicts 15 dmg over 3s and slows.",
    a2n:"Root Entangle", a2cd: 9.0,
    ad:"Spore bolt that inflicts lingering blight.", a2d:"Overgrowth projectile that immobilizes enemies on impact.",
    melee: false, d:"Blight shaman wielding lingering spore poisons and root binds."
@@ -4929,7 +4929,7 @@ function upd(dt) {
     if(e.chain) updateChain(e, dt);
 
     if(e.sporePoison > 0) {
-      const tickDamage = (30 / 3.0) * dt;
+      const tickDamage = (15 / 3.0) * dt;
       e.sporePoison -= dt;
       hurt(e, tickDamage, 0, 0, e.sporeAttacker);
     }
