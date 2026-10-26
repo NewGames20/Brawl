@@ -510,6 +510,7 @@ html, body {
 // --- ARENA CONSTANTS ---
 const BASE_W = 680, BASE_H = 460;
 const ARENA_SCALE = 1.25; // 25% wider and longer, about 56% more arena floor.
+const OBSTACLE_SCALE = 1.2; // Larger cover keeps fights close and creates more routes.
 const W = BASE_W * ARENA_SCALE, H = BASE_H * ARENA_SCALE, B = 14;
 function expandArenaPoint(x, z) {
   return [W/2 + (x - BASE_W/2) * ARENA_SCALE, H/2 + (z - BASE_H/2) * ARENA_SCALE];
@@ -517,7 +518,8 @@ function expandArenaPoint(x, z) {
 function expandArenaRects(rects) {
   return rects.map(([x, z, w, d]) => {
     const [cx, cz] = expandArenaPoint(x + w/2, z + d/2);
-    return [cx - w/2, cz - d/2, w, d];
+    const nw = w * OBSTACLE_SCALE, nd = d * OBSTACLE_SCALE;
+    return [cx - nw/2, cz - nd/2, nw, nd];
   });
 }
 const canvas3D = document.getElementById("c3d");
@@ -811,6 +813,7 @@ const Snd = {
       case "flame": this.noise(0.22, 0.4, 480); break;
       case "death": this.noise(0.28, 0.72, 1500); this.tone(125, 0.34, "triangle", 0.7, -72); this.tone(58, 0.38, "sine", 0.56, -22); break;
       case "pickup": this.tone(660, 0.08, "sine", 0.35); setTimeout(() => this.tone(880, 0.1, "sine", 0.35), 70); break;
+      case "crate": this.noise(0.16, 0.48, 900); this.tone(105, 0.18, "triangle", 0.42, -55); break;
       case "stormwarn": this.tone(300, 0.7, "sine", 0.22, -120); setTimeout(() => this.tone(220, 0.8, "sine", 0.2, -60), 220); break;
       case "beep": this.tone(440, 0.09, "sine", 0.45); break;
       case "go": this.tone(880, 0.18, "sine", 0.55); break;
@@ -1397,6 +1400,55 @@ function syncRemotePickups(list) {
     if(!seen.has(id)) {
       disposeHierarchy(mesh);
       remotePickupMeshes.delete(id);
+    }
+  }
+}
+
+function makeCrateVisual() {
+  const root = new THREE.Group();
+  const crate = new THREE.Group();
+  const wood = new THREE.MeshStandardMaterial({ color:0x8b5529, roughness:0.9 });
+  const trim = new THREE.MeshStandardMaterial({ color:0x373c46, metalness:0.65, roughness:0.42 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(38, 30, 38), wood); body.position.y = 15; crate.add(body);
+  for(const x of [-12, 12]) { const band = new THREE.Mesh(new THREE.BoxGeometry(4, 32, 40), trim); band.position.set(x, 15, 0); crate.add(band); }
+  root.add(crate);
+  const bomb = new THREE.Group();
+  const core = new THREE.Mesh(new THREE.SphereGeometry(10, 10, 8), new THREE.MeshStandardMaterial({ color:0x28252b, emissive:0x5b1c08, emissiveIntensity:0.8, roughness:0.65 })); core.position.y = 12; bomb.add(core);
+  const fuse = new THREE.Mesh(new THREE.TorusGeometry(7, 2, 6, 12), new THREE.MeshBasicMaterial({ color:0xff6b24 })); fuse.rotation.x = Math.PI/2; fuse.position.y = 20; bomb.add(fuse);
+  bomb.visible = false; root.add(bomb);
+  root.userData.crate = crate; root.userData.bomb = bomb;
+  scene.add(root);
+  return root;
+}
+
+function syncRemoteCrate(data) {
+  if(!data) {
+    if(remoteCrateVisual) disposeHierarchy(remoteCrateVisual);
+    remoteCrateVisual = null; remoteCrateId = null; return;
+  }
+  if(!remoteCrateVisual || remoteCrateId !== data.id) {
+    if(remoteCrateVisual) disposeHierarchy(remoteCrateVisual);
+    remoteCrateVisual = makeCrateVisual(); remoteCrateId = data.id; remoteCrateVisual.userData.lastCount = -1;
+  }
+  remoteCrateVisual.position.set(data.x, 0, data.z);
+  const isBomb = data.bombT !== null && data.bombT !== undefined;
+  remoteCrateVisual.userData.crate.visible = !isBomb;
+  remoteCrateVisual.userData.bomb.visible = isBomb;
+  if(isBomb) {
+    const count = Math.ceil(data.bombT);
+    if(data.exploded) {
+      remoteCrateVisual.userData.bomb.visible = false;
+      if(!remoteCrateVisual.userData.exploded) {
+        remoteCrateVisual.userData.exploded = true;
+        spawn3DRing(data.x, data.z, 125, 0xff7238);
+        spawnSparks(data.x, data.z, 0xff8a35, 12);
+        Snd.play("crate");
+      }
+    }
+    remoteCrateVisual.userData.bomb.scale.setScalar(1 + (1 - (data.bombT % 1)) * 0.09);
+    if(!data.exploded && count >= 1 && count !== remoteCrateVisual.userData.lastCount) {
+      remoteCrateVisual.userData.lastCount = count;
+      spawnDamageNumber(data.x, data.z, String(count), "#ff9b45");
     }
   }
 }
@@ -2017,8 +2069,8 @@ const GLOW_COLORS = { s: 0x36e0ff, b: 0xffd000, meatball: 0xff7733, spore: 0x995
 function spawnPickup() {
   const types = [
     { k:"hp", color: 0x45d988, apply:(ent)=>{
-      ent.hp = Math.min(ent.mhp, ent.hp + 45);
-      spawnDamageNumber(ent.x, ent.z, "+45", "#45d988");
+      ent.hp = Math.min(ent.mhp, ent.hp + 35);
+      spawnDamageNumber(ent.x, ent.z, "+35", "#45d988");
     }},
     { k:"speed", color: 0xffd000, apply:(ent)=>{ ent.speedBoost = 3.5; } }
   ];
@@ -2042,7 +2094,87 @@ function spawnPickup() {
   Pickups.push({ uid: "pk_" + Math.random().toString(36).slice(2, 8), kind: choice.k, x: rx, z: rz, r: 14, mesh, apply: choice.apply, life: 20 });
 }
 
+function spawnWorldCrate() {
+  let pos = null;
+  for(let attempt = 0; attempt < 60; attempt++) {
+    const x = 55 + Math.random() * (W - 110), z = 55 + Math.random() * (H - 110);
+    if(blocked(x, z, 26)) continue;
+    if(Math.hypot(x - W/2, z - H/2) > Math.max(25, stormRadius - 35)) continue;
+    if(E.some(e => !e.dead && Math.hypot(e.x - x, e.z - z) < 95)) continue;
+    pos = [x, z]; break;
+  }
+  if(!pos) { crateSpawnTimer = 6; return false; }
+  const mesh = makeCrateVisual(); mesh.position.set(pos[0], 0, pos[1]);
+  worldCrate = { id:"crate_" + Math.random().toString(36).slice(2, 9), x:pos[0], z:pos[1], r:24, hp:70, bombT:null, bombOwner:null, mesh, lastCount:-1 };
+  return true;
+}
+
+function damageWorldCrate(amount, attacker = null) {
+  const c = worldCrate;
+  if(!c || c.bombT !== null || (isMultiplayer && !isLobbyLeader)) return;
+  c.hp -= Math.max(1, amount);
+  spawnSparks(c.x, c.z, 0xffbd68, 5);
+  if(c.hp > 0) { spawnDamageNumber(c.x, c.z, "CRATE " + Math.ceil(c.hp), "#ffd28a"); return; }
+  c.hp = 0; c.bombT = 3.0; c.bombOwner = attacker; c.lastCount = 3;
+  c.mesh.userData.crate.visible = false; c.mesh.userData.bomb.visible = true;
+  spawnDamageNumber(c.x, c.z, "BOMB!", "#ff7845");
+  spawn3DRing(c.x, c.z, 30, 0xff8b35);
+  Snd.play("crate");
+}
+
+function pushWorldCrate(e, prevX, prevZ, dt) {
+  const c = worldCrate;
+  if(!c || c.exploded || (isMultiplayer && !isLobbyLeader)) return;
+  const dx = c.x - e.x, dz = c.z - e.z, d = Math.hypot(dx, dz), minD = c.r + e.r;
+  if(d >= minD || d < 0.001) return;
+  let nx = dx / d, nz = dz / d;
+  const movedX = e.x - prevX, movedZ = e.z - prevZ;
+  if(Math.hypot(movedX, movedZ) > 0.05) { nx = movedX / Math.hypot(movedX, movedZ); nz = movedZ / Math.hypot(movedX, movedZ); }
+  const push = minD - d + Math.max(1, Math.min(5, Math.hypot(movedX, movedZ)));
+  const tx = c.x + nx * push, tz = c.z + nz * push;
+  if(!blocked(tx, tz, c.r)) { c.x = tx; c.z = tz; c.mesh.position.set(c.x, 0, c.z); }
+  else { e.x -= nx * (minD - d + 1); e.z -= nz * (minD - d + 1); }
+}
+
+function updateWorldCrate(dt) {
+  if(isMultiplayer && !isLobbyLeader) return;
+  if(!worldCrate) {
+    crateSpawnTimer -= dt;
+    if(crateSpawnTimer <= 0) spawnWorldCrate();
+    return;
+  }
+  const c = worldCrate;
+  if(c.bombT === null) return;
+  if(c.exploded) {
+    c.bombT -= dt;
+    if(c.bombT <= 0) { disposeHierarchy(c.mesh); worldCrate = null; crateSpawnTimer = 22 + Math.random() * 12; }
+    return;
+  }
+  c.bombT = Math.max(0, c.bombT - dt);
+  const count = Math.ceil(c.bombT);
+  if(count >= 1 && count !== c.lastCount) {
+    c.lastCount = count; spawnDamageNumber(c.x, c.z, String(count), "#ff9b45"); Snd.play("beep");
+  }
+  c.mesh.userData.bomb.scale.setScalar(1 + Math.sin(matchTime * 18) * 0.07);
+  if(c.bombT > 0) return;
+  const bx = c.x, bz = c.z, owner = c.bombOwner;
+  c.exploded = true; c.bombT = 0.35;
+  c.mesh.userData.bomb.visible = false;
+  shakeIfNearby(bx, bz, 10, 240);
+  spawn3DRing(bx, bz, 125, 0xff7238);
+  spawnSparks(bx, bz, 0xff8a35, 16);
+  Snd.play("death");
+  for(const e of E) {
+    const d = Math.hypot(e.x - bx, e.z - bz);
+    if(!e.dead && d < 125 && hasLOS(bx, bz, e.x, e.z)) {
+      const angle = Math.atan2(e.z - bz, e.x - bx);
+      hurt(e, 48 * (1 - d / 190), angle, 420, owner);
+    }
+  }
+}
+
 let E = [], P = [], F = [], Pickups = [], Zones = [], DamageNumbers = [];
+let worldCrate = null, remoteCrateVisual = null, remoteCrateId = null, crateSpawnTimer = 0;
 let state = "menu", pl = null;
 let itemSpawnTimer = 0, countdown = 3.0;
 
@@ -2075,10 +2207,21 @@ function removePeerEntity(peerId) {
   }
 }
 
+const BOT_PERSONALITIES = [
+  { id:"aggressive", label:"Aggressive", aggro:0.92, risk:0.88, range:0.78, pickup:0.55, weakTarget:0.08, attack:0.9, ability:0.5 },
+  { id:"tactical", label:"Tactical", aggro:0.62, risk:0.48, range:1.0, pickup:1.0, weakTarget:0.22, attack:0.78, ability:0.75 },
+  { id:"skirmisher", label:"Skirmisher", aggro:0.72, risk:0.62, range:1.32, pickup:0.9, weakTarget:0.16, attack:0.84, ability:0.62 },
+  { id:"opportunist", label:"Opportunist", aggro:0.74, risk:0.7, range:0.95, pickup:1.3, weakTarget:0.62, attack:0.82, ability:0.82 }
+];
+
 function mk(ci, x, z, playerNum, netId = null, team = null) {
   const c = HEROES[ci];
   const isLocalP1 = (playerNum === 1);
+  const personality = BOT_PERSONALITIES[Math.floor(Math.random() * BOT_PERSONALITIES.length)];
   const ai = (isLocalP1 || isMultiplayer || (netId && !netId.startsWith("bot_"))) ? null : {
+    personality: personality.id,
+    risk: personality.risk, rangeBias: personality.range, pickupBias: personality.pickup,
+    weakTargetBias: personality.weakTarget, attackBias: personality.attack, abilityBias: personality.ability,
     state: "WANDER", timer: 0,
     react: 0.22 + Math.random()*0.22,
     err: 0.04 + Math.random()*0.12,
@@ -2292,6 +2435,12 @@ function melee(e, rng, d, kb) {
         }
       }
     }
+  }
+  const c = worldCrate;
+  if(c && c.bombT === null && (!isMultiplayer || isLobbyLeader)) {
+    const dx = c.x - e.x, dz = c.z - e.z, d = Math.hypot(dx, dz);
+    let da = Math.atan2(dz, dx) - e.a; da = Math.atan2(Math.sin(da), Math.cos(da));
+    if(d < rng + c.r && Math.abs(da) < 1.15 && hasLOS(e.x, e.z, c.x, c.z)) damageWorldCrate(35, e);
   }
   reflect(e, rng);
 }
@@ -2803,13 +2952,15 @@ function updateAI(e, dt) {
   }
 
   if(!e.ai.currentTarget || e.ai.currentTarget.dead || (teamMode && e.ai.currentTarget.team === e.team)) {
-    let bestDist = 1e9, found = null;
+    let bestScore = 1e9, found = null;
     for(const o of E) {
       if(o !== e && !o.dead && !(teamMode && o.team === e.team)) {
         const d = Math.hypot(o.x - e.x, o.z - e.z);
         const visible = (inVisionCone(e, o.x, o.z, e.ai.fov) || d < 65) && hasLOS(e.x, e.z, o.x, o.z);
-        if(visible && d < bestDist) {
-          bestDist = d;
+        const hpRatio = o.hp / Math.max(1, o.mhp);
+        const score = d * (1 - e.ai.weakTargetBias * (1 - hpRatio) * 0.55);
+        if(visible && score < bestScore) {
+          bestScore = score;
           found = o;
         }
       }
@@ -2836,8 +2987,8 @@ function updateAI(e, dt) {
   const ringDanger = distFromCenter > stormRadius - 35;
 
   if(ringDanger) e.ai.state = "RUN_CENTER";
-  else if(isLowHP && nearestPickup) e.ai.state = "SEEK_HEAL";
-  else if(isLowHP && Math.random() < 0.65) e.ai.state = "RETREAT";
+  else if(isLowHP && nearestPickup && bestPickDist < 360 && Math.random() < 0.72 * e.ai.pickupBias) e.ai.state = "SEEK_HEAL";
+  else if(isLowHP && Math.random() < (0.78 - e.ai.risk * 0.62)) e.ai.state = "RETREAT";
   else if(e.ai.currentTarget) e.ai.state = "FIGHT";
   else e.ai.state = "WANDER";
 
@@ -2865,11 +3016,17 @@ function updateAI(e, dt) {
     if(e.ai.state === "RETREAT") {
       moveAng = targetAng + Math.PI + (e.ai.strafeDir * 0.4);
     } else {
-      const prefDist = c.prefDist !== undefined ? c.prefDist : (c.melee ? 30 : 200 - (e.ai.aggro * 80));
+      const basePrefDist = c.prefDist !== undefined ? c.prefDist : (c.melee ? 30 : 200 - (e.ai.aggro * 80));
+      const prefDist = c.melee ? basePrefDist : basePrefDist * e.ai.rangeBias;
       if(targetDist < prefDist - 35) moveAng = targetAng + Math.PI;
       else if(targetDist > prefDist + 25) moveAng = targetAng;
       else moveAng = targetAng + (Math.PI/2 * e.ai.strafeDir);
     }
+  }
+
+  if(worldCrate && worldCrate.bombT !== null && !worldCrate.exploded) {
+    const bombDist = Math.hypot(e.x - worldCrate.x, e.z - worldCrate.z);
+    if(bombDist < 135) moveAng = Math.atan2(e.z - worldCrate.z, e.x - worldCrate.x);
   }
 
   let da = targetAng - e.a;
@@ -2889,9 +3046,11 @@ function updateAI(e, dt) {
   const canSeeTarget = target && inVisionCone(e, target.x, target.z, e.ai.fov) && hasLOS(e.x, e.z, target.x, target.z);
   const targetDist = target ? Math.hypot(target.x - e.x, target.z - e.z) : 999;
 
-  e.ai.at = (canSeeTarget && targetDist < (c.atkRange || (c.melee ? 85 : 360)) && Math.random() < 0.78) ? 1 : 0;
-  e.ai.ab1 = (canSeeTarget && targetDist < (c.ab1Range || (c.melee ? 110 : 200)) && Math.random() < 0.28) ? 1 : 0;
-  e.ai.ab2 = (canSeeTarget && targetDist < (c.ab2Range || (c.melee ? 150 : 240)) && Math.random() < 0.22) ? 1 : 0;
+  e.ai.at = (canSeeTarget && targetDist < (c.atkRange || (c.melee ? 85 : 360)) && Math.random() < e.ai.attackBias) ? 1 : 0;
+  const abilityDistance = canSeeTarget && targetDist < (c.ab1Range || (c.melee ? 110 : 200));
+  const ultimateDistance = canSeeTarget && targetDist < (c.ab2Range || (c.melee ? 150 : 240));
+  e.ai.ab1 = (abilityDistance && Math.random() < 0.22 * e.ai.abilityBias) ? 1 : 0;
+  e.ai.ab2 = (ultimateDistance && Math.random() < 0.18 * e.ai.abilityBias) ? 1 : 0;
 
   return [e.ai.mx, e.ai.mz, e.ai.at, e.ai.ab1, e.ai.ab2];
 }
@@ -3277,6 +3436,7 @@ function handleIncomingData(conn, data) {
       }
     }
     syncRemotePickups(data.pickups || []);
+    syncRemoteCrate(data.crate || null);
     // Authoritative storm state (keeps mid-round spectators in sync with the host)
     if(data.storm !== undefined) stormRadius = data.storm;
   }
@@ -3361,6 +3521,7 @@ setInterval(() => {
       seq: outgoingSeq,
       entities: snapEntities,
       pickups: Pickups.map(pk => ({ id: pk.uid, k: pk.kind, x: pk.x, z: pk.z })),
+      crate: worldCrate ? { id:worldCrate.id, x:worldCrate.x, z:worldCrate.z, hp:worldCrate.hp, bombT:worldCrate.bombT, exploded:!!worldCrate.exploded } : null,
       storm: Math.round(stormRadius)
     });
   }
@@ -4178,6 +4339,10 @@ function clearSceneEntities() {
   for(const dn of DamageNumbers) { disposeHierarchy(dn.sprite); }
   remotePickupMeshes.forEach(m => disposeHierarchy(m));
   remotePickupMeshes.clear();
+  if(worldCrate && worldCrate.mesh) disposeHierarchy(worldCrate.mesh);
+  worldCrate = null; crateSpawnTimer = 10 + Math.random() * 10;
+  if(remoteCrateVisual) disposeHierarchy(remoteCrateVisual);
+  remoteCrateVisual = null; remoteCrateId = null;
   E = []; P = []; F = []; Zones = []; Pickups = []; DamageNumbers = [];
   for(const s of SparkPool) { s.life = 0; s.m.visible = false; }
   for(const f of FlamePool) { f.life = 0; f.m.visible = false; }
@@ -4448,7 +4613,7 @@ function initMatchView() {
   const kf = document.getElementById("killfeed");
   if(kf) kf.innerHTML = "";
 
-  itemSpawnTimer = 0; matchTime = 0;
+  itemSpawnTimer = 0; matchTime = 0; crateSpawnTimer = 9 + Math.random() * 12;
   stormRadius = initialStormRadius;
   stormMesh.scale.set(stormRadius, 1, stormRadius);
   countdown = 3.0;
@@ -4601,6 +4766,7 @@ function upd(dt) {
   Snd.musicUpdate((initialStormRadius - stormRadius) / (initialStormRadius - minStormRadius));
 
   if(!isMultiplayer || isLobbyLeader) {
+    if(state === "play" && !demoActive) updateWorldCrate(dt);
     itemSpawnTimer += dt;
     if(itemSpawnTimer > 12.0 && Pickups.length < 3) {
       itemSpawnTimer = 0;
@@ -4853,6 +5019,7 @@ function upd(dt) {
       }
     }
     pushCollisions(e);
+    pushWorldCrate(e, prevX, prevZ, dt);
 
     // Pickups (host-authoritative: only the host or solo play collects; clients see them via snapshots)
     if(!isMultiplayer || isLobbyLeader) {
@@ -4934,6 +5101,12 @@ function upd(dt) {
       } else {
         finalize = true;
       }
+    }
+
+    if(!finalize && p.out && worldCrate && worldCrate.bombT === null && (!isMultiplayer || isLobbyLeader)
+       && Math.hypot(worldCrate.x - p.x, worldCrate.z - p.z) < worldCrate.r + 8) {
+      damageWorldCrate(p.d || 8, p.o);
+      finalize = true;
     }
 
     if(!finalize) {
@@ -5029,6 +5202,11 @@ function drawMinimap() {
     ctx.beginPath();
     ctx.arc(m.position.x * sx, m.position.z * sz, 2.5, 0, Math.PI * 2);
     ctx.fill();
+  }
+  const mapCrate = worldCrate ? worldCrate.mesh : remoteCrateVisual;
+  if(mapCrate) {
+    ctx.fillStyle = mapCrate.userData.bomb.visible ? "#ff6038" : "#c48743";
+    ctx.fillRect(mapCrate.position.x * sx - 3, mapCrate.position.z * sz - 3, 6, 6);
   }
 
   // Players: white = you, green = ally, red = enemy
