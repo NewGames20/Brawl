@@ -40,6 +40,51 @@ html, body {
   transition: opacity 0.12s ease-out;
 }
 
+#match-intro {
+  position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
+  min-width: 230px; padding: 10px 20px; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(18,16,26,0.94), rgba(10,9,15,0.88));
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.55), 0 0 24px rgba(61,184,245,0.16);
+  text-align: center; display: none; z-index: 7; pointer-events: none;
+}
+#intro-eyebrow { color: var(--accent); font-size: 10px; font-weight: 900; letter-spacing: 2px; }
+#intro-name { margin-top: 3px; font: 900 24px 'Space Grotesk', sans-serif; text-shadow: 0 2px 12px rgba(0,0,0,0.7); }
+#intro-meta { margin-top: 2px; color: var(--text-muted); font-size: 11px; font-weight: 700; }
+
+#announcer {
+  position: absolute; top: 23%; left: 50%; transform: translate(-50%, -10px) scale(0.94);
+  opacity: 0; color: #ffe08a; font: 900 clamp(24px, 4vw, 42px) 'Space Grotesk', sans-serif;
+  letter-spacing: 2px; text-align: center; white-space: nowrap; pointer-events: none;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.95), 0 0 24px rgba(255,153,45,0.48);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+#announcer.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+#emote-wheel {
+  position: absolute; left: 50%; top: 50%; width: 230px; height: 230px;
+  transform: translate(-50%, -50%); display: none; z-index: 8; pointer-events: none;
+  border: 1px solid rgba(255,255,255,0.24); border-radius: 50%;
+  background: radial-gradient(circle, rgba(12,11,18,0.93) 0 30%, rgba(12,11,18,0.70) 31% 100%);
+  box-shadow: 0 0 40px rgba(0,0,0,0.65), inset 0 0 28px rgba(61,184,245,0.08);
+}
+#emote-wheel.open { display: block; }
+.emote-option {
+  position: absolute; width: 82px; min-height: 42px; padding: 6px 8px;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+  background: rgba(24,22,32,0.96); color: #d8d5e0;
+  font: 800 10px 'Outfit', sans-serif; letter-spacing: 0.7px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.45); transition: color 0.1s, border-color 0.1s, background 0.1s;
+}
+.emote-option b { font: 900 13px 'Space Grotesk', sans-serif; color: #fff; }
+.emote-option.selected { color: #fff; border-color: var(--accent); background: rgba(31,99,133,0.96); box-shadow: 0 0 18px rgba(61,184,245,0.35); }
+.emote-option[data-dir="up"] { left: 74px; top: 8px; }
+.emote-option[data-dir="right"] { right: 8px; top: 94px; }
+.emote-option[data-dir="down"] { left: 74px; bottom: 8px; }
+.emote-option[data-dir="left"] { left: 8px; top: 94px; }
+#emote-hint { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); color: var(--text-muted); font-size: 9px; font-weight: 800; letter-spacing: 1px; white-space: nowrap; }
+
 #crosshair {
   position: absolute; top: 50%; left: 50%;
   width: 16px; height: 16px;
@@ -287,6 +332,7 @@ html, body {
 
 /* ============ HUD ============ */
 #hud { position: absolute; inset: 0; pointer-events: none; z-index: 5; display: none; }
+#hud.intro > *:not(#match-intro) { display: none !important; }
 #hud-player {
   position: absolute; top: 22px; left: 24px;
   background: linear-gradient(160deg, rgba(22,20,32,0.92), rgba(13,12,19,0.92));
@@ -397,6 +443,8 @@ html, body {
   border-radius: 8px; padding: 4px 14px; font-size: 12px; font-weight: 700;
   animation: kfpop 0.18s ease-out; backdrop-filter: blur(4px);
 }
+.kf-entry.elimination { border-color: rgba(255,126,96,0.34); }
+.kf-entry.storm { color: #ffc77b; border-color: rgba(255,173,92,0.5); }
 @keyframes kfpop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 .stats-table {
   width: 100%; text-align: left; font-size: 12px; font-weight: 700;
@@ -430,6 +478,15 @@ html, body {
     </div>
     <canvas id="minimap" width="170" height="115"></canvas>
     <div id="killfeed"></div>
+    <div id="announcer" aria-live="polite"></div>
+    <div id="match-intro"><div id="intro-eyebrow">CHAMPION SPOTLIGHT</div><div id="intro-name"></div><div id="intro-meta"></div></div>
+    <div id="emote-wheel" aria-hidden="true">
+      <div class="emote-option selected" data-dir="up"><b>HA!</b>TAUNT</div>
+      <div class="emote-option" data-dir="right"><b>LOL</b>LAUGH</div>
+      <div class="emote-option" data-dir="down"><b>GG</b>SALUTE</div>
+      <div class="emote-option" data-dir="left"><b>EEK!</b>PANIC</div>
+      <div id="emote-hint">MOVE MOUSE · RELEASE T</div>
+    </div>
     <div id="hud-cooldowns">
       <div class="cd-bar"><div id="cd1-fill" class="cd-fill"></div><span id="cd1-label" class="cd-text">[E] A1</span></div>
       <div class="cd-bar"><div id="cd2-fill" class="cd-fill"></div><span id="cd2-label" class="cd-text">[Q] A2</span></div>
@@ -464,11 +521,19 @@ const resultDesc = document.getElementById("result-desc");
 const stormTimerDisp = document.getElementById("storm-timer-disp");
 const damageOverlay = document.getElementById("damage-overlay");
 const spectatorBanner = document.getElementById("spectator-banner");
+const introCard = document.getElementById("match-intro");
+const introName = document.getElementById("intro-name");
+const introMeta = document.getElementById("intro-meta");
+const announcer = document.getElementById("announcer");
+const emoteWheel = document.getElementById("emote-wheel");
 
 let p1HeroChoice = 0;
 let controlScheme = "wasd"; // 'wasd' or 'arrows'
 let screenShake = 0;
 let damageVignetteT = 0;
+let localHitStopFrames = 0;
+let introElapsed = 0;
+let announcerTimer = 0;
 let stormRadius = 380;
 const minStormRadius = 60;
 let matchTime = 0;
@@ -498,9 +563,9 @@ const Store = {
 // --- GRAPHICS PRESETS ---
 // scale = render resolution (1 = full). Lower presets also drop shadows, extra light, dust, sparks, glows and flame particles.
 const GFX = {
-  low:    { scale: 0.6, shadow: 0,    soft: false, rim: false, dust: 0,   sparks: 0.3, glow: false, grid: false, amb: 1.5,  flame: 24 },
-  medium: { scale: 0.8, shadow: 512,  soft: false, rim: true,  dust: 70,  sparks: 0.6, glow: true,  grid: true,  amb: 1.05, flame: 40 },
-  high:   { scale: 1,   shadow: 1024, soft: true,  rim: true,  dust: 150, sparks: 1,   glow: true,  grid: true,  amb: 1.05, flame: 70 }
+  low:    { scale: 0.58, shadow: 0,   soft: false, rim: false, dust: 0,   sparks: 0,   glow: false, grid: false, amb: 1.35, flame: 10 },
+  medium: { scale: 0.85, shadow: 512, soft: false, rim: true,  dust: 70,  sparks: 0.6, glow: true,  grid: true,  amb: 1.05, flame: 36 },
+  high:   { scale: 1.15, shadow: 1024,soft: true,  rim: true,  dust: 150, sparks: 1,   glow: true,  grid: true,  amb: 1.05, flame: 70 }
 };
 let gfxLevel = Store.get("bb_gfx", "high");
 if(!GFX[gfxLevel]) gfxLevel = "high";
@@ -556,25 +621,52 @@ function shuffle(arr) {
 
 // --- SOUND (WebAudio synth, no asset files needed) ---
 const Snd = {
-  ctx: null, master: null,
-  vol: parseFloat(Store.get("bb_vol", "0.6")) || 0,
-  stormLvl: 0, stormGain: null,
+  ctx: null, master: null, sfxGain: null, musicGain: null, ambienceGain: null,
+  vol: Math.max(0, Math.min(1, Number(Store.get("bb_vol", "0.6")) || 0)),
+  sfxVol: Math.max(0, Math.min(1, Number(Store.get("bb_sfx", "0.8")) || 0)),
+  musicVol: Math.max(0, Math.min(1, Number(Store.get("bb_music", "0.35")) || 0)),
+  stormLvl: -1, stormGain: null, musicLayers: null, musicTargets: [0, 0, 0], musicActive: false,
+  heartbeatTimer: 0,
   ensure() {
-    if(this.ctx) return;
+    if(this.ctx) {
+      if(this.ctx.state === "suspended") this.ctx.resume().catch(() => {});
+      return;
+    }
     try {
       this.ctx = new (window.AudioContext || window.webkitAudioContext)();
       this.master = this.ctx.createGain();
       this.master.gain.value = this.vol;
       this.master.connect(this.ctx.destination);
+      this.sfxGain = this.ctx.createGain();
+      this.sfxGain.gain.value = this.sfxVol;
+      this.sfxGain.connect(this.master);
+      this.musicGain = this.ctx.createGain();
+      this.musicGain.gain.value = this.musicVol;
+      this.musicGain.connect(this.master);
+      this.ambienceGain = this.ctx.createGain();
+      this.ambienceGain.gain.value = 0.72;
+      this.ambienceGain.connect(this.master);
     } catch(e) {}
   },
   setVol(v) {
-    this.vol = v;
-    Store.set("bb_vol", String(v));
-    if(this.master) this.master.gain.value = v;
+    this.vol = Math.max(0, Math.min(1, Number(v) || 0));
+    Store.set("bb_vol", String(this.vol));
+    if(this.master) this.master.gain.setTargetAtTime(this.vol, this.ctx.currentTime, 0.04);
+  },
+  setMix(bus, v) {
+    const value = Math.max(0, Math.min(1, Number(v) || 0));
+    if(bus === "music") {
+      this.musicVol = value;
+      Store.set("bb_music", String(value));
+      if(this.musicGain) this.musicGain.gain.setTargetAtTime(value, this.ctx.currentTime, 0.04);
+    } else {
+      this.sfxVol = value;
+      Store.set("bb_sfx", String(value));
+      if(this.sfxGain) this.sfxGain.gain.setTargetAtTime(value, this.ctx.currentTime, 0.04);
+    }
   },
   tone(freq, dur, type = "sine", vol = 0.5, slide = 0) {
-    if(!this.ctx) return;
+    if(!this.ctx || !this.sfxGain) return;
     const t = this.ctx.currentTime;
     const o = this.ctx.createOscillator(), g = this.ctx.createGain();
     o.type = type;
@@ -582,11 +674,11 @@ const Snd = {
     if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq + slide), t + dur);
     g.gain.setValueAtTime(vol * 0.28, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(this.master);
+    o.connect(g); g.connect(this.sfxGain);
     o.start(t); o.stop(t + dur + 0.02);
   },
   noise(dur, vol = 0.5, freq = 1200) {
-    if(!this.ctx) return;
+    if(!this.ctx || !this.sfxGain) return;
     const t = this.ctx.currentTime;
     const len = Math.max(1, Math.floor(this.ctx.sampleRate * dur));
     const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
@@ -597,8 +689,74 @@ const Snd = {
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(vol * 0.3, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    src.connect(f); f.connect(g); g.connect(this.master);
+    src.connect(f); f.connect(g); g.connect(this.sfxGain);
     src.start(t);
+  },
+  musicStart() {
+    this.ensure();
+    if(!this.ctx || !this.musicGain) return;
+    if(!this.musicLayers) {
+      const makeLayer = (freqs, type, voiceLevel, pulseHz, pulseDepth) => {
+        const layer = this.ctx.createGain();
+        layer.gain.value = 0;
+        layer.connect(this.musicGain);
+        for(const freq of freqs) {
+          const osc = this.ctx.createOscillator();
+          const voice = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.value = freq;
+          voice.gain.value = voiceLevel / freqs.length;
+          osc.connect(voice); voice.connect(layer);
+          osc.start();
+        }
+        if(pulseHz > 0) {
+          const lfo = this.ctx.createOscillator(), depth = this.ctx.createGain();
+          lfo.frequency.value = pulseHz;
+          depth.gain.value = pulseDepth;
+          lfo.connect(depth); depth.connect(layer.gain); lfo.start();
+        }
+        return layer;
+      };
+      this.musicLayers = [
+        makeLayer([110, 164.81, 220], "triangle", 0.12, 0.12, 0.035),
+        makeLayer([55, 82.41], "sine", 0.13, 1.6, 0.10),
+        makeLayer([73.42, 110], "sawtooth", 0.07, 3.2, 0.08)
+      ];
+    }
+    this.musicActive = true;
+    this.musicUpdate(Math.max(0, Math.min(1, (380 - stormRadius) / (380 - minStormRadius))));
+  },
+  musicUpdate(progress) {
+    if(!this.musicActive || !this.musicLayers || !this.ctx) return;
+    progress = Math.max(0, Math.min(1, progress));
+    const tension = Math.max(0, Math.min(1, (progress - 0.18) / 0.48));
+    const danger = Math.max(0, Math.min(1, (progress - 0.58) / 0.34));
+    const targets = [0.5 * (1 - progress * 0.55), 0.48 * tension, 0.42 * danger];
+    targets.forEach((value, i) => {
+      if(Math.abs(value - this.musicTargets[i]) < 0.018) return;
+      this.musicTargets[i] = value;
+      this.musicLayers[i].gain.setTargetAtTime(value, this.ctx.currentTime, 0.3);
+    });
+  },
+  musicStop() {
+    this.musicActive = false;
+    this.musicTargets = [0, 0, 0];
+    if(this.ctx && this.musicLayers) {
+      this.musicLayers.forEach(layer => layer.gain.setTargetAtTime(0, this.ctx.currentTime, 0.2));
+    }
+    this.storm(0);
+    this.heartbeatTimer = 0;
+  },
+  updateHeartbeat(intensity, dt) {
+    if(!this.ctx || intensity <= 0 || !this.sfxVol || !this.vol) {
+      this.heartbeatTimer = 0;
+      return;
+    }
+    this.heartbeatTimer -= dt;
+    if(this.heartbeatTimer <= 0) {
+      this.play("heartbeat");
+      this.heartbeatTimer = 1.2 - Math.max(0, Math.min(1, intensity)) * 0.55;
+    }
   },
   // Storm ambience: a soft, slowly swelling low wind (loops forever, volume follows how close you are to the storm)
   stormInit() {
@@ -616,7 +774,7 @@ const Snd = {
     lfo.frequency.value = 0.17; lfoGain.gain.value = 130;
     lfo.connect(lfoGain); lfoGain.connect(lp.frequency);
     const g = ctx.createGain(); g.gain.value = 0;
-    src.connect(lp); lp.connect(g); g.connect(this.master);
+    src.connect(lp); lp.connect(g); g.connect(this.ambienceGain || this.master);
     src.start(); lfo.start();
     this.stormGain = g;
   },
@@ -633,11 +791,13 @@ const Snd = {
     switch(name) {
       case "shoot": this.tone(520, 0.09, "square", 0.3, -300); break;
       case "melee": this.noise(0.12, 0.5, 700); this.tone(140, 0.1, "sine", 0.5, -60); break;
-      case "hit": this.noise(0.07, 0.4, 2400); this.tone(200, 0.08, "triangle", 0.35, -80); break;
+      case "hit": this.noise(0.085, 0.62, 3200); this.tone(155, 0.12, "triangle", 0.62, -70); break;
+      case "hitconfirm": this.tone(960, 0.055, "triangle", 0.23); setTimeout(() => this.tone(1320, 0.07, "sine", 0.2), 45); break;
+      case "heartbeat": this.tone(62, 0.14, "sine", 0.48, -18); setTimeout(() => this.tone(48, 0.16, "sine", 0.38, -14), 135); break;
       case "ability": this.tone(240, 0.16, "sawtooth", 0.25, 420); break;
       case "bounce": this.tone(900, 0.04, "square", 0.2, 200); break;
       case "flame": this.noise(0.22, 0.4, 480); break;
-      case "death": this.noise(0.3, 0.6, 900); this.tone(160, 0.35, "sine", 0.6, -110); break;
+      case "death": this.noise(0.28, 0.72, 1500); this.tone(125, 0.34, "triangle", 0.7, -72); this.tone(58, 0.38, "sine", 0.56, -22); break;
       case "pickup": this.tone(660, 0.08, "sine", 0.35); setTimeout(() => this.tone(880, 0.1, "sine", 0.35), 70); break;
       case "stormwarn": this.tone(300, 0.7, "sine", 0.22, -120); setTimeout(() => this.tone(220, 0.8, "sine", 0.2, -60), 220); break;
       case "beep": this.tone(440, 0.09, "sine", 0.45); break;
@@ -645,6 +805,14 @@ const Snd = {
       case "win": [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => this.tone(f, 0.16, "triangle", 0.45), i * 110)); break;
       case "lose": [392, 330, 262, 196].forEach((f, i) => setTimeout(() => this.tone(f, 0.18, "triangle", 0.45), i * 130)); break;
     }
+  },
+  abilityCue(heroIndex, slot) {
+    const cues = [
+      ["melee", "ability"], ["ability", "hitconfirm"], ["bounce", "ability"],
+      ["flame", "ability"], ["beep", "go"], ["ability", "beep"], ["flame", "stormwarn"]
+    ];
+    const cue = (cues[heroIndex] || cues[0])[slot - 1];
+    this.play(cue);
   }
 };
 document.addEventListener("pointerdown", () => Snd.ensure());
@@ -739,7 +907,7 @@ const HEROES = [
 ];
 
 // Dragon flame cone: range / half-angle (radians) / damage per second to everyone inside the cone
-const DRAGON = { range: 150, half: 0.55, dps: 21 };
+const DRAGON = { range: 150, half: 0.55, dps: 22 };
 
 // Captain Oink's chain hook tuning
 const CHAIN = { max: 230, outSpd: 820, pullSelfSpd: 600, pullEnemySpd: 500, retractTime: 0.7 };
@@ -797,7 +965,7 @@ cameraHolder.position.set(W/2, 22, H/2);
 cameraHolder.add(camera);
 scene.add(cameraHolder);
 
-const renderer = new THREE.WebGLRenderer({ canvas: canvas3D, antialias: gfxLevel !== "low", powerPreference: "high-performance" });
+const renderer = new THREE.WebGLRenderer({ canvas: canvas3D, antialias: gfxLevel !== "low", powerPreference: gfxLevel === "low" ? "low-power" : "high-performance" });
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -829,8 +997,11 @@ camera.add(viewmodelHolder);
 
 function resize() {
   const w = window.innerWidth, h = window.innerHeight;
-  if(gfxSizeKey !== w + "x" + h + "@" + gfxLevel) {
-    gfxSizeKey = w + "x" + h + "@" + gfxLevel;
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, GFX[gfxLevel].scale);
+  const sizeKey = w + "x" + h + "@" + gfxLevel + ":" + pixelRatio;
+  if(gfxSizeKey !== sizeKey) {
+    gfxSizeKey = sizeKey;
+    renderer.setPixelRatio(pixelRatio);
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -905,6 +1076,45 @@ let fallbackLook = false; // cursor-steer mode for environments without Pointer 
 let fbMouse = { x: 0, y: 0 };
 const K = {}, M = { down: 0 };
 let P1_ab1 = 0, P1_ab2 = 0;
+let emoteWheelOpen = false, emoteSelection = 0;
+let emoteVector = { x: 0, y: 0 };
+const EMOTES = [
+  { label: "TAUNT", text: "HA!", color: "#ffd166" },
+  { label: "LAUGH", text: "LOL", color: "#ffe66d" },
+  { label: "SALUTE", text: "GG", color: "#72e6a6" },
+  { label: "PANIC", text: "EEK!", color: "#ff8b8b" }
+];
+
+function setEmoteSelection(index) {
+  emoteSelection = ((index % EMOTES.length) + EMOTES.length) % EMOTES.length;
+  if(!emoteWheel) return;
+  emoteWheel.querySelectorAll(".emote-option").forEach((option, i) => option.classList.toggle("selected", i === emoteSelection));
+}
+
+function setEmoteSelectionFromVector(x, y) {
+  if(Math.max(Math.abs(x), Math.abs(y)) < 8) return;
+  if(Math.abs(x) > Math.abs(y)) setEmoteSelection(x > 0 ? 1 : 3);
+  else setEmoteSelection(y > 0 ? 2 : 0);
+}
+
+function openEmoteWheel() {
+  if(emoteWheelOpen || !emoteWheel || state !== "play" || isSpectating || !pl || pl.dead) return;
+  emoteWheelOpen = true;
+  emoteVector = { x: 0, y: 0 };
+  setEmoteSelection(0);
+  emoteWheel.classList.add("open");
+  emoteWheel.setAttribute("aria-hidden", "false");
+}
+
+function closeEmoteWheel(choose = false) {
+  if(!emoteWheelOpen) return;
+  emoteWheelOpen = false;
+  emoteWheel.classList.remove("open");
+  emoteWheel.setAttribute("aria-hidden", "true");
+  if(!choose || state !== "play" || !pl || pl.dead || isSpectating) return;
+  if(isMultiplayer) sendActionIntent("EMOTE", emoteSelection, 0, 0);
+  executeEmote(pl, emoteSelection);
+}
 
 function enableFallbackLook() {
   if(fallbackLook) return;
@@ -946,10 +1156,17 @@ function clearHeldInputs() {
   M.down = 0;
   P1_ab1 = 0;
   P1_ab2 = 0;
+  closeEmoteWheel(false);
 }
 window.addEventListener("blur", clearHeldInputs);
 
 window.addEventListener("mousemove", e => {
+  if(emoteWheelOpen && fallbackLook && !isLocked && !isSpectating) {
+    emoteVector.x = e.clientX - window.innerWidth / 2;
+    emoteVector.y = e.clientY - window.innerHeight / 2;
+    setEmoteSelectionFromVector(emoteVector.x, emoteVector.y);
+    return;
+  }
   if(isLocked || isSpectating) return;
   // Fallback cursor-steer look: remember cursor offset from screen center
   fbMouse.x = e.clientX - window.innerWidth / 2;
@@ -958,6 +1175,12 @@ window.addEventListener("mousemove", e => {
 
 window.addEventListener("mousemove", e => {
   if(!isLocked || isSpectating) return;
+  if(emoteWheelOpen) {
+    emoteVector.x = Math.max(-140, Math.min(140, emoteVector.x + e.movementX));
+    emoteVector.y = Math.max(-140, Math.min(140, emoteVector.y + e.movementY));
+    setEmoteSelectionFromVector(emoteVector.x, emoteVector.y);
+    return;
+  }
   const sens = mouseSens;
   yaw -= e.movementX * sens;
   pitch -= e.movementY * sens;
@@ -973,6 +1196,16 @@ window.addEventListener("mousemove", e => {
 addEventListener("keydown", e => {
   K[e.code] = 1;
   if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Slash"].includes(e.code)) e.preventDefault();
+
+  if(e.code === "KeyT") {
+    if(!e.repeat && state === "play") openEmoteWheel();
+    return;
+  }
+  if(emoteWheelOpen && /^Digit[1-4]$/.test(e.code)) {
+    e.preventDefault();
+    setEmoteSelection(Number(e.code.slice(-1)) - 1);
+    return;
+  }
 
   // Solo: Space leaves spectating. Online: the host must keep simulating, so Space is ignored.
   if(isSpectating && e.code === "Space") {
@@ -993,6 +1226,7 @@ addEventListener("keydown", e => {
 });
 
 addEventListener("keyup", e => {
+  if(e.code === "KeyT") closeEmoteWheel(true);
   K[e.code] = 0;
 });
 
@@ -1044,21 +1278,51 @@ function makeNameplate(message, color = "#ffffff") {
   return sprite;
 }
 
-function addKillFeed(attacker, victim) {
+function showAnnouncer(message) {
+  if(!announcer) return;
+  announcer.textContent = message;
+  announcer.classList.add("show");
+  announcerTimer = 2.1;
+}
+
+function addKillFeed(attacker, victim, meta = {}) {
   const feed = document.getElementById("killfeed");
   if(!feed) return;
   const v = HEROES[victim.ci];
   const el = document.createElement("div");
   el.className = "kf-entry";
   if(attacker && attacker !== victim) {
+    el.classList.add("elimination");
     const k = HEROES[attacker.ci];
-    el.innerHTML = `${k.e} ${k.n} <span style="color:#ff5544">eliminated</span> ${v.e} ${v.n}`;
+    el.textContent = `${v.e} ${v.n} was roasted by ${k.e} ${k.n}`;
+    if(meta.multi >= 2) {
+      const callout = meta.multi === 2 ? "DOUBLE KILL" : meta.multi === 3 ? "TRIPLE KILL" : "MULTI-KILL";
+      showAnnouncer(callout);
+    } else if(meta.streak >= 3) {
+      showAnnouncer(`${k.n} IS UNSTOPPABLE`);
+    }
   } else {
-    el.innerHTML = `⛈️ The Storm claimed ${v.e} ${v.n}`;
+    el.classList.add("storm");
+    el.textContent = `${v.e} ${v.n} was cooked by the storm`;
   }
   feed.appendChild(el);
   setTimeout(() => el.remove(), 4500);
   while(feed.children.length > 4) feed.firstChild.remove();
+}
+
+function executeEmote(e, index) {
+  if(!e || e.dead || !e.mesh || !Number.isInteger(index) || index < 0 || index >= EMOTES.length || e.emoteCooldown > 0) return false;
+  if(e.emoteSprite) disposeHierarchy(e.emoteSprite);
+  const choice = EMOTES[index];
+  const sprite = makeTextSprite(choice.text, choice.color, 38);
+  sprite.scale.set(26, 6.5, 1);
+  sprite.position.set(e.x, 62, e.z);
+  scene.add(sprite);
+  e.emote = index;
+  e.emoteT = 2.2;
+  e.emoteCooldown = 0.75;
+  e.emoteSprite = sprite;
+  return true;
 }
 
 // Storm ambience follows the player you're watching: swells near the edge, full volume inside the storm
@@ -1074,15 +1338,29 @@ function updateStormAudio() {
 }
 
 let lastHitSfx = 0;
+function playHitConfirm() {
+  const nowT = performance.now();
+  if(nowT - lastHitSfx < 90) return;
+  lastHitSfx = nowT;
+  Snd.play("hitconfirm");
+}
+
 function applyLocalHitFeedback(dmg) {
   // Tiny per-frame damage (storm, poison, fire, dragon flame) only tints the screen edge: no hit sound spam
   if(dmg < 1) { damageVignetteT = Math.max(damageVignetteT, 0.3); return; }
   const nowT = performance.now();
   const quiet = nowT - lastHitSfx < 90; // several pellets in one frame = one hit sound
   if(!quiet) lastHitSfx = nowT;
-  screenShake = Math.min(18, screenShake + dmg * 0.45);
+  screenShake = Math.min(20, screenShake + dmg * 0.58);
   damageVignetteT = Math.min(1.0, damageVignetteT + dmg * 0.04 + 0.32);
+  if(dmg >= 5) localHitStopFrames = Math.max(localHitStopFrames, 2);
   if(!quiet) Snd.play("hit");
+}
+
+function shakeIfNearby(x, z, amount, radius = 180) {
+  const focus = isSpectating ? spectateTarget : pl;
+  if(!focus || focus.dead || Math.hypot(focus.x - x, focus.z - z) > radius) return;
+  screenShake = Math.max(screenShake, amount);
 }
 
 const remotePickupMeshes = new Map();
@@ -1265,6 +1543,37 @@ function build3DMap(mapDef) {
 
   for(const [rx, ry, rw, rh] of mapDef.rects) {
     addWall(rx, ry, rw, rh);
+  }
+
+  // Four emissive top-edge trims share one instanced draw call, and are omitted on Low.
+  if(gfxLevel !== "low") {
+    const trimRects = [[0, 0, W, B], [0, H - B, W, B], [0, 0, B, H], [W - B, 0, B, H], ...mapDef.rects];
+    const trimGeo = new THREE.BoxGeometry(1, 1, 1);
+    const trimMat = new THREE.MeshStandardMaterial({
+      color: mapDef.accent, emissive: mapDef.accent,
+      emissiveIntensity: gfxLevel === "high" ? 0.3 : 0.16,
+      roughness: 0.4, metalness: 0.25
+    });
+    const trim = new THREE.InstancedMesh(trimGeo, trimMat, trimRects.length * 4);
+    const dummy = new THREE.Object3D();
+    let index = 0;
+    for(const [x, z, w, d] of trimRects) {
+      const y = 63.7;
+      const bars = [
+        [x + w/2, y, z + 1, w, 1.2, 1.2],
+        [x + w/2, y, z + d - 1, w, 1.2, 1.2],
+        [x + 1, y, z + d/2, 1.2, 1.2, d],
+        [x + w - 1, y, z + d/2, 1.2, 1.2, d]
+      ];
+      for(const [px, py, pz, sx, sy, sz] of bars) {
+        dummy.position.set(px, py, pz);
+        dummy.scale.set(sx, sy, sz);
+        dummy.updateMatrix();
+        trim.setMatrixAt(index++, dummy.matrix);
+      }
+    }
+    trim.instanceMatrix.needsUpdate = true;
+    mapGroup.add(trim);
   }
 }
 
@@ -1561,6 +1870,11 @@ function spawn3DRing(x, z, r, color) {
 }
 
 function spawnDamageNumber(x, z, text, col = "#ff3333") {
+  const cap = gfxLevel === "low" ? 12 : (gfxLevel === "medium" ? 20 : 28);
+  while(DamageNumbers.length >= cap) {
+    const oldest = DamageNumbers.shift();
+    disposeHierarchy(oldest.sprite);
+  }
   const sprite = makeTextSprite(text, col, 34);
   sprite.position.set(x + (Math.random()-0.5)*8, 32, z + (Math.random()-0.5)*8);
   scene.add(sprite);
@@ -1734,6 +2048,7 @@ function endChain(e) {
 function disposeEntityExtras(e) {
   endChain(e);
   if(e.flameDecal) { disposeHierarchy(e.flameDecal); e.flameDecal = null; }
+  if(e.emoteSprite) { disposeHierarchy(e.emoteSprite); e.emoteSprite = null; }
 }
 
 function removePeerEntity(peerId) {
@@ -1776,7 +2091,9 @@ function mk(ci, x, z, playerNum, netId = null, team = null) {
     kx: 0, kz: 0, fl: 0, swing: 0,
     pNum: playerNum,
     netId: netId,
-    team, kills: 0, dmg: 0, deathTime: null, killedBy: null, pending: [],
+    team, kills: 0, killStreak: 0, killChain: 0, lastKillTime: -999,
+    dmg: 0, deathTime: null, killedBy: null, pending: [],
+    emote: -1, emoteT: 0, emoteCooldown: 0, emoteSprite: null,
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
     chargeVx: 0, chargeVz: 0, chargeT: 0,
@@ -1803,6 +2120,7 @@ function blocked(x, z, r) {
 
 function hasLOS(x1, z1, x2, z2) {
   const dx = x2 - x1, dz = z2 - z1, d = Math.hypot(dx, dz);
+  if(d < 0.001) return !blocked(x1, z1, 3);
   const steps = Math.ceil(d / 8);
   for(let i = 0; i <= steps; i++) {
     if(blocked(x1 + (dx/steps)*i, z1 + (dz/steps)*i, 3)) return false;
@@ -1852,6 +2170,12 @@ function areEnemies(a, b) {
   return true;
 }
 
+function damageSourceColor(attacker, target) {
+  if(target && target.sporePoison > 0) return "#c084fc";
+  if(!attacker) return "#ffad5c";
+  return (HEROES[attacker.ci] && HEROES[attacker.ci].roleCol) || "#ff5544";
+}
+
 function hurt(t, rawDmg, a, kb, attacker = null) {
   if(t.dead) return;
   if(isMultiplayer && !isLobbyLeader) return;
@@ -1875,13 +2199,23 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
     }
   }
 
-  if(rawDmg >= 1) spawnDamageNumber(t.x, t.z, "-" + Math.round(rawDmg), "#ff4438");
+  if(rawDmg >= 1) {
+    const text = "-" + Math.round(rawDmg);
+    const color = damageSourceColor(attacker, t);
+    spawnDamageNumber(t.x, t.z, text, color);
+    if(isMultiplayer && isLobbyLeader) {
+      outgoingSeq++;
+      broadcastToPeers({ type: "DAMAGE_EVENT", id: myNetId, seq: outgoingSeq, x: t.x, z: t.z, text, color, attackerId: attacker ? attacker.netId : null });
+    }
+  }
   if(rawDmg >= 5) spawnSparks(t.x, t.z, 0xffaa55, 6);
 
   if(t === pl) {
     applyLocalHitFeedback(rawDmg);
-  } else {
-    screenShake = Math.min(8, screenShake + (rawDmg * 0.12));
+  } else if(attacker === pl) {
+    screenShake = Math.min(13, screenShake + Math.min(7, rawDmg * 0.24));
+    if(rawDmg >= 5) localHitStopFrames = Math.max(localHitStopFrames, 2);
+    playHitConfirm();
   }
 
   if(t.hp <= 0) {
@@ -1889,11 +2223,29 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
     t.dead = true;
     t.deathTime = matchTime;
     t.killedBy = attacker ? attacker.netId : "storm";
-    if(attacker && attacker !== t) attacker.kills++;
+    let killMeta = { streak: 0, multi: 0 };
+    if(attacker && attacker !== t) {
+      attacker.kills++;
+      attacker.killChain = matchTime - attacker.lastKillTime <= 3.5 ? attacker.killChain + 1 : 1;
+      attacker.killStreak++;
+      attacker.lastKillTime = matchTime;
+      killMeta = { streak: attacker.killStreak, multi: attacker.killChain };
+    }
     Snd.play("death");
-    addKillFeed(attacker && attacker !== t ? attacker : null, t);
+    addKillFeed(attacker && attacker !== t ? attacker : null, t, killMeta);
+    if(isMultiplayer && isLobbyLeader) {
+      outgoingSeq++;
+      broadcastToPeers({
+        type: "KILL_EVENT", id: myNetId, seq: outgoingSeq,
+        attackerId: attacker && attacker !== t ? attacker.netId : null,
+        attackerCi: attacker && attacker !== t ? attacker.ci : null,
+        victimId: t.netId, victimCi: t.ci,
+        streak: killMeta.streak, multi: killMeta.multi
+      });
+    }
     if(t.mesh) t.mesh.visible = false;
-    screenShake = Math.max(screenShake, 16);
+    if(t.emoteSprite) { disposeHierarchy(t.emoteSprite); t.emoteSprite = null; }
+    if(t === pl || attacker === pl) screenShake = Math.max(screenShake, t === pl ? 20 : 13);
     spawn3DRing(t.x, t.z, 50, 0xff3838);
     spawnSparks(t.x, t.z, 0xff4438, 14);
 
@@ -1995,7 +2347,7 @@ function executeAttack(e) {
   }
   Snd.play(c.melee ? "melee" : "shoot");
   if(c.melee) {
-    melee(e, 80, 32, 360);
+    melee(e, 80, 30, 360);
   } else if(e.ci === 1) {
     for(let i = -2; i <= 2; i++) {
       shot(e, e.a + i*0.14, {t:"s", s:410, d:9, kb:100, life:0.32});
@@ -2003,7 +2355,7 @@ function executeAttack(e) {
   } else if(e.ci === 2) {
     shot(e, e.a, {t:"b", s:380, d:16, kb:140, life:99});
   } else if(e.ci === 3) {
-    shot(e, e.a, {t:"meatball", s:380, d:32, kb:95, life:1.6});
+    shot(e, e.a, {t:"meatball", s:380, d:34, kb:95, life:1.6});
   } else if(e.ci === 4) {
     shot(e, e.a + (Math.random()-0.5)*0.14, {t:"s", s:540, d:8, kb:35, life:0.48});
   } else if(e.ci === 5) {
@@ -2020,10 +2372,10 @@ function attack(e) {
 
 function executeAbility1(e) {
   const c = HEROES[e.ci];
-  Snd.play("ability");
+  Snd.abilityCue(e.ci, 1);
   if(e.ci === 0) {
     e.c2 = c.a1cd;
-    screenShake = Math.max(screenShake, 7);
+    shakeIfNearby(e.x, e.z, 7, 145);
     spawn3DRing(e.x, e.z, 110, 0xffb042);
     if(!isMultiplayer || isLobbyLeader) {
       for(const t of E) {
@@ -2044,7 +2396,7 @@ function executeAbility1(e) {
     shot(e, e.a, {
       t: "bomb", s: 360, d: 13, kb: 130, life: 0.52,
       onDeath: (bx, bz) => {
-        screenShake = Math.max(screenShake, 6);
+        shakeIfNearby(bx, bz, 6, 190);
         spawn3DRing(bx, bz, 65, 0xffe853);
         for(let i = 0; i < 6; i++) {
           const ang = (Math.PI * 2 / 6) * i + (Math.random() - 0.5) * 0.2;
@@ -2124,7 +2476,7 @@ function executeAbility1(e) {
     // Dragonhide: take 65% less damage for 3.5s
     e.c2 = c.a1cd;
     e.guard = 3.5;
-    screenShake = Math.max(screenShake, 3);
+    shakeIfNearby(e.x, e.z, 3, 100);
     spawn3DRing(e.x, e.z, 38, 0xffb347);
   }
 }
@@ -2136,7 +2488,7 @@ function ability1(e) {
 
 function executeAbility2(e) {
   const c = HEROES[e.ci];
-  Snd.play("ability");
+  Snd.abilityCue(e.ci, 2);
   e.c3 = c.a2cd;
   if(e.ci === 0) {
     e.chargeT = 0.32;
@@ -2147,7 +2499,7 @@ function executeAbility2(e) {
     shot(e, e.a, {
       t:"cannonball", s:420, d:27, kb:440, life:0.9,
       onDeath: (bx, bz) => {
-        screenShake = Math.max(screenShake, 8);
+        shakeIfNearby(bx, bz, 8, 220);
         spawn3DRing(bx, bz, 80, 0xff9933);
         if(!isMultiplayer || isLobbyLeader) {
           for(const t of E) {
@@ -2174,7 +2526,7 @@ function executeAbility2(e) {
     const backAngle = e.a + Math.PI;
     e.kx += Math.cos(backAngle) * 650;
     e.kz += Math.sin(backAngle) * 650;
-    screenShake = Math.max(screenShake, 6);
+    shakeIfNearby(e.x, e.z, 6, 180);
 
     for(let i = 0; i <= 4; i++) {
       const fx = e.x + Math.cos(backAngle) * (i * 16);
@@ -2213,7 +2565,7 @@ function executeAbility2(e) {
     shot(e, e.a, {
       t: "fireball", s: 330, d: 14, kb: 120, life: 0.95,
       onDeath: (bx, bz) => {
-        screenShake = Math.max(screenShake, 6);
+        shakeIfNearby(bx, bz, 6, 200);
         spawn3DRing(bx, bz, 70, 0xff7a22);
         spawnSparks(bx, bz, 0xffa040, 10);
         if(!isMultiplayer || isLobbyLeader) {
@@ -2413,6 +2765,7 @@ function updateDragon(e, dt) {
 
 window.setGraphics = function(level) {
   applyGraphics(level);
+  if(currentRects.length) build3DMap(MAPS[selectedMapIndex]);
   ov.querySelectorAll(".gfx-selector .tab-btn").forEach(b => b.classList.toggle("selected", b.dataset.gfx === level));
 };
 
@@ -2564,6 +2917,9 @@ function syncHUD() {
 function showResultScreen(isVictory, winnerId = null, stats = []) {
   state = "result";
   matchOver = true;
+  Snd.musicStop();
+  if(announcer) announcer.classList.remove("show");
+  if(introCard) introCard.style.display = "none";
   M.down = 0;
   if(document.pointerLockElement) {
     try { document.exitPointerLock(); } catch(e){}
@@ -2630,6 +2986,7 @@ function endMatch(winnerId, winnerTeam = null) {
 }
 
 window.returnToMenu = function() {
+  Snd.musicStop();
   resultModal.style.display = "none";
   state = "menu";
   isSpectating = false;
@@ -2668,6 +3025,8 @@ function sendActionIntent(act, a, x, z) {
 }
 
 function leaveLobby(msg) {
+  msg = String(msg || "").replace(/[<>]/g, "");
+  Snd.musicStop();
   if(peer) peer.destroy();
   peer = null;
   isMultiplayer = false;
@@ -2774,6 +3133,7 @@ function handleIncomingData(conn, data) {
   }
 
   if(data.type === "HELLO") {
+    const hero = Number.isInteger(data.hero) && data.hero >= 0 && data.hero < HEROES.length ? data.hero : 0;
     let r = roster.find(x => x.id === data.id);
     if(!r) {
       // Seat check happens again here so two simultaneous joiners can't overfill the lobby
@@ -2782,15 +3142,15 @@ function handleIncomingData(conn, data) {
         setTimeout(() => { try { conn.close(); } catch(e) {} }, 200);
         return;
       }
-      roster.push({ id: data.id, hero: data.hero });
+      roster.push({ id: data.id, hero });
     } else {
-      r.hero = data.hero;
+      r.hero = hero;
     }
     if(isLobbyLeader) {
       outgoingSeq++;
       broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, seq: outgoingSeq });
       // A brand-new member who arrived mid-round spectates the live match until the next one
-      if(!r && (state === "play" || state === "countdown")) {
+      if(!r && (state === "play" || state === "countdown" || state === "intro")) {
         try {
           conn.send({
             type: "SPECTATE_MODE",
@@ -2835,8 +3195,8 @@ function handleIncomingData(conn, data) {
   }
   else if(data.type === "START_GAME") {
     if(quickMatchRooms) return; // still joining — ignore games we haven't been admitted to
-    selectedMapIndex = data.mapIndex;
-    launchMeshMatch(data.spawns);
+    selectedMapIndex = Number.isInteger(data.mapIndex) && MAPS[data.mapIndex] ? data.mapIndex : 0;
+    launchMeshMatch(data.spawns && typeof data.spawns === "object" ? data.spawns : {});
   }
   else if(data.type === "CLIENT_INPUT") {
     if(!isLobbyLeader) return;
@@ -2850,7 +3210,7 @@ function handleIncomingData(conn, data) {
   }
   else if(data.type === "SNAPSHOT") {
     if(isLobbyLeader) return;
-    if(state !== "play" && state !== "countdown") return;
+    if(state !== "play" && state !== "countdown" && state !== "intro") return;
     for(const item of data.entities) {
       if(item.id === myNetId) {
         if(pl) {
@@ -2870,8 +3230,6 @@ function handleIncomingData(conn, data) {
             pl.killedBy = item.kl || "storm";
             if(pl.mesh) pl.mesh.visible = false;
             Snd.play("death");
-            const killer = (item.kl && item.kl !== "storm") ? getRemoteActorByNetId(item.kl) : null;
-            addKillFeed(killer, pl);
           }
         }
         continue;
@@ -2887,8 +3245,6 @@ function handleIncomingData(conn, data) {
           ent.dead = true;
           ent.deathTime = matchTime;
           Snd.play("death");
-          const killer = (item.kl && item.kl !== "storm") ? getRemoteActorByNetId(item.kl) : null;
-          addKillFeed(killer, ent);
         }
         ent.targetX = item.x;
         ent.targetZ = item.z;
@@ -2905,23 +3261,46 @@ function handleIncomingData(conn, data) {
     // Authoritative storm state (keeps mid-round spectators in sync with the host)
     if(data.storm !== undefined) stormRadius = data.storm;
   }
+  else if(data.type === "DAMAGE_EVENT") {
+    if(!isLobbyLeader) {
+      spawnDamageNumber(data.x, data.z, String(data.text || "-1"), data.color || "#ff5544");
+      if(data.attackerId === myNetId) {
+        screenShake = Math.min(13, screenShake + 2.2);
+        localHitStopFrames = Math.max(localHitStopFrames, 2);
+        playHitConfirm();
+      }
+    }
+  }
+  else if(data.type === "KILL_EVENT") {
+    if(!isLobbyLeader) {
+      const victim = getRemoteActorByNetId(data.victimId) || { ci: data.victimCi };
+      const killer = data.attackerId
+        ? (getRemoteActorByNetId(data.attackerId) || { ci: data.attackerCi })
+        : null;
+      addKillFeed(killer, victim, { streak: data.streak || 0, multi: data.multi || 0 });
+    }
+  }
   else if(data.type === "MATCH_END") {
     if(isLobbyLeader) return;
-    if(state !== "play" && state !== "countdown") return;
+    if(state !== "play" && state !== "countdown" && state !== "intro") return;
     const iWon = data.winnerId === myNetId ||
       (data.winnerTeam != null && data.winnerTeam !== undefined && pl && pl.team === data.winnerTeam);
     showResultScreen(iWon, data.winnerId, data.stats || []);
   }
   else if(data.type === "ACTION_INTENT") {
     const ent = getRemoteActorByNetId(data.id);
+    let accepted = true;
     if(ent && !ent.dead) {
       // Validate cooldowns on the host; don't trust the supplied coordinates.
       // (Cinder's flame ticks every 0.1s, so give network jitter a little slack.)
       if(data.act === "ATTACK" && ent.c1 <= (ent.ci === 6 ? 0.06 : 0)) executeAttack(ent);
       else if(data.act === "AB1" && ent.c2 <= 0) executeAbility1(ent);
       else if(data.act === "AB2" && ent.c3 <= 0) executeAbility2(ent);
+      else if(data.act === "EMOTE") accepted = executeEmote(ent, Math.round(data.a));
+    } else if(data.act === "EMOTE") {
+      accepted = false;
     }
-    if(isLobbyLeader) {
+    if(isLobbyLeader && accepted) {
       peerConnections.forEach((pConn, pid) => {
         if(pid !== conn.peer && pConn.open) {
           pConn.send(data);
@@ -2939,7 +3318,7 @@ function broadcastToPeers(obj) {
 
 // Host snapshot broadcast (~25 Hz)
 setInterval(() => {
-  if(isMultiplayer && isLobbyLeader && (state === "play" || state === "countdown")) {
+  if(isMultiplayer && isLobbyLeader && (state === "play" || state === "countdown" || state === "intro")) {
     outgoingSeq++;
     const snapEntities = E.map(e => ({
       id: e.netId,
@@ -3043,7 +3422,7 @@ function wireHostPeer() {
             type: "ROOM_INFO",
             players: roster.length,
             capacity: 6,
-            phase: (state === "play" || state === "countdown") ? "live" : "waiting"
+            phase: (state === "play" || state === "countdown" || state === "intro") ? "live" : "waiting"
           });
         } catch(e) {}
         setTimeout(() => { try { conn.close(); } catch(e) {} }, 300);
@@ -3104,7 +3483,7 @@ window.joinMultiplayerLobby = function() {
   stopDemo();
   const codeIn = document.getElementById("lobby-code-in");
   const code = (codeIn ? codeIn.value : "").trim().toUpperCase();
-  if(code.length !== 4) {
+  if(!/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{4}$/.test(code)) {
     alert("Please enter a valid 4-character code!");
     return;
   }
@@ -3592,8 +3971,8 @@ window.selectControlScheme = function(scheme) {
   const foot = document.getElementById("footer-controls-text");
   if(foot) {
     foot.innerHTML = controlScheme === "wasd" 
-      ? '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">WASD</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">E</span> Ability 1</span> · <span><span class="key-badge">Q</span> Ability 2</span>'
-      : '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">ARROWS</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">R-SHIFT</span> Ability 1</span> · <span><span class="key-badge">/</span> Ability 2</span>';
+      ? '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">WASD</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">E</span> Ability 1</span> · <span><span class="key-badge">Q</span> Ability 2</span> · <span><span class="key-badge">HOLD T</span> Emotes</span>'
+      : '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">ARROWS</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">R-SHIFT</span> Ability 1</span> · <span><span class="key-badge">/</span> Ability 2</span> · <span><span class="key-badge">HOLD T</span> Emotes</span>';
   }
 };
 
@@ -3621,6 +4000,11 @@ function champDetailHTML(ci) {
 }
 
 function menu(msg) {
+  closeEmoteWheel(false);
+  if(introCard) introCard.style.display = "none";
+  if(announcer) announcer.classList.remove("show");
+  hud.classList.remove("intro");
+  centerMsg.style.display = "none";
   ov.style.display = "flex";
   hud.style.display = "none";
   crosshair.style.display = "none";
@@ -3675,7 +4059,9 @@ function menu(msg) {
 
         <div class="settings-panel">
           <span>🖱️ Sensitivity <input type="range" id="sens-slider" min="0.0008" max="0.005" step="0.0001" value="${mouseSens}"> <span id="sens-val">${mouseSens.toFixed(4)}</span></span>
-          <span>🔊 Volume <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="${Snd.vol}"></span>
+          <span>🔊 Master <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="${Snd.vol}"></span>
+          <span>🎚️ SFX <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="${Snd.sfxVol}"></span>
+          <span>🎵 Music <input type="range" id="music-slider" min="0" max="1" step="0.05" value="${Snd.musicVol}"></span>
           <span>🖥️ Graphics <span class="gfx-selector">${["low", "medium", "high"].map(l => `<button class="tab-btn ${gfxLevel === l ? 'selected' : ''}" data-gfx="${l}" onclick="setGraphics('${l}')">${l[0].toUpperCase() + l.slice(1)}</button>`).join("")}</span></span>
         </div>
 
@@ -3698,8 +4084,8 @@ function menu(msg) {
         <div class="footer-bar">
           <span id="footer-controls-text">
             ${controlScheme === 'wasd' 
-              ? '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">WASD</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">E</span> Ability 1</span> · <span><span class="key-badge">Q</span> Ability 2</span>'
-              : '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">ARROWS</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">R-SHIFT</span> Ability 1</span> · <span><span class="key-badge">/</span> Ability 2</span>'}
+              ? '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">WASD</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">E</span> Ability 1</span> · <span><span class="key-badge">Q</span> Ability 2</span> · <span><span class="key-badge">HOLD T</span> Emotes</span>'
+              : '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">ARROWS</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">R-SHIFT</span> Ability 1</span> · <span><span class="key-badge">/</span> Ability 2</span> · <span><span class="key-badge">HOLD T</span> Emotes</span>'}
           </span>
           <span style="color:#45d988">⚔️ Kills restore 15% Max HP</span>
         </div>
@@ -3736,6 +4122,10 @@ function menu(msg) {
   };
   const volSlider = document.getElementById("vol-slider");
   if(volSlider) volSlider.oninput = () => Snd.setVol(parseFloat(volSlider.value));
+  const sfxSlider = document.getElementById("sfx-slider");
+  if(sfxSlider) sfxSlider.oninput = () => Snd.setMix("sfx", parseFloat(sfxSlider.value));
+  const musicSlider = document.getElementById("music-slider");
+  if(musicSlider) musicSlider.oninput = () => Snd.setMix("music", parseFloat(musicSlider.value));
 
   if(!isMultiplayer && state === "menu" && !demoActive) startDemo();
 }
@@ -3770,6 +4160,8 @@ function clearSceneEntities() {
   remotePickupMeshes.forEach(m => disposeHierarchy(m));
   remotePickupMeshes.clear();
   E = []; P = []; F = []; Zones = []; Pickups = []; DamageNumbers = [];
+  for(const s of SparkPool) { s.life = 0; s.m.visible = false; }
+  for(const f of FlamePool) { f.life = 0; f.m.visible = false; }
 }
 
 const SPAWNS = [
@@ -3954,6 +4346,7 @@ function enterSpectateLobby(info) {
   countdown = 0;
   matchOver = false;
   state = "play";
+  Snd.musicStart();
 
   isSpectating = true;
   spectateTarget = null;
@@ -3963,7 +4356,7 @@ function enterSpectateLobby(info) {
   // Vantage point over the arena until the first snapshot brings the fighters in
   cameraHolder.position.set(W/2, 150, H/2 + 200);
   cameraHolder.rotation.set(0, 0, 0);
-  camera.rotation.set(0.6, 0, 0);
+  camera.rotation.set(-0.6, 0, 0);
 
   ov.style.display = "none";
   hud.style.display = "block";
@@ -3972,6 +4365,52 @@ function enterSpectateLobby(info) {
   lockPrompt.style.display = "none";
   damageOverlay.style.opacity = 0;
   syncHUD();
+}
+
+function updateMatchIntro(dt) {
+  introElapsed += dt;
+  const fighters = E.filter(e => e && e.mesh);
+  const duration = 3.0;
+  if(!fighters.length) {
+    introElapsed = duration;
+  } else {
+    const progress = Math.max(0, Math.min(0.9999, introElapsed / duration));
+    const slot = progress * fighters.length;
+    const index = Math.min(fighters.length - 1, Math.floor(slot));
+    const blend = Math.max(0, Math.min(1, slot - index));
+    const current = fighters[index];
+    const next = fighters[Math.min(fighters.length - 1, index + 1)];
+    const targetX = current.x + (next.x - current.x) * blend;
+    const targetZ = current.z + (next.z - current.z) * blend;
+    const camX = targetX + 82;
+    const camZ = targetZ + 115;
+    cameraHolder.position.set(camX, 112, camZ);
+    const dx = targetX - camX, dz = targetZ - camZ;
+    cameraHolder.rotation.set(0, Math.atan2(-dx, -dz), 0);
+    camera.rotation.set(Math.atan2(14 - 112, Math.hypot(dx, dz)), 0, 0);
+    for(const e of fighters) {
+      e.mesh.visible = true;
+      e.mesh.position.set(e.x, 0, e.z);
+      e.mesh.rotation.y = -e.a + Math.PI / 2;
+      if(e.mesh.hpGrp) e.mesh.hpGrp.lookAt(cameraHolder.position);
+    }
+    const hero = HEROES[current.ci];
+    introName.textContent = hero.n;
+    introMeta.textContent = (index + 1) + " / " + fighters.length + " · " + hero.role;
+  }
+
+  if(introElapsed >= duration) {
+    introCard.style.display = "none";
+    hud.classList.remove("intro");
+    if(pl && pl.mesh) pl.mesh.visible = false;
+    cameraHolder.position.set(pl ? pl.x : W/2, 22, pl ? pl.z : H/2);
+    cameraHolder.rotation.set(0, yaw, 0);
+    camera.rotation.set(pitch, 0, 0);
+    countdown = 3.0;
+    state = "countdown";
+    crosshair.style.display = "block";
+    lockPrompt.style.display = isLocked ? "none" : "block";
+  }
 }
 
 function initMatchView() {
@@ -3993,23 +4432,36 @@ function initMatchView() {
   itemSpawnTimer = 0; matchTime = 0;
   stormRadius = 380;
   stormMesh.scale.set(stormRadius, 1, stormRadius);
-  countdown = 3.0; // 3 second timer before movement & match start
+  countdown = 3.0;
+  introElapsed = 0;
+  screenShake = 0;
+  localHitStopFrames = 0;
   damageVignetteT = 0;
+  damageOverlay.style.opacity = 0;
+  announcerTimer = 0;
+  announcer.classList.remove("show");
   wasInStorm = false;
-  state = "countdown";
+  state = "intro";
+  Snd.musicStart();
 
   syncHUD();
 
   ov.style.display = "none";
   hud.style.display = "block";
-  crosshair.style.display = "block";
+  hud.classList.add("intro");
+  introCard.style.display = "block";
+  crosshair.style.display = "none";
+  centerMsg.style.display = "none";
   resultModal.style.display = "none";
-
-  lockPrompt.style.display = "block";
+  lockPrompt.style.display = "none";
 }
 
 // --- MAIN LOOP ---
 function upd(dt) {
+  if(state === "intro") {
+    updateMatchIntro(dt);
+    return;
+  }
   if(isSpectating && (!spectateTarget || spectateTarget.dead)) findNextSpectateTarget(1);
 
   // Cursor-steer fallback look (used when Pointer Lock is unavailable)
@@ -4052,17 +4504,21 @@ function upd(dt) {
   if(isSpectating) {
     const st = spectateTarget;
     if(st) {
-      cameraHolder.position.set(st.x, 22 + (screenShake > 0 ? (Math.random()-0.5)*screenShake*0.35 : 0), st.z);
+      const shake = Math.min(2.4, screenShake * 0.12);
+      const phase = matchTime * 86;
+      cameraHolder.position.set(st.x + Math.sin(phase) * shake, 22 + Math.cos(phase * 1.13) * shake, st.z + Math.cos(phase) * shake);
       cameraHolder.rotation.y = -st.a - Math.PI / 2;
       camera.rotation.x = st.pitch || 0;
+      camera.rotation.z = Math.sin(phase * 0.72) * Math.min(0.04, screenShake * 0.002);
       if(viewmodelCi !== st.ci) setupViewmodel(st.ci);
     } else if(viewmodelCi !== null) {
       setupViewmodel(null);
     }
   } else if(pl && !pl.dead) {
-    cameraHolder.position.x = pl.x;
-    cameraHolder.position.z = pl.z;
-    cameraHolder.position.y = 22 + (screenShake > 0 ? (Math.random()-0.5)*screenShake*0.35 : 0);
+    const shake = Math.min(2.4, screenShake * 0.12);
+    const phase = matchTime * 86;
+    cameraHolder.position.set(pl.x + Math.sin(phase) * shake, 22 + Math.cos(phase * 1.13) * shake, pl.z + Math.cos(phase) * shake);
+    camera.rotation.z = Math.sin(phase * 0.72) * Math.min(0.04, screenShake * 0.002);
   }
 
   const vmEnt = isSpectating ? spectateTarget : pl;
@@ -4123,6 +4579,7 @@ function upd(dt) {
     stormRadius -= dt * 5.0;
   }
   stormMesh.scale.set(stormRadius, 1, stormRadius);
+  Snd.musicUpdate((380 - stormRadius) / (380 - minStormRadius));
 
   if(!isMultiplayer || isLobbyLeader) {
     itemSpawnTimer += dt;
@@ -4142,7 +4599,15 @@ function upd(dt) {
 
   if(damageVignetteT > 0) {
     damageVignetteT = Math.max(0, damageVignetteT - dt * 1.5);
-    damageOverlay.style.opacity = damageVignetteT;
+  }
+  const localHpRatio = pl && !pl.dead && !isSpectating ? Math.max(0, pl.hp / pl.mhp) : 1;
+  const lowHpIntensity = Math.max(0, Math.min(1, (0.34 - localHpRatio) / 0.34));
+  const lowHpPulse = lowHpIntensity * (0.42 + Math.sin(matchTime * 7.2) * 0.12);
+  damageOverlay.style.opacity = Math.max(damageVignetteT, lowHpPulse);
+  Snd.updateHeartbeat(state === "play" ? lowHpIntensity : 0, dt);
+  if(announcerTimer > 0) {
+    announcerTimer = Math.max(0, announcerTimer - dt);
+    if(announcerTimer === 0 && announcer) announcer.classList.remove("show");
   }
 
   for(let i = DamageNumbers.length - 1; i >= 0; i--) {
@@ -4264,7 +4729,17 @@ function upd(dt) {
 
     e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt;
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
-    e.guard -= dt; e.breathT -= dt;
+    e.guard -= dt; e.breathT -= dt; e.emoteCooldown = Math.max(0, e.emoteCooldown - dt);
+    if(e.emoteT > 0) {
+      e.emoteT -= dt;
+      if(e.emoteSprite) {
+        e.emoteSprite.position.set(e.x, 62 + (2.2 - Math.max(0, e.emoteT)) * 8, e.z);
+        if(e.emoteT <= 0) {
+          disposeHierarchy(e.emoteSprite);
+          e.emoteSprite = null;
+        }
+      }
+    }
 
     if(e.chain) updateChain(e, dt);
 
@@ -4553,7 +5028,7 @@ function loop(now) {
   lastT = now;
   resize();
 
-  if(state === "countdown" || state === "play") upd(dt);
+  if(state === "intro" || state === "countdown" || state === "play") upd(dt);
   else if(state === "menu" && demoActive) upd(dt);
 
   if(demoActive) {
@@ -4580,7 +5055,8 @@ function loop(now) {
   updateFlames(dt);
   if(state !== "play") Snd.storm(0); // storm wind only plays during an active match
 
-  renderer.render(scene, camera);
+  if(localHitStopFrames > 0) localHitStopFrames--;
+  else renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
 // Initial launch
@@ -4591,3 +5067,18 @@ requestAnimationFrame(loop);
 </script>
 </body>
 </html>
+
+<!-- FUTURE CHAMPION CONCEPTS
+
+KAMO THE CHAMELEON
+Two ranged forms; switching never restores health.
+Skitter: 125 HP, speed 190, quick Chromadarts for about 7 damage.
+Bastion: 235 HP, speed 120, a Prism cannon for about 32 damage with a slow firing rate.
+Ability 1, Metamorphosis: stand still for about 1.2 seconds while changing form. Kamo is fully vulnerable, cannot cancel the transformation, and damage does not interrupt it. Movement, attacks, and Ability 2 are unavailable during the transformation. Changing form keeps current HP and caps it to the new form's maximum.
+Skitter Ability 2, Afterimage: brief speed burst with a visible decoy trail; no invisibility.
+Bastion Ability 2, Focused Prism: a clearly telegraphed, charged long-range shot.
+
+RICO THE RABBIT
+Ranged billiard-ball launcher. Basic cue balls ricochet twice.
+Ability 1, Bumper: place one temporary bumper; Rico's cue balls bounce off it.
+Ability 2, Bank Shot: empower the next shot to ricochet up to five times. Each ricochet adds 20% of base damage, up to 2x damage after five banks. The ability is consumed when fired, even if the shot misses.
