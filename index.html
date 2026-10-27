@@ -4239,7 +4239,7 @@ function menu(msg) {
     <!-- ADDED: Champion announcement -->
     <aside class="champion-update" aria-label="Champion update">
       <div class="champion-update-title">CHAMPION UPDATE</div>
-      <p>We're sorry to say Cinder is leaving the arena, but a new champion is on the way who fits BRAWLBOUND's gameplay better. <span class="champion-update-teaser">Keep an eye out for him!</span></p>
+      <p>We're sorry to say Cinder is leaving the arena on October 29, 2026, but a NEW MAJOR UPDATE is on the way with a new Champion who fits BRAWLBOUND's gameplay better. <span class="champion-update-teaser">Keep an eye out for it!</span></p>
     </aside>
     <!-- END of added announcement -->
 
@@ -5311,33 +5311,52 @@ requestAnimationFrame(loop);
 MICA:
 Two ranged forms; switching never restores health.
 Skitter: 125 HP, speed 180, quick Chromadarts for about 8 damage every 0.5 seconds. (16 DPS)
-Bastion: 235 HP, speed 120, a Prism cannon for about 30 damage every 1.4 seconds. (22 DPS)
-Ability 1, Metamorphosis (7s): stand still for about 1.2 seconds while changing form. Mica is fully vulnerable, cannot cancel the transformation, and damage does not interrupt it. Movement, attacks, and Ability 2 are unavailable during the transformation. Changing form converts percentage of Health to max Health to the new form.
-Skitter Ability 2, PRISMATIC GLARE (9s): Mica releases a blinding flash in a 360-degree circle, a 1.5s flash around her (small radius, 90 units), and grants 20% movement speed for 1.5s. 
-Bastion Ability 2, FOCUSED PRISM (11s): Charge a narrow, long-range beam with a clear wind-up (1s) and an obvious aim line. A hit deals heavy burst damage (45 damage), but the charge leaves Mica exposed. 
+Bastion: 235 HP, speed 125, a Prism cannon for about 30 damage every 1.25 seconds. (24 DPS)
+Ability 1, Metamorphosis (7s): stand still for about 1.1 seconds while changing form. Mica is fully vulnerable, cannot cancel the transformation, and damage does not interrupt it. Movement, attacks, and Ability 2 are unavailable during the transformation. Changing form converts percentage of Health to max Health to the new form.
+Skitter Ability 2, PRISMATIC GLARE (9s): Mica releases a blinding flash in a 360-degree circle, a 1.5s flash around her (small radius, 90 units), and grants 25% movement speed for 1.5s. 
+Bastion Ability 2, FOCUSED PRISM (11s): Charge a narrow, long-range beam with a clear wind-up (1s) and an obvious aim line (slows you down 25% while winding). A hit deals heavy burst damage (50 damage), but the charge leaves Mica exposed. 
 
 RICO:
 Ranged billiard-ball launcher. Basic cue balls ricochet twice.
-Rico: 170 HP, speed 150 | Cue Ball: 20 damage every 1 second (20 DPS)
+Rico: 170 HP, speed 150 | Cue Ball: 15 damage every 1 second (15 DPS)
 Ability 1, BUMPER (11s): Places one bumper (5s lifetime); Rico's cue balls bounce off it. Players can't break, shoot (their shots don't bounce off), or go through it (it acts as a barrier). 
-Ability 2, Bank Shot (8s): empowers the next shot to ricochet up to five times. Each ricochet adds 20% of base damage. The ability is consumed when fired, even if the shot misses.
+Ability 2, Bank Shot (9s): empowers the next shot to ricochet up to five times. Each ricochet adds 20% of base damage. The ability is consumed when fired, even if the shot misses.
 
 KAMO: 130 HP, speed 175 | Weapon: TAG SPITTER, fast sticky globs, 10 dmg every 0.5s ≈ 20 DPS, speed 450. 
 Each hit paints the target for 3s; only Kamo sees an outline through walls.
-Ability 1, TONGUE SNATCH (11s). Tongue flicks 280 units (speed 950). Hit: 10 dmg, and the target is DISARMED for 1.2s: no basic attack (abilities still work) and 25% slow for 1.6s, and their weapon visibly vanishes from their model.
-Ability 2, CAMOUFLAGE (14s cooldown, lasts 6s). Kamo fades to 0% opacity while standing still or 5% while moving (maybe just 0% either way).
-While camouflaged: no nameplate, no dot on enemy minimaps, and bots only notice him within 70 units (if he's moving). The first attack or ability out of camo breaks it and deals +40% (AMBUSH). Taking damage reveals him for 2s but doesn't end the effect. 
+Ability 1, TONGUE SNATCH (11s). Tongue flicks 280 units (speed 950). Hit: 10 dmg, and the target is DISARMED for 1.2s: no basic attack (abilities still work), and 25% slow for 1.6s, and their weapon visibly vanishes from their model.
+Ability 2, CAMOUFLAGE (14s cooldown, lasts 6s). Kamo goes invisible for the 6s duration. While camouflaged: no nameplate, no dot on enemy minimaps, and bots only notice him within 70 units (if he's moving). 
+The first attack or ability out of camo breaks it and deals +40% (AMBUSH). Taking damage reveals him for 2s but doesn't end the effect. 
 
 GRUFF:
-STONE TALONS, a fast two-hit rake, range 62, 14 dmg every 0.6s ≈ 23 DPS.
+STONE TALONS, a fast two-hit rake, range 62, 13 dmg every 0.6s ≈ 22 DPS.
 Gruff: 175 HP, speed 160
-Ability 1, WING GUST (10s). One huge flap in a cone (range 200, 100° wide): knocks enemies back 380 with no damage, halves the speed of projectiles inside the cone, and pushes ground zones (flames, spore clouds, oil) 80 units along the gust. Perfect for shoving people into the storm or off a perch.
-Ability 2, SWOOP AND SLAM (13s). Rise over 0.35s, hover up to 1.8s, and steer at 90% speed (no attacks). Airborne = untargetable by melee, ground zones, and ground-rolling shots; flying projectiles can still hit. The camera lifts from 22 to 55, and a small shadow ring on the floor shows everyone exactly where you'll land. 
-When the timer ends (or you press Ability 2 again to cancel), Gruff drops straight down: r=65, knockback 160, 0.4s stun, and Gruff gets 25% damage reduction for 1 second. Damage scales with air time: bailing out at 0.4s deals 12, a full 1.8s hover deals 26. So canceling early is a dodge, not a free hit.
+Ability 1, WING GUST (10s): Gruff erupts with a 360-degree shockwave that knocks back nearby enemies, slows them by 50% for 0.8 seconds, and reflects all incoming projectiles.
+Ability 2, SWOOP AND SLAM (13s): Rise over 0.35s, hover up to 2.5s, and steer at 80% speed (no attacks). Airborne = untargetable by melee, ground zones, and ground-rolling shots; flying projectiles can still hit. The camera lifts from 22 to 55, and a small shadow ring on the floor shows everyone exactly where you'll land. 
+When the timer ends (or you press Ability 2 again to cancel), Gruff drops straight down: r=65, knockback 160, 0.4s stun, and Gruff gets 25% damage reduction for 1 second. Damage scales with air time: bailing out at 0.4s deals 12, a full time hover deals 26. So canceling early is a dodge, not a free hit.
 
 BOWLER:
 Throws a medium-range bowling ball on the ground. Small knockback on hit.
 Bowler: 205 HP, SPEED 130 | Bowling Ball: 25 damage every 1.25 seconds (20 DPS)
 Ability 1, OIL LANES (9s): Deploys a long oil zone (lasts 6s, but cooldown doesn't start until after it's gone) that reduces enemy movement speed and traction (causes sliding); the bowling ball speeds up 25% and deals 20% more damage.
 Ability 2, STRIKE (12s): Pressing the ability button brings up a trajectory indicator; use the Up, Left, or Right arrow keys to cycle between a straight or curving path,
-then Left-Click to fire a faster, larger, and higher-damage bowling ball that gains +35% speed and +30% damage (replacing the standard +25% speed and +20% damage) if thrown along an Oil Lane.
+then Left-Click to fire a faster, larger, and higher-damage bowling ball that can't be interfered with, stuns on hit for 0.7s, and gains +30% speed and +25% damage (replacing the standard +25% speed and +20% damage) if thrown along an Oil Lane.
+
+
+--------------------------------------------
+
+
+    --- NEXT MAJOR UPDATE
+
+
+- Add a new Champion
+- Add an option for it to randomly give you a Champion
+- Switch GUI places for E and Q (Q should be on the left and E on the right).
+- Add Usernames (Accounts, basically)
+- Add a Currency
+- Add a shop
+- Add Champion and Weapon skins
+- Add Auras
+- Add Nametag Colors
+- Add Emotes (You buy; remove all the starting ones)
+- (Maybe) Add Unlockable Champions (Instead of starting with them all)
