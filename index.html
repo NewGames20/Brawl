@@ -5306,57 +5306,131 @@ requestAnimationFrame(loop);
 </body>
 </html>
 
-<!-- FUTURE CHAMPION CONCEPTS
+<!-- FUTURE CHAMPIONS
 
-MICA:
+MICA · Ranged
+
 Two ranged forms; switching never restores health.
-Skitter: 125 HP, speed 180, quick Chromadarts for about 8 damage every 0.5 seconds. (16 DPS)
-Bastion: 235 HP, speed 125, a Prism cannon for about 30 damage every 1.25 seconds. (24 DPS)
-Ability 1, Metamorphosis (7s): stand still for about 1.1 seconds while changing form. Mica is fully vulnerable, cannot cancel the transformation, and damage does not interrupt it. Movement, attacks, and Ability 2 are unavailable during the transformation. Changing form converts percentage of Health to max Health to the new form.
-Skitter Ability 2, PRISMATIC GLARE (9s): Mica releases a blinding flash in a 360-degree circle, a 1.5s flash around her (small radius, 90 units), and grants 25% movement speed for 1.5s. 
-Bastion Ability 2, FOCUSED PRISM (11s): Charge a narrow, long-range beam with a clear wind-up (1s) and an obvious aim line (slows you down 25% while winding). A hit deals heavy burst damage (50 damage), but the charge leaves Mica exposed. 
+Skitter: 125 HP, speed 180. Chromadarts: 8 damage every 0.5 seconds (16 DPS).
+Bastion: 235 HP, speed 125. Prism cannon: 30 damage every 1.25 seconds (24 DPS).
+Ability 1, METAMORPHOSIS (7s): stand still for about 1.1 seconds while changing form. Mica is fully vulnerable, cannot cancel the transformation, and damage does not interrupt it. Movement, attacks, and Ability 2 are unavailable during the transformation. Changing form preserves her percentage of max Health, recalculates it against the new form's max Health, and never restores health.
+Skitter Ability 2, PRISMATIC GLARE (9s): Mica releases a blinding flash in a 360-degree circle, a 1.5s flash around her (small radius, 90 units), and grants 25% movement speed for 1.5s.
+Bastion Ability 2, FOCUSED PRISM (11s): charge a narrow, long-range beam with a clear wind-up (1s) and an obvious aim line (slows you down 25% while winding). A hit deals 50 damage, but the charge leaves Mica exposed.
 
-RICO:
+
+RICO · Ranged
+
 Ranged billiard-ball launcher. Basic cue balls ricochet twice.
-Rico: 170 HP, speed 150 | Cue Ball: 15 damage every 1 second (15 DPS)
-Ability 1, BUMPER (11s): Places one bumper (5s lifetime); Rico's cue balls bounce off it. Players can't break, shoot (their shots don't bounce off), or go through it (it acts as a barrier). 
-Ability 2, Bank Shot (9s): empowers the next shot to ricochet up to five times. Each ricochet adds 20% of base damage. The ability is consumed when fired, even if the shot misses.
+Rico: 170 HP, speed 150. Cue Ball: 15 damage every 1 second (15 DPS).
+Ability 1, BUMPER (11s): places one bumper (5s lifetime); Rico's cue balls bounce off it. Players can't break, shoot through, or go through it; other shots do not bounce off it.
+Ability 2, BANK SHOT (9s): empowers the next shot to ricochet up to five times. Each ricochet adds 20% of base damage. The ability is consumed when fired, even if the shot misses.
 
-KAMO: 130 HP, speed 175 | Weapon: TAG SPITTER, fast sticky globs, 10 dmg every 0.5s ≈ 20 DPS, speed 450. 
+
+KAMO · Ranged
+
+Kamo: 130 HP, speed 175. Weapon: TAG SPITTER, fast sticky globs, 10 damage every 0.5s (20 DPS), projectile speed 450.
 Each hit paints the target for 3s; only Kamo sees an outline through walls.
-Ability 1, TONGUE SNATCH (11s). Tongue flicks 280 units (speed 950). Hit: 10 dmg, and the target is DISARMED for 1.2s: no basic attack (abilities still work), and 25% slow for 1.6s, and their weapon visibly vanishes from their model.
-Ability 2, CAMOUFLAGE (14s cooldown, lasts 6s). Kamo goes invisible for the 6s duration. While camouflaged: no nameplate, no dot on enemy minimaps, and bots only notice him within 70 units (if he's moving). 
-The first attack or ability out of camo breaks it and deals +40% (AMBUSH). Taking damage reveals him for 2s but doesn't end the effect. 
-
-GRUFF:
-STONE TALONS, a fast two-hit rake, range 62, 13 dmg every 0.6s ≈ 22 DPS.
-Gruff: 175 HP, speed 160
-Ability 1, WING GUST (10s): Gruff erupts with a 360-degree shockwave that knocks back nearby enemies, slows them by 50% for 0.8 seconds, and reflects all incoming projectiles.
-Ability 2, SWOOP AND SLAM (13s): Rise over 0.35s, hover up to 2.5s, and steer at 80% speed (no attacks). Airborne = untargetable by melee, ground zones, and ground-rolling shots; flying projectiles can still hit. The camera lifts from 22 to 55, and a small shadow ring on the floor shows everyone exactly where you'll land. 
-When the timer ends (or you press Ability 2 again to cancel), Gruff drops straight down: r=65, knockback 160, 0.4s stun, and Gruff gets 25% damage reduction for 1 second. Damage scales with air time: bailing out at 0.4s deals 12, a full time hover deals 26. So canceling early is a dodge, not a free hit.
-
-BOWLER:
-Throws a medium-range bowling ball on the ground. Small knockback on hit.
-Bowler: 205 HP, SPEED 130 | Bowling Ball: 25 damage every 1.25 seconds (20 DPS)
-Ability 1, OIL LANES (9s): Deploys a long oil zone (lasts 6s, but cooldown doesn't start until after it's gone) that reduces enemy movement speed and traction (causes sliding); the bowling ball speeds up 25% and deals 20% more damage.
-Ability 2, STRIKE (12s): Pressing the ability button brings up a trajectory indicator; use the Up, Left, or Right arrow keys to cycle between a straight or curving path,
-then Left-Click to fire a faster, larger, and higher-damage bowling ball that can't be interfered with, stuns on hit for 0.7s, and gains +30% speed and +25% damage (replacing the standard +25% speed and +20% damage) if thrown along an Oil Lane.
+Ability 1, TONGUE SNATCH (11s): tongue flicks 280 units (speed 950). Hit: 10 damage, and the target is DISARMED for 1.2s (no basic attack; abilities still work) and slowed 25% for 1.6s. Their weapon visibly vanishes from their model.
+Ability 2, CAMOUFLAGE (14s cooldown, lasts 6s): Kamo goes invisible. While camouflaged: no nameplate, no dot on enemy minimaps, and bots only notice him within 70 units if he's moving. The first attack or ability out of camouflage breaks it and deals +40% damage. Taking damage reveals him for 2s but doesn't end the effect.
+Watch out: keep the ambush bonus to the first hit and make the reveal, shimmer, and tongue readable.
 
 
---------------------------------------------
+GRUFF · Melee 
+
+STONE TALONS, a fast two-hit rake, range 62, 13 damage every 0.6s (about 22 DPS).
+Gruff: 175 HP, speed 160.
+Ability 1, WING GUST (10s): Gruff erupts with a 360-degree shockwave that knocks back nearby enemies, slows them by 50% for 0.8s, and reflects all incoming projectiles.
+Ability 2, SWOOP AND SLAM (13s): rise over 0.35s, hover up to 2.5s, and steer at 80% speed (no attacks). Airborne = untargetable by melee, ground zones, and ground-rolling shots; flying projectiles can still hit. The camera lifts from 22 to 55, and a small shadow ring on the floor shows everyone exactly where you'll land.
+When the timer ends (or you press Ability 2 again to cancel), Gruff drops straight down: radius 65, knockback 160, 0.4s stun, and Gruff gets 25% damage reduction for 1s. Damage scales with air time: bailing out at 0.4s deals 12; a full-time hover deals 26. Canceling early is a dodge, not a free hit.
 
 
-    --- NEXT MAJOR UPDATE
+BOWLER · Ranged
+
+Throws a medium-range bowling ball on the ground, with small knockback on hit.
+Bowler: 205 HP, speed 130. Bowling Ball: 25 damage every 1.25 seconds (20 DPS).
+Ability 1, OIL LANES (9s): deploy a long oil zone (lasts 6s, but cooldown doesn't start until after it's gone) that reduces enemy movement speed and traction (causes sliding); the bowling ball speeds up 25% and deals 20% more damage.
+Ability 2, STRIKE (12s): pressing the ability button brings up a trajectory indicator; use the Up, Left, or Right arrow keys to cycle between a straight or curving path, then Left-Click to fire a faster, larger, and higher-damage bowling ball that can't be interfered with, stuns on hit for 0.7s, and gains +30% speed and +25% damage (replacing the standard +25% speed and +20% damage) if thrown along an Oil Lane.
 
 
+SIR DENTLEY · Melee 
+
+Armored: 200 HP, speed 125. Weapon: LONGSWORD, a 3-hit combo of 14 / 14 / 24 (the third swing lunges 40 units), 0.5s between swings, combo resets after 0.9s idle. Cycle is 1.8s ≈ 29 DPS if every swing connects.
+Passive, HOLLOW ARMOR: when the armor hits 0 HP it bursts off (25 damage ring, radius 70, small knockback). Excess damage from the breaking hit does not carry into the next form. Sir Dentley lives on as the SQUIRE: 55 HP, speed 210, dagger 8 damage every 0.3s (27 DPS), no Shield Wall. For 0.5s after the armor breaks, the Squire is knocked 40 units away from the breaking hit and takes 40% less damage, but cannot attack. The empty armor stays behind as an ARMOR HUSK (solid cover, 100 HP, lasts 8s). If the Squire reaches the Husk within 8s, he must stand within 35 units and channel for 1s to re-armour with 70 HP. Taking damage, moving, or being knocked away interrupts the channel. The Husk can be destroyed to prevent recovery. Re-armouring can happen only once. Only the Squire's final death counts as an elimination (one kill-feed line, one kill-heal).
+Ability 1, SHIELD GUARD (9s): raise the shield for 1.4s. Blocks 65% of projectiles and 50% of melee/zone damage from a 150-degree front arc. Move speed -20%. Every point blocked is stored as RIPOSTE charge (cap 40). In Squire form, this becomes DAGGER FEINT (7s): a 70-unit sidestep with no invulnerability and no attack during the move. Feint is ready when the Squire first appears.
+Ability 2, RIPOSTE LUNGE (8s): lunge up to 90 units, dealing 20 + all stored Riposte charge (max +40). The lunge still deals 20 damage with no charge; no stun. Charge is spent on activation, even if the lunge misses. Can't use if in Squire.
+Why it's fun: the two health stages and "go get your armor back" mini-game stay intact; the shield rewards timing and the lunge is useful even without stored charge.
+
+------------
+
+GRAVEL · Ranged (MAYBE?)
+HP 215, speed 120. Weapon: PEBBLE PITCH, a lobbed stone, 20 damage every 0.9s (about 22 DPS), range ~280.
+Ability 1, RAISE WALL (11s): a 70x16 slab erupts 60 units ahead (0.4s rise) and lasts 6s or until it reaches 100 HP. Blocks movement, line of sight, and projectiles. Anyone standing on its footprint is shoved aside.
+Ability 2, QUAKE (15s): ground pound, radius 150. Every MAP obstacle in range sinks into the floor for 6s (walkable, sight lines open), and enemies in range take 12 damage and a 0.5s stun. He rearranges the arena mid-fight: strip a sniper's perch, flush Mycelis out of her hiding spot.
+Needs: dynamic obstacles. The outer arena walls never sink.
+
+
+JACKPOT · Ranged (MAYBE!)
+HP 160, speed 150. Weapon: LUCKY REVOLVER. Every shot flips a coin: HEADS 20 damage, TAILS 6 damage, 0.6s cooldown, and the shot after a TAILS is always HEADS (pity rule). Average ≈ 26 DPS. A coin icon on the HUD shows the last flip.
+Ability 1, ROLL THE DICE (11s): roll a d6 that floats over Jackpot so everyone sees it. 1 snake eyes: take 15 damage. 2: slowed for 2s. 3: heal 25. 4: +35% speed for 4s. 5: absorb the next 40 damage. 6 JACKPOT: heal 40, speed boost, and the next 3 shots are guaranteed heads.
+Ability 2, ALL IN (17s): wager 20% of your current HP. For 6s, every shot is heads and +20% damage. Get a kill during it, and you heal back double the wager; reach the end without one and the wager is gone.
+Why it's fun: high-variance party energy that's readable to everyone.
+Watch out: clearly show the die result and test the kill refund and stacked damage carefully.
+
+
+GRIM · Melee (MAYBE)
+HP 150, speed 160. Weapon: SCYTHE, a wide arc (range 75, 90° wide), 20 damage every 0.9s = 22 DPS. REAP: against enemies under 25% HP, the scythe deals double damage.
+Passive, SOUL HARVEST: whenever ANYONE dies (storm deaths count), a wisp drifts out. Collect up to 5; each gives +5% damage and +5 speed.
+Ability 1, SHADE STEP (9s): for 1.4s, Grim becomes a shadow: untargetable, +40% speed, can walk through enemies (not walls).
+Ability 2, DEATH'S MARK (15s): mark one enemy in view for 6s. You see them through walls (HUD arrow) and they can't be healed (no kill-heal, no pickups). Killing the marked target refunds half of both cooldowns.
+
+
+COSMO · Ranged (MAYBE!)
+HP 170, speed 145. Passive: three moons orbit Cosmo (radius 28). Each moon blocks ONE incoming projectile and then goes dark for 5s (they never block your view or your shots). Enemies touching a moon take 6 damage and a small shove every 0.6s (anti-melee).
+Weapon: MOON LAUNCHER fires a moon (24 damage, pierces, flies 0.9s), 0.7s cooldown. A launched moon only returns 3.5s later, so ammo IS defense: shoot all three, and you're exposed. Burst ≈ 34 DPS, sustained ≈ 20 DPS (limited by moons).
+Ability 1, MOON TAG: requires a ready orbiting moon, and only one Moon Tag can be active at a time. Shoot one moon at the enemy in Cosmo's crosshair. The moon cannot be broken, homes in on that enemy, and floats above them. Click Ability 1 again to drop the moon onto the target for 24 damage and a 1.1s stun. After the hit, the moon goes dark, returns to Cosmo, and takes its normal 5s recovery before orbiting again. If the target dies before the second click, the moon returns without hitting and takes the same recovery.
+Ability 2, GRAVITY WELL (13s): after a visible 0.5s wind-up, creates a medium-sized well that pulls enemies toward the center for 5s and slows them by 25%.
+Why it's fun: send a moon to protect a teammate, then use the gravity field to shape where the next fight happens. Each deployed moon trades Cosmo's own defense for team control.
+
+
+MIME  · Ranged (MAYBE)
+HP 150, speed 165. Weapon: AIR JAB, a short-range compressed-air strike, 14 damage every 0.7s.
+Ability 1, INVISIBLE WALLS (10s): place one 90x12 wall for 4s. It blocks movement and projectiles for both teams. It is invisible at a distance and shimmers for everyone when touched. When revealed, it can be destroyed (60 HP).
+Ability 2, IMITATE (14s): For 6s, store the last hostile Ability 1 or Ability 2 that hits Mime. Reactivate to copy its basic effect at 70% strength or duration. The source and timer are shown to everyone. Passives, transformations, global effects and summons cannot be copied. With no stored ability, Imitate is unavailable.
+Why it's fun: the wall is the defining trick, while Imitate makes opponents think before using abilities on him.
+Watch out: keep the wall discoverable through collision feedback, and make copied abilities readable.
+
+
+REF · Ranged (MAYBE)
+HP 170, speed 150. Weapon: WHISTLE DART, 13 damage every 0.65s (20 DPS).
+Passive, CHALK LINE: when Ref marks a player, a visible line connects them for 3s. Enemies crossing it are slowed by 25% for 1s.
+Ability 1, RED CARD (10s): throw a red card at one player. A hit marks them for 4s; Ref's next hit on them deals +25% damage and consumes the mark.
+Ability 2, BLOW THE WHISTLE (16s): after a 0.5s wind-up, freezes enemy basic attacks in a 180-unit radius for 1.7s. Ref can still attack. Movement and abilities remain available.
+Why it's fun: he can isolate a target for a damage bonus, then use a whistle to reset a close fight.
+Watch out: the whistle only affects nearby enemies, not the whole match.
+
+
+GHOST · Ranged (MAYBE?)
+HP 145, speed 180. Weapon: GHOSTFIRE, 13 damage every 0.7s (about 19 DPS), medium range.
+Ability 1, PHASE WALK (12s): for 1.5s, Wisp phases through map obstacles but not the arena boundary. Wisp cannot attack or use abilities during the phase and remains damageable. Leaves a visible haunting trail; enemies crossing it are slowed by 25% for 0.8s.
+Ability 2, HAUNT (13s): send a slow spirit through walls toward a target point up to 240 units away. It bursts in a visible 70-unit circle for 12 damage and briefly outlines enemies hit for Wisp. It does not pass through the outer arena wall.
+Why it's fun: phase through a wall to reposition, but the trail tells opponents where Wisp went.
+Watch out: phasing is not invulnerability; keep Wisp damageable and unable to attack during the phase.
+
+
+
+    --- NEXT MAJOR UPDATE ---
+
+
+- Remove the extra part of the Champion's name (Ex: Bruno the Bear; just have Bruno)
 - Add a new Champion
 - Add an option for it to randomly give you a Champion
 - Switch GUI places for E and Q (Q should be on the left and E on the right).
 - Add Usernames (Accounts, basically)
-- Add a Currency
-- Add a shop
+- Add a Currency (Shinies)
+- Add a Shop
 - Add Champion and Weapon skins
 - Add Auras
-- Add Nametag Colors
+- Add Nametag Colors/Nametag border Colors/Nametag background design
 - Add Emotes (You buy; remove all the starting ones)
+- Add Daily challenges (Can only be done in Quick Matches)
 - (Maybe) Add Unlockable Champions (Instead of starting with them all)
