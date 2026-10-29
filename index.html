@@ -142,6 +142,30 @@ html, body {
   letter-spacing: 0.5px; margin-top: 2px; min-height: 16px;
 }
 
+.champion-update {
+  width: min(100%, 880px);
+  flex-shrink: 0;
+  padding: 12px 18px;
+  border: 1px solid rgba(255, 138, 77, 0.4);
+  border-left: 4px solid #ff8a4d;
+  border-radius: 12px;
+  background: linear-gradient(120deg, rgba(65, 29, 22, 0.94), rgba(18, 17, 24, 0.96));
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+}
+.champion-update-title {
+  color: #ffb58c;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.6px;
+  margin-bottom: 5px;
+}
+.champion-update p {
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.champion-update-teaser { color: #ffd08d; font-weight: 800; }
+
 .gfx-selector .tab-btn { padding: 4px 10px; font-size: 11px; }
 .map-selector, .control-selector, .gfx-selector {
   display: flex; flex-wrap: wrap; background: rgba(10,9,15,0.72);
@@ -455,40 +479,6 @@ html, body {
   background: rgba(255, 255, 255, 0.05); border-radius: 6px; padding: 5px 10px;
 }
 .stats-row.me { border: 1px solid var(--good); box-shadow: 0 0 12px rgba(69,217,136,0.25); }
-  /* Champion update notice */
-.champion-update {
-  width: min(100%, 880px);
-  flex-shrink: 0;
-  padding: 12px 18px;
-  border: 1px solid rgba(255, 138, 77, 0.4);
-  border-left: 4px solid #ff8a4d;
-  border-radius: 12px;
-  background: linear-gradient(
-    120deg,
-    rgba(65, 29, 22, 0.94),
-    rgba(18, 17, 24, 0.96)
-  );
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
-}
-
-.champion-update-title {
-  color: #ffb58c;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 1.6px;
-  margin-bottom: 5px;
-}
-
-.champion-update p {
-  color: var(--text-main);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.champion-update-teaser {
-  color: #ffd08d;
-  font-weight: 800;
-}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -611,9 +601,9 @@ const Store = {
 // --- GRAPHICS PRESETS ---
 // scale = render resolution (1 = full). Lower presets also drop shadows, extra light, dust, sparks, glows and flame particles.
 const GFX = {
-  low:    { scale: 0.58, shadow: 0,   soft: false, rim: false, dust: 0,   sparks: 0,   glow: false, grid: false, amb: 1.35, flame: 10 },
-  medium: { scale: 0.85, shadow: 512, soft: false, rim: true,  dust: 70,  sparks: 0.6, glow: true,  grid: true,  amb: 1.05, flame: 36 },
-  high:   { scale: 1.15, shadow: 1024,soft: true,  rim: true,  dust: 150, sparks: 1,   glow: true,  grid: true,  amb: 1.05, flame: 70 }
+  low:    { scale: 0.58, shadow: 0,   soft: false, rim: false, dust: 0,   sparks: 0,   glow: false, grid: false, amb: 1.35 },
+  medium: { scale: 0.85, shadow: 512, soft: false, rim: true,  dust: 70,  sparks: 0.6, glow: true,  grid: true,  amb: 1.05 },
+  high:   { scale: 1.15, shadow: 1024,soft: true,  rim: true,  dust: 150, sparks: 1,   glow: true,  grid: true,  amb: 1.05 }
 };
 let gfxLevel = Store.get("bb_gfx", "high");
 if(!GFX[gfxLevel]) gfxLevel = "high";
@@ -858,7 +848,7 @@ const Snd = {
   abilityCue(heroIndex, slot) {
     const cues = [
       ["melee", "ability"], ["ability", "hitconfirm"], ["bounce", "ability"],
-      ["flame", "ability"], ["beep", "go"], ["ability", "beep"], ["flame", "stormwarn"]
+      ["flame", "ability"], ["beep", "go"], ["ability", "beep"]
     ];
     const cue = (cues[heroIndex] || cues[0])[slot - 1];
     this.play(cue);
@@ -940,23 +930,8 @@ const HEROES = [
    a2n:"Root Entangle", a2cd: 9.0,
    ad:"Spore bolt that inflicts lingering blight.", a2d:"Overgrowth projectile that immobilizes enemies on impact.",
    melee: false, d:"Blight shaman wielding lingering spore poisons and root binds."
- },
- {
-   n:"Cinder the Dragon", e:"🐲", w:"🔥", wn:"Inferno Maw",
-   role: "Juggernaut", roleCol: "#e8553a",
-   hp: 220, sp: 130, col: 0x9e2a2a, cd: 0.1,
-   a1n:"Dragonhide", a1cd: 12.0, a1d:"Take 60% less damage for 4.0s.",
-   a2n:"Fireball", a2cd: 8.5,
-   ad:"HOLD to breathe a wide cone of fire. Very low damage per second, but it hits everyone in the cone.",
-   a2d:"Hurls a fireball that explodes and leaves the ground BURNING.",
-   melee: false, rangeLabel: "Short range",
-   atkRange: 150, prefDist: 95, ab1Range: 140, ab2Range: 300,
-   d:"Slow, sturdy tank that smothers an area in fire."
  }
 ];
-
-// Dragon flame cone: range / half-angle (radians) / damage per second to everyone inside the cone
-const DRAGON = { range: 150, half: 0.55, dps: 23 };
 
 // Captain Oink's chain hook tuning
 const CHAIN = { max: 220, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 450, retractTime: 0.6 };
@@ -1396,7 +1371,7 @@ function playHitConfirm() {
 }
 
 function applyLocalHitFeedback(dmg) {
-  // Tiny per-frame damage (storm, poison, fire, dragon flame) only tints the screen edge: no hit sound spam
+  // Tiny per-frame damage (storm, poison, fire) only tints the screen edge: no hit sound spam
   if(dmg < 1) { damageVignetteT = Math.max(damageVignetteT, 0.3); return; }
   const nowT = performance.now();
   const quiet = nowT - lastHitSfx < 90; // several pellets in one frame = one hit sound
@@ -1728,19 +1703,6 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
     shaft.position.y = 8;
     root.add(shaft);
   }
-  else if(heroIndex === 6) {
-    // Cinder's Inferno Maw: a brass flame nozzle with glowing embers at both ends
-    const brass = new THREE.MeshStandardMaterial({ color: 0x8a5a2a, metalness: 0.8, roughness: 0.35 });
-    const tube = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 3.6, 18, 12), brass);
-    tube.rotation.x = Math.PI / 2;
-    root.add(tube);
-    const emberMat = new THREE.MeshBasicMaterial({ color: 0xff7a1f });
-    for(const sz of [-10, 10]) {
-      const ember = new THREE.Mesh(new THREE.SphereGeometry(2.4, 10, 8), emberMat);
-      ember.position.z = sz;
-      root.add(ember);
-    }
-  }
   return root;
 }
 
@@ -1817,32 +1779,6 @@ function addHeroDetails(grp, headGrp, heroIndex) {
       dot.position.set(Math.cos(a) * 5.8, 9.4, Math.sin(a) * 5.8);
       headGrp.add(dot);
     }
-  } else if(heroIndex === 6) { // Cinder the Dragon: horns, snout, belly, wings, tail
-    const hornMat = M(0xf0d9a0);
-    for(const sx of [-1, 1]) {
-      const horn = new THREE.Mesh(new THREE.ConeGeometry(1.7, 8, 8), hornMat);
-      horn.position.set(sx * 4.6, 10, -1);
-      horn.rotation.z = -sx * 0.4;
-      headGrp.add(horn);
-    }
-    const snout = new THREE.Mesh(new THREE.BoxGeometry(6.4, 4, 6), M(0x7a1d20));
-    snout.position.set(0, -1.8, 8.6);
-    headGrp.add(snout);
-    const belly = new THREE.Mesh(new THREE.SphereGeometry(8, 10, 8), M(0xe7c27a));
-    belly.scale.set(1, 1.3, 0.4);
-    belly.position.set(0, 12, 11);
-    grp.add(belly);
-    const wingMat = M(0x6e1a1c, { side: THREE.DoubleSide });
-    for(const sx of [-1, 1]) {
-      const wing = new THREE.Mesh(new THREE.BoxGeometry(15, 1.2, 10), wingMat);
-      wing.position.set(sx * 12, 22, -8);
-      wing.rotation.set(0, sx * -0.3, sx * 0.55);
-      grp.add(wing);
-    }
-    const tail = new THREE.Mesh(new THREE.ConeGeometry(4.5, 20, 8), M(0x9e2a2a));
-    tail.rotation.x = -Math.PI / 2;
-    tail.position.set(0, 6, -18);
-    grp.add(tail);
   }
 }
 
@@ -1949,8 +1885,6 @@ function spawnProjectileMesh(type) {
   } else if(type === "vine") {
     mesh = new THREE.Mesh(new THREE.TorusGeometry(5, 1.8, 8, 16), new THREE.MeshBasicMaterial({color: 0x55aa33}));
     mesh.rotation.x = Math.PI / 2;
-  } else if(type === "fireball") {
-    mesh = new THREE.Mesh(new THREE.SphereGeometry(7.5, 12, 10), new THREE.MeshBasicMaterial({ color: 0xff7a1f }));
   } else {
     mesh = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 9, 8), new THREE.MeshBasicMaterial({color: 0x00f0ff}));
     mesh.rotation.x = Math.PI / 2;
@@ -2027,61 +1961,6 @@ function updateSparks(dt) {
   }
 }
 
-// --- DRAGON FLAME PARTICLES (pooled, never disposed) ---
-const FlamePool = [];
-function initFlamePool() {
-  if(FlamePool.length) return;
-  const geo = new THREE.SphereGeometry(2.4, 6, 5);
-  for(let i = 0; i < 80; i++) {
-    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
-      color: 0xffb030, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false
-    }));
-    m.visible = false;
-    scene.add(m);
-    FlamePool.push({ m, vx: 0, vy: 0, vz: 0, life: 0, max: 0.4 });
-  }
-}
-function emitFlame(e) {
-  if(!FlamePool.length) initFlamePool();
-  const f = FlamePool.find(p => p.life <= 0);
-  if(!f) return;
-  const a = e.a + (Math.random() * 2 - 1) * DRAGON.half * 0.9;
-  const sp = (e.flameLen / 0.4) * (0.7 + Math.random() * 0.3);
-  f.m.position.set(e.x + Math.cos(e.a) * 16, 14 + Math.random() * 4, e.z + Math.sin(e.a) * 16);
-  f.vx = Math.cos(a) * sp; f.vz = Math.sin(a) * sp; f.vy = 20 + Math.random() * 30;
-  f.life = f.max = 0.34 + Math.random() * 0.08;
-  f.m.scale.setScalar(0.6);
-  f.m.visible = true;
-}
-function updateFlames(dt) {
-  for(const f of FlamePool) {
-    if(f.life <= 0) continue;
-    f.life -= dt;
-    if(f.life <= 0) { f.m.visible = false; continue; }
-    const k = 1 - f.life / f.max; // 0 (fresh) -> 1 (dying)
-    f.m.position.x += f.vx * dt;
-    f.m.position.y += f.vy * dt;
-    f.m.position.z += f.vz * dt;
-    f.m.scale.setScalar(0.6 + k * 2.2);
-    f.m.material.opacity = 0.85 * (1 - k);
-    f.m.material.color.setRGB(1, 0.85 - k * 0.6, 0.25 - k * 0.2);
-  }
-}
-
-// Glowing floor shape that shows exactly where the dragon's flame cone reaches
-function makeFlameDecal() {
-  const geo = new THREE.CircleGeometry(1, 22, -DRAGON.half, DRAGON.half * 2);
-  geo.rotateX(-Math.PI / 2);
-  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
-    color: 0xff6a1a, transparent: true, opacity: 0.25, side: THREE.DoubleSide,
-    depthWrite: false, blending: THREE.AdditiveBlending
-  }));
-  m.position.y = 1.4;
-  m.visible = false;
-  scene.add(m);
-  return m;
-}
-
 // --- PROJECTILE GLOW ---
 let _glowTex = null;
 function glowTexture() {
@@ -2098,7 +1977,7 @@ function glowTexture() {
   _glowTex = new THREE.CanvasTexture(can);
   return _glowTex;
 }
-const GLOW_COLORS = { s: 0x36e0ff, b: 0xffd000, meatball: 0xff7733, spore: 0x9955ff, vine: 0x55dd44, cannonball: 0xff8833, bomb: 0xffd000, fireball: 0xff7a22 };
+const GLOW_COLORS = { s: 0x36e0ff, b: 0xffd000, meatball: 0xff7733, spore: 0x9955ff, vine: 0x55dd44, cannonball: 0xff8833, bomb: 0xffd000 };
 
 function spawnPickup() {
   const types = [
@@ -2221,13 +2100,12 @@ function getRemoteActorByNetId(id) {
   return E.find(e => e.netId === id) || null;
 }
 
-// Frees per-entity extras that live directly in the scene (Oink's chain, Cinder's flame decal)
+// Frees per-entity extras that live directly in the scene (Oink's chain)
 function endChain(e) {
   if(e.chain) { disposeHierarchy(e.chain.mesh); e.chain = null; }
 }
 function disposeEntityExtras(e) {
   endChain(e);
-  if(e.flameDecal) { disposeHierarchy(e.flameDecal); e.flameDecal = null; }
   if(e.emoteSprite) { disposeHierarchy(e.emoteSprite); e.emoteSprite = null; }
 }
 
@@ -2292,10 +2170,46 @@ function mk(ci, x, z, playerNum, netId = null, team = null) {
     sporePoison: 0,
     sporeAttacker: null,
     chain: null,                                   // Captain Oink's chain hook
-    breathT: 0, breathTick: 0, flameAcc: 0, flameLen: DRAGON.range, guard: 0, // Cinder
-    flameDecal: ci === 6 ? makeFlameDecal() : null,
+    combatHistory: [], hitRewindMs: 0,
     mesh
   };
+}
+
+// Keep recent host-side fighter positions so client-fired attacks can be checked
+// against the positions the shooter was actually seeing over the network.
+function recordCombatHistory() {
+  const now = performance.now();
+  for(const e of E) {
+    if(!e.combatHistory) e.combatHistory = [];
+    if(e.dead) {
+      e.combatHistory.length = 0;
+      continue;
+    }
+    e.combatHistory.push({ time: now, x: e.x, z: e.z });
+    while(e.combatHistory.length && now - e.combatHistory[0].time > 600) e.combatHistory.shift();
+  }
+}
+
+function getCombatPosition(target, attacker = null) {
+  const history = target.combatHistory;
+  const rewindMs = isMultiplayer && isLobbyLeader && attacker && attacker !== pl
+    ? attacker.hitRewindMs : 0;
+  if(!(rewindMs > 0) || !history || history.length === 0) return target;
+
+  const sampleTime = performance.now() - rewindMs;
+  if(sampleTime <= history[0].time) return history[0];
+  for(let i = 1; i < history.length; i++) {
+    const next = history[i];
+    if(next.time >= sampleTime) {
+      const prev = history[i - 1];
+      const blend = (sampleTime - prev.time) / Math.max(1, next.time - prev.time);
+      return {
+        x: prev.x + (next.x - prev.x) * blend,
+        z: prev.z + (next.z - prev.z) * blend
+      };
+    }
+  }
+  return target;
 }
 
 function blocked(x, z, r) {
@@ -2372,8 +2286,6 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   if(isMultiplayer && !isLobbyLeader) return;
   if(t.chain && t.chain.inv) return; // Captain Oink is invulnerable while his chain is out / hooking
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
-
-  if(t.guard > 0) rawDmg *= 0.40; // Cinder's Dragonhide: 60% less damage
 
   t.hp -= rawDmg;
   if(attacker && attacker !== t && rawDmg > 0) attacker.dmg += rawDmg;
@@ -2459,11 +2371,12 @@ function melee(e, rng, d, kb) {
 
   for(const t of E) {
     if(t !== e && !t.dead) {
-      const dx = t.x - e.x, dz = t.z - e.z;
+      const targetPos = getCombatPosition(t, e);
+      const dx = targetPos.x - e.x, dz = targetPos.z - e.z;
       if(Math.hypot(dx, dz) < rng + t.r) {
         let da = Math.atan2(dz, dx) - e.a;
         da = Math.atan2(Math.sin(da), Math.cos(da));
-        if(Math.abs(da) < 1.15 && hasLOS(e.x, e.z, t.x, t.z) && areEnemies(e, t)) {
+        if(Math.abs(da) < 1.15 && hasLOS(e.x, e.z, targetPos.x, targetPos.z) && areEnemies(e, t)) {
           hurt(t, d, Math.atan2(dz, dx), kb, e);
           t.slow = 0.7;
         }
@@ -2534,14 +2447,6 @@ function shot(e, a, o) {
 function executeAttack(e) {
   const c = HEROES[e.ci];
   e.c1 = c.cd;
-  if(e.ci === 6) {
-    // Cinder's flame breath: this just keeps the flame "lit" while the button is held.
-    // Damage and visuals are applied every frame in updateDragon().
-    e.breathT = 0.2;
-    e.fire = 0.14; // walks slower while breathing
-    if(++e.breathTick % 2 === 0) Snd.play("flame");
-    return;
-  }
   Snd.play(c.melee ? "melee" : "shoot");
   if(c.melee) {
     melee(e, 80, 30, 360);
@@ -2576,9 +2481,10 @@ function executeAbility1(e) {
     spawn3DRing(e.x, e.z, 110, 0xffb042);
     if(!isMultiplayer || isLobbyLeader) {
       for(const t of E) {
-        if(t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < 110 + t.r && areEnemies(e, t)) {
-          if(hasLOS(e.x, e.z, t.x, t.z)) {
-            hurt(t, 16, Math.atan2(t.z-e.z, t.x-e.x), 280, e);
+        const targetPos = getCombatPosition(t, e);
+        if(t !== e && !t.dead && Math.hypot(targetPos.x-e.x, targetPos.z-e.z) < 110 + t.r && areEnemies(e, t)) {
+          if(hasLOS(e.x, e.z, targetPos.x, targetPos.z)) {
+            hurt(t, 16, Math.atan2(targetPos.z-e.z, targetPos.x-e.x), 280, e);
             t.stun = 1.0;
           }
         }
@@ -2669,12 +2575,6 @@ function executeAbility1(e) {
 
     e.activePod = podZone;
     Zones.push(podZone);
-  } else if(e.ci === 6) {
-    // Dragonhide: take 65% less damage for 4.0s
-    e.c2 = c.a1cd;
-    e.guard = 4.0;
-    shakeIfNearby(e.x, e.z, 3, 100);
-    spawn3DRing(e.x, e.z, 38, 0xffb347);
   }
 }
 
@@ -2700,8 +2600,9 @@ function executeAbility2(e) {
         spawn3DRing(bx, bz, 80, 0xff9933);
         if(!isMultiplayer || isLobbyLeader) {
           for(const t of E) {
-            if(t !== e && !t.dead && Math.hypot(t.x - bx, t.z - bz) < 80 + t.r && areEnemies(e, t)) {
-              hurt(t, 15, Math.atan2(t.z - bz, t.x - bx), 380, e);
+            const targetPos = getCombatPosition(t, e);
+            if(t !== e && !t.dead && Math.hypot(targetPos.x - bx, targetPos.z - bz) < 80 + t.r && areEnemies(e, t)) {
+              hurt(t, 15, Math.atan2(targetPos.z - bz, targetPos.x - bx), 380, e);
               t.stun = 0.5;
             }
           }
@@ -2748,36 +2649,14 @@ function executeAbility2(e) {
         spawn3DRing(vx, vz, 45, 0x55bb33);
         if(!isMultiplayer || isLobbyLeader) {
           for(const t of E) {
-            if(t !== e && !t.dead && Math.hypot(t.x - vx, t.z - vz) < 45 + t.r && areEnemies(e, t)) {
-              hurt(t, 12, Math.atan2(t.z - vz, t.x - vx), 20, e);
+            const targetPos = getCombatPosition(t, e);
+            if(t !== e && !t.dead && Math.hypot(targetPos.x - vx, targetPos.z - vz) < 45 + t.r && areEnemies(e, t)) {
+              hurt(t, 12, Math.atan2(targetPos.z - vz, targetPos.x - vx), 20, e);
               t.stun = 1.4;
-              spawnDamageNumber(t.x, t.z, "ROOTED", "#55dd44");
+              spawnDamageNumber(targetPos.x, targetPos.z, "ROOTED", "#55dd44");
             }
           }
         }
-      }
-    });
-  } else if(e.ci === 6) {
-    // Fireball: explodes on impact and leaves burning ground
-    shot(e, e.a, {
-      t: "fireball", s: 330, d: 14, kb: 120, life: 0.95,
-      onDeath: (bx, bz) => {
-        shakeIfNearby(bx, bz, 6, 200);
-        spawn3DRing(bx, bz, 70, 0xff7a22);
-        spawnSparks(bx, bz, 0xffa040, 10);
-        if(!isMultiplayer || isLobbyLeader) {
-          for(const t of E) {
-            if(t !== e && !t.dead && Math.hypot(t.x - bx, t.z - bz) < 70 + t.r && areEnemies(e, t)) {
-              hurt(t, 12, Math.atan2(t.z - bz, t.x - bx), 260, e);
-            }
-          }
-        }
-        const geo = new THREE.CylinderGeometry(50, 50, 1.5, 20);
-        const mat = new THREE.MeshBasicMaterial({ color: 0xff5a1a, transparent: true, opacity: 0.45 });
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(bx, 1, bz);
-        scene.add(mesh);
-        Zones.push({ kind: "marinara", x: bx, z: bz, r: 50, life: 2.2, owner: e, mesh }); // slows + burns, like Marinara
       }
     });
   }
@@ -2814,12 +2693,14 @@ function startChain(e) {
   grp.add(link, hook);
   grp.link = link; grp.hook = hook;
   scene.add(grp);
-  e.chain = { phase: "out", a: e.a, len: 0, tx: e.x, tz: e.z, t: 0, target: null, inv: true, mesh: grp };
+  e.chain = { phase: "out", a: e.a, ox: e.x, oz: e.z, len: 0, tx: e.x, tz: e.z, t: 0, target: null, inv: true, mesh: grp };
 }
 
 function drawChain(e) {
   const c = e.chain, g = c.mesh;
-  _cDir.set(c.tx - e.x, 0, c.tz - e.z);
+  const fromX = c.phase === "pullSelf" ? e.x : c.ox;
+  const fromZ = c.phase === "pullSelf" ? e.z : c.oz;
+  _cDir.set(c.tx - fromX, 0, c.tz - fromZ);
   const L = _cDir.length();
   g.hook.position.set(c.tx, 14, c.tz);
   if(L < 0.5) { g.link.visible = false; return; }
@@ -2827,7 +2708,7 @@ function drawChain(e) {
   _cDir.divideScalar(L);
   g.link.quaternion.setFromUnitVectors(_cUp, _cDir);
   g.link.scale.set(1, L, 1);
-  g.link.position.set((e.x + c.tx) / 2, 14, (e.z + c.tz) / 2);
+  g.link.position.set((fromX + c.tx) / 2, 14, (fromZ + c.tz) / 2);
 }
 
 function updateChain(e, dt) {
@@ -2844,7 +2725,7 @@ function updateChain(e, dt) {
       const step = Math.min(8, move);
       move -= step;
       const nl = c.len + step;
-      const nx = e.x + cs * nl, nz = e.z + sn * nl;
+      const nx = c.ox + cs * nl, nz = c.oz + sn * nl;
       if(blocked(nx, nz, 2)) { // hit a wall: pull yourself to it
         c.phase = "pullSelf"; c.t = 0;
         Snd.play("bounce");
@@ -2853,7 +2734,8 @@ function updateChain(e, dt) {
       }
       c.len = nl; c.tx = nx; c.tz = nz;
       for(const t of E) {
-        if(t !== e && !t.dead && areEnemies(e, t) && Math.hypot(t.x - nx, t.z - nz) < t.r + 7) {
+        const targetPos = getCombatPosition(t, e);
+        if(t !== e && !t.dead && areEnemies(e, t) && Math.hypot(targetPos.x - nx, targetPos.z - nz) < t.r + 7) {
           c.phase = "pullEnemy"; c.target = t; c.t = 0; // hit a player: pull them in
           Snd.play("bounce");
           break;
@@ -2894,7 +2776,7 @@ function updateChain(e, dt) {
   } else { // retract
     const f = Math.min(1, c.t / CHAIN.retractTime);
     const L = c.len * (1 - f);
-    c.tx = e.x + cs * L; c.tz = e.z + sn * L;
+    c.tx = c.ox + cs * L; c.tz = c.oz + sn * L;
     if(f >= 1) done = true;
   }
 
@@ -2904,60 +2786,6 @@ function updateChain(e, dt) {
     return;
   }
   drawChain(e);
-}
-
-// --- CINDER THE DRAGON: FLAME BREATH ---
-// How far the flame can reach before a wall stops it
-function flameLength(e) {
-  const ca = Math.cos(e.a), sa = Math.sin(e.a);
-  for(let dd = 16; dd < DRAGON.range; dd += 8) {
-    if(blocked(e.x + ca * dd, e.z + sa * dd, 3)) return Math.max(24, dd);
-  }
-  return DRAGON.range;
-}
-
-function updateDragon(e, dt) {
-  const breathing = e.breathT > 0;
-  if(breathing) {
-    e.flameLen = flameLength(e);
-    // Damage: everyone in the cone takes a small amount EVERY FRAME (smooth, no hit-sound spam)
-    if(!isMultiplayer || isLobbyLeader) {
-      for(const t of E) {
-        if(t === e || t.dead || !areEnemies(e, t)) continue;
-        const dx = t.x - e.x, dz = t.z - e.z, dd = Math.hypot(dx, dz);
-        if(dd > DRAGON.range + t.r) continue;
-        let da = Math.atan2(dz, dx) - e.a;
-        da = Math.atan2(Math.sin(da), Math.cos(da));
-        const tol = DRAGON.half + Math.asin(Math.min(1, t.r / Math.max(dd, t.r)));
-        if(Math.abs(da) < tol && hasLOS(e.x, e.z, t.x, t.z)) {
-          hurt(t, DRAGON.dps * dt, Math.atan2(dz, dx), 0, e);
-        }
-      }
-    }
-    // Flame particles
-    const rate = GFX[gfxLevel].flame;
-    if(rate > 0) {
-      e.flameAcc += rate * dt;
-      while(e.flameAcc >= 1) { e.flameAcc -= 1; emitFlame(e); }
-    }
-  }
-  // Glowing floor cone
-  const dec = e.flameDecal;
-  if(dec) {
-    dec.visible = breathing;
-    if(breathing) {
-      dec.position.set(e.x, 1.4, e.z);
-      dec.rotation.y = -e.a;
-      dec.scale.set(e.flameLen, 1, e.flameLen);
-      dec.material.opacity = 0.2 + Math.sin(matchTime * 34) * 0.06;
-    }
-  }
-  // Dragonhide glow
-  if(e.mesh && e.mesh.bodyMat) {
-    const g = e.guard > 0;
-    e.mesh.bodyMat.emissive.setHex(g ? 0xff7a1f : 0x000000);
-    e.mesh.bodyMat.emissiveIntensity = g ? 0.55 + Math.sin(matchTime * 10) * 0.15 : 0;
-  }
 }
 
 window.setGraphics = function(level) {
@@ -3105,9 +2933,6 @@ function syncHUD() {
     const remainRatio = Math.max(0, targetEnt.activePod.life / targetEnt.activePod.maxLife);
     document.getElementById("cd1-fill").style.width = (remainRatio * 100) + "%";
     document.getElementById("cd1-label").innerText = `${ab1LabelKey} POD ACTIVE`;
-  } else if(targetEnt.ci === 6 && targetEnt.guard > 0) {
-    document.getElementById("cd1-fill").style.width = (Math.max(0, targetEnt.guard / 3.5) * 100) + "%";
-    document.getElementById("cd1-label").innerText = `${ab1LabelKey} DRAGONHIDE`;
   } else {
     const cd1Prog = targetEnt.c2 <= 0 ? 1 : Math.max(0, (1 - targetEnt.c2 / c.a1cd));
     document.getElementById("cd1-fill").style.width = (cd1Prog * 100) + "%";
@@ -3231,6 +3056,56 @@ function sendActionIntent(act, a, x, z) {
   }
 }
 
+function peerRttMs(conn) {
+  if(conn && Number.isFinite(conn.rttMs) && Date.now() - (conn.rttAt || 0) < 6000) {
+    return Math.max(20, Math.min(700, conn.rttMs));
+  }
+  return 120;
+}
+
+function actionCooldownSlack(conn) {
+  return Math.min(0.38, peerRttMs(conn) / 2000 + 0.04);
+}
+
+function actionHitRewind(conn) {
+  return Math.min(260, Math.max(80, peerRttMs(conn) / 2 + 80));
+}
+
+function actionPose(ent, data, validate = false) {
+  if(!Number.isFinite(data.x) || !Number.isFinite(data.z) || !Number.isFinite(data.a)) return null;
+  if(data.x < B + 4 || data.z < B + 4 || data.x > W - B - 4 || data.z > H - B - 4) return null;
+  if(validate) {
+    const refX = Number.isFinite(ent.targetX) ? ent.targetX : ent.x;
+    const refZ = Number.isFinite(ent.targetZ) ? ent.targetZ : ent.z;
+    const allowance = Math.max(36, Math.min(72, HEROES[ent.ci].sp * 0.28 + 22));
+    if(Math.hypot(data.x - refX, data.z - refZ) > allowance) return null;
+  }
+  return { x: data.x, z: data.z, a: Math.atan2(Math.sin(data.a), Math.cos(data.a)) };
+}
+
+function executeIntentAtPose(ent, data, pose) {
+  const oldX = ent.x, oldZ = ent.z;
+  const oldKx = ent.kx, oldKz = ent.kz, oldChargeT = ent.chargeT;
+  ent.x = pose.x;
+  ent.z = pose.z;
+  ent.a = pose.a;
+  ent.targetA = pose.a;
+
+  if(data.act === "ATTACK") executeAttack(ent);
+  else if(data.act === "AB1") executeAbility1(ent);
+  else if(data.act === "AB2") executeAbility2(ent);
+
+  const abilityMoved = ent.x !== pose.x || ent.z !== pose.z ||
+    ent.kx !== oldKx || ent.kz !== oldKz || ent.chargeT > oldChargeT;
+  if(abilityMoved) {
+    ent.targetX = ent.x;
+    ent.targetZ = ent.z;
+  } else {
+    ent.x = oldX;
+    ent.z = oldZ;
+  }
+}
+
 const HOST_DISCONNECT_MESSAGE = "Sorry, the host disconnected or was removed from the match. Please try again.";
 
 function leaveLobby(msg) {
@@ -3328,10 +3203,20 @@ function handleIncomingData(conn, data) {
   if(!data || !data.type) return;
 
   if(data.type === "PING") {
-    conn.send({ type: "PONG" });
+    conn.send({ type: "PONG", sentAt: data.sentAt });
     return;
   }
-  if(data.type === "PONG") return;
+  if(data.type === "PONG") {
+    if(Number.isFinite(data.sentAt) && conn.pendingPings && conn.pendingPings.has(data.sentAt)) {
+      const sample = Date.now() - data.sentAt;
+      if(sample >= 0 && sample <= 2000) {
+        conn.rttMs = Number.isFinite(conn.rttMs) ? conn.rttMs * 0.7 + sample * 0.3 : sample;
+        conn.rttAt = Date.now();
+      }
+      conn.pendingPings.delete(data.sentAt);
+    }
+    return;
+  }
   if(data.type === "REJECT") {
     // During Quick Match, a full/underway lobby just means "try the next room";
     // the host closes the connection right after, which triggers the next attempt.
@@ -3411,7 +3296,8 @@ function handleIncomingData(conn, data) {
     launchMeshMatch(data.spawns && typeof data.spawns === "object" ? data.spawns : {});
   }
   else if(data.type === "CLIENT_INPUT") {
-    if(!isLobbyLeader) return;
+    if(!isLobbyLeader || data.id !== conn.peer ||
+       !Number.isFinite(data.x) || !Number.isFinite(data.z) || !Number.isFinite(data.a)) return;
     const ent = getRemoteActorByNetId(data.id);
     if(ent && !ent.dead) {
       ent.targetX = data.x;
@@ -3502,16 +3388,30 @@ function handleIncomingData(conn, data) {
   }
   else if(data.type === "ACTION_INTENT") {
     const ent = getRemoteActorByNetId(data.id);
-    let accepted = true;
-    if(ent && !ent.dead) {
-      // Validate cooldowns on the host; don't trust the supplied coordinates.
-      // (Cinder's flame ticks every 0.1s, so give network jitter a little slack.)
-      if(data.act === "ATTACK" && ent.c1 <= (ent.ci === 6 ? 0.06 : 0)) executeAttack(ent);
-      else if(data.act === "AB1" && ent.c2 <= 0) executeAbility1(ent);
-      else if(data.act === "AB2" && ent.c3 <= 0) executeAbility2(ent);
-      else if(data.act === "EMOTE") accepted = executeEmote(ent, Math.round(data.a));
-    } else if(data.act === "EMOTE") {
+    let accepted = !isLobbyLeader;
+    if(isLobbyLeader) {
       accepted = false;
+      if(data.id !== conn.peer || !ent || ent.dead) return;
+      if(data.act === "EMOTE") {
+        accepted = executeEmote(ent, Math.round(data.a));
+      } else {
+        const pose = actionPose(ent, data, true);
+        if(!pose) return;
+        const slack = actionCooldownSlack(conn);
+        if(data.act === "ATTACK" && ent.c1 <= slack) accepted = true;
+        else if(data.act === "AB1" && ent.c2 <= slack) accepted = true;
+        else if(data.act === "AB2" && ent.c3 <= slack) accepted = true;
+        if(accepted) {
+          ent.hitRewindMs = actionHitRewind(conn);
+          executeIntentAtPose(ent, data, pose);
+        }
+      }
+    } else if(ent && !ent.dead) {
+      if(data.act === "EMOTE") accepted = executeEmote(ent, Math.round(data.a));
+      else {
+        const pose = actionPose(ent, data);
+        if(pose && ["ATTACK", "AB1", "AB2"].includes(data.act)) executeIntentAtPose(ent, data, pose);
+      }
     }
     if(isLobbyLeader && accepted) {
       peerConnections.forEach((pConn, pid) => {
@@ -3584,12 +3484,23 @@ setInterval(() => {
 // Heartbeat
 setInterval(() => {
   if(isMultiplayer) {
-    const pingPacket = { type: "PING" };
+    const pingPacket = { type: "PING", sentAt: Date.now() };
     if(isLobbyLeader) {
-      broadcastToPeers(pingPacket);
+      peerConnections.forEach(conn => {
+        if(!conn || !conn.open) return;
+        if(!conn.pendingPings) conn.pendingPings = new Map();
+        conn.pendingPings.set(pingPacket.sentAt, pingPacket.sentAt);
+        while(conn.pendingPings.size > 5) conn.pendingPings.delete(conn.pendingPings.keys().next().value);
+        conn.send(pingPacket);
+      });
     } else if(leaderId && peerConnections.has(leaderId)) {
       const conn = peerConnections.get(leaderId);
-      if(conn && conn.open) conn.send(pingPacket);
+      if(conn && conn.open) {
+        if(!conn.pendingPings) conn.pendingPings = new Map();
+        conn.pendingPings.set(pingPacket.sentAt, pingPacket.sentAt);
+        while(conn.pendingPings.size > 5) conn.pendingPings.delete(conn.pendingPings.keys().next().value);
+        conn.send(pingPacket);
+      }
     }
   }
 }, 1000);
@@ -4236,12 +4147,10 @@ function menu(msg) {
       <div class="subtitle">${msg}</div>
     </div>
 
-    <!-- ADDED: Champion announcement -->
     <aside class="champion-update" aria-label="Champion update">
       <div class="champion-update-title">CHAMPION UPDATE</div>
-      <p>We're sorry to say Cinder is leaving the arena on October 29, 2026, but a NEW MAJOR UPDATE is on the way with a new Champion who fits BRAWLBOUND's gameplay better. <span class="champion-update-teaser">Keep an eye out for it!</span></p>
+      <p>A huge new update is coming soon with a new champion. <span class="champion-update-teaser">Watch out for an honorable gentleman!</span></p>
     </aside>
-    <!-- END of added announcement -->
 
     <div class="lobby-panel">
       ${!isMultiplayer ? `
@@ -4386,7 +4295,6 @@ function clearSceneEntities() {
   remoteCrateVisual = null; remoteCrateId = null;
   E = []; P = []; F = []; Zones = []; Pickups = []; DamageNumbers = [];
   for(const s of SparkPool) { s.life = 0; s.m.visible = false; }
-  for(const f of FlamePool) { f.life = 0; f.m.visible = false; }
 }
 
 const SPAWNS = [
@@ -4863,16 +4771,17 @@ function upd(dt) {
     z.life -= dt;
 
     for(const e of E) {
-      if(!e.dead && e !== z.owner && !(teamMode && z.owner && e.team === z.owner.team) && Math.hypot(e.x - z.x, e.z - z.z) < z.r + e.r) {
+      const targetPos = getCombatPosition(e, z.owner);
+      if(!e.dead && e !== z.owner && !(teamMode && z.owner && e.team === z.owner.team) && Math.hypot(targetPos.x - z.x, targetPos.z - z.z) < z.r + e.r) {
         if(z.kind === "marinara") {
           e.slow = 0.5;
-          hurt(e, 13 * dt, Math.atan2(e.z - z.z, e.x - z.x), 0, z.owner);
+          hurt(e, 13 * dt, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 0, z.owner);
         } else if(z.kind === "flame") {
           e.slow = 0.4;
-          hurt(e, 19 * dt, Math.atan2(e.z - z.z, e.x - z.x), 25, z.owner);
+          hurt(e, 19 * dt, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 25, z.owner);
         } else if(z.kind === "peel") {
           e.stun = 1.5;
-          hurt(e, 9, Math.atan2(e.z - z.z, e.x - z.x), 150, z.owner);
+          hurt(e, 9, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 150, z.owner);
           spawn3DRing(z.x, z.z, 34, 0xffe853);
           z.life = 0;
         } else if(z.kind === "spore_pod") {
@@ -4921,7 +4830,6 @@ function upd(dt) {
   for(const e of E) {
     if(e.dead) {
       if(e.mesh) e.mesh.visible = false;
-      if(e.flameDecal) e.flameDecal.visible = false;
       if(e.chain) endChain(e);
       e.pending = [];
       continue;
@@ -4955,7 +4863,7 @@ function upd(dt) {
 
     e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt;
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
-    e.guard -= dt; e.breathT -= dt; e.emoteCooldown = Math.max(0, e.emoteCooldown - dt);
+    e.emoteCooldown = Math.max(0, e.emoteCooldown - dt);
     if(e.emoteT > 0) {
       e.emoteT -= dt;
       if(e.emoteSprite) {
@@ -5079,9 +4987,6 @@ function upd(dt) {
     // Movement speed (drives the weapon bob when this player is being spectated)
     e.moveSpd += (Math.hypot(e.x - prevX, e.z - prevZ) / Math.max(dt, 0.0001) - e.moveSpd) * 0.25;
 
-    // Cinder: flame breath damage + particles + floor cone + Dragonhide glow
-    if(e.ci === 6) updateDragon(e, dt);
-
     if(e.mesh) {
       const bobY = (e === pl) ? 0 : Math.sin(matchTime * 2.1 + (e.bobPhase || 0)) * 1.2;
       e.mesh.position.set(e.x, bobY, e.z);
@@ -5105,6 +5010,7 @@ function upd(dt) {
   // Projectiles — all termination paths funnel through one finalize step so
   // onDeath fires exactly once (lifetime, wall, or player hit) and no further
   // collisions are processed after a projectile is marked dead.
+  if(isMultiplayer && isLobbyLeader) recordCombatHistory();
   for(let i = P.length - 1; i >= 0; i--) {
     const p = P[i];
     let finalize = false;
@@ -5152,9 +5058,10 @@ function upd(dt) {
 
     if(!finalize) {
       for(const t of E) {
+        const targetPos = getCombatPosition(t, p.o);
         if(t !== p.o && !t.dead && !p.hit.has(t)
            && areEnemies(p.o, t)
-           && Math.hypot(t.x - p.x, t.z - p.z) < t.r + 9) {
+           && Math.hypot(targetPos.x - p.x, targetPos.z - p.z) < t.r + 9) {
           p.hit.add(t);
           hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o);
           if(p.t !== "b") {
@@ -5290,7 +5197,6 @@ function loop(now) {
   stormMat.opacity = 0.3 + Math.sin(now / 450) * 0.07;
   stormMesh.rotation.y += dt * 0.03;
   updateSparks(dt);
-  updateFlames(dt);
   if(state !== "play") Snd.storm(0); // storm wind only plays during an active match
 
   if(localHitStopFrames > 0) localHitStopFrames--;
