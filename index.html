@@ -200,6 +200,13 @@ html, body {
   letter-spacing: 2px; align-self: stretch;
 }
 .lobby-input:focus { outline: none; border-color: var(--accent); }
+.account-toolbar {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px;
+  max-width: 1020px; width: 100%; padding: 7px 10px;
+  border: 1px solid rgba(255,209,102,0.24); border-radius: 12px;
+  background: rgba(12,11,18,0.76); color: #f6e8bf; font-size: 12px; font-weight: 800;
+}
+.account-toolbar .wallet { color: #ffd166; font-family: 'Space Grotesk', sans-serif; }
 
 /* --- Two-column layout: roster + selected champion --- */
 .menu-cols {
@@ -470,6 +477,75 @@ html, body {
   background: rgba(255, 255, 255, 0.05); border-radius: 6px; padding: 5px 10px;
 }
 .stats-row.me { border: 1px solid var(--good); box-shadow: 0 0 12px rgba(69,217,136,0.25); }
+#hud-currency { margin-top: 3px; color: #ffd166; font-size: 11px; font-weight: 800; }
+
+#economy-modal {
+  position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center;
+  padding: 18px; background: rgba(4,3,8,0.84); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+#economy-modal.show { display: flex; }
+.economy-card {
+  width: min(760px, 100%); max-height: min(88vh, 820px); overflow: auto;
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 20px;
+  background: linear-gradient(155deg, rgba(25,23,34,0.98), rgba(10,9,15,0.98));
+  box-shadow: 0 24px 72px rgba(0,0,0,0.8); text-align: left;
+}
+.economy-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.economy-title { flex: 1; color: #fff; font: 900 24px 'Space Grotesk', sans-serif; }
+.economy-wallet { color: #ffd166; font-size: 13px; font-weight: 900; white-space: nowrap; }
+.economy-close {
+  width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border);
+  background: rgba(255,255,255,0.07); color: #fff; font: 900 18px 'Outfit', sans-serif; cursor: pointer;
+}
+.economy-tabs { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+.economy-tab, .economy-action {
+  border: 1px solid rgba(255,255,255,0.16); border-radius: 9px; padding: 8px 12px;
+  background: rgba(255,255,255,0.06); color: #d9d6e0; font: 800 12px 'Outfit', sans-serif; cursor: pointer;
+}
+.economy-tab.selected { color: #fff; border-color: rgba(255,209,102,0.75); background: rgba(157,111,20,0.28); }
+.economy-action.primary { color: #140f04; background: linear-gradient(135deg,#ffe08a,#e6a922); border-color: rgba(255,224,138,0.8); }
+.economy-action:disabled { opacity: 0.48; cursor: default; }
+.economy-note { margin: 8px 0 14px; color: var(--text-muted); font-size: 12px; line-height: 1.45; }
+.account-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.account-input {
+  flex: 1 1 220px; min-width: 0; border: 1px solid var(--border-highlight); border-radius: 9px;
+  padding: 10px 12px; background: rgba(0,0,0,0.4); color: #fff; font: 700 14px 'Outfit',sans-serif;
+}
+.account-error { min-height: 18px; margin-top: 5px; color: #ff9d91; font-size: 12px; font-weight: 700; }
+.profile-list { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.profile-choice {
+  display: flex; justify-content: space-between; gap: 10px; width: 100%; padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 9px; background: rgba(255,255,255,0.04);
+  color: #e8e5ef; text-align: left; font: 700 12px 'Outfit',sans-serif; cursor: pointer;
+}
+.profile-choice.active { border-color: rgba(69,217,136,0.58); color: #aaf0ca; }
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(185px,1fr)); gap: 10px; }
+.shop-item {
+  display: flex; flex-direction: column; gap: 9px; padding: 11px;
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: rgba(255,255,255,0.04);
+}
+.shop-item.equipped { border-color: rgba(69,217,136,0.62); box-shadow: inset 0 0 18px rgba(69,217,136,0.08); }
+.shop-item-name { color: #fff; font-size: 13px; font-weight: 900; }
+.shop-item-price { color: #ffd166; font-size: 11px; font-weight: 800; }
+.cosmetic-preview {
+  display: flex; align-items: center; justify-content: center; min-height: 43px; padding: 5px 8px;
+  border: 1px solid rgba(255,255,255,0.16); border-radius: 8px;
+  background: rgba(4,5,9,0.74); color: #fff; font: 900 12px 'Outfit',sans-serif;
+  text-shadow: 0 1px 3px #000; text-align: center;
+}
+#economy-toast {
+  position: fixed; top: 18px; left: 50%; z-index: 75; transform: translate(-50%,-8px);
+  max-width: min(92vw,520px); padding: 10px 16px; border: 1px solid rgba(255,209,102,0.5);
+  border-radius: 10px; background: rgba(22,18,10,0.96); color: #ffe7a6;
+  font-size: 13px; font-weight: 900; text-align: center; opacity: 0; pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+#economy-toast.show { opacity: 1; transform: translate(-50%,0); }
+@media (max-width: 600px) {
+  .economy-card { padding: 15px; }
+  .economy-title { font-size: 20px; }
+  .economy-head { flex-wrap: wrap; }
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -486,6 +562,7 @@ html, body {
       <div id="hud-player-name">Hero Name</div>
       <div id="hud-hp-bar"><div id="hud-hp-fill"></div></div>
       <div id="hud-player-hp">HP: 100 / 100</div>
+      <div id="hud-currency">✨ 0 Shinies</div>
     </div>
     <div id="compass">
       <span id="room-badge">ARENA ZONE</span>
@@ -522,6 +599,17 @@ html, body {
   </div>
 
   <div id="ov"></div>
+  <div id="economy-modal" onclick="if(event.target===this) closeEconomyModal()">
+    <div class="economy-card">
+      <div class="economy-head">
+        <div class="economy-title" id="economy-title">Account</div>
+        <div class="economy-wallet" id="economy-wallet">✨ 0 Shinies</div>
+        <button class="economy-close" id="economy-close" aria-label="Close" onclick="closeEconomyModal()">×</button>
+      </div>
+      <div id="economy-body"></div>
+    </div>
+  </div>
+  <div id="economy-toast" role="status" aria-live="polite"></div>
 </div>
 
 <script>
@@ -593,6 +681,387 @@ const Store = {
     try { window.localStorage.setItem(k, v); } catch(e) {}
   }
 };
+
+const ACCOUNT_STORAGE_KEY = "bb_accounts_v1";
+const SHINY_REWARDS = { daily: 25, kill: 10, win: 50 };
+const SHOP_CATEGORIES = [
+  { key: "nameColors", label: "Nametag Colors", items: [
+    { id: "default", name: "Classic White", price: 0, color: "#f5f4f8" },
+    { id: "azure", name: "Azure", price: 70, color: "#63d5ff" },
+    { id: "coral", name: "Coral", price: 70, color: "#ff8b76" },
+    { id: "emerald", name: "Emerald", price: 85, color: "#72f0ae" },
+    { id: "gold", name: "Gold", price: 100, color: "#ffd166" },
+    { id: "violet", name: "Violet", price: 85, color: "#c7a0ff" }
+  ]},
+  { key: "borderColors", label: "Nametag Border Colors", items: [
+    { id: "default", name: "No Border", price: 0, color: null },
+    { id: "azure", name: "Azure Edge", price: 80, color: "#63d5ff" },
+    { id: "coral", name: "Coral Edge", price: 80, color: "#ff8b76" },
+    { id: "emerald", name: "Emerald Edge", price: 80, color: "#72f0ae" },
+    { id: "gold", name: "Gold Edge", price: 100, color: "#ffd166" },
+    { id: "violet", name: "Violet Edge", price: 90, color: "#c7a0ff" }
+  ]},
+  { key: "backgrounds", label: "Nametag Backgrounds", items: [
+    { id: "default", name: "Clear Glass", price: 0, from: null, to: null, pattern: "none" },
+    { id: "carbon", name: "Carbon Grid", price: 100, from: "rgba(10,13,22,0.92)", to: "rgba(35,39,54,0.86)", pattern: "grid" },
+    { id: "sunset", name: "Sunset Fade", price: 130, from: "rgba(117,40,35,0.88)", to: "rgba(224,118,54,0.84)", pattern: "none" },
+    { id: "ocean", name: "Deep Ocean", price: 130, from: "rgba(9,44,78,0.92)", to: "rgba(34,125,151,0.82)", pattern: "none" },
+    { id: "nebula", name: "Nebula", price: 160, from: "rgba(49,24,82,0.92)", to: "rgba(138,48,98,0.82)", pattern: "stars" }
+  ]}
+];
+const USERNAME_FILTER_TERMS = ["fuck", "shit", "bitch", "bastard", "asshole", "cunt", "dick", "whore", "slut", "faggot", "nigger", "nazi", "retard", "kike", "spic"];
+const DEFAULT_COSMETIC_SELECTION = { nameColors: "default", borderColors: "default", backgrounds: "default" };
+
+function escapeHtml(value) {
+  return String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+function validateUsername(raw) {
+  const value = String(raw || "").normalize("NFKC").trim().replace(/\s+/g, " ");
+  const length = [...value].length;
+  if(length < 3 || length > 16) return { ok: false, error: "Username must be 3 to 16 characters." };
+  if(!/^[\p{L}\p{N}_ -]+$/u.test(value)) return { ok: false, error: "Use letters, numbers, spaces, underscores, or hyphens only." };
+  const compact = value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[013457@$]/g, ch => ({ "0":"o", "1":"i", "3":"e", "4":"a", "5":"s", "7":"t", "@":"a", "$":"s" }[ch]))
+    .replace(/[^a-z]/g, "");
+  if(USERNAME_FILTER_TERMS.some(term => compact.includes(term))) return { ok: false, error: "That username is blocked by the name filter." };
+  if(["admin", "moderator", "system", "brawlbound", "guest"].includes(compact)) return { ok: false, error: "That username is reserved." };
+  return { ok: true, value };
+}
+
+function shopCategory(key) { return SHOP_CATEGORIES.find(category => category.key === key) || SHOP_CATEGORIES[0]; }
+function shopItem(categoryKey, itemId) { return shopCategory(categoryKey).items.find(item => item.id === itemId) || shopCategory(categoryKey).items[0]; }
+function sanitizeCosmeticSelection(value) {
+  const result = {};
+  for(const category of SHOP_CATEGORIES) {
+    const candidate = value && typeof value[category.key] === "string" ? value[category.key] : "default";
+    result[category.key] = category.items.some(item => item.id === candidate) ? candidate : "default";
+  }
+  return result;
+}
+
+function normalizeStoredProfile(profile) {
+  const id = String(profile && profile.id || "").slice(0, 80) || ("acct_" + Math.random().toString(36).slice(2, 10));
+  const checked = validateUsername(profile && profile.username);
+  const username = checked.ok ? checked.value : ("Player-" + id.slice(-4));
+  const owned = {};
+  for(const category of SHOP_CATEGORIES) {
+    const list = profile && profile.owned && Array.isArray(profile.owned[category.key]) ? profile.owned[category.key] : [];
+    owned[category.key] = [...new Set(["default", ...list.filter(id => category.items.some(item => item.id === id))])];
+  }
+  const equipped = sanitizeCosmeticSelection(profile && profile.equipped);
+  for(const category of SHOP_CATEGORIES) if(!owned[category.key].includes(equipped[category.key])) equipped[category.key] = "default";
+  const balance = Math.max(0, Math.floor(Number(profile && profile.shinies) || 0));
+  return {
+    id, username, shinies: balance, owned, equipped,
+    lastDailyDate: /^\d{4}-\d{2}-\d{2}$/.test(profile && profile.lastDailyDate || "") ? profile.lastDailyDate : ""
+  };
+}
+
+function loadAccountBook() {
+  try {
+    const parsed = JSON.parse(Store.get(ACCOUNT_STORAGE_KEY, "") || "{}");
+    const profiles = Array.isArray(parsed.profiles) ? parsed.profiles.map(normalizeStoredProfile) : [];
+    const unique = [];
+    const seen = new Set();
+    for(const profile of profiles) {
+      const key = profile.username.toLocaleLowerCase();
+      if(!seen.has(key)) { unique.push(profile); seen.add(key); }
+    }
+    return { activeId: unique.some(profile => profile.id === parsed.activeId) ? parsed.activeId : null, profiles: unique };
+  } catch(e) { return { activeId: null, profiles: [] }; }
+}
+
+let accountBook = loadAccountBook();
+let economyModalView = "account";
+let economyModalRequired = false;
+let shopCategoryKey = "nameColors";
+let economyToastTimer = null;
+function saveAccountBook() { Store.set(ACCOUNT_STORAGE_KEY, JSON.stringify(accountBook)); }
+function activeProfile() { return accountBook.profiles.find(profile => profile.id === accountBook.activeId) || null; }
+function activeUsername() { return activeProfile()?.username || "Player"; }
+function localDayKey() {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+}
+
+function getNameplateCosmeticIds(profile = activeProfile()) {
+  return sanitizeCosmeticSelection(profile && profile.equipped);
+}
+
+function getNameplateStyle(selection = getNameplateCosmeticIds()) {
+  const ids = sanitizeCosmeticSelection(selection);
+  return {
+    textColor: shopItem("nameColors", ids.nameColors).color,
+    borderColor: shopItem("borderColors", ids.borderColors).color,
+    background: shopItem("backgrounds", ids.backgrounds)
+  };
+}
+
+function safeNetworkUsername(value, id = "") {
+  const checked = validateUsername(value);
+  return checked.ok ? checked.value : ("Player-" + String(id || "0000").slice(-4));
+}
+
+function showEconomyToast(message) {
+  const toast = document.getElementById("economy-toast");
+  if(!toast) return;
+  toast.textContent = message;
+  toast.classList.add("show");
+  if(economyToastTimer) clearTimeout(economyToastTimer);
+  economyToastTimer = setTimeout(() => toast.classList.remove("show"), 2300);
+}
+
+function updateEconomyDisplays() {
+  const profile = activeProfile();
+  const summary = document.getElementById("account-summary");
+  if(summary) summary.textContent = profile ? `👤 ${profile.username} · ✨ ${profile.shinies} Shinies` : "Create a local account to save Shinies and cosmetics";
+  const currency = document.getElementById("hud-currency");
+  if(currency) currency.textContent = `✨ ${profile ? profile.shinies : 0} Shinies`;
+  const wallet = document.getElementById("economy-wallet");
+  if(wallet) wallet.textContent = `✨ ${profile ? profile.shinies : 0} Shinies`;
+}
+
+function awardShinies(amount, reason, showToast = true) {
+  const profile = activeProfile();
+  if(!profile) return 0;
+  const grant = Math.max(0, Math.floor(Number(amount) || 0));
+  if(!grant) return 0;
+  profile.shinies += grant;
+  saveAccountBook();
+  updateEconomyDisplays();
+  if(showToast) showEconomyToast(`${reason}: +${grant} Shinies`);
+  return grant;
+}
+
+function claimDailyShinies() {
+  const profile = activeProfile();
+  if(!profile) return false;
+  const today = localDayKey();
+  if(profile.lastDailyDate === today) return false;
+  profile.lastDailyDate = today;
+  saveAccountBook();
+  awardShinies(SHINY_REWARDS.daily, "Daily login");
+  return true;
+}
+
+function accountToolbarHTML() {
+  const profile = activeProfile();
+  const summary = profile ? `👤 ${escapeHtml(profile.username)} · <span class="wallet">✨ ${profile.shinies} Shinies</span>` : "Create an account to save your Shinies";
+  return `<div class="account-toolbar"><span id="account-summary">${summary}</span><button class="lobby-btn" onclick="openAccountModal()">Account</button><button class="lobby-btn action-accent" onclick="openShop()">✨ Shinies Shop</button></div>`;
+}
+
+function renderAccountModal() {
+  const profile = activeProfile();
+  const title = document.getElementById("economy-title");
+  const close = document.getElementById("economy-close");
+  const body = document.getElementById("economy-body");
+  title.textContent = profile ? "Account" : "Create Your Account";
+  close.style.display = economyModalRequired && !profile ? "none" : "";
+  if(!profile) {
+    body.innerHTML = `
+      <p class="economy-note">Choose a username for matches and leaderboards. Your local profile saves your Shinies and purchases in this browser.</p>
+      <form class="account-form" onsubmit="event.preventDefault(); createOrSwitchAccount();">
+        <input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="3–16 character username" aria-label="Username">
+        <button class="economy-action primary" type="submit">Create / Switch</button>
+      </form>
+      <div class="account-error" id="account-error"></div>
+      ${renderSavedProfiles()}
+    `;
+  } else {
+    body.innerHTML = `
+      <p class="economy-note">Signed in locally as <b>${escapeHtml(profile.username)}</b>. Shinies and cosmetics are saved on this browser.</p>
+      <form class="account-form" onsubmit="event.preventDefault(); createOrSwitchAccount();">
+        <input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="Enter a new or saved username" aria-label="Username">
+        <button class="economy-action primary" type="submit">Create / Switch</button>
+        <button class="economy-action" type="button" onclick="renameCurrentAccount()">Rename Current</button>
+      </form>
+      <div class="account-error" id="account-error"></div>
+      <div class="economy-note">Saved profiles on this browser</div>
+      ${renderSavedProfiles()}
+    `;
+  }
+  body.querySelectorAll("[data-account-id]").forEach(button => {
+    button.onclick = () => switchAccount(button.dataset.accountId);
+  });
+}
+
+function renderSavedProfiles() {
+  if(!accountBook.profiles.length) return "";
+  return `<div class="profile-list">${accountBook.profiles.map(profile => {
+    const active = profile.id === accountBook.activeId;
+    return `<button class="profile-choice ${active ? "active" : ""}" data-account-id="${escapeHtml(profile.id)}"><span>${escapeHtml(profile.username)}${active ? " · ACTIVE" : ""}</span><span>✨ ${profile.shinies}</span></button>`;
+  }).join("")}</div>`;
+}
+
+function showAccountError(message) {
+  const el = document.getElementById("account-error");
+  if(el) el.textContent = message || "";
+}
+
+function activateAccount(profile) {
+  accountBook.activeId = profile.id;
+  saveAccountBook();
+  economyModalRequired = false;
+  claimDailyShinies();
+  syncProfileIdentity();
+  closeEconomyModal(true);
+  updateEconomyDisplays();
+  if(document.getElementById("economy-modal").classList.contains("show") && economyModalView === "account") renderAccountModal();
+}
+
+function createOrSwitchAccount() {
+  const input = document.getElementById("account-username-input");
+  const result = validateUsername(input ? input.value : "");
+  if(!result.ok) { showAccountError(result.error); return; }
+  const existing = accountBook.profiles.find(profile => profile.username.toLocaleLowerCase() === result.value.toLocaleLowerCase());
+  if(existing) { activateAccount(existing); return; }
+  const owned = {};
+  for(const category of SHOP_CATEGORIES) owned[category.key] = ["default"];
+  const id = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : ("acct_" + Math.random().toString(36).slice(2, 12));
+  const profile = { id, username: result.value, shinies: 0, owned, equipped: { ...DEFAULT_COSMETIC_SELECTION }, lastDailyDate: "" };
+  accountBook.profiles.push(profile);
+  activateAccount(profile);
+}
+
+function renameCurrentAccount() {
+  const profile = activeProfile();
+  const input = document.getElementById("account-username-input");
+  if(!profile) return createOrSwitchAccount();
+  const result = validateUsername(input ? input.value : "");
+  if(!result.ok) { showAccountError(result.error); return; }
+  const duplicate = accountBook.profiles.find(other => other.id !== profile.id && other.username.toLocaleLowerCase() === result.value.toLocaleLowerCase());
+  if(duplicate) { showAccountError("That username is already saved on this browser."); return; }
+  profile.username = result.value;
+  saveAccountBook();
+  syncProfileIdentity();
+  showEconomyToast("Username updated");
+  renderAccountModal();
+  updateEconomyDisplays();
+}
+
+function switchAccount(id) {
+  const profile = accountBook.profiles.find(candidate => candidate.id === id);
+  if(profile) activateAccount(profile);
+}
+
+function cosmeticPreviewCss(categoryKey, item) {
+  if(categoryKey === "nameColors") return `color:${item.color};`;
+  if(categoryKey === "borderColors") return item.color ? `border:2px solid ${item.color};` : "border:1px solid rgba(255,255,255,0.16);";
+  if(item.from) return `background:linear-gradient(120deg,${item.from},${item.to});`;
+  return "";
+}
+
+function renderShopModal() {
+  const body = document.getElementById("economy-body");
+  const profile = activeProfile();
+  if(!profile) {
+    body.innerHTML = `<p class="economy-note">Create a username first to earn Shinies and keep your purchases.</p><button class="economy-action primary" onclick="openAccountModal(true)">Create Account</button>`;
+    return;
+  }
+  const category = shopCategory(shopCategoryKey);
+  const tabs = SHOP_CATEGORIES.map(item => `<button class="economy-tab ${item.key === category.key ? "selected" : ""}" data-shop-category="${item.key}">${item.label}</button>`).join("");
+  const items = category.items.map(item => {
+    const owned = profile.owned[category.key].includes(item.id);
+    const equipped = profile.equipped[category.key] === item.id;
+    const label = equipped ? "EQUIPPED" : owned ? "EQUIP" : `BUY · ${item.price} ✨`;
+    const disabled = equipped || (!owned && profile.shinies < item.price);
+    const previewStyle = cosmeticPreviewCss(category.key, item);
+    return `<div class="shop-item ${equipped ? "equipped" : ""}">
+      <div><div class="shop-item-name">${escapeHtml(item.name)}</div><div class="shop-item-price">${item.price ? `${item.price} Shinies` : "Free"}</div></div>
+      <div class="cosmetic-preview" style="${previewStyle}">${escapeHtml(profile.username)}</div>
+      <button class="economy-action ${owned ? "" : "primary"}" data-buy-category="${category.key}" data-buy-item="${item.id}" ${disabled ? "disabled" : ""}>${label}</button>
+    </div>`;
+  }).join("");
+  body.innerHTML = `
+    <div class="economy-tabs">${tabs}</div>
+    <div class="economy-note">Buy a nametag color, border color, or background. Purchases stay with your local account and equip immediately.</div>
+    <div class="shop-grid">${items}</div>
+    <div class="economy-note">Earn Shinies: daily login +${SHINY_REWARDS.daily} · elimination +${SHINY_REWARDS.kill} · match win +${SHINY_REWARDS.win}</div>
+  `;
+  body.querySelectorAll("[data-shop-category]").forEach(button => button.onclick = () => {
+    shopCategoryKey = button.dataset.shopCategory;
+    renderEconomyModal();
+  });
+  body.querySelectorAll("[data-buy-category]").forEach(button => button.onclick = () => buyOrEquipCosmetic(button.dataset.buyCategory, button.dataset.buyItem));
+}
+
+function renderEconomyModal() {
+  const modal = document.getElementById("economy-modal");
+  const title = document.getElementById("economy-title");
+  title.textContent = economyModalView === "shop" ? "Shinies Shop" : (activeProfile() ? "Account" : "Create Your Account");
+  updateEconomyDisplays();
+  if(economyModalView === "shop") renderShopModal(); else renderAccountModal();
+  modal.classList.add("show");
+}
+
+function openAccountModal(required = false) {
+  economyModalView = "account";
+  economyModalRequired = !!required && !activeProfile();
+  renderEconomyModal();
+}
+
+function openShop() {
+  if(!activeProfile()) { openAccountModal(true); return; }
+  economyModalView = "shop";
+  renderEconomyModal();
+}
+
+function requireLocalAccount() {
+  if(activeProfile()) return true;
+  openAccountModal(true);
+  return false;
+}
+
+function closeEconomyModal(force = false) {
+  if(economyModalRequired && !activeProfile() && !force) return;
+  economyModalRequired = false;
+  document.getElementById("economy-modal").classList.remove("show");
+}
+
+function buyOrEquipCosmetic(categoryKey, itemId) {
+  const profile = activeProfile();
+  const category = SHOP_CATEGORIES.find(entry => entry.key === categoryKey);
+  const item = category && category.items.find(entry => entry.id === itemId);
+  if(!profile || !category || !item) return;
+  const owned = profile.owned[category.key].includes(item.id);
+  if(!owned) {
+    if(profile.shinies < item.price) { showEconomyToast("You need more Shinies for that item"); return; }
+    profile.shinies -= item.price;
+    profile.owned[category.key].push(item.id);
+  }
+  profile.equipped[category.key] = item.id;
+  saveAccountBook();
+  syncProfileIdentity();
+  showEconomyToast(owned ? `${item.name} equipped` : `${item.name} purchased and equipped`);
+  renderEconomyModal();
+}
+
+function syncProfileIdentity() {
+  const profile = activeProfile();
+  if(!profile) return;
+  const tagCosmetics = getNameplateCosmeticIds(profile);
+  const self = roster.find(player => player.id === myNetId);
+  if(self) { self.username = profile.username; self.tagCosmetics = tagCosmetics; }
+  const localEntity = typeof E !== "undefined" && E.find(entity => entity.netId === myNetId);
+  if(localEntity) setEntityIdentity(localEntity, profile.username, tagCosmetics);
+  if(isMultiplayer) {
+    outgoingSeq++;
+    const packet = { type: "HELLO", id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, seq: outgoingSeq };
+    if(isLobbyLeader) broadcastToPeers(packet);
+    else if(leaderId && peerConnections.has(leaderId)) {
+      const conn = peerConnections.get(leaderId);
+      if(conn && conn.open) conn.send(packet);
+    }
+  }
+  updateEconomyDisplays();
+}
+
+window.openShop = openShop;
+window.openAccountModal = openAccountModal;
+window.closeEconomyModal = closeEconomyModal;
+window.createOrSwitchAccount = createOrSwitchAccount;
+window.renameCurrentAccount = renameCurrentAccount;
 
 // --- GRAPHICS PRESETS ---
 // scale = render resolution (1 = full). Lower presets also drop shadows, extra light, dust, sparks, glows and flame particles.
@@ -895,7 +1364,7 @@ const HEROES = [
    n:"Mango the Monkey", e:"🐵", w:"🍌", wn:"Twin Crescent Boomerang",
    role: "Skirmisher", roleCol: "#d6a71e",
    hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
-   a1n:"Cluster Bomb", a1cd: 9.5, a1d:"Lobs a fruit bomb that shatters into bananas.",
+   a1n:"Cluster Bomb", a1cd: 9.0, a1d:"Lobs a fruit bomb that shatters into bananas.",
    a2n:"Peel Trap", a2cd: 10.5,
    ad:"Boomerang that curves out and returns to you.", a2d:"Drops a banana peel in front to slip foes.",
    melee: false, d:"Agile skirmisher with returning banana curves and traps."
@@ -912,8 +1381,8 @@ const HEROES = [
  {
    n:"Quackbot", e:"🤖", w:"🦆", wn:"Cybernetic Plasma Blaster",
    role: "Assassin", roleCol: "#2b9bc4",
-   hp: 110, sp: 185, col: 0x309bb0, cd: 0.23,
-   a1n:"Blink", a1cd: 5.0, a1d:"Instant short-range teleport.",
+   hp: 110, sp: 185, col: 0x309bb0, cd: 0.25,
+   a1n:"Blink", a1cd: 6.0, a1d:"Instant short-range teleport.",
    a2n:"Barrage", a2cd: 8.5,
    ad:"Rapid-fire plasma darts.", a2d:"Unleashes a rapid stream of quacking darts.",
    melee: false, d:"Fast glass cannon with sustained blaster fire."
@@ -933,9 +1402,9 @@ const HEROES = [
    hp: 200, sp: 125, col: 0x8d97a8, cd: 0.5,
    a1n:"Shield Guard", a1cd: 10.0, a1cdSquire: 7.0, a1d:"Armor only: guard for 2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Riposte (max 40); movement is 20% slower. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with no invulnerability.",
    a2n:"Riposte Lunge", a2cd: 8.0,
-   ad:"Longsword: 3-hit combo for 14 / 14 / 24 damage. The third hit lunges 40 units; the combo resets after 0.9s.", a2d:"Armor only: lunge up to 90 units for 20 + stored Riposte (max 60). Charge is spent on use, even on a miss. No stun.",
+   ad:"Longsword: 3-hit combo for 14 / 14 / 24 damage. The third hit lunges 40 units; the combo resets after 0.9s.", a2d:"Armor only: lunge up to 90 units for 20 + stored Riposte (max 60). Stun scales from none at 0 charge to 0.8s at 40. Charge is spent on use, even on a miss.",
    melee: true, atkRange: 70, ab1Range: 130, ab2Range: 100,
-   passive:"Hollow Armor: his armor breaks once. At 0 HP, Dentley becomes a 55 HP Squire and nearby foes take 25 damage with knockback. Squire gets 50% damage reduction for 0.7s, moves faster, and uses an 8-damage dagger. Stand still within 30 units of the dropped armor for 1.4s to re-arm with 70 HP; the husk expires after 8s or can be destroyed.",
+   passive:"Hollow Armor: his armor breaks once. At 0 HP, Dentley becomes a 55 HP Squire and nearby foes take 25 damage with knockback. Squire gets 60% damage reduction for 0.8s, moves faster, and uses an 8-damage dagger. Stand still within 40 units of the dropped armor for 1.4s to re-arm with 70 HP; the husk expires after 8s or can be destroyed.",
    d:"Armored duelist with a stored Riposte and one Squire recovery.",
  }
 ];
@@ -1288,17 +1757,43 @@ function makeTextSprite(message, color = "#ffffff", size = 32) {
   return sprite;
 }
 
-function makeNameplate(message, color = "#ffffff") {
+function makeNameplate(message, style = {}) {
+  const tagStyle = style && typeof style === "object" ? style : { textColor: style };
   const can = document.createElement("canvas");
   can.width = 256; can.height = 48;
   const ctx = can.getContext("2d");
+  const drawRoundRect = (x, y, w, h, r) => {
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+  };
+  if(tagStyle.background && tagStyle.background.from) {
+    const gradient = ctx.createLinearGradient(0, 0, 256, 48);
+    gradient.addColorStop(0, tagStyle.background.from);
+    gradient.addColorStop(1, tagStyle.background.to || tagStyle.background.from);
+    drawRoundRect(4, 3, 248, 42, 10); ctx.fillStyle = gradient; ctx.fill();
+    if(tagStyle.background.pattern === "grid") {
+      ctx.save(); ctx.clip(); ctx.strokeStyle = "rgba(160,200,255,0.12)"; ctx.lineWidth = 1;
+      for(let x = 12; x < 256; x += 16) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 48); ctx.stroke(); }
+      for(let y = 8; y < 48; y += 12) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(256, y); ctx.stroke(); }
+      ctx.restore();
+    } else if(tagStyle.background.pattern === "stars") {
+      ctx.save(); ctx.clip(); ctx.fillStyle = "rgba(255,255,255,0.28)";
+      for(const [x,y] of [[20,12],[47,34],[211,15],[238,33],[186,37],[78,10]]) { ctx.beginPath(); ctx.arc(x,y,1.4,0,Math.PI*2); ctx.fill(); }
+      ctx.restore();
+    }
+  }
+  if(tagStyle.borderColor) {
+    drawRoundRect(4, 3, 248, 42, 10); ctx.strokeStyle = tagStyle.borderColor; ctx.lineWidth = 3; ctx.stroke();
+  }
   ctx.font = "700 22px 'Outfit', system-ui";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.strokeStyle = "rgba(0,0,0,0.85)";
   ctx.lineWidth = 5;
   ctx.strokeText(message, 128, 24);
-  ctx.fillStyle = color;
+  ctx.fillStyle = tagStyle.textColor || "#ffffff";
   ctx.fillText(message, 128, 24);
   const tex = new THREE.CanvasTexture(can);
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
@@ -1318,21 +1813,23 @@ function addKillFeed(attacker, victim, meta = {}) {
   const feed = document.getElementById("killfeed");
   if(!feed) return;
   const v = HEROES[victim.ci];
+  const victimName = victim.username || `${v.e} ${v.n}`;
   const el = document.createElement("div");
   el.className = "kf-entry";
   if(attacker && attacker !== victim) {
     el.classList.add("elimination");
     const k = HEROES[attacker.ci];
-    el.textContent = `${v.e} ${v.n} was roasted by ${k.e} ${k.n}`;
+    const attackerName = attacker.username || `${k.e} ${k.n}`;
+    el.textContent = `${victimName} was eliminated by ${attackerName}`;
     if(meta.multi >= 2) {
       const callout = meta.multi === 2 ? "DOUBLE KILL" : meta.multi === 3 ? "TRIPLE KILL" : "MULTI-KILL";
       showAnnouncer(callout);
     } else if(meta.streak >= 3) {
-      showAnnouncer(`${k.n} IS UNSTOPPABLE`);
+      showAnnouncer(`${attacker.username || k.n} IS UNSTOPPABLE`);
     }
   } else {
     el.classList.add("storm");
-    el.textContent = `${v.e} ${v.n} was cooked by the storm`;
+    el.textContent = `${victimName} was cooked by the storm`;
   }
   feed.appendChild(el);
   setTimeout(() => el.remove(), 4500);
@@ -1816,8 +2313,9 @@ function addHeroDetails(grp, headGrp, heroIndex) {
   }
 }
 
-function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false) {
+function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, playerName = null, tagCosmetics = null) {
   const grp = new THREE.Group();
+  grp.userData.isLocalPlayer = isPlayer;
 
   const bodyMat = new THREE.MeshStandardMaterial({
     color: HEROES[heroIndex].col, roughness: 0.6, metalness: 0.15
@@ -1869,9 +2367,10 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false) {
     grp.teamRing = teamRing;
 
     if(!isPlayer) {
-      const tag = makeNameplate(`${HEROES[heroIndex].e} ${HEROES[heroIndex].n}`);
+      const tag = makeNameplate(playerName || `${HEROES[heroIndex].e} ${HEROES[heroIndex].n}`, getNameplateStyle(tagCosmetics || DEFAULT_COSMETIC_SELECTION));
       tag.position.y = 56;
       grp.add(tag);
+      grp.nameplate = tag;
     }
   }
 
@@ -1928,7 +2427,8 @@ function createDentleyShieldViewmodel() {
   });
   const shield = new THREE.Mesh(shieldGeo, new THREE.MeshStandardMaterial({
     color: 0x356ca8, metalness: 0.72, roughness: 0.3,
-    emissive: 0x102b48, emissiveIntensity: 0.38
+    emissive: 0x102b48, emissiveIntensity: 0.38,
+    transparent: true, opacity: 0.28, depthWrite: false
   }));
   shield.position.set(-2, 0, -2);
   root.add(shield);
@@ -1940,15 +2440,15 @@ function createDentleyShieldViewmodel() {
   trim.position.copy(shield.position);
   root.add(trim);
 
-  const steel = new THREE.MeshStandardMaterial({ color: 0xdce6f5, metalness: 0.88, roughness: 0.24 });
+  const steel = new THREE.MeshStandardMaterial({ color: 0xdce6f5, metalness: 0.88, roughness: 0.24, transparent: true, opacity: 0.62, depthWrite: false });
   const crest = new THREE.Mesh(new THREE.BoxGeometry(2.2, 27, 1.1), steel);
   crest.position.set(-2, 0, 1.6);
   const bar = new THREE.Mesh(new THREE.BoxGeometry(18, 2.2, 1.1), steel);
   bar.position.set(-2, 3, 1.6);
   root.add(crest, bar);
 
-  root.position.set(-4.1, 1.1, -1.4);
-  root.scale.setScalar(0.68);
+  root.position.set(-5.2, -0.9, -1.4);
+  root.scale.setScalar(0.30);
   return root;
 }
 
@@ -2222,9 +2722,11 @@ const BOT_PERSONALITIES = [
   { id:"opportunist", label:"Opportunist", aggro:0.74, risk:0.7, range:0.95, pickup:1.3, weakTarget:0.62, attack:0.82, ability:0.82 }
 ];
 
-function mk(ci, x, z, playerNum, netId = null, team = null) {
+function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tagCosmetics = null) {
   const c = HEROES[ci];
   const isLocalP1 = (playerNum === 1);
+  const displayUsername = username ? safeNetworkUsername(username, netId) : (isLocalP1 ? activeUsername() : (playerNum === 2 ? `${c.e} ${c.n}` : null));
+  const selectedTagCosmetics = tagCosmetics ? sanitizeCosmeticSelection(tagCosmetics) : (isLocalP1 ? getNameplateCosmeticIds() : { ...DEFAULT_COSMETIC_SELECTION });
   const personality = BOT_PERSONALITIES[Math.floor(Math.random() * BOT_PERSONALITIES.length)];
   const ai = (isLocalP1 || isMultiplayer || (netId && !netId.startsWith("bot_"))) ? null : {
     personality: personality.id,
@@ -2242,7 +2744,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null) {
     alertTimer: 0
   };
 
-  const mesh = createDetailedHeroModel(ci, isLocalP1);
+  const mesh = createDetailedHeroModel(ci, isLocalP1, false, displayUsername, selectedTagCosmetics);
   if(isLocalP1) mesh.visible = false;
 
   return {
@@ -2256,13 +2758,15 @@ function mk(ci, x, z, playerNum, netId = null, team = null) {
     kx: 0, kz: 0, fl: 0, swing: 0,
     pNum: playerNum,
     netId: netId,
+    username: displayUsername,
+    tagCosmetics: selectedTagCosmetics,
     team, kills: 0, killStreak: 0, killChain: 0, lastKillTime: -999,
     dmg: 0, deathTime: null, killedBy: null, pending: [],
     emote: -1, emoteT: 0, emoteCooldown: 0, emoteSprite: null,
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
     chargeVx: 0, chargeVz: 0, chargeT: 0,
-    lungeVx: 0, lungeVz: 0, lungeA: 0, lungeT: 0, lungeDamage: 0, lungeKb: 0, lungeFinisher: false, lungeHit: new Set(),
+    lungeVx: 0, lungeVz: 0, lungeA: 0, lungeT: 0, lungeDamage: 0, lungeKb: 0, lungeStun: 0, lungeFinisher: false, lungeHit: new Set(),
     activePod: null,
     sporePoison: 0,
     sporeAttacker: null,
@@ -2271,6 +2775,23 @@ function mk(ci, x, z, playerNum, netId = null, team = null) {
     form: 0, combo: 0, comboT: 0, guard: 0, riposte: 0, grace: 0, chan: 0, husk: null, armorBreakUsed: false, feintDir: -1,
     mesh
   };
+}
+
+function setEntityIdentity(entity, username, tagCosmetics) {
+  if(!entity) return;
+  const nextUsername = username ? safeNetworkUsername(username, entity.netId) : null;
+  const nextCosmetics = sanitizeCosmeticSelection(tagCosmetics);
+  if(entity.username === nextUsername && JSON.stringify(entity.tagCosmetics) === JSON.stringify(nextCosmetics)) return;
+  entity.username = nextUsername;
+  entity.tagCosmetics = nextCosmetics;
+  if(!entity.mesh || entity.mesh.userData.isLocalPlayer) return;
+  if(entity.mesh.nameplate) disposeHierarchy(entity.mesh.nameplate);
+  const hero = HEROES[entity.ci];
+  const label = entity.username || `${hero.e} ${hero.n}`;
+  const tag = makeNameplate(label, getNameplateStyle(entity.tagCosmetics));
+  tag.position.y = 56;
+  entity.mesh.add(tag);
+  entity.mesh.nameplate = tag;
 }
 
 // Keep recent host-side fighter positions so client-fired attacks can be checked
@@ -2391,7 +2912,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
 
   if(t.ci === 6) { // Dentley: squire grace, Shield Guard
-    if(t.grace > 0) rawDmg *= 0.5;
+    if(t.grace > 0) rawDmg *= 0.4;
     if(t.guard > 0 && damageType !== "unblockable" && (!attacker || attacker !== t) &&
        Math.abs(Math.atan2(Math.sin(a + Math.PI - t.a), Math.cos(a + Math.PI - t.a))) <= 1.31) {
       const soaked = rawDmg * (damageType === "projectile" ? 0.75 : 0.60);
@@ -2448,6 +2969,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
       attacker.killStreak++;
       attacker.lastKillTime = matchTime;
       killMeta = { streak: attacker.killStreak, multi: attacker.killChain };
+      if(attacker.netId === myNetId) awardShinies(SHINY_REWARDS.kill, "Elimination");
     }
     Snd.play("death");
     addKillFeed(attacker && attacker !== t ? attacker : null, t, killMeta);
@@ -2457,7 +2979,9 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
         type: "KILL_EVENT", id: myNetId, seq: outgoingSeq,
         attackerId: attacker && attacker !== t ? attacker.netId : null,
         attackerCi: attacker && attacker !== t ? attacker.ci : null,
+        attackerName: attacker && attacker !== t ? attacker.username : null,
         victimId: t.netId, victimCi: t.ci,
+        victimName: t.username,
         streak: killMeta.streak, multi: killMeta.multi
       });
     }
@@ -3080,7 +3604,9 @@ function syncHUD() {
   const ab1LabelKey = controlScheme === "wasd" ? "[E]" : "[R-SHIFT]";
   const ab2LabelKey = controlScheme === "wasd" ? "[Q]" : "[/]";
 
-  document.getElementById("hud-player-name").innerText = `${c.e} ${c.n} ${isSpectating ? '(SPECTATING)' : ''}`;
+  const playerName = targetEnt.username || (targetEnt === pl ? activeUsername() : `${c.e} ${c.n}`);
+  document.getElementById("hud-player-name").innerText = `${playerName} · ${c.n} ${isSpectating ? '(SPECTATING)' : ''}`;
+  document.getElementById("hud-currency").innerText = `✨ ${activeProfile() ? activeProfile().shinies : 0} Shinies`;
   document.getElementById("hud-player-hp").innerText = `HP: ${Math.ceil(targetEnt.hp)} / ${targetEnt.mhp}`;
   document.getElementById("hud-hp-fill").style.width = Math.max(0, (targetEnt.hp / targetEnt.mhp) * 100) + "%";
 
@@ -3102,6 +3628,7 @@ function syncHUD() {
 }
 
 function showResultScreen(isVictory, winnerId = null, stats = []) {
+  const winShinies = isVictory && pl ? awardShinies(SHINY_REWARDS.win, "Match victory", false) : 0;
   state = "result";
   matchOver = true;
   Snd.musicStop();
@@ -3130,7 +3657,7 @@ function showResultScreen(isVictory, winnerId = null, stats = []) {
   } else if(isVictory) {
     resultTitle.innerText = "VICTORY!";
     resultTitle.style.color = "#45d988";
-    resultDesc.innerText = teamMode ? "Your team swept the arena. Outstanding brawl!" : "Outstanding combat! You were the last champion standing.";
+    resultDesc.innerText = (teamMode ? "Your team swept the arena. Outstanding brawl!" : "Outstanding combat! You were the last champion standing.") + (winShinies ? ` You earned +${winShinies} Shinies.` : "");
   } else {
     resultTitle.innerText = "DEFEATED";
     resultTitle.style.color = "#ff4438";
@@ -3148,7 +3675,8 @@ function showResultScreen(isVictory, winnerId = null, stats = []) {
           const c = HEROES[s.ci];
           const me = s.id === myNetId;
           const mm = Math.floor(s.t / 60), ss = String(s.t % 60).padStart(2, "0");
-          return `<div class="stats-row ${me ? 'me' : ''}"><span>${medals[idx] || "🎖️"} ${c.e} ${c.n}${me ? " (YOU)" : ""}</span><span>${s.k} K · ${s.d} DMG · ${mm}:${ss}</span></div>`;
+          const playerName = escapeHtml(s.username || `${c.e} ${c.n}`);
+          return `<div class="stats-row ${me ? 'me' : ''}"><span>${medals[idx] || "🎖️"} ${playerName} · ${c.e} ${c.n}${me ? " (YOU)" : ""}</span><span>${s.k} K · ${s.d} DMG · ${mm}:${ss}</span></div>`;
         }).join("") + `</div>`
       : "";
   }
@@ -3159,7 +3687,7 @@ function endMatch(winnerId, winnerTeam = null) {
   if(matchOver) return;
   matchOver = true;
   const stats = E.map(e => ({
-    id: e.netId, ci: e.ci, k: e.kills, d: Math.round(e.dmg),
+    id: e.netId, ci: e.ci, username: e.username, k: e.kills, d: Math.round(e.dmg),
     t: Math.round(e.dead ? (e.deathTime || 0) : matchTime), dead: e.dead
   }));
   if(isMultiplayer && isLobbyLeader) {
@@ -3306,7 +3834,7 @@ function setupConnectionEvents(conn) {
     peerConnections.set(conn.peer, conn);
     lastSeenByPeer.set(conn.peer, Date.now());
     outgoingSeq++;
-    conn.send({ type: "HELLO", id: myNetId, hero: p1HeroChoice, seq: outgoingSeq });
+    conn.send({ type: "HELLO", id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), seq: outgoingSeq });
   });
 
   conn.on("data", data => {
@@ -3387,6 +3915,8 @@ function handleIncomingData(conn, data) {
   if(data.type === "HELLO") {
     const hero = Number.isInteger(data.hero) && data.hero >= RANDOM_HERO && data.hero < HEROES.length ? data.hero : 0;
     let r = roster.find(x => x.id === data.id);
+    const username = safeNetworkUsername(data.username || (r && r.username) || "Player", data.id);
+    const tagCosmetics = sanitizeCosmeticSelection(data.tagCosmetics || (r && r.tagCosmetics));
     if(!r) {
       // Seat check happens again here so two simultaneous joiners can't overfill the lobby
       if(roster.length >= 6) {
@@ -3394,9 +3924,11 @@ function handleIncomingData(conn, data) {
         setTimeout(() => { try { conn.close(); } catch(e) {} }, 200);
         return;
       }
-      roster.push({ id: data.id, hero });
+      roster.push({ id: data.id, hero, username, tagCosmetics });
     } else {
       r.hero = hero;
+      r.username = username;
+      r.tagCosmetics = tagCosmetics;
     }
     if(isLobbyLeader) {
       outgoingSeq++;
@@ -3448,7 +3980,11 @@ function handleIncomingData(conn, data) {
   else if(data.type === "START_GAME") {
     if(quickMatchRooms) return; // still joining — ignore games we haven't been admitted to
     selectedMapIndex = Number.isInteger(data.mapIndex) && MAPS[data.mapIndex] ? data.mapIndex : 0;
-    launchMeshMatch(data.spawns && typeof data.spawns === "object" ? data.spawns : {}, data.heroes && typeof data.heroes === "object" ? data.heroes : {});
+    launchMeshMatch(
+      data.spawns && typeof data.spawns === "object" ? data.spawns : {},
+      data.heroes && typeof data.heroes === "object" ? data.heroes : {},
+      data.identities && typeof data.identities === "object" ? data.identities : {}
+    );
   }
   else if(data.type === "CLIENT_INPUT") {
     if(!isLobbyLeader || data.id !== conn.peer ||
@@ -3492,10 +4028,11 @@ function handleIncomingData(conn, data) {
 
       let ent = getRemoteActorByNetId(item.id);
       if(!ent && !item.dead) {
-        ent = mk(item.ci, item.x, item.z, 2, item.id);
+        ent = mk(item.ci, item.x, item.z, 2, item.id, null, item.un, item.tc);
         E.push(ent);
       }
       if(ent) {
+        if(item.un !== undefined || item.tc !== undefined) setEntityIdentity(ent, item.un, item.tc);
         if(item.dead && !ent.dead) {
           ent.dead = true;
           ent.deathTime = matchTime;
@@ -3532,10 +4069,12 @@ function handleIncomingData(conn, data) {
   }
   else if(data.type === "KILL_EVENT") {
     if(!isLobbyLeader) {
-      const victim = getRemoteActorByNetId(data.victimId) || { ci: data.victimCi };
+      const victim = getRemoteActorByNetId(data.victimId) || { ci: data.victimCi, username: data.victimName };
       const killer = data.attackerId
-        ? (getRemoteActorByNetId(data.attackerId) || { ci: data.attackerCi })
+        ? (getRemoteActorByNetId(data.attackerId) || { ci: data.attackerCi, username: data.attackerName })
         : null;
+      if(killer && !killer.username) killer.username = data.attackerName || null;
+      if(data.attackerId === myNetId) awardShinies(SHINY_REWARDS.kill, "Elimination");
       addKillFeed(killer, victim, { streak: data.streak || 0, multi: data.multi || 0 });
     }
   }
@@ -3609,7 +4148,8 @@ setInterval(() => {
       kx: Math.round(e.kx),
       kz: Math.round(e.kz),
       kl: e.killedBy,
-      fm: e.form, mh: e.mhp, gd: e.guard > 0 ? e.guard : 0, rp: e.riposte
+      fm: e.form, mh: e.mhp, gd: e.guard > 0 ? e.guard : 0, rp: e.riposte,
+      un: e.username, tc: e.tagCosmetics
     }));
     broadcastToPeers({
       type: "SNAPSHOT",
@@ -3745,6 +4285,7 @@ function wireHostPeer() {
 }
 
 window.hostMultiplayerLobby = function() {
+  if(!requireLocalAccount()) return;
   stopDemo();
   quickMatchHosted = false;
   quickMatchAutoStart = null;
@@ -3757,7 +4298,7 @@ window.hostMultiplayerLobby = function() {
   peer = new Peer(roomLeaderId);
   isLobbyLeader = true;
   isMultiplayer = true;
-  roster = [{ id: myNetId, hero: p1HeroChoice }];
+  roster = [{ id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds() }];
   peerConnections.clear();
   lastSeenByPeer.clear();
   lastSeqByPeer.clear();
@@ -3767,6 +4308,7 @@ window.hostMultiplayerLobby = function() {
 };
 
 window.joinMultiplayerLobby = function() {
+  if(!requireLocalAccount()) return;
   stopDemo();
   const codeIn = document.getElementById("lobby-code-in");
   const code = (codeIn ? codeIn.value : "").trim().toUpperCase();
@@ -3959,6 +4501,7 @@ function ensureLivePeer(then) {
 }
 
 window.quickMatch = function() {
+  if(!requireLocalAccount()) return;
   stopDemo();
   if(peer) peer.destroy();
   peer = null;
@@ -4101,7 +4644,7 @@ function quickMatchRendezvous(codes) {
     leaderId = myNetId;
     isLobbyLeader = true;
     isMultiplayer = true;
-    roster = [{ id: myNetId, hero: p1HeroChoice }];
+    roster = [{ id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds() }];
     currentLobbyCode = code;
     quickMatchRooms = null;
     quickMatchHosted = true;
@@ -4262,13 +4805,14 @@ window.selectControlScheme = function(scheme) {
 };
 
 // --- DENTLEY: Hollow Armor, Squire & Husk ---
-function beginDentleyLunge(e, distance, duration, damage, knockback, finisher = false) {
+function beginDentleyLunge(e, distance, duration, damage, knockback, finisher = false, stun = 0) {
   e.lungeT = duration;
   e.lungeA = e.a;
   e.lungeVx = Math.cos(e.a) * distance / duration;
   e.lungeVz = Math.sin(e.a) * distance / duration;
   e.lungeDamage = damage;
   e.lungeKb = knockback;
+  e.lungeStun = stun;
   e.lungeFinisher = finisher;
   e.lungeHit = new Set();
   e.swing = Math.max(e.swing, duration);
@@ -4307,9 +4851,11 @@ function dentleyGuard(e, c) {
 
 function dentleyLunge(e) {
   if(e.form === 1) { e.c3 = 0; return; } // the Squire has no armor to lunge with
-  const dmg = 20 + e.riposte;
+  const charge = e.riposte;
+  const dmg = 20 + charge;
+  const stun = charge > 0 ? Math.min(0.8, charge / 40 * 0.8) : 0;
   e.riposte = 0; // charge is spent even if the lunge misses
-  beginDentleyLunge(e, 90, 0.24, dmg, 220);
+  beginDentleyLunge(e, 90, 0.24, dmg, 220, false, stun);
 }
 
 function makeHuskMesh() {
@@ -4329,7 +4875,7 @@ function makeHuskMesh() {
 function breakArmor(t, a) {
   t.armorBreakUsed = true;
   t.form = 1; t.hp = 55; t.mhp = 55;
-  t.guard = 0; t.grace = 0.7; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
+  t.guard = 0; t.grace = 0.8; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
   t.kx = Math.cos(a) * 320; t.kz = Math.sin(a) * 320; // knocked ~40 units from the breaking hit
   const h = { id: "hk_" + Math.random().toString(36).slice(2, 8), x: t.x, z: t.z, hp: 100, life: 8, owner: t, mesh: makeHuskMesh() };
   h.mesh.position.set(t.x, 0, t.z);
@@ -4369,9 +4915,9 @@ function updateHusks(dt) {
       Husks.splice(i, 1);
     }
   }
-  for(const e of E) { // re-armour channel: stand still within 30 units for 1.4s
+  for(const e of E) { // re-armour channel: stand still within 40 units for 1.4s
     if(e.ci !== 6 || e.form !== 1 || e.dead || !e.husk) { e.chan = 0; continue; }
-    if(Math.hypot(e.x - e.husk.x, e.z - e.husk.z) < 30 && e.moveSpd < 14 && e.stun <= 0) {
+    if(Math.hypot(e.x - e.husk.x, e.z - e.husk.z) <= 40 && e.moveSpd < 14 && e.stun <= 0) {
       e.chan += dt;
       if(e.chan >= 1.4) rearm(e);
     } else e.chan = 0;
@@ -4486,6 +5032,8 @@ function menu(msg) {
       <div class="subtitle">${msg}</div>
     </div>
 
+    ${accountToolbarHTML()}
+
     <div class="lobby-panel">
       ${!isMultiplayer ? `
         <button class="lobby-btn action-primary" onclick="launchSoloMatch()">⚔️ Play Solo <small>vs AI bots — instant brawl</small></button>
@@ -4576,7 +5124,7 @@ function menu(msg) {
         const me = roster.find(x => x.id === myNetId);
         if(me) me.hero = p1HeroChoice;
         outgoingSeq++;
-        broadcastToPeers({ type: "HELLO", id: myNetId, hero: p1HeroChoice, seq: outgoingSeq });
+        broadcastToPeers({ type: "HELLO", id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), seq: outgoingSeq });
       }
     };
   });
@@ -4720,6 +5268,7 @@ function rebuildShowcase() {
 }
 
 window.launchSoloMatch = function() {
+  if(!requireLocalAccount()) return;
   stopDemo();
   if(peer) {
     peer.destroy();
@@ -4770,6 +5319,13 @@ window.startLobbyMatch = function() {
   });
   const heroMap = {}; // the host rolls Random picks so every player sees the same champions
   roster.forEach(r => { heroMap[r.id] = resolveHero(r.hero); });
+  const identityMap = {};
+  roster.forEach(r => {
+    identityMap[r.id] = {
+      username: r.id === myNetId ? activeUsername() : safeNetworkUsername(r.username, r.id),
+      tagCosmetics: sanitizeCosmeticSelection(r.tagCosmetics)
+    };
+  });
 
   outgoingSeq++;
   broadcastToPeers({
@@ -4777,13 +5333,14 @@ window.startLobbyMatch = function() {
     mapIndex: selectedMapIndex,
     spawns: spawnMap,
     heroes: heroMap,
+    identities: identityMap,
     seq: outgoingSeq
   });
 
-  launchMeshMatch(spawnMap, heroMap);
+  launchMeshMatch(spawnMap, heroMap, identityMap);
 };
 
-function launchMeshMatch(spawnMap, heroMap = {}) {
+function launchMeshMatch(spawnMap, heroMap = {}, identityMap = {}) {
   clearSceneEntities();
   teamMode = false;
   const chosenMap = MAPS[selectedMapIndex];
@@ -4797,7 +5354,8 @@ function launchMeshMatch(spawnMap, heroMap = {}) {
     const sp = spawnMap[r.id] || [W/2, H/2];
     const isMe = (r.id === myNetId);
     const hv = Number.isInteger(heroMap[r.id]) && HEROES[heroMap[r.id]] ? heroMap[r.id] : resolveHero(r.hero);
-    const ent = mk(hv, sp[0], sp[1], isMe ? 1 : 2, r.id);
+    const identity = identityMap[r.id] || r;
+    const ent = mk(hv, sp[0], sp[1], isMe ? 1 : 2, r.id, null, identity.username, identity.tagCosmetics);
     E.push(ent);
     if(isMe) {
       pl = ent;
@@ -5279,6 +5837,7 @@ function upd(dt) {
              Math.abs(Math.atan2(Math.sin(Math.atan2(dz, dx) - e.a), Math.cos(Math.atan2(dz, dx) - e.a))) < 1.15) {
             e.lungeHit.add(t);
             hurt(t, e.lungeDamage, Math.atan2(dz, dx), e.lungeKb, e);
+            if(e.lungeStun > 0 && (!isMultiplayer || isLobbyLeader)) t.stun = Math.max(t.stun || 0, e.lungeStun);
           }
         }
       }
@@ -5553,6 +6112,11 @@ function loop(now) {
 currentRects = MAPS[0].rects;
 build3DMap(MAPS[0]);
 menu("Select a champion to battle in the arena!");
+if(activeProfile()) claimDailyShinies();
+else openAccountModal(true);
+document.addEventListener("visibilitychange", () => {
+  if(!document.hidden) claimDailyShinies();
+});
 requestAnimationFrame(loop);
 </script>
 </body>
@@ -5647,7 +6211,7 @@ Watch out: keep the wall discoverable through collision feedback, and make copie
 REF · Ranged (MAYBE)
 HP 170, speed 150. Weapon: WHISTLE DART, 13 damage every 0.65s (20 DPS).
 Passive, CHALK LINE: when Ref marks a player, a visible line connects them for 3s. Enemies crossing it are slowed by 25% for 1s.
-Ability 1, RED CARD (10s): throw a red card at one player. A hit marks them for 4s; the Ref's next hit on them deals +25% damage and consumes the mark.
+Ability 1, RED CARD (10s): throw a red card at one player. A hit marks them for 4s; Ref's next hit on them deals +25% damage and consumes the mark.
 Ability 2, BLOW THE WHISTLE (16s): after a 0.5s wind-up, freezes enemy basic attacks in a 180-unit radius for 1.7s. Ref can still attack. Movement and abilities remain available.
 Why it's fun: he can isolate a target for a damage bonus, then use a whistle to reset a close fight.
 Watch out: the whistle only affects nearby enemies, not the whole match.
@@ -5655,7 +6219,7 @@ Watch out: the whistle only affects nearby enemies, not the whole match.
 
 GHOST · Ranged (MAYBE?)
 HP 145, speed 180. Weapon: GHOSTFIRE, 13 damage every 0.7s (about 19 DPS), medium range.
-Ability 1, PHASE WALK (12s): for 1.5s, Wisp phases through map obstacles but not the arena boundary. Wisp cannot attack or use abilities while phasing and remains damageable. Leaves a visible haunting trail; enemies crossing it are slowed by 25% for 0.8s.
+Ability 1, PHASE WALK (12s): for 1.5s, Wisp phases through map obstacles but not the arena boundary. Wisp cannot attack or use abilities during the phase and remains damageable. Leaves a visible haunting trail; enemies crossing it are slowed by 25% for 0.8s.
 Ability 2, HAUNT (13s): send a slow spirit through walls toward a target point up to 240 units away. It bursts in a visible 70-unit circle for 12 damage and briefly outlines enemies hit for Wisp. It does not pass through the outer arena wall.
 Why it's fun: phase through a wall to reposition, but the trail tells opponents where Wisp went.
 Watch out: phasing is not invulnerability; keep Wisp damageable and unable to attack during the phase.
@@ -5664,7 +6228,7 @@ Watch out: phasing is not invulnerability; keep Wisp damageable and unable to at
 
     --- NEXT MAJOR UPDATE ---
 
-- Balance Changes (make someone meta that wasn't before)
+
 - Make Bullets go in any direction of the mouse (vertical also).
 - Add Usernames (Accounts, basically)
 - Add a Currency (Shinies)
