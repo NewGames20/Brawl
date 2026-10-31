@@ -615,6 +615,13 @@ html, body {
 .kf-entry .bb-ui-nametag{width:140px}.kf-entry{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
 .bb-lobby-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:1020px;width:100%}
 </style>
+<style id="round-flow-style">
+#round-panel{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:45;width:min(94vw,1020px);max-height:42vh;overflow:auto;padding:14px 18px;border:1px solid #79cbd8;border-radius:16px;background:linear-gradient(135deg,rgba(16,29,43,.98),rgba(12,13,23,.98));box-shadow:0 10px 45px #000b;text-align:center}
+.round-title{font:900 17px 'Space Grotesk',sans-serif;color:#fff;margin-bottom:9px}.round-title span{font:700 12px Outfit,sans-serif;color:#ffcf82;margin-left:12px}
+.round-options{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:7px}.round-options label{font-size:12px;color:#d4dce9}.round-status{font-size:11px;color:#b8d0de;margin-top:10px}
+body.round-open #ov{padding-bottom:260px}body.round-open .result-card{max-height:54vh;margin-bottom:230px}body.round-open #result-modal{justify-content:flex-start;padding-top:20px}
+@media(max-height:650px){body.round-open .result-card{padding:14px 22px}#round-panel{bottom:5px;padding:9px}.round-title{font-size:14px}}
+</style>
 </head>
 <body>
 <div id="wrap">
@@ -660,7 +667,7 @@ html, body {
       <div id="result-title" class="result-title">VICTORY</div>
       <div id="result-desc" style="color:var(--text-muted); font-size:14px; font-weight:600;">You survived the brawl!</div>
       <div id="result-stats"></div>
-      <button class="result-btn" onclick="returnToMenu()">CONTINUE</button>
+      <button class="result-btn" onclick="requestRematch()">REMATCH</button><button class="economy-action" onclick="returnToMenu()">Back to lobby / menu</button>
     </div>
   </div>
 
@@ -1357,7 +1364,7 @@ function syncProfileIdentity() {
   if(demoActive) rebuildShowcase();
   if(isMultiplayer) {
     outgoingSeq++;
-    const packet = { type: "HELLO", id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
+    const packet = { type: "HELLO", arenaVersion:2, id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
     if(isLobbyLeader) broadcastToPeers(packet);
     else if(leaderId && peerConnections.has(leaderId)) {
       const conn = peerConnections.get(leaderId);
@@ -1450,9 +1457,9 @@ setInterval(()=>{if(document.getElementById("economy-modal").classList.contains(
 const GFX = {
   low:    { scale: 0.58, shadow: 0,   soft: false, rim: false, dust: 0,   sparks: 0,   glow: false, grid: false, amb: 1.35 },
   medium: { scale: 0.85, shadow: 512, soft: false, rim: true,  dust: 70,  sparks: 0.6, glow: true,  grid: true,  amb: 1.05 },
-  high:   { scale: 1.15, shadow: 1024,soft: true,  rim: true,  dust: 150, sparks: 1,   glow: true,  grid: true,  amb: 1.05 }
+  high:   { scale: 1.0, shadow: 2048,soft: true,  rim: true,  dust: 150, sparks: 1,   glow: true,  grid: true,  amb: 1.05 }
 };
-let gfxLevel = Store.get("bb_gfx", "high");
+let gfxLevel="high";
 if(!GFX[gfxLevel]) gfxLevel = "high";
 let gfxSizeKey = "";
 
@@ -1796,44 +1803,19 @@ const HEROES = [
 const CHAIN = { max: 220, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 450, retractTime: 0.6 };
 
 // --- MAP CONFIGURATIONS ---
-const MAPS = [
-  {
-    id: "forge",
-    name: "The Iron Forge",
-    floorCol: 0x1f1a18,
-    wallCol: 0x5a3a28,
-    accent: 0xff8a4d,
-    rects: [
-      [300, 195, 80, 70],
-      [110, 80, 80, 24], [110, 80, 24, 80],
-      [490, 80, 80, 24], [546, 80, 24, 80],
-      [110, 356, 80, 24], [110, 300, 24, 80],
-      [490, 356, 80, 24], [546, 300, 24, 80],
-      [220, 110, 32, 32], [428, 110, 32, 32],
-      [220, 318, 32, 32], [428, 318, 32, 32]
-    ]
-  },
-  {
-    id: "ruins",
-    name: "Verdant Sanctuary",
-    floorCol: 0x16241a,
-    wallCol: 0x2b5235,
-    accent: 0x4de08a,
-    rects: [
-      [BASE_W/2-20, 70, 40, 100],
-      [BASE_W/2-20, BASE_H-170, 40, 100],
-      [140, 160, 24, 140],
-      [516, 160, 24, 140],
-      [210, 215, 70, 30],
-      [400, 215, 70, 30],
-      [80, 60, 35, 35],
-      [565, 60, 35, 35],
-      [80, BASE_H-95, 35, 35],
-      [565, BASE_H-95, 35, 35]
-    ]
-  }
- ];
-for(const mapDef of MAPS) mapDef.rects = expandArenaRects(mapDef.rects);
+const MAPS=[
+ {id:"bbq",name:"BBQ Bay",floorCol:0x49362b,wallCol:0x5b3931,accent:0xffa34e,
+ outline:[[96,14],[W-96,14],[W-96,86],[W-14,86],[W-14,H-86],[W-96,H-86],[W-96,H-14],[96,H-14],[96,H-86],[14,H-86],[14,86],[96,86]],
+ voids:[[0,0,96,86],[W-96,0,96,86],[0,H-86,96,86],[W-96,H-86,96,86]],
+ cover:[[W*.25,H*.25,62,52],[W*.67,H*.25,62,52],[W*.25,H*.66,62,52],[W*.67,H*.66,62,52]],
+ vents:[[W*.5-48,H*.25,96,36],[W*.5-48,H*.69,96,36]],belts:[]},
+ {id:"conveyor",name:"Conveyor Kitchen",floorCol:0x192d38,wallCol:0x3d5967,accent:0x48e4e3,
+ outline:[[14,14],[W-14,14],[W-14,H*.35],[W-108,H*.35],[W-108,H*.65],[W-14,H*.65],[W-14,H-14],[14,H-14],[14,H*.65],[108,H*.65],[108,H*.35],[14,H*.35]],
+ voids:[[0,H*.35,108,H*.30],[W-108,H*.35,108,H*.30]],
+ cover:[[W*.31,H*.21,64,48],[W*.61,H*.21,64,48],[W*.31,H*.71,64,48],[W*.61,H*.71,64,48]],
+ vents:[],belts:[[W*.21,H*.43,W*.58,36,1,0],[W*.21,H*.53,W*.58,36,-1,0]]}
+];
+for(const def of MAPS)def.rects=[...def.cover,...def.voids];
 
 let selectedMapIndex = 0;
 let currentRects = [];
@@ -1851,7 +1833,10 @@ scene.add(cameraHolder);
 
 const renderer = new THREE.WebGLRenderer({ canvas: canvas3D, antialias: gfxLevel !== "low", powerPreference: gfxLevel === "low" ? "low-power" : "high-performance" });
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.1;
 
 const ambientLight = new THREE.AmbientLight(0xdbe3ff, 1.05);
 scene.add(ambientLight);
@@ -1864,6 +1849,7 @@ dirLight.position.set(W/2 + 220, 580, H/2 - 240);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize.width = 1024;
 dirLight.shadow.mapSize.height = 1024;
+dirLight.shadow.bias=-0.00025;dirLight.shadow.normalBias=0.65;
 dirLight.shadow.camera.near = 100;
 dirLight.shadow.camera.far = 1100;
 const d = Math.max(W, H) * 0.65;
@@ -2358,7 +2344,10 @@ function makeCrateVisual() {
   const core = new THREE.Mesh(new THREE.SphereGeometry(10, 10, 8), new THREE.MeshStandardMaterial({ color:0x28252b, emissive:0x5b1c08, emissiveIntensity:0.8, roughness:0.65 })); core.position.y = 12; bomb.add(core);
   const fuse = new THREE.Mesh(new THREE.TorusGeometry(7, 2, 6, 12), new THREE.MeshBasicMaterial({ color:0xff6b24 })); fuse.rotation.x = Math.PI/2; fuse.position.y = 20; bomb.add(fuse);
   bomb.visible = false; root.add(bomb);
-  root.userData.crate = crate; root.userData.bomb = bomb;
+  root.userData.crate=crate;root.userData.bomb=bomb;
+ const beam=new THREE.Mesh(new THREE.CylinderGeometry(3,7,680,12,1,true),new THREE.MeshBasicMaterial({color:0xffd47d,transparent:true,opacity:.32,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));beam.position.y=340;root.add(beam);root.userData.beam=beam;
+ const marker=new THREE.Mesh(new THREE.RingGeometry(27,31,40),new THREE.MeshBasicMaterial({color:0xffd47d,transparent:true,opacity:.85,depthWrite:false,side:THREE.DoubleSide}));marker.rotation.x=-Math.PI/2;marker.position.y=1.5;root.add(marker);
+ const badge=new THREE.Mesh(new THREE.BoxGeometry(13,12,.8),new THREE.MeshStandardMaterial({color:0xffcb65,emissive:0xd76b00,emissiveIntensity:.5,metalness:.5,roughness:.3}));badge.position.set(0,16,19.7);crate.add(badge);
   scene.add(root);
   return root;
 }
@@ -2370,16 +2359,21 @@ function syncRemoteCrate(data) {
   }
   if(!remoteCrateVisual || remoteCrateId !== data.id) {
     if(remoteCrateVisual) disposeHierarchy(remoteCrateVisual);
-    remoteCrateVisual = makeCrateVisual(); remoteCrateId = data.id; remoteCrateVisual.userData.lastCount = -1;
+    remoteCrateVisual=makeCrateVisual();remoteCrateId=data.id;remoteCrateVisual.userData.lastCount=-1;
+    if(data.y>0)showAnnouncer("SUPPLY DROP INBOUND");
   }
-  remoteCrateVisual.position.set(data.x, 0, data.z);
+  remoteCrateVisual.position.set(data.x,0,data.z);
+ const dropY=Math.max(0,Number(data.y)||0),previousY=remoteCrateVisual.userData.dropY;
+ remoteCrateVisual.userData.crate.position.y=dropY;remoteCrateVisual.userData.dropY=dropY;
+ if(previousY>0&&dropY===0){spawn3DRing(data.x,data.z,42,0xffd47d);spawnSparks(data.x,data.z,0xffbd68,10);Snd.play("crate");}
   const isBomb = data.bombT !== null && data.bombT !== undefined;
   remoteCrateVisual.userData.crate.visible = !isBomb;
   remoteCrateVisual.userData.bomb.visible = isBomb;
   if(isBomb) {
     const count = Math.ceil(data.bombT);
     if(data.exploded) {
-      remoteCrateVisual.userData.bomb.visible = false;
+      remoteCrateVisual.userData.bomb.visible=false;
+      if(remoteCrateVisual.userData.beam)remoteCrateVisual.userData.beam.visible=false;
       if(!remoteCrateVisual.userData.exploded) {
         remoteCrateVisual.userData.exploded = true;
         spawn3DRing(data.x, data.z, 150, 0xff7238);
@@ -2496,94 +2490,88 @@ function skyTexture(id) {
 }
 
 // --- 3D MAP BUILDER ---
-function build3DMap(mapDef) {
-  while(mapGroup.children.length > 0) {
-    disposeHierarchy(mapGroup.children[0]);
-  }
-
-  const floorGeo = new THREE.PlaneGeometry(W, H, 16, 16);
-  floorGeo.rotateX(-Math.PI / 2);
-  const flTex = floorTexture(mapDef.id);
-  flTex.repeat.set(3 * ARENA_SCALE, 2 * ARENA_SCALE);
-  const floorMat = new THREE.MeshStandardMaterial({
-    map: flTex, roughness: 0.72, metalness: 0.22
-  });
-  const floor = new THREE.Mesh(floorGeo, floorMat);
-  floor.position.set(W/2, 0, H/2);
-  floor.receiveShadow = true;
-  mapGroup.add(floor);
-
-  const gridCells = Math.round(Math.max(W, H) / (BASE_W / 24));
-  const grid = new THREE.GridHelper(Math.max(W, H), gridCells, mapDef.accent, mapDef.accent);
-  grid.position.set(W/2, 0.1, H/2);
-  grid.material.opacity = 0.09;
-  grid.material.transparent = true;
-  grid.visible = GFX[gfxLevel].grid;
-  mapGroup.add(grid);
-
-  const waTex = wallTexture(mapDef.id);
-  waTex.repeat.set(2, 1);
-  const wallMat = new THREE.MeshStandardMaterial({
-    map: waTex, roughness: 0.55, metalness: 0.28
-  });
-  const wallH = 65;
-
-  // Per-map atmosphere: sky, rim light, dust
-  skyDome.material.map = skyTexture(mapDef.id);
-  skyDome.material.needsUpdate = true;
-  rimLight.color.setHex(mapDef.accent);
-  hemiLight.color.setHex(mapDef.id === "forge" ? 0xffb08a : 0x8affc0);
-  dustMat.color.setHex(mapDef.accent);
-
-  function addWall(x, z, w, d) {
-    const geo = new THREE.BoxGeometry(w, wallH, d);
-    const mesh = new THREE.Mesh(geo, wallMat);
-    mesh.position.set(x + w/2, wallH/2, z + d/2);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    mapGroup.add(mesh);
-  }
-
-  addWall(0, 0, W, B);
-  addWall(0, H - B, W, B);
-  addWall(0, 0, B, H);
-  addWall(W - B, 0, B, H);
-
-  for(const [rx, ry, rw, rh] of mapDef.rects) {
-    addWall(rx, ry, rw, rh);
-  }
-
-  // Four emissive top-edge trims share one instanced draw call, and are omitted on Low.
-  if(gfxLevel !== "low") {
-    const trimRects = [[0, 0, W, B], [0, H - B, W, B], [0, 0, B, H], [W - B, 0, B, H], ...mapDef.rects];
-    const trimGeo = new THREE.BoxGeometry(1, 1, 1);
-    const trimMat = new THREE.MeshStandardMaterial({
-      color: mapDef.accent, emissive: mapDef.accent,
-      emissiveIntensity: gfxLevel === "high" ? 0.3 : 0.16,
-      roughness: 0.4, metalness: 0.25
-    });
-    const trim = new THREE.InstancedMesh(trimGeo, trimMat, trimRects.length * 4);
-    const dummy = new THREE.Object3D();
-    let index = 0;
-    for(const [x, z, w, d] of trimRects) {
-      const y = 63.7;
-      const bars = [
-        [x + w/2, y, z + 1, w, 1.2, 1.2],
-        [x + w/2, y, z + d - 1, w, 1.2, 1.2],
-        [x + 1, y, z + d/2, 1.2, 1.2, d],
-        [x + w - 1, y, z + d/2, 1.2, 1.2, d]
-      ];
-      for(const [px, py, pz, sx, sy, sz] of bars) {
-        dummy.position.set(px, py, pz);
-        dummy.scale.set(sx, sy, sz);
-        dummy.updateMatrix();
-        trim.setMatrixAt(index++, dummy.matrix);
-      }
-    }
-    trim.instanceMatrix.needsUpdate = true;
-    mapGroup.add(trim);
-  }
+// --- BBQ Bay / Conveyor Kitchen: presentation and map mechanics ---
+let arenaVents=[],arenaBeltArrows=[];
+function kitchenFloorTexture(def){
+ const c=document.createElement("canvas");c.width=c.height=1024;const x=c.getContext("2d"),warm=def.id==="bbq";
+ x.fillStyle=warm?"#30241e":"#15252e";x.fillRect(0,0,1024,1024);
+ for(let row=0;row<16;row++)for(let col=0;col<16;col++){
+ x.fillStyle=warm?((row+col)%2?"#5b4738":"#4c3d32"):((row+col)%2?"#2f4853":"#263e48");x.fillRect(col*64+2,row*64+2,60,60);
+ x.strokeStyle="rgba(255,255,255,.07)";x.strokeRect(col*64+3,row*64+3,58,58);}
+ for(let i=0;i<1400;i++){x.fillStyle=i%2?"rgba(255,255,255,.035)":"rgba(0,0,0,.06)";x.fillRect((i*73)%1024,(i*193)%1024,2,2);}
+ const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return tex;
 }
+function kitchenSign(text,color){
+ const c=document.createElement("canvas");c.width=512;c.height=128;const x=c.getContext("2d");
+ x.fillStyle="#0c1520";x.fillRect(0,0,512,128);x.strokeStyle=color;x.lineWidth=7;x.strokeRect(5,5,502,118);
+ x.font="900 45px Outfit,system-ui";x.fillStyle=color;x.textAlign="center";x.fillText(text,256,80);
+ const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;
+ const mesh=new THREE.Mesh(new THREE.PlaneGeometry(170,42),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));
+ mesh.position.set(W/2,92,32);mesh.rotation.y=0;mapGroup.add(mesh);
+}
+function ventPhase(index,time=matchTime){return ((time+index*5)%12+12)%12;}
+function updateArenaVisuals(){
+ for(let i=0;i<arenaVents.length;i++){
+ const phase=ventPhase(i),hot=phase>=9,warn=phase>=6&&phase<9,v=arenaVents[i];
+ v.top.material.color.setHex(hot?0xff692b:warn?0xffc15b:0x2a2829);v.top.material.emissive.setHex(hot?0xff4b0f:warn?0xc57513:0x120a05);
+ v.top.material.emissiveIntensity=hot?1.7:warn?.35+Math.sin(matchTime*10)*.15:.15;
+ v.fire.visible=hot;v.fire.scale.y=hot?1+Math.sin(matchTime*21+i)*.16:1;
+ }
+ for(const a of arenaBeltArrows){const b=a.userData.belt;a.position.x=b[0]+(((a.userData.offset+matchTime*b[4]*38)%(b[2]-20)+(b[2]-20))%(b[2]-20))+10;}
+}
+function updateArenaMechanics(dt){
+ if(state!=="play"||demoActive)return;
+ const def=MAPS[selectedMapIndex],auth=!isMultiplayer||isLobbyLeader;
+ for(const e of E){
+ if(e.dead)continue;
+ if(auth)for(let i=0;i<def.vents.length;i++){
+ const [x,z,w,d]=def.vents[i];if(ventPhase(i)>=9&&e.x>x-e.r*.3&&e.x<x+w+e.r*.3&&e.z>z-e.r*.3&&e.z<z+d+e.r*.3)hurt(e,11*dt,0,0,null);
+ }
+ // Local prediction moves your fighter; the host receives that pose, avoiding a double push.
+ if(e===pl||(!isMultiplayer&&e.ai))for(const b of def.belts){
+ if(e.x>b[0]&&e.x<b[0]+b[2]&&e.z>b[1]&&e.z<b[1]+b[3]){
+ const nx=e.x+b[4]*42*dt,nz=e.z+b[5]*42*dt;if(!blocked(nx,e.z,e.r))e.x=nx;if(!blocked(e.x,nz,e.r))e.z=nz;
+ }}
+ }
+}
+
+function build3DMap(def){
+ const textures=new Set();mapGroup.traverse(o=>{for(const m of (Array.isArray(o.material)?o.material:[o.material]))if(m&&m.map)textures.add(m.map);});for(const tex of textures)tex.dispose();
+ while(mapGroup.children.length)disposeHierarchy(mapGroup.children[0]);arenaVents=[];arenaBeltArrows=[];
+ const shape=new THREE.Shape();def.outline.forEach(([x,z],i)=>i?shape.lineTo(x,-z):shape.moveTo(x,-z));shape.closePath();
+ const geo=new THREE.ShapeGeometry(shape);geo.rotateX(-Math.PI/2);const uv=geo.attributes.uv,pos=geo.attributes.position;
+ for(let i=0;i<uv.count;i++)uv.setXY(i,pos.getX(i)/W,pos.getZ(i)/H);
+ const floor=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:kitchenFloorTexture(def),roughness:.62,metalness:.28}));floor.receiveShadow=true;mapGroup.add(floor);
+ const surround=new THREE.Mesh(new THREE.PlaneGeometry(W+600,H+600),new THREE.MeshStandardMaterial({color:def.id==="bbq"?0x103a48:0x080e19,roughness:def.id==="bbq"?.25:.8,metalness:.45}));surround.rotation.x=-Math.PI/2;surround.position.set(W/2,-8,H/2);mapGroup.add(surround);
+ const wallMat=new THREE.MeshStandardMaterial({color:def.wallCol,roughness:.42,metalness:def.id==="conveyor"?.72:.35});
+ const trimMat=new THREE.MeshStandardMaterial({color:def.accent,emissive:def.accent,emissiveIntensity:.5,roughness:.3,metalness:.6});
+ for(let i=0;i<def.outline.length;i++){
+ const a=def.outline[i],b=def.outline[(i+1)%def.outline.length],length=Math.hypot(b[0]-a[0],b[1]-a[1]),angle=-Math.atan2(b[1]-a[1],b[0]-a[0]);
+ const wall=new THREE.Mesh(new THREE.BoxGeometry(length,65,B),wallMat);wall.position.set((a[0]+b[0])/2,32.5,(a[1]+b[1])/2);wall.rotation.y=angle;wall.castShadow=true;wall.receiveShadow=true;mapGroup.add(wall);
+ const trim=new THREE.Mesh(new THREE.BoxGeometry(length,2,2.2),trimMat);trim.position.set(wall.position.x,65,wall.position.z);trim.rotation.y=angle;mapGroup.add(trim);
+ }
+ for(const [x,z,w,d] of def.cover){
+ const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,48,d),wallMat);mesh.position.set(x+w/2,24,z+d/2);mesh.castShadow=true;mesh.receiveShadow=true;mapGroup.add(mesh);
+ const lip=new THREE.Mesh(new THREE.BoxGeometry(w+2,3,d+2),trimMat);lip.position.set(x+w/2,49,z+d/2);mapGroup.add(lip);
+ for(let k=0;k<5;k++){const bar=new THREE.Mesh(new THREE.BoxGeometry(w-6,1.8,2.2),new THREE.MeshStandardMaterial({color:0x11171d,metalness:.75,roughness:.3}));bar.position.set(x+w/2,51,z+6+k*(d-12)/4);mapGroup.add(bar);}
+ const handle=new THREE.Mesh(new THREE.TorusGeometry(7,1.4,5,12,Math.PI),trimMat);handle.position.set(x+w/2,29,z+d+.5);mapGroup.add(handle);
+ }
+ for(const [x,z,w,d] of def.vents){
+ const top=new THREE.Mesh(new THREE.BoxGeometry(w,1.5,d),new THREE.MeshStandardMaterial({color:0x2a2829,emissive:0x220900,emissiveIntensity:.2,metalness:.7,roughness:.35}));top.position.set(x+w/2,1,z+d/2);mapGroup.add(top);
+ const fire=new THREE.Group();for(let j=0;j<7;j++){const f=new THREE.Mesh(new THREE.ConeGeometry(4.5,26+(j%3)*7,6),new THREE.MeshBasicMaterial({color:j%2?0xffb333:0xff592b,transparent:true,opacity:.75,depthWrite:false}));f.position.set(x+8+j*(w-16)/6,16,z+d/2);fire.add(f);}
+ fire.visible=false;mapGroup.add(fire);arenaVents.push({top,fire});
+ for(let k=0;k<8;k++){const grate=new THREE.Mesh(new THREE.BoxGeometry(2,2,d),wallMat);grate.position.set(x+5+k*(w-10)/7,2.5,z+d/2);mapGroup.add(grate);}
+ }
+ for(const b of def.belts){
+ const belt=new THREE.Mesh(new THREE.BoxGeometry(b[2],2,b[3]),new THREE.MeshStandardMaterial({color:0x132d35,roughness:.65,metalness:.45}));belt.position.set(b[0]+b[2]/2,1,b[1]+b[3]/2);mapGroup.add(belt);
+ for(const side of [-1,1]){const rail=new THREE.Mesh(new THREE.BoxGeometry(b[2],2,2),trimMat);rail.position.set(b[0]+b[2]/2,2,b[1]+b[3]/2+side*b[3]/2);mapGroup.add(rail);}
+ for(let j=0;j<12;j++){const arrow=new THREE.Group();for(const side of [-1,1]){const line=new THREE.Mesh(new THREE.BoxGeometry(12,.7,2),trimMat);line.position.z=side*4;line.rotation.y=side*(b[4]>0?Math.PI/4:-Math.PI/4);arrow.add(line);}arrow.position.set(b[0]+10+j*(b[2]-20)/12,2.6,b[1]+b[3]/2);arrow.userData={belt:b,offset:j*(b[2]-20)/12};mapGroup.add(arrow);arenaBeltArrows.push(arrow);}
+ }
+ skyDome.material.map=skyTexture(def.id==="bbq"?"forge":"ruins");skyDome.material.needsUpdate=true;rimLight.color.setHex(def.accent);hemiLight.color.setHex(def.id==="bbq"?0xffb789:0x9aeaff);dustMat.color.setHex(def.accent);
+ scene.fog.color.setHex(def.id==="bbq"?0x160d12:0x081822);scene.fog.density=.00115;
+ kitchenSign(def.name.toUpperCase(),def.id==="bbq"?"#ffb567":"#6ef5eb");
+}
+
 
 // --- HERO & WEAPON BUILDER ---
 function createHighQualityWeapon(heroIndex, isViewmodel = false) {
@@ -2796,7 +2784,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   grp.userData.isLocalPlayer = isPlayer;
 
   const bodyMat = new THREE.MeshStandardMaterial({
-    color: HEROES[heroIndex].col, roughness: 0.6, metalness: 0.15
+    color: HEROES[heroIndex].col, roughness: 0.45, metalness: 0.2
   });
   const body = new THREE.Mesh(new THREE.CylinderGeometry(11, 13, 26, 16), bodyMat);
   body.position.y = 13;
@@ -2807,7 +2795,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   headGrp.position.y = 28;
   grp.add(headGrp);
 
-  const head = new THREE.Mesh(new THREE.SphereGeometry(8.5, 14, 12), bodyMat);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(8.5,20,16),bodyMat);head.castShadow=true;head.receiveShadow=true;
   headGrp.add(head);
 
   addHeroDetails(grp, headGrp, heroIndex);
@@ -2964,7 +2952,7 @@ function spawnProjectileMesh(type) {
     mesh = new THREE.Mesh(new THREE.TorusGeometry(5, 1.8, 8, 16), new THREE.MeshBasicMaterial({color: 0x55aa33}));
     mesh.rotation.x = Math.PI / 2;
   } else {
-    mesh = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 9, 8), new THREE.MeshBasicMaterial({color: 0x00f0ff}));
+    mesh = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 9, 8), new THREE.MeshStandardMaterial({color:0x6dffff,emissive:0x00c9ff,emissiveIntensity:1.5,roughness:.2,metalness:.45}));
     mesh.rotation.x = Math.PI / 2;
   }
   scene.add(mesh);
@@ -3089,7 +3077,7 @@ function spawnPickupAt(rx, rz, kind, suppliedChoice = null) {
   ];
   const choice = types.find(type => type.k === kind) || types[0];
   const geo = new THREE.OctahedronGeometry(8.5);
-  const mat = new THREE.MeshStandardMaterial({ color: choice.color, metalness: 0.35, roughness: 0.2 });
+  const mat=new THREE.MeshStandardMaterial({color:choice.color,emissive:choice.color,emissiveIntensity:.35,metalness:.55,roughness:.16});
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(rx, 14, rz);
   scene.add(mesh);
@@ -3098,24 +3086,24 @@ function spawnPickupAt(rx, rz, kind, suppliedChoice = null) {
   return true;
 }
 
-function spawnWorldCrate() {
-  let pos = null;
-  for(let attempt = 0; attempt < 60; attempt++) {
-    const x = 55 + Math.random() * (W - 110), z = 55 + Math.random() * (H - 110);
-    if(blocked(x, z, 26)) continue;
-    if(Math.hypot(x - W/2, z - H/2) > Math.max(25, stormRadius - 35)) continue;
-    if(E.some(e => !e.dead && Math.hypot(e.x - x, e.z - z) < 95)) continue;
-    pos = [x, z]; break;
-  }
-  if(!pos) { crateSpawnTimer = 6; return false; }
-  const mesh = makeCrateVisual(); mesh.position.set(pos[0], 0, pos[1]);
-  worldCrate = { id:"crate_" + Math.random().toString(36).slice(2, 9), x:pos[0], z:pos[1], r:24, hp:70, bombT:null, bombOwner:null, rewardType:null, mesh, lastCount:-1 };
-  return true;
+function spawnWorldCrate(){
+ let pos=null;const radius=Math.min(150,stormRadius-48);
+ if(radius<24){crateSpawnTimer=5;return false;}
+ for(let attempt=0;attempt<100;attempt++){
+ const angle=Math.random()*Math.PI*2,d=Math.sqrt(Math.random())*radius,x=W/2+Math.cos(angle)*d,z=H/2+Math.sin(angle)*d;
+ if(blocked(x,z,32))continue;
+ if(MAPS[selectedMapIndex].vents.some(([vx,vz,w,h])=>x>vx-32&&x<vx+w+32&&z>vz-32&&z<vz+h+32))continue;
+ pos=[x,z];break;
+ }
+ if(!pos){crateSpawnTimer=5;return false;}
+ const mesh=makeCrateVisual();mesh.position.set(pos[0],0,pos[1]);mesh.userData.crate.position.y=420;
+ worldCrate={id:"crate_"+Math.random().toString(36).slice(2,9),x:pos[0],z:pos[1],y:420,dropT:0,dropDuration:2.4,r:24,hp:70,bombT:null,bombOwner:null,rewardType:null,mesh,lastCount:-1};
+ showAnnouncer("SUPPLY DROP INBOUND");Snd.play("pickup");return true;
 }
 
 function damageWorldCrate(amount, attacker = null) {
   const c = worldCrate;
-  if(!c || c.bombT !== null || (isMultiplayer && !isLobbyLeader)) return;
+  if(!c||c.y>0||c.bombT!==null||(isMultiplayer&&!isLobbyLeader))return;
   c.hp -= Math.max(1, amount);
   spawnSparks(c.x, c.z, 0xffbd68, 5);
   if(c.hp > 0) { spawnDamageNumber(c.x, c.z, "CRATE " + Math.ceil(c.hp), "#ffd28a"); return; }
@@ -3160,8 +3148,12 @@ function updateWorldCrate(dt) {
     if(crateSpawnTimer <= 0) spawnWorldCrate();
     return;
   }
-  const c = worldCrate;
-  if(c.bombT === null) return;
+  const c=worldCrate;
+ if(c.y>0){
+ c.dropT=Math.min(c.dropDuration,c.dropT+dt);const p=c.dropT/c.dropDuration;c.y=Math.max(0,420*(1-p*p));c.mesh.userData.crate.position.y=c.y;
+ if(c.y===0){spawn3DRing(c.x,c.z,42,0xffd47d);spawnSparks(c.x,c.z,0xffbd68,12);shakeIfNearby(c.x,c.z,5,180);Snd.play("crate");}return;
+ }
+ if(c.bombT===null)return;
   if(c.exploded) {
     c.bombT -= dt;
     if(c.bombT <= 0) { disposeHierarchy(c.mesh); worldCrate = null; crateSpawnTimer = 22 + Math.random() * 12; }
@@ -3176,7 +3168,8 @@ function updateWorldCrate(dt) {
   if(c.bombT > 0) return;
   const bx = c.x, bz = c.z, owner = c.bombOwner;
   c.exploded = true; c.bombT = 0.35;
-  c.mesh.userData.bomb.visible = false;
+  c.mesh.userData.bomb.visible=false;
+  if(c.mesh.userData.beam)c.mesh.userData.beam.visible=false;
   shakeIfNearby(bx, bz, 10, 240);
   spawn3DRing(bx, bz, 150, 0xff7238);
   spawnSparks(bx, bz, 0xff8a35, 16);
@@ -3546,7 +3539,7 @@ function melee(e, rng, d, kb, noReflect) {
     }
   }
   const c = worldCrate;
-  if(c && c.bombT === null && (!isMultiplayer || isLobbyLeader)) {
+  if(c&&!(c.y>0)&&c.bombT===null&&(!isMultiplayer||isLobbyLeader)){
     const dx = c.x - e.x, dz = c.z - e.z, d = Math.hypot(dx, dz);
     let da = Math.atan2(dz, dx) - e.a; da = Math.atan2(Math.sin(da), Math.cos(da));
     if(d < rng + c.r && Math.abs(da) < 1.15 && hasLOS(e.x, e.z, c.x, c.z)) damageWorldCrate(35, e);
@@ -4226,7 +4219,8 @@ function endMatch(winnerId, winnerTeam = null) {
   const iWon = teamMode
     ? (winnerTeam !== null && winnerTeam !== undefined && pl && pl.team === winnerTeam)
     : (winnerId !== null && winnerId !== undefined && winnerId === myNetId);
-  showResultScreen(iWon, winnerId, stats);
+  showResultScreen(iWon,winnerId,stats);
+  beginRoundVote(false);
 }
 
 window.returnToMenu = function() {
@@ -4248,6 +4242,80 @@ window.returnToMenu = function() {
   }
   menu("Select a champion to battle in the arena!");
 };
+
+// --- Eight-second map voting and one-click rematches, resolved by the host ---
+let roundVote=null,roundVoteSerial=0;
+function chooseVotedMap(votes,members,random=Math.random){
+ const counts=[0,0,0];for(const member of members){const v=votes[member.id];if(v===0||v===1||v===-1)counts[v===-1?2:v]++;}
+ const max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);
+ const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===2?Math.floor(random()*MAPS.length):winner;
+}
+function roundMembers(){return isMultiplayer?roster:[{id:myNetId,hero:p1HeroChoice,username:activeUsername(),tagCosmetics:getNameplateCosmeticIds()}];}
+function clearRoundVote(){roundVote=null;const el=document.getElementById("round-panel");if(el)el.remove();document.body.classList.remove("round-open");}
+function beginRoundVote(initial=false){
+ if(roundVote){renderRoundVote();return;}
+ if(isMultiplayer&&!isLobbyLeader)return;
+ if(isMultiplayer&&roster.length<2){showEconomyToast("Need at least two players to start.");return;}
+ const ready=Object.create(null),heroes=Object.create(null);for(const r of roundMembers()){ready[r.id]=initial;heroes[r.id]=r.id===myNetId?p1HeroChoice:r.hero;}
+ roundVote={id:myNetId+"_round_"+(++roundVoteSerial)+"_"+Date.now(),endsAt:Date.now()+8000,votes:Object.create(null),ready,heroes,chosen:null};
+ quickMatchAutoStart=null;qmClientCountdown=null;renderRoundVote();broadcastRoundVote();
+}
+function broadcastRoundVote(){
+ if(!roundVote||!isMultiplayer||!isLobbyLeader)return;outgoingSeq++;
+ broadcastToPeers({type:"ROUND_STATE",id:myNetId,seq:outgoingSeq,roundId:roundVote.id,remaining:Math.max(0,roundVote.endsAt-Date.now()),votes:roundVote.votes,ready:roundVote.ready,heroes:roundVote.heroes,chosen:roundVote.chosen});
+}
+function acceptRoundChoice(id,data){
+ if(!roundVote||data.roundId!==roundVote.id||!roundMembers().some(r=>r.id===id))return false;
+ if(data.action==="vote"&&Date.now()<roundVote.endsAt&&(data.choice===-1||data.choice===0||data.choice===1))roundVote.votes[id]=data.choice;
+ else if(data.action==="hero"&&Number.isInteger(data.hero)&&data.hero>=RANDOM_HERO&&data.hero<HEROES.length){roundVote.heroes[id]=data.hero;const r=roster.find(r=>r.id===id);if(r)r.hero=data.hero;if(id===myNetId)p1HeroChoice=data.hero;}
+ else if(data.action==="ready")roundVote.ready[id]=!!data.ready;
+ else return false;
+ renderRoundVote();broadcastRoundVote();return true;
+}
+function sendRoundChoice(action,value){
+ if(!roundVote)return;const packet={type:"ROUND_CHOICE",id:myNetId,roundId:roundVote.id,action};
+ if(action==="vote")packet.choice=value;
+ if(action==="hero"){packet.hero=Number(value);p1HeroChoice=Number(value);}
+ if(action==="ready")packet.ready=!!value;
+ if(!isMultiplayer||isLobbyLeader)acceptRoundChoice(myNetId,packet);
+ else{const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;packet.seq=outgoingSeq;c.send(packet);}}
+}
+function requestRematch(){
+ if(!roundVote){if(!isMultiplayer||isLobbyLeader)beginRoundVote(false);else{showEconomyToast("Waiting for the host's next-round vote...");return;}}
+ sendRoundChoice("ready",true);
+}
+function renderRoundVote(){
+ if(!roundVote)return;document.body.classList.add("round-open");
+ let panel=document.getElementById("round-panel");if(!panel){panel=document.createElement("section");panel.id="round-panel";panel.setAttribute("aria-label","Next round map vote and champion selection");document.body.appendChild(panel);}
+ const members=roundMembers(),key=JSON.stringify([roundVote.id,roundVote.votes,roundVote.ready,roundVote.heroes,roundVote.chosen,members.map(r=>[r.id,r.username])]);
+ const counts=[0,0,0];for(const r of members){const v=roundVote.votes[r.id];if(v===-1||v===0||v===1)counts[v===-1?2:v]++;}
+ if(panel.dataset.key!==key){
+ panel.dataset.key=key;const voted=roundVote.votes[myNetId],ready=!!roundVote.ready[myNetId],hero=roundVote.heroes[myNetId]??p1HeroChoice;
+ panel.innerHTML=`<div class="round-title">NEXT ROUND <span id="round-clock"></span></div><div class="round-options">${[0,1,-1].map((v,i)=>`<button class="economy-action ${voted===v?"primary":""}" data-vote="${v}">${v===-1?"🎲 Random":MAPS[v].name} · ${counts[i]}</button>`).join("")}<label>Champion <select id="round-champion" class="economy-action"><option value="-1" ${hero===-1?"selected":""}>🎲 Random</option>${HEROES.map((h,i)=>`<option value="${i}" ${i===hero?"selected":""}>${h.e} ${escapeHtml(h.n)}</option>`).join("")}</select></label><button id="round-ready" class="economy-action primary">${ready?"✓ READY — click to cancel":"REMATCH / READY"}</button><button id="round-leave" class="economy-action">${isMultiplayer?"Leave lobby":"Back to menu"}</button></div><div class="round-status">${members.map(r=>`<span>${escapeHtml(r.username||"Player")}: ${roundVote.ready[r.id]?"✓ ready":"choosing"}</span>`).join(" · ")}</div>`;
+ panel.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>sendRoundChoice("vote",Number(b.dataset.vote)));
+ panel.querySelector("#round-champion").onchange=e=>sendRoundChoice("hero",Number(e.target.value));
+ panel.querySelector("#round-ready").onclick=()=>sendRoundChoice("ready",!roundVote.ready[myNetId]);
+ panel.querySelector("#round-leave").onclick=()=>{if(isMultiplayer)leaveLobby("You left the lobby.");else{clearRoundVote();returnToMenu();}};
+ }
+ const remaining=Math.max(0,Math.ceil((roundVote.endsAt-Date.now())/1000)),clock=panel.querySelector("#round-clock");
+ if(clock)clock.textContent=remaining?`Map vote closes in ${remaining}s`:roundVote.chosen!==null?`${MAPS[roundVote.chosen].name} · waiting for everyone to ready`:"Vote closed · waiting for players";
+ panel.querySelectorAll("[data-vote]").forEach(b=>b.disabled=remaining===0);
+}
+function tickRoundVote(){
+ if(!roundVote)return;if(isMultiplayer&&!isLobbyLeader){renderRoundVote();return;}
+ const members=roundMembers();
+ if(Date.now()>=roundVote.endsAt){
+ if(roundVote.chosen===null)roundVote.chosen=chooseVotedMap(roundVote.votes,members);
+ if(members.length>=(isMultiplayer?2:1)&&members.every(r=>roundVote.ready[r.id])){
+ selectedMapIndex=roundVote.chosen;for(const r of roster)if(Number.isInteger(roundVote.heroes[r.id]))r.hero=roundVote.heroes[r.id];
+ p1HeroChoice=roundVote.heroes[myNetId]??p1HeroChoice;const multi=isMultiplayer;clearRoundVote();if(multi)launchVotedMatch();else launchSoloChosen();return;
+ }}
+ renderRoundVote();broadcastRoundVote();
+}
+setInterval(tickRoundVote,300);
+window.startLobbyMatch=function(){if(!isLobbyLeader)return;beginRoundVote(true);};
+window.launchSoloMatch=function(){if(!requireLocalAccount())return;beginRoundVote(true);};
+window.requestRematch=requestRematch;
 
 // --- NETWORKING LOGIC ---
 function gen4LetterCode() {
@@ -4322,6 +4390,7 @@ function executeIntentAtPose(ent, data, pose) {
 const HOST_DISCONNECT_MESSAGE = "Sorry, the host disconnected or was removed from the match. Please try again.";
 
 function leaveLobby(msg) {
+  clearRoundVote();
   msg = String(msg || "").replace(/[<>]/g, "");
   Snd.musicStop();
   if(peer) peer.destroy();
@@ -4368,7 +4437,7 @@ function setupConnectionEvents(conn) {
     peerConnections.set(conn.peer, conn);
     lastSeenByPeer.set(conn.peer, Date.now());
     outgoingSeq++;
-    conn.send({ type: "HELLO", id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
+    conn.send({ type: "HELLO", arenaVersion:2, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
   });
 
   conn.on("data", data => {
@@ -4386,6 +4455,7 @@ function setupConnectionEvents(conn) {
     if(isLobbyLeader) {
       outgoingSeq++;
       broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch || matchIsQuickMatch), seq: outgoingSeq });
+      if(roundVote)broadcastRoundVote();
     }
 
     // A failed Quick Match join attempt (room gone or rejected) — try the next room.
@@ -4451,7 +4521,16 @@ function handleIncomingData(conn, data) {
     return;
   }
 
-  if(data.type === "HOST_PAUSE") {
+  if(data.type==="ROUND_CHOICE"){
+ if(!isLobbyLeader||data.id!==conn.peer)return;acceptRoundChoice(conn.peer,data);return;
+ }
+ if(data.type==="ROUND_STATE"){
+ if(isLobbyLeader||conn.peer!==leaderId||data.id!==leaderId||typeof data.roundId!=="string")return;
+ if(state!=="menu"&&state!=="result")return;
+ roundVote={id:data.roundId,endsAt:Date.now()+Math.max(0,Math.min(8000,Number(data.remaining)||0)),votes:data.votes&&typeof data.votes==="object"?data.votes:{},ready:data.ready&&typeof data.ready==="object"?data.ready:{},heroes:data.heroes&&typeof data.heroes==="object"?data.heroes:{},chosen:Number.isInteger(data.chosen)&&MAPS[data.chosen]?data.chosen:null};
+ renderRoundVote();return;
+ }
+ if(data.type === "HOST_PAUSE") {
     if(isLobbyLeader || data.id !== leaderId) return;
     hostVisibilityPaused = !!data.paused;
     setHostPauseBanner(hostVisibilityPaused);
@@ -4460,7 +4539,9 @@ function handleIncomingData(conn, data) {
   }
 
   if(data.type === "HELLO") {
-    if(isLobbyLeader && data.id !== conn.peer) return;
+ if(isLobbyLeader&&data.id!==conn.peer)return;
+ if(!isLobbyLeader&&conn.peer===leaderId&&data.id===leaderId&&data.arenaVersion!==2){if(quickMatchRooms){try{conn.close();}catch(e){}return;}leaveLobby("Everyone must use the BBQ Bay / Conveyor Kitchen update.");return;}
+ if(isLobbyLeader&&data.arenaVersion!==2){try{conn.send({type:"REJECT",reason:"Please use the BBQ Bay / Conveyor Kitchen update to join this lobby."});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},300);return;}
     const hero = Number.isInteger(data.hero) && data.hero >= RANDOM_HERO && data.hero < HEROES.length ? data.hero : 0;
     let r = roster.find(x => x.id === data.id);
     const username = safeNetworkUsername(data.username || (r && r.username) || "Player", data.id);
@@ -4489,6 +4570,7 @@ function handleIncomingData(conn, data) {
     if(isLobbyLeader) {
       outgoingSeq++;
       broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch || matchIsQuickMatch), seq: outgoingSeq });
+      if(roundVote)broadcastRoundVote();
       // A brand-new member who arrived mid-round spectates the live match until the next one
       if(!r && (state === "play" || state === "countdown" || state === "intro")) {
         try {
@@ -4536,6 +4618,8 @@ function handleIncomingData(conn, data) {
     enterSpectateLobby(data);
   }
   else if(data.type === "START_GAME") {
+    if(isLobbyLeader||conn.peer!==leaderId)return;
+    clearRoundVote();
     if(quickMatchRooms) return; // still joining — ignore games we haven't been admitted to
     selectedMapIndex = Number.isInteger(data.mapIndex) && MAPS[data.mapIndex] ? data.mapIndex : 0;
     launchMeshMatch(
@@ -4558,6 +4642,7 @@ function handleIncomingData(conn, data) {
   }
   else if(data.type === "SNAPSHOT") {
     if(isLobbyLeader) return;
+    if(Number.isFinite(data.arenaTime))matchTime=data.arenaTime;
     if(state !== "play" && state !== "countdown" && state !== "intro") return;
     for(const item of data.entities) {
       if(item.id === myNetId) {
@@ -4725,7 +4810,8 @@ setInterval(() => {
       entities: snapEntities,
       pickups: Pickups.map(pk => ({ id: pk.uid, k: pk.kind, x: pk.x, z: pk.z })),
       husks: Husks.map(h => ({ id: h.id, x: h.x, z: h.z, hp: h.hp, l: h.life })),
-      crate: worldCrate ? { id:worldCrate.id, x:worldCrate.x, z:worldCrate.z, hp:worldCrate.hp, bombT:worldCrate.bombT, exploded:!!worldCrate.exploded } : null,
+      crate: worldCrate ? { id:worldCrate.id, x:worldCrate.x, z:worldCrate.z, y:worldCrate.y||0, hp:worldCrate.hp, bombT:worldCrate.bombT, exploded:!!worldCrate.exploded } : null,
+      arenaTime:matchTime,
       storm: Math.round(stormRadius)
     });
   }
@@ -4797,6 +4883,7 @@ setInterval(() => {
       if(isLobbyLeader) {
         outgoingSeq++;
         broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch || matchIsQuickMatch), seq: outgoingSeq });
+      if(roundVote)broadcastRoundVote();
       }
       if(state === "menu") refreshLobbyMenu();
     }
@@ -5329,7 +5416,7 @@ function tryNextQuickMatchRoom() {
 // Quick Match lobbies auto-start 15s after a second player joins (host side)
 let qmLastShown = -1;
 setInterval(() => {
-  if(quickMatchHosted && isMultiplayer && isLobbyLeader && state === "menu" && roster.length >= 2) {
+  if(quickMatchHosted&&isMultiplayer&&isLobbyLeader&&state==="menu"&&!roundVote&&roster.length>=2) {
     if(!quickMatchAutoStart) quickMatchAutoStart = Date.now() + 15000;
     const remaining = Math.max(0, Math.ceil((quickMatchAutoStart - Date.now()) / 1000));
     if(remaining <= 0) {
@@ -5360,6 +5447,7 @@ function refreshLobbyMenu() {
 }
 
 window.selectMap = function(idx) {
+  if(roundVote){sendRoundChoice("vote",idx);return;}
   selectedMapIndex = idx;
   ov.querySelectorAll(".map-selector .tab-btn").forEach((b, i) => {
     b.classList.toggle("selected", i === idx);
@@ -5649,7 +5737,7 @@ function menu(msg) {
           <span>🔊 Master <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="${Snd.vol}"></span>
           <span>🎚️ SFX <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="${Snd.sfxVol}"></span>
           <span>🎵 Music <input type="range" id="music-slider" min="0" max="1" step="0.05" value="${Snd.musicVol}"></span>
-          <span>🖥️ Graphics <span class="gfx-selector">${["low", "medium", "high"].map(l => `<button class="tab-btn ${gfxLevel === l ? 'selected' : ''}" data-gfx="${l}" onclick="setGraphics('${l}')">${l[0].toUpperCase() + l.slice(1)}</button>`).join("")}</span></span>
+
         </div>
 
         <div style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
@@ -5685,7 +5773,8 @@ function menu(msg) {
   }
   ov.querySelectorAll(".hero-card").forEach(b => {
     b.onclick = () => {
-      p1HeroChoice = +b.dataset.i;
+      p1HeroChoice=+b.dataset.i;
+      if(roundVote)sendRoundChoice("hero",p1HeroChoice);
       ov.querySelectorAll(".hero-card").forEach(card => {
         const ci = +card.dataset.i;
         card.classList.toggle("chosen", ci === p1HeroChoice);
@@ -5699,7 +5788,7 @@ function menu(msg) {
         const me = roster.find(x => x.id === myNetId);
         if(me) { me.hero = p1HeroChoice; me.tagCosmetics = getNameplateCosmeticIds(); me.skins = getSkinSelection(); }
         outgoingSeq++;
-        broadcastToPeers({ type: "HELLO", id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
+        broadcastToPeers({ type: "HELLO", arenaVersion:2, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
       }
     };
   });
@@ -5722,6 +5811,7 @@ function menu(msg) {
 }
 
 window.cancelLobby = function() {
+  clearRoundVote();
   if(peer) peer.destroy();
   peer = null;
   isMultiplayer = false;
@@ -5762,10 +5852,8 @@ function clearSceneEntities() {
   for(const s of SparkPool) { s.life = 0; s.m.visible = false; }
 }
 
-const SPAWNS = [
-  [50, 50], [BASE_W-50, BASE_H-50], [BASE_W-50, 50], [50, BASE_H-50],
-  [BASE_W/2, 40], [BASE_W/2, BASE_H-40], [40, BASE_H/2], [BASE_W-40, BASE_H/2]
-].map(([x, z]) => expandArenaPoint(x, z));
+const SPAWNS=[[W*.18,H*.22],[W*.82,H*.78],[W*.82,H*.22],[W*.18,H*.78],[W*.5,62],[W*.5,H-62],[W*.18,H*.5],[W*.82,H*.5]];
+function arenaSpawnPoints(){return MAPS[selectedMapIndex].spawns||SPAWNS;}
 
 function stopDemo() {
   if(!demoActive) return;
@@ -5792,7 +5880,7 @@ function startDemo() {
   stormMesh.scale.set(stormRadius, 1, stormRadius);
   matchTime = 0; countdown = 0; itemSpawnTimer = 0;
   matchOver = true;
-  const spawns = shuffle(SPAWNS);
+  const spawns = shuffle(arenaSpawnPoints());
   for(let i = 0; i < 4; i++) {
     const ci = Math.floor(Math.random() * HEROES.length);
     const sp = spawns[i % spawns.length];
@@ -5844,7 +5932,7 @@ function rebuildShowcase() {
   showcaseMesh = podium;
 }
 
-window.launchSoloMatch = function() {
+function launchSoloChosen() {
   if(!requireLocalAccount()) return;
   stopDemo();
   if(peer) {
@@ -5869,7 +5957,7 @@ window.launchSoloMatch = function() {
   currentRects = chosenMap.rects;
   build3DMap(chosenMap);
 
-  const spawns = shuffle(SPAWNS);
+  const spawns = shuffle(arenaSpawnPoints());
 
   const myHero = resolveHero(p1HeroChoice);
   E = [mk(myHero, spawns[0][0], spawns[0][1], 1, myNetId)];
@@ -5886,12 +5974,12 @@ window.launchSoloMatch = function() {
   initMatchView();
 };
 
-window.startLobbyMatch = function() {
+function launchVotedMatch() {
   if(roster.length < 2) {
     alert("Need at least 2 players in the lobby to start a match!");
     return;
   }
-  const spawns = shuffle(SPAWNS);
+  const spawns = shuffle(arenaSpawnPoints());
   const spawnMap = {};
   roster.forEach((r, idx) => {
     spawnMap[r.id] = spawns[idx % spawns.length];
@@ -6041,6 +6129,7 @@ function updateMatchIntro(dt) {
 }
 
 function initMatchView() {
+  clearRoundVote();
   yaw = 0; pitch = 0;
   cameraHolder.rotation.set(0, 0, 0);
   camera.rotation.set(0, 0, 0);
@@ -6200,9 +6289,10 @@ function upd(dt) {
   }
 
   matchTime += dt;
+  updateArenaMechanics(dt);
   updateStormAudio();
   if(!demoActive && matchTime > 4.0 && stormRadius > minStormRadius) {
-    stormRadius -= dt * 5.0;
+    stormRadius=Math.max(minStormRadius,stormRadius-dt*4.5);
   }
   stormMesh.scale.set(stormRadius, 1, stormRadius);
   Snd.musicUpdate((initialStormRadius - stormRadius) / (initialStormRadius - minStormRadius));
@@ -6595,7 +6685,7 @@ function upd(dt) {
       }
     }
 
-    if(!finalize && p.out && worldCrate && worldCrate.bombT === null && (!isMultiplayer || isLobbyLeader)
+    if(!finalize && p.out && worldCrate&&!(worldCrate.y>0)&&worldCrate.bombT===null&&(!isMultiplayer||isLobbyLeader)
        && Math.hypot(worldCrate.x - p.x, worldCrate.z - p.z) < worldCrate.r + 8) {
       damageWorldCrate(p.d || 8, p.o);
       finalize = true;
@@ -6691,6 +6781,7 @@ function loop(now) {
   stormMat.opacity = 0.3 + Math.sin(now / 450) * 0.07;
   stormMesh.rotation.y += dt * 0.03;
   updateSparks(dt);
+  updateArenaVisuals();
   if(state !== "play") Snd.storm(0); // storm wind only plays during an active match
 
   if(localHitStopFrames > 0) localHitStopFrames--;
