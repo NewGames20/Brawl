@@ -616,11 +616,7 @@ html, body {
 .bb-lobby-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:1020px;width:100%}
 </style>
 <style id="round-flow-style">
-#round-panel{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:45;width:min(94vw,1020px);max-height:42vh;overflow:auto;padding:14px 18px;border:1px solid #79cbd8;border-radius:16px;background:linear-gradient(135deg,rgba(16,29,43,.98),rgba(12,13,23,.98));box-shadow:0 10px 45px #000b;text-align:center}
-.round-title{font:900 17px 'Space Grotesk',sans-serif;color:#fff;margin-bottom:9px}.round-title span{font:700 12px Outfit,sans-serif;color:#ffcf82;margin-left:12px}
-.round-options{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:7px}.round-options label{font-size:12px;color:#d4dce9}.round-status{font-size:11px;color:#b8d0de;margin-top:10px}
-body.round-open #ov{padding-bottom:260px}body.round-open .result-card{max-height:54vh;margin-bottom:230px}body.round-open #result-modal{justify-content:flex-start;padding-top:20px}
-@media(max-height:650px){body.round-open .result-card{padding:14px 22px}#round-panel{bottom:5px;padding:9px}.round-title{font-size:14px}}
+#round-panel{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:45;width:min(94vw,1020px);max-height:42vh;overflow:auto;padding:14px 18px;border:1px solid #79cbd8;border-radius:16px;background:linear-gradient(135deg,rgba(16,29,43,.98),rgba(12,13,23,.98));box-shadow:0 10px 45px #000b;text-align:center}.round-title{font:900 17px 'Space Grotesk',sans-serif;color:#fff;margin-bottom:9px}.round-title span{font:700 12px Outfit,sans-serif;color:#ffcf82;margin-left:12px}.round-options{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:7px}.round-options label{font-size:12px;color:#d4dce9}.round-status{font-size:11px;color:#b8d0de;margin-top:10px}body.round-open #ov{padding-bottom:260px}body.round-open .result-card{max-height:54vh;margin-bottom:230px}body.round-open #result-modal{justify-content:flex-start;padding-top:20px}@media(max-height:650px){body.round-open .result-card{padding:14px 22px}#round-panel{bottom:5px;padding:9px}.round-title{font-size:14px}}
 </style>
 </head>
 <body>
@@ -1364,7 +1360,7 @@ function syncProfileIdentity() {
   if(demoActive) rebuildShowcase();
   if(isMultiplayer) {
     outgoingSeq++;
-    const packet = { type: "HELLO", arenaVersion:2, id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
+    const packet = { type: "HELLO", arenaVersion:3, id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
     if(isLobbyLeader) broadcastToPeers(packet);
     else if(leaderId && peerConnections.has(leaderId)) {
       const conn = peerConnections.get(leaderId);
@@ -1807,7 +1803,8 @@ const MAPS=[
  {id:"bbq",name:"BBQ Bay",floorCol:0x49362b,wallCol:0x5b3931,accent:0xffa34e,
  outline:[[96,14],[W-96,14],[W-96,86],[W-14,86],[W-14,H-86],[W-96,H-86],[W-96,H-14],[96,H-14],[96,H-86],[14,H-86],[14,86],[96,86]],
  voids:[[0,0,96,86],[W-96,0,96,86],[0,H-86,96,86],[W-96,H-86,96,86]],
- cover:[[W*.25,H*.25,62,52],[W*.67,H*.25,62,52],[W*.25,H*.66,62,52],[W*.67,H*.66,62,52]],
+ cover:[[W*.25,H*.25,62,52],[W*.67,H*.25,62,52],[W*.25,H*.66,62,52],[W*.67,H*.66,62,52],
+ [W*.18,H*.40,160,24],[W*.63,H*.56,160,24],[W*.40,H*.16,24,135],[W*.57,H*.60,24,135],[W*.43,H*.40,92,24],[W*.46,H*.57,92,24],[W*.31,H*.43,24,90],[W*.66,H*.42,24,90]],
  vents:[[W*.5-48,H*.25,96,36],[W*.5-48,H*.69,96,36]],belts:[]},
  {id:"conveyor",name:"Conveyor Kitchen",floorCol:0x192d38,wallCol:0x3d5967,accent:0x48e4e3,
  outline:[[14,14],[W-14,14],[W-14,H*.35],[W-108,H*.35],[W-108,H*.65],[W-14,H*.65],[W-14,H-14],[14,H-14],[14,H*.65],[108,H*.65],[108,H*.35],[14,H*.35]],
@@ -1834,9 +1831,7 @@ scene.add(cameraHolder);
 const renderer = new THREE.WebGLRenderer({ canvas: canvas3D, antialias: gfxLevel !== "low", powerPreference: gfxLevel === "low" ? "low-power" : "high-performance" });
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.outputEncoding=THREE.sRGBEncoding;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.1;
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
 
 const ambientLight = new THREE.AmbientLight(0xdbe3ff, 1.05);
 scene.add(ambientLight);
@@ -2363,8 +2358,7 @@ function syncRemoteCrate(data) {
     if(data.y>0)showAnnouncer("SUPPLY DROP INBOUND");
   }
   remoteCrateVisual.position.set(data.x,0,data.z);
- const dropY=Math.max(0,Number(data.y)||0),previousY=remoteCrateVisual.userData.dropY;
- remoteCrateVisual.userData.crate.position.y=dropY;remoteCrateVisual.userData.dropY=dropY;
+ const dropY=Math.max(0,Number(data.y)||0),previousY=remoteCrateVisual.userData.dropY;remoteCrateVisual.userData.crate.position.y=dropY;remoteCrateVisual.userData.dropY=dropY;
  if(previousY>0&&dropY===0){spawn3DRing(data.x,data.z,42,0xffd47d);spawnSparks(data.x,data.z,0xffbd68,10);Snd.play("crate");}
   const isBomb = data.bombT !== null && data.bombT !== undefined;
   remoteCrateVisual.userData.crate.visible = !isBomb;
@@ -2490,7 +2484,7 @@ function skyTexture(id) {
 }
 
 // --- 3D MAP BUILDER ---
-// --- BBQ Bay / Conveyor Kitchen: presentation and map mechanics ---
+// --- BBQ Bay / Conveyor Kitchen: map identity, cover, and mechanics ---
 let arenaVents=[],arenaBeltArrows=[];
 function kitchenFloorTexture(def){
  const c=document.createElement("canvas");c.width=c.height=1024;const x=c.getContext("2d"),warm=def.id==="bbq";
@@ -2502,74 +2496,70 @@ function kitchenFloorTexture(def){
  const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return tex;
 }
 function kitchenSign(text,color){
- const c=document.createElement("canvas");c.width=512;c.height=128;const x=c.getContext("2d");
- x.fillStyle="#0c1520";x.fillRect(0,0,512,128);x.strokeStyle=color;x.lineWidth=7;x.strokeRect(5,5,502,118);
- x.font="900 45px Outfit,system-ui";x.fillStyle=color;x.textAlign="center";x.fillText(text,256,80);
- const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;
- const mesh=new THREE.Mesh(new THREE.PlaneGeometry(170,42),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));
- mesh.position.set(W/2,92,32);mesh.rotation.y=0;mapGroup.add(mesh);
+ const c=document.createElement("canvas");c.width=512;c.height=128;const x=c.getContext("2d");x.fillStyle="#0c1520";x.fillRect(0,0,512,128);x.strokeStyle=color;x.lineWidth=7;x.strokeRect(5,5,502,118);
+ x.font="900 45px Outfit,system-ui";x.fillStyle=color;x.textAlign="center";x.fillText(text,256,80);const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;
+ const mesh=new THREE.Mesh(new THREE.PlaneGeometry(170,42),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));mesh.position.set(W/2,92,32);mapGroup.add(mesh);
+}
+function arenaBox(x,y,z,w,h,d,mat){const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;mapGroup.add(mesh);return mesh;}
+function buildThemedCover(def){
+ const steel=new THREE.MeshStandardMaterial({color:0xb9cdd2,metalness:.82,roughness:.28});
+ const dark=new THREE.MeshStandardMaterial({color:0x24272c,metalness:.7,roughness:.4});
+ const wood=new THREE.MeshStandardMaterial({color:0x8f5936,roughness:.85});
+ const brick=new THREE.MeshStandardMaterial({color:0x874c3c,roughness:.95});
+ const grout=new THREE.MeshStandardMaterial({color:0xb68a6d,roughness:1});
+ for(let index=0;index<def.cover.length;index++){
+ const [x,z,w,d]=def.cover[index],cx=x+w/2,cz=z+d/2;
+ if(def.id==="bbq"){
+  if(index<4){
+   arenaBox(cx,24,cz,w,48,d,dark);arenaBox(cx,49,cz,w+2,3,d+2,wood);
+   for(let k=0;k<6;k++)arenaBox(cx,51,z+5+k*(d-10)/5,w-6,2,2.2,steel);
+   const hood=new THREE.Mesh(new THREE.SphereGeometry(w*.36,16,10,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0x743529,metalness:.5,roughness:.4}));hood.scale.set(1,.65,.7);hood.position.set(cx,52,cz+2);hood.castShadow=true;mapGroup.add(hood);
+   const chimney=new THREE.Mesh(new THREE.CylinderGeometry(3,3,18,8),dark);chimney.position.set(x+w-10,60,z+10);mapGroup.add(chimney);
+  }else{
+   // Solid smokehouse dividers break long sightlines; their visible footprint matches collision.
+   arenaBox(cx,31,cz,w,62,d,brick);arenaBox(cx,64,cz,w+2,4,d+2,wood);
+   for(let layer=1;layer<5;layer++)arenaBox(cx,layer*12,cz,w+0.3,1,d+0.3,grout);
+   if(w>d)for(let k=1;k<Math.floor(w/24);k++)arenaBox(x+k*24,31,z-.2,1,58,.6,grout);
+   else for(let k=1;k<Math.floor(d/24);k++)arenaBox(x-.2,31,z+k*24,.6,58,1,grout);
+  }
+ }else{
+  // Open stainless prep islands: no grills, grate tops, or brick partitions.
+  const enamel=new THREE.MeshStandardMaterial({color:index%2?0x7dabb2:0xc6d7d9,metalness:.3,roughness:.45});
+  arenaBox(cx,24,cz,w,48,d,enamel);arenaBox(cx,49,cz,w+2,3,d+2,steel);arenaBox(cx,4,cz,w-5,6,d-5,dark);
+  for(const side of [-1,1]){arenaBox(cx+side*w*.23,25,z+d+.3,w*.4,33,.8,steel);arenaBox(cx+side*w*.23,32,z+d+1,w*.18,2,1.5,dark);}
+  const board=new THREE.MeshStandardMaterial({color:index%2?0xebae58:0xe3d49d,roughness:.85});arenaBox(cx-w*.17,52,cz,25,2,26,board);
+  const pot=new THREE.Mesh(new THREE.CylinderGeometry(8,7,10,14),steel);pot.position.set(cx+w*.24,56,cz);pot.castShadow=true;mapGroup.add(pot);
+  const lid=new THREE.Mesh(new THREE.CylinderGeometry(8.5,8.5,1.5,14),steel);lid.position.set(pot.position.x,62,cz);mapGroup.add(lid);
+  arenaBox(pot.position.x,64,cz,5,3,3,dark);
+ }
+ }
 }
 function ventPhase(index,time=matchTime){return ((time+index*5)%12+12)%12;}
 function updateArenaVisuals(){
- for(let i=0;i<arenaVents.length;i++){
- const phase=ventPhase(i),hot=phase>=9,warn=phase>=6&&phase<9,v=arenaVents[i];
- v.top.material.color.setHex(hot?0xff692b:warn?0xffc15b:0x2a2829);v.top.material.emissive.setHex(hot?0xff4b0f:warn?0xc57513:0x120a05);
- v.top.material.emissiveIntensity=hot?1.7:warn?.35+Math.sin(matchTime*10)*.15:.15;
- v.fire.visible=hot;v.fire.scale.y=hot?1+Math.sin(matchTime*21+i)*.16:1;
- }
+ for(let i=0;i<arenaVents.length;i++){const phase=ventPhase(i),hot=phase>=9,warn=phase>=6&&phase<9,v=arenaVents[i];v.top.material.color.setHex(hot?0xff692b:warn?0xffc15b:0x2a2829);v.top.material.emissive.setHex(hot?0xff4b0f:warn?0xc57513:0x120a05);v.top.material.emissiveIntensity=hot?1.7:warn?.35+Math.sin(matchTime*10)*.15:.15;v.fire.visible=hot;v.fire.scale.y=hot?1+Math.sin(matchTime*21+i)*.16:1;}
  for(const a of arenaBeltArrows){const b=a.userData.belt;a.position.x=b[0]+(((a.userData.offset+matchTime*b[4]*38)%(b[2]-20)+(b[2]-20))%(b[2]-20))+10;}
 }
 function updateArenaMechanics(dt){
- if(state!=="play"||demoActive)return;
- const def=MAPS[selectedMapIndex],auth=!isMultiplayer||isLobbyLeader;
- for(const e of E){
- if(e.dead)continue;
- if(auth)for(let i=0;i<def.vents.length;i++){
- const [x,z,w,d]=def.vents[i];if(ventPhase(i)>=9&&e.x>x-e.r*.3&&e.x<x+w+e.r*.3&&e.z>z-e.r*.3&&e.z<z+d+e.r*.3)hurt(e,11*dt,0,0,null);
- }
- // Local prediction moves your fighter; the host receives that pose, avoiding a double push.
- if(e===pl||(!isMultiplayer&&e.ai))for(const b of def.belts){
- if(e.x>b[0]&&e.x<b[0]+b[2]&&e.z>b[1]&&e.z<b[1]+b[3]){
- const nx=e.x+b[4]*42*dt,nz=e.z+b[5]*42*dt;if(!blocked(nx,e.z,e.r))e.x=nx;if(!blocked(e.x,nz,e.r))e.z=nz;
- }}
+ if(state!=="play"||demoActive)return;const def=MAPS[selectedMapIndex],auth=!isMultiplayer||isLobbyLeader;
+ for(const e of E){if(e.dead)continue;
+ if(auth)for(let i=0;i<def.vents.length;i++){const [x,z,w,d]=def.vents[i];if(ventPhase(i)>=9&&e.x>x-e.r*.3&&e.x<x+w+e.r*.3&&e.z>z-e.r*.3&&e.z<z+d+e.r*.3)hurt(e,11*dt,0,0,null);}
+ if(e===pl||(!isMultiplayer&&e.ai))for(const b of def.belts)if(e.x>b[0]&&e.x<b[0]+b[2]&&e.z>b[1]&&e.z<b[1]+b[3]){const nx=e.x+b[4]*42*dt,nz=e.z+b[5]*42*dt;if(!blocked(nx,e.z,e.r))e.x=nx;if(!blocked(e.x,nz,e.r))e.z=nz;}
  }
 }
 
 function build3DMap(def){
  const textures=new Set();mapGroup.traverse(o=>{for(const m of (Array.isArray(o.material)?o.material:[o.material]))if(m&&m.map)textures.add(m.map);});for(const tex of textures)tex.dispose();
  while(mapGroup.children.length)disposeHierarchy(mapGroup.children[0]);arenaVents=[];arenaBeltArrows=[];
- const shape=new THREE.Shape();def.outline.forEach(([x,z],i)=>i?shape.lineTo(x,-z):shape.moveTo(x,-z));shape.closePath();
- const geo=new THREE.ShapeGeometry(shape);geo.rotateX(-Math.PI/2);const uv=geo.attributes.uv,pos=geo.attributes.position;
- for(let i=0;i<uv.count;i++)uv.setXY(i,pos.getX(i)/W,pos.getZ(i)/H);
+ const shape=new THREE.Shape();def.outline.forEach(([x,z],i)=>i?shape.lineTo(x,-z):shape.moveTo(x,-z));shape.closePath();const geo=new THREE.ShapeGeometry(shape);geo.rotateX(-Math.PI/2);const uv=geo.attributes.uv,pos=geo.attributes.position;for(let i=0;i<uv.count;i++)uv.setXY(i,pos.getX(i)/W,pos.getZ(i)/H);
  const floor=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:kitchenFloorTexture(def),roughness:.62,metalness:.28}));floor.receiveShadow=true;mapGroup.add(floor);
  const surround=new THREE.Mesh(new THREE.PlaneGeometry(W+600,H+600),new THREE.MeshStandardMaterial({color:def.id==="bbq"?0x103a48:0x080e19,roughness:def.id==="bbq"?.25:.8,metalness:.45}));surround.rotation.x=-Math.PI/2;surround.position.set(W/2,-8,H/2);mapGroup.add(surround);
- const wallMat=new THREE.MeshStandardMaterial({color:def.wallCol,roughness:.42,metalness:def.id==="conveyor"?.72:.35});
- const trimMat=new THREE.MeshStandardMaterial({color:def.accent,emissive:def.accent,emissiveIntensity:.5,roughness:.3,metalness:.6});
- for(let i=0;i<def.outline.length;i++){
- const a=def.outline[i],b=def.outline[(i+1)%def.outline.length],length=Math.hypot(b[0]-a[0],b[1]-a[1]),angle=-Math.atan2(b[1]-a[1],b[0]-a[0]);
- const wall=new THREE.Mesh(new THREE.BoxGeometry(length,65,B),wallMat);wall.position.set((a[0]+b[0])/2,32.5,(a[1]+b[1])/2);wall.rotation.y=angle;wall.castShadow=true;wall.receiveShadow=true;mapGroup.add(wall);
- const trim=new THREE.Mesh(new THREE.BoxGeometry(length,2,2.2),trimMat);trim.position.set(wall.position.x,65,wall.position.z);trim.rotation.y=angle;mapGroup.add(trim);
- }
- for(const [x,z,w,d] of def.cover){
- const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,48,d),wallMat);mesh.position.set(x+w/2,24,z+d/2);mesh.castShadow=true;mesh.receiveShadow=true;mapGroup.add(mesh);
- const lip=new THREE.Mesh(new THREE.BoxGeometry(w+2,3,d+2),trimMat);lip.position.set(x+w/2,49,z+d/2);mapGroup.add(lip);
- for(let k=0;k<5;k++){const bar=new THREE.Mesh(new THREE.BoxGeometry(w-6,1.8,2.2),new THREE.MeshStandardMaterial({color:0x11171d,metalness:.75,roughness:.3}));bar.position.set(x+w/2,51,z+6+k*(d-12)/4);mapGroup.add(bar);}
- const handle=new THREE.Mesh(new THREE.TorusGeometry(7,1.4,5,12,Math.PI),trimMat);handle.position.set(x+w/2,29,z+d+.5);mapGroup.add(handle);
- }
- for(const [x,z,w,d] of def.vents){
- const top=new THREE.Mesh(new THREE.BoxGeometry(w,1.5,d),new THREE.MeshStandardMaterial({color:0x2a2829,emissive:0x220900,emissiveIntensity:.2,metalness:.7,roughness:.35}));top.position.set(x+w/2,1,z+d/2);mapGroup.add(top);
- const fire=new THREE.Group();for(let j=0;j<7;j++){const f=new THREE.Mesh(new THREE.ConeGeometry(4.5,26+(j%3)*7,6),new THREE.MeshBasicMaterial({color:j%2?0xffb333:0xff592b,transparent:true,opacity:.75,depthWrite:false}));f.position.set(x+8+j*(w-16)/6,16,z+d/2);fire.add(f);}
- fire.visible=false;mapGroup.add(fire);arenaVents.push({top,fire});
- for(let k=0;k<8;k++){const grate=new THREE.Mesh(new THREE.BoxGeometry(2,2,d),wallMat);grate.position.set(x+5+k*(w-10)/7,2.5,z+d/2);mapGroup.add(grate);}
- }
- for(const b of def.belts){
- const belt=new THREE.Mesh(new THREE.BoxGeometry(b[2],2,b[3]),new THREE.MeshStandardMaterial({color:0x132d35,roughness:.65,metalness:.45}));belt.position.set(b[0]+b[2]/2,1,b[1]+b[3]/2);mapGroup.add(belt);
- for(const side of [-1,1]){const rail=new THREE.Mesh(new THREE.BoxGeometry(b[2],2,2),trimMat);rail.position.set(b[0]+b[2]/2,2,b[1]+b[3]/2+side*b[3]/2);mapGroup.add(rail);}
- for(let j=0;j<12;j++){const arrow=new THREE.Group();for(const side of [-1,1]){const line=new THREE.Mesh(new THREE.BoxGeometry(12,.7,2),trimMat);line.position.z=side*4;line.rotation.y=side*(b[4]>0?Math.PI/4:-Math.PI/4);arrow.add(line);}arrow.position.set(b[0]+10+j*(b[2]-20)/12,2.6,b[1]+b[3]/2);arrow.userData={belt:b,offset:j*(b[2]-20)/12};mapGroup.add(arrow);arenaBeltArrows.push(arrow);}
- }
- skyDome.material.map=skyTexture(def.id==="bbq"?"forge":"ruins");skyDome.material.needsUpdate=true;rimLight.color.setHex(def.accent);hemiLight.color.setHex(def.id==="bbq"?0xffb789:0x9aeaff);dustMat.color.setHex(def.accent);
- scene.fog.color.setHex(def.id==="bbq"?0x160d12:0x081822);scene.fog.density=.00115;
- kitchenSign(def.name.toUpperCase(),def.id==="bbq"?"#ffb567":"#6ef5eb");
+ const wallMat=new THREE.MeshStandardMaterial({color:def.wallCol,roughness:.42,metalness:def.id==="conveyor"?.72:.35}),trimMat=new THREE.MeshStandardMaterial({color:def.accent,emissive:def.accent,emissiveIntensity:.5,roughness:.3,metalness:.6});
+ for(let i=0;i<def.outline.length;i++){const a=def.outline[i],b=def.outline[(i+1)%def.outline.length],length=Math.hypot(b[0]-a[0],b[1]-a[1]),angle=-Math.atan2(b[1]-a[1],b[0]-a[0]);const wall=arenaBox((a[0]+b[0])/2,32.5,(a[1]+b[1])/2,length,65,B,wallMat);wall.rotation.y=angle;const trim=arenaBox(wall.position.x,65,wall.position.z,length,2,2.2,trimMat);trim.rotation.y=angle;}
+ buildThemedCover(def);
+ for(const [x,z,w,d] of def.vents){const top=arenaBox(x+w/2,1,z+d/2,w,1.5,d,new THREE.MeshStandardMaterial({color:0x2a2829,emissive:0x220900,emissiveIntensity:.2,metalness:.7,roughness:.35}));const fire=new THREE.Group();for(let j=0;j<7;j++){const f=new THREE.Mesh(new THREE.ConeGeometry(4.5,26+(j%3)*7,6),new THREE.MeshBasicMaterial({color:j%2?0xffb333:0xff592b,transparent:true,opacity:.75,depthWrite:false}));f.position.set(x+8+j*(w-16)/6,16,z+d/2);fire.add(f);}fire.visible=false;mapGroup.add(fire);arenaVents.push({top,fire});for(let k=0;k<8;k++)arenaBox(x+5+k*(w-10)/7,2.5,z+d/2,2,2,d,wallMat);}
+ for(const b of def.belts){arenaBox(b[0]+b[2]/2,1,b[1]+b[3]/2,b[2],2,b[3],new THREE.MeshStandardMaterial({color:0x132d35,roughness:.65,metalness:.45}));for(const side of [-1,1])arenaBox(b[0]+b[2]/2,2,b[1]+b[3]/2+side*b[3]/2,b[2],2,2,trimMat);
+ for(let j=0;j<12;j++){const arrow=new THREE.Group();for(const side of [-1,1]){const line=new THREE.Mesh(new THREE.BoxGeometry(12,.7,2),trimMat);line.position.z=side*4;line.rotation.y=side*(b[4]>0?Math.PI/4:-Math.PI/4);arrow.add(line);}arrow.position.set(b[0]+10+j*(b[2]-20)/12,2.6,b[1]+b[3]/2);arrow.userData={belt:b,offset:j*(b[2]-20)/12};mapGroup.add(arrow);arenaBeltArrows.push(arrow);}}
+ skyDome.material.map=skyTexture(def.id==="bbq"?"forge":"ruins");skyDome.material.needsUpdate=true;rimLight.color.setHex(def.accent);hemiLight.color.setHex(def.id==="bbq"?0xffb789:0x9aeaff);dustMat.color.setHex(def.accent);scene.fog.color.setHex(def.id==="bbq"?0x160d12:0x081822);scene.fog.density=.00115;kitchenSign(def.name.toUpperCase(),def.id==="bbq"?"#ffb567":"#6ef5eb");
 }
 
 
@@ -3087,18 +3077,11 @@ function spawnPickupAt(rx, rz, kind, suppliedChoice = null) {
 }
 
 function spawnWorldCrate(){
- let pos=null;const radius=Math.min(150,stormRadius-48);
- if(radius<24){crateSpawnTimer=5;return false;}
- for(let attempt=0;attempt<100;attempt++){
- const angle=Math.random()*Math.PI*2,d=Math.sqrt(Math.random())*radius,x=W/2+Math.cos(angle)*d,z=H/2+Math.sin(angle)*d;
- if(blocked(x,z,32))continue;
- if(MAPS[selectedMapIndex].vents.some(([vx,vz,w,h])=>x>vx-32&&x<vx+w+32&&z>vz-32&&z<vz+h+32))continue;
- pos=[x,z];break;
- }
+ let pos=null;const radius=Math.min(150,stormRadius-48);if(radius<24){crateSpawnTimer=5;return false;}
+ for(let attempt=0;attempt<150;attempt++){const angle=Math.random()*Math.PI*2,d=Math.sqrt(Math.random())*radius,x=W/2+Math.cos(angle)*d,z=H/2+Math.sin(angle)*d;if(blocked(x,z,32))continue;if(MAPS[selectedMapIndex].vents.some(([vx,vz,w,h])=>x>vx-32&&x<vx+w+32&&z>vz-32&&z<vz+h+32))continue;pos=[x,z];break;}
  if(!pos){crateSpawnTimer=5;return false;}
  const mesh=makeCrateVisual();mesh.position.set(pos[0],0,pos[1]);mesh.userData.crate.position.y=420;
- worldCrate={id:"crate_"+Math.random().toString(36).slice(2,9),x:pos[0],z:pos[1],y:420,dropT:0,dropDuration:2.4,r:24,hp:70,bombT:null,bombOwner:null,rewardType:null,mesh,lastCount:-1};
- showAnnouncer("SUPPLY DROP INBOUND");Snd.play("pickup");return true;
+ worldCrate={id:"crate_"+Math.random().toString(36).slice(2,9),x:pos[0],z:pos[1],y:420,dropT:0,dropDuration:2.4,r:24,hp:70,bombT:null,bombOwner:null,rewardType:null,mesh,lastCount:-1};showAnnouncer("SUPPLY DROP INBOUND");Snd.play("pickup");return true;
 }
 
 function damageWorldCrate(amount, attacker = null) {
@@ -3149,10 +3132,7 @@ function updateWorldCrate(dt) {
     return;
   }
   const c=worldCrate;
- if(c.y>0){
- c.dropT=Math.min(c.dropDuration,c.dropT+dt);const p=c.dropT/c.dropDuration;c.y=Math.max(0,420*(1-p*p));c.mesh.userData.crate.position.y=c.y;
- if(c.y===0){spawn3DRing(c.x,c.z,42,0xffd47d);spawnSparks(c.x,c.z,0xffbd68,12);shakeIfNearby(c.x,c.z,5,180);Snd.play("crate");}return;
- }
+ if(c.y>0){c.dropT=Math.min(c.dropDuration,c.dropT+dt);const p=c.dropT/c.dropDuration;c.y=Math.max(0,420*(1-p*p));c.mesh.userData.crate.position.y=c.y;if(c.y===0){spawn3DRing(c.x,c.z,42,0xffd47d);spawnSparks(c.x,c.z,0xffbd68,12);shakeIfNearby(c.x,c.z,5,180);Snd.play("crate");}return;}
  if(c.bombT===null)return;
   if(c.exploded) {
     c.bombT -= dt;
@@ -4243,79 +4223,51 @@ window.returnToMenu = function() {
   menu("Select a champion to battle in the arena!");
 };
 
-// --- Eight-second map voting and one-click rematches, resolved by the host ---
+// --- Six-second map voting and host-resolved rematches ---
 let roundVote=null,roundVoteSerial=0;
 function chooseVotedMap(votes,members,random=Math.random){
- const counts=[0,0,0];for(const member of members){const v=votes[member.id];if(v===0||v===1||v===-1)counts[v===-1?2:v]++;}
- const max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);
- const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===2?Math.floor(random()*MAPS.length):winner;
+ const counts=[0,0,0];for(const m of members){const v=votes[m.id];if(v===0||v===1||v===-1)counts[v===-1?2:v]++;}const max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===2?Math.floor(random()*MAPS.length):winner;
 }
 function roundMembers(){return isMultiplayer?roster:[{id:myNetId,hero:p1HeroChoice,username:activeUsername(),tagCosmetics:getNameplateCosmeticIds()}];}
 function clearRoundVote(){roundVote=null;const el=document.getElementById("round-panel");if(el)el.remove();document.body.classList.remove("round-open");}
 function beginRoundVote(initial=false){
- if(roundVote){renderRoundVote();return;}
- if(isMultiplayer&&!isLobbyLeader)return;
- if(isMultiplayer&&roster.length<2){showEconomyToast("Need at least two players to start.");return;}
+ if(roundVote){renderRoundVote();return;}if(isMultiplayer&&!isLobbyLeader)return;if(isMultiplayer&&roster.length<2){showEconomyToast("Need at least two players to start.");return;}
  const ready=Object.create(null),heroes=Object.create(null);for(const r of roundMembers()){ready[r.id]=initial;heroes[r.id]=r.id===myNetId?p1HeroChoice:r.hero;}
- roundVote={id:myNetId+"_round_"+(++roundVoteSerial)+"_"+Date.now(),endsAt:Date.now()+8000,votes:Object.create(null),ready,heroes,chosen:null};
- quickMatchAutoStart=null;qmClientCountdown=null;renderRoundVote();broadcastRoundVote();
+ roundVote={id:myNetId+"_round_"+(++roundVoteSerial)+"_"+Date.now(),endsAt:Date.now()+6000,votes:Object.create(null),ready,heroes,chosen:null};quickMatchAutoStart=null;qmClientCountdown=null;renderRoundVote();broadcastRoundVote();
 }
 function broadcastRoundVote(){
- if(!roundVote||!isMultiplayer||!isLobbyLeader)return;outgoingSeq++;
- broadcastToPeers({type:"ROUND_STATE",id:myNetId,seq:outgoingSeq,roundId:roundVote.id,remaining:Math.max(0,roundVote.endsAt-Date.now()),votes:roundVote.votes,ready:roundVote.ready,heroes:roundVote.heroes,chosen:roundVote.chosen});
+ if(!roundVote||!isMultiplayer||!isLobbyLeader)return;outgoingSeq++;broadcastToPeers({type:"ROUND_STATE",id:myNetId,seq:outgoingSeq,roundId:roundVote.id,remaining:Math.max(0,roundVote.endsAt-Date.now()),votes:roundVote.votes,ready:roundVote.ready,heroes:roundVote.heroes,chosen:roundVote.chosen});
 }
 function acceptRoundChoice(id,data){
  if(!roundVote||data.roundId!==roundVote.id||!roundMembers().some(r=>r.id===id))return false;
  if(data.action==="vote"&&Date.now()<roundVote.endsAt&&(data.choice===-1||data.choice===0||data.choice===1))roundVote.votes[id]=data.choice;
  else if(data.action==="hero"&&Number.isInteger(data.hero)&&data.hero>=RANDOM_HERO&&data.hero<HEROES.length){roundVote.heroes[id]=data.hero;const r=roster.find(r=>r.id===id);if(r)r.hero=data.hero;if(id===myNetId)p1HeroChoice=data.hero;}
- else if(data.action==="ready")roundVote.ready[id]=!!data.ready;
- else return false;
+ else if(data.action==="ready")roundVote.ready[id]=!!data.ready;else return false;
  renderRoundVote();broadcastRoundVote();return true;
 }
 function sendRoundChoice(action,value){
- if(!roundVote)return;const packet={type:"ROUND_CHOICE",id:myNetId,roundId:roundVote.id,action};
- if(action==="vote")packet.choice=value;
- if(action==="hero"){packet.hero=Number(value);p1HeroChoice=Number(value);}
- if(action==="ready")packet.ready=!!value;
- if(!isMultiplayer||isLobbyLeader)acceptRoundChoice(myNetId,packet);
- else{const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;packet.seq=outgoingSeq;c.send(packet);}}
+ if(!roundVote)return;const packet={type:"ROUND_CHOICE",id:myNetId,roundId:roundVote.id,action};if(action==="vote")packet.choice=value;if(action==="hero"){packet.hero=Number(value);p1HeroChoice=Number(value);}if(action==="ready")packet.ready=!!value;
+ if(!isMultiplayer||isLobbyLeader)acceptRoundChoice(myNetId,packet);else{const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;packet.seq=outgoingSeq;c.send(packet);}}
 }
 function requestRematch(){
- if(!roundVote){if(!isMultiplayer||isLobbyLeader)beginRoundVote(false);else{showEconomyToast("Waiting for the host's next-round vote...");return;}}
- sendRoundChoice("ready",true);
+ if(!roundVote){if(!isMultiplayer||isLobbyLeader)beginRoundVote(false);else{showEconomyToast("Waiting for the host's next-round vote...");return;}}sendRoundChoice("ready",true);
 }
 function renderRoundVote(){
- if(!roundVote)return;document.body.classList.add("round-open");
- let panel=document.getElementById("round-panel");if(!panel){panel=document.createElement("section");panel.id="round-panel";panel.setAttribute("aria-label","Next round map vote and champion selection");document.body.appendChild(panel);}
- const members=roundMembers(),key=JSON.stringify([roundVote.id,roundVote.votes,roundVote.ready,roundVote.heroes,roundVote.chosen,members.map(r=>[r.id,r.username])]);
- const counts=[0,0,0];for(const r of members){const v=roundVote.votes[r.id];if(v===-1||v===0||v===1)counts[v===-1?2:v]++;}
- if(panel.dataset.key!==key){
- panel.dataset.key=key;const voted=roundVote.votes[myNetId],ready=!!roundVote.ready[myNetId],hero=roundVote.heroes[myNetId]??p1HeroChoice;
+ if(!roundVote)return;document.body.classList.add("round-open");let panel=document.getElementById("round-panel");if(!panel){panel=document.createElement("section");panel.id="round-panel";panel.setAttribute("aria-label","Next round map vote and champion selection");document.body.appendChild(panel);}
+ const members=roundMembers(),key=JSON.stringify([roundVote.id,roundVote.votes,roundVote.ready,roundVote.heroes,roundVote.chosen,members.map(r=>[r.id,r.username])]);const counts=[0,0,0];for(const r of members){const v=roundVote.votes[r.id];if(v===-1||v===0||v===1)counts[v===-1?2:v]++;}
+ if(panel.dataset.key!==key){panel.dataset.key=key;const voted=roundVote.votes[myNetId],ready=!!roundVote.ready[myNetId],hero=roundVote.heroes[myNetId]??p1HeroChoice;
  panel.innerHTML=`<div class="round-title">NEXT ROUND <span id="round-clock"></span></div><div class="round-options">${[0,1,-1].map((v,i)=>`<button class="economy-action ${voted===v?"primary":""}" data-vote="${v}">${v===-1?"🎲 Random":MAPS[v].name} · ${counts[i]}</button>`).join("")}<label>Champion <select id="round-champion" class="economy-action"><option value="-1" ${hero===-1?"selected":""}>🎲 Random</option>${HEROES.map((h,i)=>`<option value="${i}" ${i===hero?"selected":""}>${h.e} ${escapeHtml(h.n)}</option>`).join("")}</select></label><button id="round-ready" class="economy-action primary">${ready?"✓ READY — click to cancel":"REMATCH / READY"}</button><button id="round-leave" class="economy-action">${isMultiplayer?"Leave lobby":"Back to menu"}</button></div><div class="round-status">${members.map(r=>`<span>${escapeHtml(r.username||"Player")}: ${roundVote.ready[r.id]?"✓ ready":"choosing"}</span>`).join(" · ")}</div>`;
- panel.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>sendRoundChoice("vote",Number(b.dataset.vote)));
- panel.querySelector("#round-champion").onchange=e=>sendRoundChoice("hero",Number(e.target.value));
- panel.querySelector("#round-ready").onclick=()=>sendRoundChoice("ready",!roundVote.ready[myNetId]);
- panel.querySelector("#round-leave").onclick=()=>{if(isMultiplayer)leaveLobby("You left the lobby.");else{clearRoundVote();returnToMenu();}};
+ panel.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>sendRoundChoice("vote",Number(b.dataset.vote)));panel.querySelector("#round-champion").onchange=e=>sendRoundChoice("hero",Number(e.target.value));panel.querySelector("#round-ready").onclick=()=>sendRoundChoice("ready",!roundVote.ready[myNetId]);panel.querySelector("#round-leave").onclick=()=>{if(isMultiplayer)leaveLobby("You left the lobby.");else{clearRoundVote();returnToMenu();}};
  }
- const remaining=Math.max(0,Math.ceil((roundVote.endsAt-Date.now())/1000)),clock=panel.querySelector("#round-clock");
- if(clock)clock.textContent=remaining?`Map vote closes in ${remaining}s`:roundVote.chosen!==null?`${MAPS[roundVote.chosen].name} · waiting for everyone to ready`:"Vote closed · waiting for players";
- panel.querySelectorAll("[data-vote]").forEach(b=>b.disabled=remaining===0);
+ const remaining=Math.max(0,Math.ceil((roundVote.endsAt-Date.now())/1000)),clock=panel.querySelector("#round-clock");if(clock)clock.textContent=remaining?`Map vote closes in ${remaining}s`:roundVote.chosen!==null?`${MAPS[roundVote.chosen].name} · waiting for everyone to ready`:"Vote closed · waiting for players";panel.querySelectorAll("[data-vote]").forEach(b=>b.disabled=remaining===0);
 }
 function tickRoundVote(){
- if(!roundVote)return;if(isMultiplayer&&!isLobbyLeader){renderRoundVote();return;}
- const members=roundMembers();
- if(Date.now()>=roundVote.endsAt){
- if(roundVote.chosen===null)roundVote.chosen=chooseVotedMap(roundVote.votes,members);
- if(members.length>=(isMultiplayer?2:1)&&members.every(r=>roundVote.ready[r.id])){
- selectedMapIndex=roundVote.chosen;for(const r of roster)if(Number.isInteger(roundVote.heroes[r.id]))r.hero=roundVote.heroes[r.id];
- p1HeroChoice=roundVote.heroes[myNetId]??p1HeroChoice;const multi=isMultiplayer;clearRoundVote();if(multi)launchVotedMatch();else launchSoloChosen();return;
- }}
+ if(!roundVote)return;if(isMultiplayer&&!isLobbyLeader){renderRoundVote();return;}const members=roundMembers();
+ if(Date.now()>=roundVote.endsAt){if(roundVote.chosen===null)roundVote.chosen=chooseVotedMap(roundVote.votes,members);if(members.length>=(isMultiplayer?2:1)&&members.every(r=>roundVote.ready[r.id])){selectedMapIndex=roundVote.chosen;for(const r of roster)if(Number.isInteger(roundVote.heroes[r.id]))r.hero=roundVote.heroes[r.id];p1HeroChoice=roundVote.heroes[myNetId]??p1HeroChoice;const multi=isMultiplayer;clearRoundVote();if(multi)launchVotedMatch();else launchSoloChosen();return;}}
  renderRoundVote();broadcastRoundVote();
 }
 setInterval(tickRoundVote,300);
-window.startLobbyMatch=function(){if(!isLobbyLeader)return;beginRoundVote(true);};
-window.launchSoloMatch=function(){if(!requireLocalAccount())return;beginRoundVote(true);};
-window.requestRematch=requestRematch;
+window.startLobbyMatch=function(){if(!isLobbyLeader)return;beginRoundVote(true);};window.launchSoloMatch=function(){if(!requireLocalAccount())return;beginRoundVote(true);};window.requestRematch=requestRematch;
 
 // --- NETWORKING LOGIC ---
 function gen4LetterCode() {
@@ -4437,7 +4389,7 @@ function setupConnectionEvents(conn) {
     peerConnections.set(conn.peer, conn);
     lastSeenByPeer.set(conn.peer, Date.now());
     outgoingSeq++;
-    conn.send({ type: "HELLO", arenaVersion:2, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
+    conn.send({ type: "HELLO", arenaVersion:3, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
   });
 
   conn.on("data", data => {
@@ -4521,14 +4473,10 @@ function handleIncomingData(conn, data) {
     return;
   }
 
-  if(data.type==="ROUND_CHOICE"){
- if(!isLobbyLeader||data.id!==conn.peer)return;acceptRoundChoice(conn.peer,data);return;
- }
+  if(data.type==="ROUND_CHOICE"){if(!isLobbyLeader||data.id!==conn.peer)return;acceptRoundChoice(conn.peer,data);return;}
  if(data.type==="ROUND_STATE"){
- if(isLobbyLeader||conn.peer!==leaderId||data.id!==leaderId||typeof data.roundId!=="string")return;
- if(state!=="menu"&&state!=="result")return;
- roundVote={id:data.roundId,endsAt:Date.now()+Math.max(0,Math.min(8000,Number(data.remaining)||0)),votes:data.votes&&typeof data.votes==="object"?data.votes:{},ready:data.ready&&typeof data.ready==="object"?data.ready:{},heroes:data.heroes&&typeof data.heroes==="object"?data.heroes:{},chosen:Number.isInteger(data.chosen)&&MAPS[data.chosen]?data.chosen:null};
- renderRoundVote();return;
+ if(isLobbyLeader||conn.peer!==leaderId||data.id!==leaderId||typeof data.roundId!=="string")return;if(state!=="menu"&&state!=="result")return;
+ roundVote={id:data.roundId,endsAt:Date.now()+Math.max(0,Math.min(6000,Number(data.remaining)||0)),votes:data.votes&&typeof data.votes==="object"?data.votes:{},ready:data.ready&&typeof data.ready==="object"?data.ready:{},heroes:data.heroes&&typeof data.heroes==="object"?data.heroes:{},chosen:Number.isInteger(data.chosen)&&MAPS[data.chosen]?data.chosen:null};renderRoundVote();return;
  }
  if(data.type === "HOST_PAUSE") {
     if(isLobbyLeader || data.id !== leaderId) return;
@@ -4540,8 +4488,8 @@ function handleIncomingData(conn, data) {
 
   if(data.type === "HELLO") {
  if(isLobbyLeader&&data.id!==conn.peer)return;
- if(!isLobbyLeader&&conn.peer===leaderId&&data.id===leaderId&&data.arenaVersion!==2){if(quickMatchRooms){try{conn.close();}catch(e){}return;}leaveLobby("Everyone must use the BBQ Bay / Conveyor Kitchen update.");return;}
- if(isLobbyLeader&&data.arenaVersion!==2){try{conn.send({type:"REJECT",reason:"Please use the BBQ Bay / Conveyor Kitchen update to join this lobby."});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},300);return;}
+ if(!isLobbyLeader&&conn.peer===leaderId&&data.id===leaderId&&data.arenaVersion!==3){if(quickMatchRooms){try{conn.close();}catch(e){}return;}leaveLobby("Everyone must use the six-second vote / BBQ Bay cover update.");return;}
+ if(isLobbyLeader&&data.arenaVersion!==3){try{conn.send({type:"REJECT",reason:"Please use the six-second vote / BBQ Bay cover update to join this lobby."});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},300);return;}
     const hero = Number.isInteger(data.hero) && data.hero >= RANDOM_HERO && data.hero < HEROES.length ? data.hero : 0;
     let r = roster.find(x => x.id === data.id);
     const username = safeNetworkUsername(data.username || (r && r.username) || "Player", data.id);
@@ -5788,7 +5736,7 @@ function menu(msg) {
         const me = roster.find(x => x.id === myNetId);
         if(me) { me.hero = p1HeroChoice; me.tagCosmetics = getNameplateCosmeticIds(); me.skins = getSkinSelection(); }
         outgoingSeq++;
-        broadcastToPeers({ type: "HELLO", arenaVersion:2, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
+        broadcastToPeers({ type: "HELLO", arenaVersion:3, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
       }
     };
   });
@@ -6823,110 +6771,6 @@ requestAnimationFrame(loop);
 </script>
 </body>
 </html>
-
-<!-- FUTURE CHAMPIONS
-
-MICA · Ranged
-
-Two ranged forms; switching never restores health.
-Skitter: 125 HP, speed 180. Chromadarts: 8 damage every 0.5 seconds (16 DPS).
-Bastion: 235 HP, speed 125. Prism cannon: 30 damage every 1.25 seconds (24 DPS).
-Ability 1, METAMORPHOSIS (7s): stand still for about 1.1 seconds while changing form. Mica is fully vulnerable, cannot cancel the transformation, and damage does not interrupt it. Movement, attacks, and Ability 2 are unavailable during the transformation. Changing form preserves her percentage of max Health, recalculates it against the new form's max Health, and never restores health.
-Skitter Ability 2, PRISMATIC GLARE (9s): Mica releases a blinding flash in a 360-degree circle, a 1.5s flash around her (small radius, 90 units), and grants 25% movement speed for 1.5s.
-Bastion Ability 2, FOCUSED PRISM (11s): charge a narrow, long-range beam with a clear wind-up (1s) and an obvious aim line (slows you down 25% while winding). A hit deals 50 damage, but the charge leaves Mica exposed.
-
-
-RICO · Ranged
-
-Ranged billiard-ball launcher. Basic cue balls ricochet twice.
-Rico: 170 HP, speed 150. Cue Ball: 15 damage every 1 second (15 DPS).
-Ability 1, BUMPER (11s): places one bumper (5s lifetime); Rico's cue balls bounce off it. Players can't break, shoot through, or go through it; other shots do not bounce off it.
-Ability 2, BANK SHOT (9s): empowers the next shot to ricochet up to five times. Each ricochet adds 20% of base damage. The ability is consumed when fired, even if the shot misses.
-
-
-KAMO · Ranged
-
-Kamo: 130 HP, speed 175. Weapon: TAG SPITTER, fast sticky globs, 10 damage every 0.5s (20 DPS), projectile speed 450.
-Each hit paints the target for 3s; only Kamo sees an outline through walls.
-Ability 1, TONGUE SNATCH (11s): tongue flicks 280 units (speed 950). Hit: 10 damage, and the target is DISARMED for 1.2s (no basic attack; abilities still work) and slowed 25% for 1.6s. Their weapon visibly vanishes from their model.
-Ability 2, CAMOUFLAGE (14s cooldown, lasts 6s): Kamo goes invisible. While camouflaged: no nameplate, no dot on enemy minimaps, and bots only notice him within 70 units if he's moving. The first attack or ability out of camouflage breaks it and deals +40% damage. Taking damage reveals him for 2s but doesn't end the effect.
-Watch out: keep the ambush bonus to the first hit and make the reveal, shimmer, and tongue readable.
-
-
-GRUFF · Melee 
-
-STONE TALONS, a fast two-hit rake, range 62, 13 damage every 0.6s (about 22 DPS).
-Gruff: 175 HP, speed 160.
-Ability 1, WING GUST (10s): Gruff erupts with a 360-degree shockwave that knocks back nearby enemies, slows them by 50% for 0.8s, and reflects all incoming projectiles.
-Ability 2, SWOOP AND SLAM (13s): rise over 0.35s, hover up to 2.5s, and steer at 80% speed (no attacks). Airborne = untargetable by melee, ground zones, and ground-rolling shots; flying projectiles can still hit. The camera lifts from 22 to 55, and a small shadow ring on the floor shows everyone exactly where you'll land.
-When the timer ends (or you press Ability 2 again to cancel), Gruff drops straight down: radius 65, knockback 160, 0.4s stun, and Gruff gets 25% damage reduction for 1s. Damage scales with air time: bailing out at 0.4s deals 12; a full-time hover deals 26. Canceling early is a dodge, not a free hit.
-
-
-BOWLER · Ranged
-
-Throws a medium-range bowling ball on the ground, with small knockback on hit.
-Bowler: 205 HP, speed 130. Bowling Ball: 25 damage every 1.25 seconds (20 DPS).
-Ability 1, OIL LANES (9s): deploy a long oil zone (lasts 6s, but cooldown doesn't start until after it's gone) that reduces enemy movement speed and traction (causes sliding); the bowling ball speeds up 25% and deals 20% more damage.
-Ability 2, STRIKE (12s): pressing the ability button brings up a trajectory indicator; use the Up, Left, or Right arrow keys to cycle between a straight or curving path, then Left-Click to fire a faster, larger, and higher-damage bowling ball that can't be interfered with, stuns on hit for 0.7s, and gains +30% speed and +25% damage (replacing the standard +25% speed and +20% damage) if thrown along an Oil Lane.
-
-
-------------
-
-GRAVEL · Ranged (MAYBE?)
-HP 215, speed 120. Weapon: PEBBLE PITCH, a lobbed stone, 20 damage every 0.9s (about 22 DPS), range ~280.
-Ability 1, RAISE WALL (11s): a 70x16 slab erupts 60 units ahead (0.4s rise) and lasts 6s or until it reaches 100 HP. Blocks movement, line of sight, and projectiles. Anyone standing on its footprint is shoved aside.
-Ability 2, QUAKE (15s): ground pound, radius 150. Every MAP obstacle in range sinks into the floor for 6s (walkable, sight lines open), and enemies in range take 12 damage and a 0.5s stun. He rearranges the arena mid-fight: strip a sniper's perch, flush Mycelis out of her hiding spot.
-Needs: dynamic obstacles. The outer arena walls never sink.
-
-
-JACKPOT · Ranged (MAYBE!)
-HP 160, speed 150. Weapon: LUCKY REVOLVER. Every shot flips a coin: HEADS 20 damage, TAILS 6 damage, 0.6s cooldown, and the shot after a TAILS is always HEADS (pity rule). Average ≈ 26 DPS. A coin icon on the HUD shows the last flip.
-Ability 1, ROLL THE DICE (11s): roll a d6 that floats over Jackpot so everyone sees it. 1 snake eyes: take 15 damage. 2: slowed for 2s. 3: heal 25. 4: +35% speed for 4s. 5: absorb the next 40 damage. 6 JACKPOT: heal 40, speed boost, and the next 3 shots are guaranteed heads.
-Ability 2, ALL IN (17s): wager 20% of your current HP. For 6s, every shot is heads and +20% damage. Get a kill during it, and you heal back double the wager; reach the end without one and the wager is gone.
-Why it's fun: high-variance party energy that's readable to everyone.
-Watch out: clearly show the die result and test the kill refund and stacked damage carefully.
-
-
-GRIM · Melee (MAYBE)
-HP 150, speed 160. Weapon: SCYTHE, a wide arc (range 75, 90° wide), 20 damage every 0.9s = 22 DPS. REAP: against enemies under 25% HP, the scythe deals double damage.
-Passive, SOUL HARVEST: whenever ANYONE dies (storm deaths count), a wisp drifts out. Collect up to 5; each gives +5% damage and +5 speed.
-Ability 1, SHADE STEP (9s): for 1.4s, Grim becomes a shadow: untargetable, +40% speed, can walk through enemies (not walls).
-Ability 2, DEATH'S MARK (15s): mark one enemy in view for 6s. You see them through walls (HUD arrow) and they can't be healed (no kill-heal, no pickups). Killing the marked target refunds half of both cooldowns.
-
-
-COSMO · Ranged (MAYBE!)
-HP 170, speed 145. Passive: three moons orbit Cosmo (radius 28). Each moon blocks ONE incoming projectile and then goes dark for 5s (they never block your view or your shots). Enemies touching a moon take 6 damage and a small shove every 0.6s (anti-melee).
-Weapon: MOON LAUNCHER fires a moon (24 damage, pierces, flies 0.9s), 0.7s cooldown. A launched moon only returns 3.5s later, so ammo IS defense: shoot all three, and you're exposed. Burst ≈ 34 DPS, sustained ≈ 20 DPS (limited by moons).
-Ability 1, MOON TAG: requires a ready orbiting moon, and only one Moon Tag can be active at a time. Shoot one moon at the enemy in Cosmo's crosshair. The moon cannot be broken, homes in on that enemy, and floats above them. Click Ability 1 again to drop the moon onto the target for 24 damage and a 1.1s stun. After the hit, the moon goes dark, returns to Cosmo, and takes its normal 5s recovery before orbiting again. If the target dies before the second click, the moon returns without hitting and takes the same recovery.
-Ability 2, GRAVITY WELL (13s): after a visible 0.5s wind-up, creates a medium-sized well that pulls enemies toward the center for 5s and slows them by 25%.
-Why it's fun: send a moon to protect a teammate, then use the gravity field to shape where the next fight happens. Each deployed moon trades Cosmo's own defense for team control.
-
-
-MIME  · Ranged (MAYBE)
-HP 150, speed 165. Weapon: AIR JAB, a short-range compressed-air strike, 14 damage every 0.7s.
-Ability 1, INVISIBLE WALLS (10s): place one 90x12 wall for 4s. It blocks movement and projectiles for both teams. It is invisible at a distance and shimmers for everyone when touched. When revealed, it can be destroyed (60 HP).
-Ability 2, IMITATE (14s): For 6s, store the last hostile Ability 1 or Ability 2 that hits Mime. Reactivate to copy its basic effect at 70% strength or duration. The source and timer are shown to everyone. Passives, transformations, global effects and summons cannot be copied. With no stored ability, Imitate is unavailable.
-Why it's fun: the wall is the defining trick, while Imitate makes opponents think before using abilities on him.
-Watch out: keep the wall discoverable through collision feedback, and make copied abilities readable.
-
-
-REF · Ranged (MAYBE)
-HP 170, speed 150. Weapon: WHISTLE DART, 13 damage every 0.65s (20 DPS).
-Passive, CHALK LINE: when Ref marks a player, a visible line connects them for 3s. Enemies crossing it are slowed by 25% for 1s.
-Ability 1, RED CARD (10s): throw a red card at one player. A hit marks them for 4s; the Ref's next hit on them deals +25% damage and consumes the mark.
-Ability 2, BLOW THE WHISTLE (16s): after a 0.5s wind-up, freezes enemy basic attacks in a 180-unit radius for 1.7s. Ref can still attack. Movement and abilities remain available.
-Why it's fun: he can isolate a target for a damage bonus, then use a whistle to reset a close fight.
-Watch out: the whistle only affects nearby enemies, not the whole match.
-
-
-GHOST · Ranged (MAYBE?)
-HP 145, speed 180. Weapon: GHOSTFIRE, 13 damage every 0.7s (about 19 DPS), medium range.
-Ability 1, PHASE WALK (12s): for 1.5s, Wisp phases through map obstacles but not the arena boundary. Wisp cannot attack or use abilities while phasing and remains damageable. Leaves a visible haunting trail; enemies crossing it are slowed by 25% for 0.8s.
-Ability 2, HAUNT (13s): send a slow spirit through walls toward a target point up to 240 units away. It bursts in a visible 70-unit circle for 12 damage and briefly outlines enemies hit for Wisp. It does not pass through the outer arena wall.
-Why it's fun: phase through a wall to reposition, but the trail tells opponents where Wisp went.
-Watch out: phasing is not invulnerability; keep Wisp damageable and unable to attack during the phase.
-
-
 
     --- NEXT MAJOR UPDATE ---
 
