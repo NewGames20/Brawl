@@ -878,6 +878,7 @@ function normalizeStoredProfile(profile) {
   const balance = Math.max(0, Math.floor(Number(profile && profile.shinies) || 0));
   return {
     id, username, shinies: balance, owned, equipped,
+    dailyChallenges: normalizeDailyChallenges(profile && profile.dailyChallenges),
     lastDailyDate: /^\d{4}-\d{2}-\d{2}$/.test(profile && profile.lastDailyDate || "") ? profile.lastDailyDate : ""
   };
 }
@@ -990,7 +991,7 @@ function claimDailyShinies() {
 function accountToolbarHTML() {
   const profile = activeProfile();
   const summary = profile ? `👤 ${escapeHtml(profile.username)} · <span class="wallet">✨ ${profile.shinies} Shinies</span>` : "Create an account to save your Shinies";
-  return `<div class="account-toolbar"><span id="account-summary">${summary}</span><button class="lobby-btn" onclick="openAccountModal()">Account</button><button class="lobby-btn action-accent" onclick="openShop()">✨ Shinies Shop</button></div>`;
+  return `<div class="account-toolbar"><span id="account-summary">${summary}</span><button class="lobby-btn" onclick="openAccountModal()">Account</button><button class="lobby-btn" onclick="openDailyChallenges()">📅 Daily Challenges</button><button class="lobby-btn action-accent" onclick="openShop()">✨ Shinies Shop</button></div>`;
 }
 
 function renderAccountModal() {
@@ -1229,7 +1230,7 @@ function renderEconomyModal() {
   const title = document.getElementById("economy-title");
   title.textContent = economyModalView === "shop" ? "Shinies Shop" : (activeProfile() ? "Account" : "Create Your Account");
   updateEconomyDisplays();
-  if(economyModalView === "shop") renderShopModal(); else renderAccountModal();
+  if(economyModalView === "shop") renderShopModal(); else if(economyModalView === "daily") renderDailyChallenges(); else renderAccountModal();
   modal.classList.add("show");
 }
 
@@ -1352,6 +1353,71 @@ window.closeEconomyModal = closeEconomyModal;
 window.createOrSwitchAccount = createOrSwitchAccount;
 window.renameCurrentAccount = renameCurrentAccount;
 window.openCosmeticCrate = openCosmeticCrate;
+
+
+const DAILY_POOL = [
+  {id:"play1", event:"matches", target:1, reward:30, text:"Finish 1 Quick Match"},
+  {id:"play3", event:"matches", target:3, reward:60, text:"Finish 3 Quick Matches"},
+  {id:"kill3", event:"kills", target:3, reward:40, text:"Get 3 Quick Match eliminations"},
+  {id:"kill6", event:"kills", target:6, reward:70, text:"Get 6 Quick Match eliminations"},
+  {id:"win1", event:"wins", target:1, reward:60, text:"Win 1 Quick Match"},
+  {id:"win2", event:"wins", target:2, reward:100, text:"Win 2 Quick Matches"}
+];
+function normalizeDailyChallenges(value) {
+  const result = {date: value && /^\d{4}-\d{2}-\d{2}$/.test(value.date) ? value.date : "", progress:{}, claimed:[]};
+  for(const key of ["kills","matches","wins"]) result.progress[key] = Math.max(0,Math.floor(Number(value && value.progress && value.progress[key])||0));
+  result.claimed = value && Array.isArray(value.claimed) ? value.claimed.filter(id=>typeof id === "string") : [];
+  return result;
+}
+function dailyState(profile = activeProfile()) {
+  if(!profile) return null;
+  if(!profile.dailyChallenges || profile.dailyChallenges.date !== localDayKey()) {
+    profile.dailyChallenges = normalizeDailyChallenges(null);
+    profile.dailyChallenges.date = localDayKey();
+    saveAccountBook();
+  }
+  return profile.dailyChallenges;
+}
+function dailySelection(date = localDayKey()) {
+  const day = Math.floor(Date.parse(date+"T00:00:00Z")/86400000);
+  return [DAILY_POOL[day%2], DAILY_POOL[2+Math.floor(day/2)%2], DAILY_POOL[4+Math.floor(day/4)%2]];
+}
+function progressDaily(event) {
+  if(!matchIsQuickMatch || !pl || !pl.netId || pl.netId !== myNetId || demoActive) return;
+  const daily = dailyState();
+  if(!daily) return;
+  daily.progress[event] = (daily.progress[event]||0)+1;
+  saveAccountBook();
+}
+function claimDailyChallenge(id) {
+  const profile = activeProfile(), daily = dailyState(profile);
+  const challenge = dailySelection().find(item=>item.id === id);
+  if(!daily || !challenge || daily.claimed.includes(id) || (daily.progress[challenge.event]||0)<challenge.target) return;
+  daily.claimed.push(id);
+  profile.shinies += challenge.reward;
+  saveAccountBook();
+  updateEconomyDisplays();
+  showEconomyToast(`Daily challenge: +${challenge.reward} Shinies`);
+  renderDailyChallenges();
+}
+function renderDailyChallenges() {
+  const daily = dailyState();
+  const next = new Date(); next.setHours(24,0,0,0);
+  const minutes = Math.max(1,Math.ceil((next-Date.now())/60000));
+  document.getElementById("economy-title").textContent = "Daily Challenges";
+  document.getElementById("economy-body").innerHTML = `<p class="economy-note">Quick Matches only. New challenges every day at local midnight. Resets in ${Math.floor(minutes/60)}h ${minutes%60}m. Claim completed rewards before the reset.</p><div class="shop-grid">${daily ? dailySelection().map(c=>{
+    const progress = Math.min(c.target,daily.progress[c.event]||0), claimed = daily.claimed.includes(c.id);
+    return `<div class="shop-item"><div class="shop-item-name">${c.text}</div><div class="shop-item-price">✨ ${c.reward} Shinies</div><progress max="${c.target}" value="${progress}" aria-label="${c.text}"></progress><span>${progress} / ${c.target}</span><button class="economy-action primary" onclick="claimDailyChallenge('${c.id}')" ${claimed || progress<c.target ? "disabled" : ""}>${claimed ? "CLAIMED" : "CLAIM REWARD"}</button></div>`;
+  }).join("") : "Create an account to unlock daily challenges."}</div>`;
+}
+function openDailyChallenges() {
+  if(!requireLocalAccount()) return;
+  economyModalView = "daily";
+  renderEconomyModal();
+}
+setInterval(()=>{
+  if(document.getElementById("economy-modal").classList.contains("show") && economyModalView === "daily") renderDailyChallenges();
+},10000);
 
 // --- GRAPHICS PRESETS ---
 // scale = render resolution (1 = full). Lower presets also drop shadows, extra light, dust, sparks, glows and flame particles.
@@ -1639,7 +1705,7 @@ const HEROES = [
    hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
    a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 16 damage, heavy knockback, and a 1-second stun.",
    a2n:"Charge", a2cd: 14.0,
-   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can deflect nearby projectiles in front of Bruno.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 14 damage, heavy knockback, and a brief stun.",
+   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Oink’s bullets and cannonballs, Sizzle’s meatballs, and Quackbot’s bullets in front of Bruno. Bananas and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 14 damage, heavy knockback, and a brief stun.",
    melee: true, d:"A durable frontline tank who controls space with a wide, hard-hitting hammer. Slam interrupts nearby enemies, while Charge lets Bruno cross a short gap and scatter anyone in his path. Time his swings to turn away incoming shots and hold space around himself."
  },
  {
@@ -1657,7 +1723,7 @@ const HEROES = [
    hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
    a1n:"Cluster Bomb", a1cd: 9.0, a1d:"Lob a fruit bomb ahead. When it bursts, six returning banana boomerangs fan out from the blast point, each dealing 10 damage and knockback on a hit.",
    a2n:"Peel Trap", a2cd: 10.5,
-   ad:"Throw a crescent boomerang for 16 damage. It travels forward, then curves back toward Mango, giving him another chance to catch an opponent on its return path.", a2d:"Drop a peel 38 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 9 damage, is launched, and is stunned for 1.5 seconds.",
+   ad:"Throw a crescent boomerang for 16 damage. Cannot be reflected: they are bananas, not bullets! It travels forward, then curves back toward Mango, giving him another chance to catch an opponent on its return path.", a2d:"Drop a peel 38 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 9 damage, is launched, and is stunned for 1.5 seconds.",
    melee: false, d:"A fast skirmisher who keeps moving while boomerangs pressure opponents from different angles. Cluster Bomb scatters returning blades across a fight, and Peel Trap can punish a pursuer or guard a narrow route. Mango is less durable than the frontliners, so use speed and spacing to avoid being pinned down."
  },
  {
@@ -1684,7 +1750,7 @@ const HEROES = [
    hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
    a1n:"Spore Pod", a1cd: 6.5, a1d:"Plant a hidden pod 45 units ahead. It waits for up to 7 seconds; an enemy who triggers it releases a spore cloud, becomes poisoned for 3 seconds, and is slowed. The poison deals 15 total damage.",
    a2n:"Root Entangle", a2cd: 9.0,
-   ad:"Fire a spore bolt for 20 damage and knockback. A poisoned opponent can be slowed again by the lingering cloud from a triggered pod.", a2d:"Launch an overgrowth projectile for 18 direct damage. On impact it bursts in a 45-unit area, dealing 12 additional damage and rooting enemies for 1.4 seconds.",
+   ad:"Cannot be reflected: these are shots of magical powers beyond reflection. Fire a spore bolt for 20 damage and knockback. A poisoned opponent can be slowed again by the lingering cloud from a triggered pod.", a2d:"Launch an overgrowth projectile for 18 direct damage. On impact it bursts in a 45-unit area, dealing 12 additional damage and rooting enemies for 1.4 seconds.",
    melee: false, d:"A tactician who shapes the fight with concealed traps and precise root projectiles. Spore Pod punishes enemies who chase through a planted route, while Root Entangle can hold a target in place for follow-up attacks. Mycelis has balanced health but relies on preparation and accurate placement to get the most from her control tools."
  },
  {
@@ -3399,7 +3465,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
       attacker.killStreak++;
       attacker.lastKillTime = matchTime;
       killMeta = { streak: attacker.killStreak, multi: attacker.killChain };
-      if(matchIsQuickMatch && attacker.netId === myNetId) awardShinies(SHINY_REWARDS.kill, "Elimination");
+      if(matchIsQuickMatch && attacker.netId === myNetId) { awardShinies(SHINY_REWARDS.kill, "Elimination"); progressDaily("kills"); }
     }
     Snd.play("death");
     addKillFeed(attacker && attacker !== t ? attacker : null, t, killMeta);
@@ -3470,24 +3536,26 @@ function melee(e, rng, d, kb, noReflect) {
 
 function reflect(e, r) {
   for(const p of P) {
-    if(p.o !== e && Math.hypot(p.x - e.x, p.z - e.z) < r + 15) {
-      let da = Math.atan2(p.z - e.z, p.x - e.x) - e.a;
-      da = Math.atan2(Math.sin(da), Math.cos(da));
-      if(Math.abs(da) < 1.25) {
-        spawn3DRing(p.x, p.z, 20, 0xffffff);
-        if(p.t === "b") {
-          p.life = 0;
-        } else {
-          const spd = Math.hypot(p.vx, p.vz) * 1.1;
-          p.vx = Math.cos(e.a) * spd;
-          p.vz = Math.sin(e.a) * spd;
-          p.o = e;
-          p.hit.clear();
-          p.life = Math.min(p.life + 0.3, 1.2);
-        }
-      }
-    }
+    if(p.o === e || p.life <= 0 || !["s", "meatball", "cannonball"].includes(p.t)) continue;
+    if(Math.hypot(p.x - e.x, p.z - e.z) >= r + 15) continue;
+    const da = Math.atan2(Math.sin(Math.atan2(p.z-e.z,p.x-e.x)-e.a), Math.cos(Math.atan2(p.z-e.z,p.x-e.x)-e.a));
+    if(Math.abs(da) >= 1.25) continue;
+    spawn3DRing(p.x, p.z, 20, 0xffffff);
+    const speed = Math.hypot(p.vx,p.vz) * 1.1;
+    p.vx = Math.cos(e.a)*speed;
+    p.vz = Math.sin(e.a)*speed;
+    p.o = e;
+    p.hit.clear();
+    p.life = Math.min(p.life + 0.3, 1.2);
+    orientProjectile(p);
   }
+}
+
+function orientProjectile(p) {
+  if(p.t === "s") {
+    p.mesh.rotation.set(0,0,0);
+    p.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), new THREE.Vector3(p.vx,0,p.vz).normalize());
+  } else p.mesh.rotation.y = p.rot;
 }
 
 function shot(e, a, o) {
@@ -3506,7 +3574,7 @@ function shot(e, a, o) {
     mesh.add(glow);
   }
 
-  P.push(Object.assign({
+  const projectile = Object.assign({
     x: startX,
     z: startZ,
     vx: Math.cos(a)*o.s,
@@ -3517,7 +3585,9 @@ function shot(e, a, o) {
     age: 0,
     out: true,
     mesh
-  }, o));
+  }, o);
+  orientProjectile(projectile);
+  P.push(projectile);
 }
 
 function dentleyGuardActive(e) {
@@ -4061,6 +4131,9 @@ function syncHUD() {
 }
 
 function showResultScreen(isVictory, winnerId = null, stats = []) {
+  if(matchOver) return;
+  progressDaily("matches");
+  if(isVictory) progressDaily("wins");
   const winShinies = isVictory && pl && matchIsQuickMatch ? awardShinies(SHINY_REWARDS.win, "Quick Match victory", false) : 0;
   state = "result";
   matchOver = true;
@@ -4543,7 +4616,7 @@ function handleIncomingData(conn, data) {
         ? (getRemoteActorByNetId(data.attackerId) || { ci: data.attackerCi, username: data.attackerName })
         : null;
       if(killer && !killer.username) killer.username = data.attackerName || null;
-      if(matchIsQuickMatch && data.attackerId === myNetId) awardShinies(SHINY_REWARDS.kill, "Elimination");
+      if(matchIsQuickMatch && data.attackerId === myNetId) { awardShinies(SHINY_REWARDS.kill, "Elimination"); progressDaily("kills"); }
       addKillFeed(killer, victim, { streak: data.streak || 0, multi: data.multi || 0 });
     }
   }
@@ -6464,7 +6537,7 @@ function upd(dt) {
         p.vz = Math.sin(a)*390;
         if(Math.hypot(p.o.x - p.x, p.o.z - p.z) < 22) finalize = true;
       }
-      // Bruno's hammer deflect destroys boomerangs mid-flight (reflect() zeroes life)
+      // Expired boomerangs finish normally; bananas cannot be reflected.
       if(p.life <= 0) finalize = true;
     } else {
       p.age += dt;
@@ -6477,7 +6550,7 @@ function upd(dt) {
     p.rot += dt * 11;
 
     p.mesh.position.set(p.x, 14, p.z);
-    p.mesh.rotation.y = p.rot;
+    orientProjectile(p);
 
     if(!finalize && p.out && (!isMultiplayer || isLobbyLeader)) {
       for(const h of Husks) {
@@ -6738,10 +6811,5 @@ Watch out: phasing is not invulnerability; keep Wisp damageable and unable to at
 
 
 - Make Bullets go in any direction of the mouse (vertical also).
-- Add Usernames (Accounts, basically)
-- Add a Currency (Shinies)
-- Add a Shop
-- Add Champion and Weapon skins
 - Add Auras
-- Add Nametag Colors/Nametag border Colors/Nametag background design
 - Add Daily challenges (Can only be done in Quick Matches)
