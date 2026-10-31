@@ -1360,7 +1360,7 @@ function syncProfileIdentity() {
   if(demoActive) rebuildShowcase();
   if(isMultiplayer) {
     outgoingSeq++;
-    const packet = { type: "HELLO", arenaVersion:4, id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
+    const packet = { type: "HELLO", arenaVersion:5, id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
     if(isLobbyLeader) broadcastToPeers(packet);
     else if(leaderId && peerConnections.has(leaderId)) {
       const conn = peerConnections.get(leaderId);
@@ -1798,27 +1798,30 @@ const HEROES = [
 // Captain Oink's chain hook tuning
 const CHAIN = { max: 220, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 450, retractTime: 0.6 };
 
-// Champion body sizes: one shared radius drives movement, combat hits and the model scale.
+// Champion body sizes: shared by movement, projectile/melee collision, and visible models.
 const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5];
 function championRadius(ci,form=0){return (CHAMPION_RADII[ci]||16)*(ci===6&&form===1?.82:1);}
-function applyChampionModelSize(model,ci,form=0){
- if(!model)return;
- const scale=championRadius(ci,form)/16*(model.userData.bbPresentationScale||1);
- model.scale.setScalar(scale);
-}
-function applyChampionBodySize(entity){
- entity.r=championRadius(entity.ci,entity.form||0);
- applyChampionModelSize(entity.mesh,entity.ci,entity.form||0);
-}
-function moveChampion(entity,dx,dz){
+function applyChampionModelSize(model,ci,form=0){if(model)model.scale.setScalar(championRadius(ci,form)/16*(model.userData.bbPresentationScale||1));}
+function applyChampionBodySize(e){e.r=championRadius(e.ci,e.form||0);applyChampionModelSize(e.mesh,e.ci,e.form||0);}
+function moveChampion(e,dx,dz){
  if(!Number.isFinite(dx)||!Number.isFinite(dz))return;
- const steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dz))/3));
- const sx=dx/steps,sz=dz/steps;
- for(let i=0;i<steps;i++){
- if(!blocked(entity.x+sx,entity.z,entity.r))entity.x+=sx;
- if(!blocked(entity.x,entity.z+sz,entity.r))entity.z+=sz;
+ alignChampionForShortcut(e,dx,dz);
+ const steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dz))/3)),sx=dx/steps,sz=dz/steps;
+ for(let i=0;i<steps;i++){if(!blocked(e.x+sx,e.z,e.r))e.x+=sx;if(!blocked(e.x,e.z+sz,e.r))e.z+=sz;}
+ if(!blocked(e.x,e.z,e.r)){e.lastSafeX=e.x;e.lastSafeZ=e.z;}
+}
+
+// Gentle steering into a narrow opening; never shrinks a collider or moves through solid cover.
+function alignChampionForShortcut(e,dx,dz){
+ const def=MAPS[selectedMapIndex];if(!def||!def.shortcuts||Math.abs(dx)<.001||Math.abs(dx)<Math.abs(dz))return;
+ for(const gap of def.shortcuts){
+  if(e.r*2>=gap.width-.01)continue;
+  const offset=gap.center-e.z;if(Math.abs(offset)>.001&&Math.abs(offset)<=6&&e.x>=gap.start-e.r-8&&e.x<=gap.end+e.r+8){
+   const steps=Math.ceil(Math.abs(offset)),delta=offset/steps;let clear=true;
+   for(let i=1;i<=steps;i++)if(blocked(e.x,e.z+delta*i,e.r)){clear=false;break;}
+   if(clear)e.z=gap.center;
+  }
  }
- if(!blocked(entity.x,entity.z,entity.r)){entity.lastSafeX=entity.x;entity.lastSafeZ=entity.z;}
 }
 
 // --- MAP CONFIGURATIONS ---
@@ -1827,13 +1830,13 @@ const MAPS=[
  outline:[[96,14],[W-96,14],[W-96,86],[W-14,86],[W-14,H-86],[W-96,H-86],[W-96,H-14],[96,H-14],[96,H-86],[14,H-86],[14,86],[96,86]],
  voids:[[0,0,96,86],[W-96,0,96,86],[0,H-86,96,86],[W-96,H-86,96,86]],
  cover:[[W*.25,H*.25,62,52],[W*.67,H*.25,62,52],[W*.25,H*.66,62,52],[W*.67,H*.66,62,52],
- [W*.18,H*.40,160,24],[W*.63,H*.56,160,24],[W*.40,H*.16,24,135],[W*.57,H*.60,24,135],[W*.43,H*.40,92,24],[W*.46,H*.57,92,24],[W*.31,H*.43,24,90],[W*.66,H*.42,24,90]],
- vents:[[W*.5-48,H*.25,96,36],[W*.5-48,H*.69,96,36]],belts:[]},
+ [W*.18,H*.40-.5,160,24],[W*.63,H*.56-.25,160,24],[W*.40,H*.16,24,135],[W*.57,H*.60,24,135],[W*.43,H*.40,92,24],[W*.46,H*.57,92,24],[W*.31,H*.43,24,90],[W*.66,H*.42,24,90]],
+ vents:[[W*.5-48,H*.25,96,36],[W*.5-48,H*.69,96,36]],belts:[],
+ shortcuts:[{axis:"x",start:W*.25,end:W*.25+62,center:(H*.25+52+H*.40-.5)/2,width:33.75},{axis:"x",start:W*.67,end:W*.67+62,center:(H*.56-.25+24+H*.66)/2,width:33.75}]},
  {id:"conveyor",name:"Conveyor Kitchen",floorCol:0x192d38,wallCol:0x3d5967,accent:0x48e4e3,
  outline:[[14,14],[W-14,14],[W-14,H*.35],[W-108,H*.35],[W-108,H*.65],[W-14,H*.65],[W-14,H-14],[14,H-14],[14,H*.65],[108,H*.65],[108,H*.35],[14,H*.35]],
  voids:[[0,H*.35,108,H*.30],[W-108,H*.35,108,H*.30]],
- cover:[[W*.31,H*.21,64,48],[W*.61,H*.21,64,48],[W*.31,H*.71,64,48],[W*.61,H*.71,64,48],
- [143,H*.5-48,64,96],[W-207,H*.5-48,64,96]],
+ cover:[[W*.31,H*.21,64,48],[W*.61,H*.21,64,48],[W*.31,H*.71,64,48],[W*.61,H*.71,64,48],[143,H*.5-48,64,96],[W-207,H*.5-48,64,96]],
  squeezeGaps:[{x:125.5,z:H*.5,width:35,length:96},{x:W-125.5,z:H*.5,width:35,length:96}],
  spawns:[[W*.18,H*.22],[W*.82,H*.78],[W*.82,H*.22],[W*.18,H*.78],[W*.5,62],[W*.5,H-62],[W*.285,H*.5],[W*.715,H*.5]],
  vents:[],belts:[[W*.21,H*.43,W*.58,36,1,0],[W*.21,H*.53,W*.58,36,-1,0]]}
@@ -2574,10 +2577,7 @@ function updateArenaMechanics(dt){
 }
 
 function addKitchenServiceMarkers(def){
- for(const gap of def.squeezeGaps||[]){
- const mat=new THREE.MeshBasicMaterial({color:0xa0eacf,transparent:true,opacity:.55,depthWrite:false});
- for(const offset of [-32,0,32]){const mark=new THREE.Mesh(new THREE.PlaneGeometry(14,2),mat);mark.rotation.x=-Math.PI/2;mark.position.set(gap.x,1.15,gap.z+offset);mapGroup.add(mark);}
- }
+ for(const gap of def.squeezeGaps||[]){const mat=new THREE.MeshBasicMaterial({color:0xa0eacf,transparent:true,opacity:.55,depthWrite:false});for(const offset of [-32,0,32]){const mark=new THREE.Mesh(new THREE.PlaneGeometry(14,2),mat);mark.rotation.x=-Math.PI/2;mark.position.set(gap.x,1.15,gap.z+offset);mapGroup.add(mark);}}
 }
 
 function build3DMap(def){
@@ -3387,12 +3387,9 @@ function pushCollisions(e){
  for(let pass=0;pass<4;pass++){
  for(const h of Husks){const dx=e.x-h.x,dz=e.z-h.z,d=Math.hypot(dx,dz),m=14+e.r;if(d<m){e.x=h.x+(d>0?dx/d:1)*m;e.z=h.z+(d>0?dz/d:0)*m;}}
  e.x=Math.max(B+e.r,Math.min(W-B-e.r,e.x));e.z=Math.max(B+e.r,Math.min(H-B-e.r,e.z));
- for(const [x,z,w,d] of currentRects){
- const cx=Math.max(x,Math.min(e.x,x+w)),cz=Math.max(z,Math.min(e.z,z+d)),dx=e.x-cx,dz=e.z-cz,dist=Math.hypot(dx,dz);
- if(dist>=e.r)continue;
+ for(const [x,z,w,d] of currentRects){const cx=Math.max(x,Math.min(e.x,x+w)),cz=Math.max(z,Math.min(e.z,z+d)),dx=e.x-cx,dz=e.z-cz,dist=Math.hypot(dx,dz);if(dist>=e.r)continue;
  if(dist>0){e.x+=dx/dist*(e.r-dist+.001);e.z+=dz/dist*(e.r-dist+.001);}
- else{const options=[[Math.abs(e.x-x),x-e.r-.001,e.z],[Math.abs(x+w-e.x),x+w+e.r+.001,e.z],[Math.abs(e.z-z),e.x,z-e.r-.001],[Math.abs(z+d-e.z),e.x,z+d+e.r+.001]].sort((a,b)=>a[0]-b[0]);e.x=options[0][1];e.z=options[0][2];}
- }
+ else{const options=[[Math.abs(e.x-x),x-e.r-.001,e.z],[Math.abs(x+w-e.x),x+w+e.r+.001,e.z],[Math.abs(e.z-z),e.x,z-e.r-.001],[Math.abs(z+d-e.z),e.x,z+d+e.r+.001]].sort((a,b)=>a[0]-b[0]);e.x=options[0][1];e.z=options[0][2];}}
  if(!blocked(e.x,e.z,e.r))break;
  }
  if(blocked(e.x,e.z,e.r)&&Number.isFinite(e.lastSafeX)&&!blocked(e.lastSafeX,e.lastSafeZ,e.r)){e.x=e.lastSafeX;e.z=e.lastSafeZ;}
@@ -4420,7 +4417,7 @@ function setupConnectionEvents(conn) {
     peerConnections.set(conn.peer, conn);
     lastSeenByPeer.set(conn.peer, Date.now());
     outgoingSeq++;
-    conn.send({ type: "HELLO", arenaVersion:4, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
+    conn.send({ type: "HELLO", arenaVersion:5, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
   });
 
   conn.on("data", data => {
@@ -4519,8 +4516,8 @@ function handleIncomingData(conn, data) {
 
   if(data.type === "HELLO") {
  if(isLobbyLeader&&data.id!==conn.peer)return;
- if(!isLobbyLeader&&conn.peer===leaderId&&data.id===leaderId&&data.arenaVersion!==4){if(quickMatchRooms){try{conn.close();}catch(e){}return;}leaveLobby("Everyone must use the champion-size / Kitchen-passage update.");return;}
- if(isLobbyLeader&&data.arenaVersion!==4){try{conn.send({type:"REJECT",reason:"Please use the champion-size / Kitchen-passage update to join this lobby."});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},300);return;}
+ if(!isLobbyLeader&&conn.peer===leaderId&&data.id===leaderId&&data.arenaVersion!==5){if(quickMatchRooms){try{conn.close();}catch(e){}return;}leaveLobby("Everyone must use the BBQ shortcut clearance update.");return;}
+ if(isLobbyLeader&&data.arenaVersion!==5){try{conn.send({type:"REJECT",reason:"Please use the BBQ shortcut clearance update to join this lobby."});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},300);return;}
     const hero = Number.isInteger(data.hero) && data.hero >= RANDOM_HERO && data.hero < HEROES.length ? data.hero : 0;
     let r = roster.find(x => x.id === data.id);
     const username = safeNetworkUsername(data.username || (r && r.username) || "Player", data.id);
@@ -5639,7 +5636,7 @@ function champDetailHTML(ci) {
       <div class="statbar"><span>HP</span><div class="sb-track"><div class="sb-fill" style="width:${hpPct}%"></div></div><b>${c.hp}</b></div>
       <div class="statbar"><span>SPD</span><div class="sb-track"><div class="sb-fill spd" style="width:${spPct}%"></div></div><b>${c.sp}</b></div>
     </div>
-    <div class="cd-summary">Body size: ${["Largest","Large","Small","Medium","Smallest","Medium","Medium-large"][ci]} · ${ci===0?"Use the main routes; too large for Kitchen service gaps.":"Fits the Kitchen service passages."}</div>
+    <div class="cd-summary">Body size: ${["Largest","Large","Small","Medium","Smallest","Medium","Medium-large"][ci]} · ${ci===0?"Too large for the narrow shortcuts.":ci===1?"Fits Kitchen service passages, but not BBQ squeeze gaps.":"Fits BBQ squeeze gaps and Kitchen service passages."}</div>
     <div class="cd-weapon">${c.w} <b>${c.wn}</b> — ${c.ad}</div>
     <div class="cd-summary">${c.d}</div>
     ${c.passive ? `<div class="cd-ability"><span class="cd-passive-label">P</span><div class="cd-ab-body"><b>Passive · Hollow Armor</b><br>${c.passive}</div></div>` : ""}
@@ -5759,7 +5756,7 @@ function menu(msg) {
         const me = roster.find(x => x.id === myNetId);
         if(me) { me.hero = p1HeroChoice; me.tagCosmetics = getNameplateCosmeticIds(); me.skins = getSkinSelection(); }
         outgoingSeq++;
-        broadcastToPeers({ type: "HELLO", arenaVersion:4, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
+        broadcastToPeers({ type: "HELLO", arenaVersion:5, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
       }
     };
   });
