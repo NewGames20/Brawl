@@ -552,6 +552,23 @@ html, body {
 .crate-odds,.loot-card-top span,.crate-reveal span { padding: 3px 6px; border-radius: 999px; background: rgba(0,0,0,0.28); font-size: 9px; font-weight: 900; white-space: nowrap; }
 .crate-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
 .crate-open { min-width: 118px; min-height: 42px; }
+.crate-reel-shell { margin: 10px 0 13px; padding: 11px; border: 1px solid rgba(177,135,255,0.48); border-radius: 14px; background: radial-gradient(ellipse at 50% 0%,rgba(130,84,255,0.22),transparent 68%),rgba(5,7,15,0.88); box-shadow: inset 0 0 22px rgba(127,90,255,0.12),0 0 22px rgba(132,85,255,0.12); }
+.crate-reel-title { margin-bottom: 8px; color: #d7c7ff; font-size: 10px; font-weight: 1000; letter-spacing: 0.15em; text-align: center; }
+.crate-reel-window { position: relative; overflow: hidden; height: 104px; border-radius: 10px; background: linear-gradient(90deg,rgba(0,0,0,0.72),transparent 18%,transparent 82%,rgba(0,0,0,0.72)); }
+.crate-reel-window::before,.crate-reel-window::after { content: ""; position: absolute; top: 0; bottom: 0; z-index: 2; width: 16%; pointer-events: none; }
+.crate-reel-window::before { left: 0; background: linear-gradient(90deg,rgba(6,7,14,0.95),transparent); }
+.crate-reel-window::after { right: 0; background: linear-gradient(270deg,rgba(6,7,14,0.95),transparent); }
+.crate-reel-marker { position: absolute; z-index: 3; top: 0; bottom: 0; left: 50%; width: 3px; transform: translateX(-50%); background: linear-gradient(180deg,#fff2a8,#ffb533,#fff2a8); box-shadow: 0 0 14px #ffbf42; }
+.crate-reel-marker::before,.crate-reel-marker::after { content: ""; position: absolute; left: 50%; transform: translateX(-50%); border-left: 7px solid transparent; border-right: 7px solid transparent; }
+.crate-reel-marker::before { top: 0; border-top: 9px solid #ffe58a; }.crate-reel-marker::after { bottom: 0; border-bottom: 9px solid #ffe58a; }
+.crate-reel-track { display: flex; align-items: center; gap: 8px; height: 100%; width: max-content; transform: translateX(0); transition: transform 5.4s cubic-bezier(0.08,0.74,0.11,1); will-change: transform; }
+.crate-reel-card { display: flex; flex: 0 0 112px; flex-direction: column; align-items: center; justify-content: center; gap: 5px; height: 82px; padding: 7px; border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; background: linear-gradient(145deg,rgba(255,255,255,0.09),rgba(16,15,28,0.9)); text-align: center; }
+.crate-reel-card b { display: -webkit-box; overflow: hidden; color: #f5f0ff; font-size: 10px; line-height: 1.2; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.crate-reel-card small { font-size: 9px; font-weight: 900; }
+.crate-reel-card.rarity-common { border-color: rgba(225,231,242,0.3); }.crate-reel-card.rarity-uncommon { border-color: rgba(112,239,170,0.48); box-shadow: inset 0 0 12px rgba(112,239,170,0.08); }
+.crate-reel-card.rarity-rare { border-color: rgba(102,201,255,0.58); box-shadow: inset 0 0 13px rgba(102,201,255,0.12); }.crate-reel-card.rarity-epic { border-color: rgba(213,155,255,0.64); box-shadow: inset 0 0 15px rgba(213,155,255,0.15); }
+.crate-reel-card.rarity-legendary { border-color: rgba(255,211,108,0.84); box-shadow: inset 0 0 17px rgba(255,181,54,0.19),0 0 12px rgba(255,181,54,0.17); }
+.crate-reel-subtitle { margin-top: 7px; color: var(--text-muted); font-size: 9px; text-align: center; }
 .loot-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(168px,1fr)); gap: 9px; }
 .loot-card { display: flex; flex-direction: column; gap: 7px; padding: 10px; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: linear-gradient(155deg,rgba(255,255,255,0.055),rgba(8,9,15,0.46)); }
 .loot-card.locked { filter: saturate(0.68); opacity: 0.72; }.loot-card.unlocked { border-color: rgba(130,224,255,0.24); }
@@ -560,7 +577,8 @@ html, body {
 .loot-card small { min-height: 15px; color: var(--text-muted); font-size: 10px; }
 .rarity-common { color: #e1e7f2 !important; }.rarity-uncommon { color: #70efaa !important; }.rarity-rare { color: #66c9ff !important; }
 .rarity-epic { color: #d59bff !important; }.rarity-legendary { color: #ffd36c !important; text-shadow: 0 0 9px rgba(255,181,54,0.55); }
-.crate-reveal { display: flex; align-items: center; gap: 12px; margin: 10px 0 13px; padding: 12px; border: 1px solid rgba(255,211,108,0.5); border-radius: 12px; background: linear-gradient(115deg,rgba(144,87,255,0.17),rgba(244,173,48,0.1)); box-shadow: 0 0 22px rgba(182,126,255,0.12); }
+.crate-reveal { display: flex; align-items: center; gap: 12px; margin: 10px 0 13px; padding: 12px; border: 1px solid rgba(255,211,108,0.5); border-radius: 12px; background: linear-gradient(115deg,rgba(144,87,255,0.17),rgba(244,173,48,0.1)); box-shadow: 0 0 22px rgba(182,126,255,0.12); animation: crateRevealPop 0.5s cubic-bezier(0.18,0.85,0.26,1.2) both; }
+@keyframes crateRevealPop { from { opacity: 0; transform: scale(0.86) translateY(8px); filter: brightness(1.8); } to { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); } }
 .crate-reveal > div:nth-child(2) { display: flex; flex-direction: column; gap: 4px; flex: 1; }.crate-reveal small { color: var(--text-muted); }
 .reveal-spark { color: #ffe58a; font-size: 30px; text-shadow: 0 0 16px #ffba4d; }
 #economy-toast {
@@ -703,6 +721,8 @@ let teamMode = false;      // kept for internal guards; always free-for-all now
 // --- QUICK MATCH STATE ---
 let quickMatchRooms = null;    // room IDs left to try while joining (null = not in quick match)
 let quickMatchHosted = false;  // we created this lobby via Quick Match
+let lobbyIsQuickMatch = false; // propagated by the lobby leader, including after leadership changes
+let matchIsQuickMatch = false; // host shares this flag so kill/win Shinies only pay in Quick Match
 let quickMatchAutoStart = null; // epoch ms when the quick-match lobby auto-starts
 let qmClientCountdown = null;   // seconds until auto-start (clients, set by host broadcast)
 let qmSeq = 0;                   // join-attempt sequence (guards stale timeouts)
@@ -881,6 +901,8 @@ let economyModalView = "account";
 let economyModalRequired = false;
 let shopCategoryKey = "nameColors";
 let lastCrateReveal = null;
+let activeCrateSpin = null;
+let crateSpinSerial = 0;
 let economyToastTimer = null;
 function saveAccountBook() { Store.set(ACCOUNT_STORAGE_KEY, JSON.stringify(accountBook)); }
 function activeProfile() { return accountBook.profiles.find(profile => profile.id === accountBook.activeId) || null; }
@@ -1100,6 +1122,46 @@ function cratePreviewText(category, item) {
   return category.label.replace("Nametag ", "");
 }
 
+function crateRewardPreview(category, profile, item) {
+  return item.hero != null ? `${HEROES[item.hero].e} ${item.name}` : profile.username;
+}
+
+function crateSpinHTML(category, spin) {
+  if(!spin || spin.categoryKey !== category.key) return "";
+  const cards = spin.reel.map((item, index) => `<div class="crate-reel-card rarity-${item.rarity.toLowerCase()}" ${index === spin.stopIndex ? 'data-reel-winner="true"' : ""}><b>${escapeHtml(item.name)}</b><small class="rarity-${item.rarity.toLowerCase()}">${item.rarity}</small></div>`).join("");
+  return `<div class="crate-reel-shell" aria-live="polite"><div class="crate-reel-title">✨ OPENING ${escapeHtml(category.crateName.toUpperCase())} ✨</div><div class="crate-reel-window"><div class="crate-reel-track">${cards}</div><div class="crate-reel-marker"></div></div><div class="crate-reel-subtitle">The center card is your reward · this roll uses the odds shown above</div></div>`;
+}
+
+function finishCosmeticCrateSpin(spinId) {
+  const spin = activeCrateSpin;
+  if(!spin || spin.id !== spinId) return;
+  if(spin.timer) clearTimeout(spin.timer);
+  activeCrateSpin = null;
+  lastCrateReveal = { categoryKey: spin.categoryKey, item: spin.item };
+  Snd.play("pickup");
+  showEconomyToast(`${spin.item.rarity} drop: ${spin.item.name}`);
+  const modal = document.getElementById("economy-modal");
+  if(modal && modal.classList.contains("show") && economyModalView === "shop") renderEconomyModal();
+}
+
+function startCosmeticCrateSpin(spin) {
+  const modal = document.getElementById("economy-modal");
+  if(!modal || !modal.classList.contains("show") || economyModalView !== "shop" || activeCrateSpin !== spin) return;
+  const track = document.querySelector("#economy-body .crate-reel-track");
+  const viewport = track && track.parentElement;
+  const winner = track && track.querySelector('[data-reel-winner="true"]');
+  if(!track || !viewport || !winner) { finishCosmeticCrateSpin(spin.id); return; }
+  track.addEventListener("transitionend", event => {
+    if(event.propertyName === "transform") finishCosmeticCrateSpin(spin.id);
+  }, { once: true });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if(activeCrateSpin !== spin) return;
+    const shift = winner.offsetLeft + winner.offsetWidth / 2 - viewport.clientWidth / 2;
+    track.style.transform = `translateX(-${Math.max(0, shift)}px)`;
+  }));
+  spin.timer = setTimeout(() => finishCosmeticCrateSpin(spin.id), 6200);
+}
+
 function renderShopModal() {
   const body = document.getElementById("economy-body");
   const profile = activeProfile();
@@ -1108,17 +1170,22 @@ function renderShopModal() {
     return;
   }
   const category = shopCategory(shopCategoryKey);
-  const tabs = SHOP_CATEGORIES.map(item => `<button class="economy-tab ${item.key === category.key ? "selected" : ""}" data-shop-category="${item.key}">${item.label}</button>`).join("");
-  const odds = crateOddsFor(category, profile);
+  const spin = activeCrateSpin && activeCrateSpin.categoryKey === category.key ? activeCrateSpin : null;
+  const spinning = !!activeCrateSpin;
+  const tabs = SHOP_CATEGORIES.map(item => `<button class="economy-tab ${item.key === category.key ? "selected" : ""}" data-shop-category="${item.key}" ${spinning ? "disabled" : ""}>${item.label}</button>`).join("");
+  const odds = spin ? spin.odds : crateOddsFor(category, profile);
   const empty = odds.length === 0;
   const oddsHtml = odds.map(tier => `<span class="crate-odds rarity-${tier.key.toLowerCase()}">${tier.key} ${tier.chance.toFixed(tier.chance % 1 ? 1 : 0)}%</span>`).join("");
   const reveal = lastCrateReveal && lastCrateReveal.categoryKey === category.key
-    ? `<div class="crate-reveal"><div class="reveal-spark">✦</div><div><b>${escapeHtml(lastCrateReveal.item.name)}</b><span class="rarity-${lastCrateReveal.item.rarity.toLowerCase()}">${lastCrateReveal.item.rarity}</span><small>${escapeHtml(cratePreviewText(category, lastCrateReveal.item))}</small></div><div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key, lastCrateReveal.item)}">${escapeHtml(profile.username)}</div></div>` : "";
+    ? `<div class="crate-reveal"><div class="reveal-spark">✦</div><div><b>${escapeHtml(lastCrateReveal.item.name)}</b><span class="rarity-${lastCrateReveal.item.rarity.toLowerCase()}">${lastCrateReveal.item.rarity}</span><small>${escapeHtml(cratePreviewText(category, lastCrateReveal.item))}</small></div><div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key, lastCrateReveal.item)}">${escapeHtml(crateRewardPreview(category, profile, lastCrateReveal.item))}</div></div>` : "";
+  const reel = crateSpinHTML(category, spin);
   const loot = category.items.map(item => {
     const owned = profile.owned[category.key].includes(item.id);
     const equipped = owned && cosmeticIsEquipped(profile, category, item);
     const tierOdds = odds.find(tier => tier.key === item.rarity);
-    const tierSize = category.items.filter(entry => entry.rarity === item.rarity && !profile.owned[category.key].includes(entry.id)).length;
+    const tierSize = spin
+      ? spin.availableIds.filter(id => category.items.some(entry => entry.id === id && entry.rarity === item.rarity)).length
+      : category.items.filter(entry => entry.rarity === item.rarity && !profile.owned[category.key].includes(entry.id)).length;
     const itemOdds = !owned && tierOdds && tierSize ? tierOdds.chance / tierSize : 0;
     const previewStyle = cosmeticPreviewCss(category.key, item);
     const preview = category.key === "nameColors" || category.key === "borderColors" || category.key === "backgrounds"
@@ -1128,7 +1195,7 @@ function renderShopModal() {
       <div class="loot-card-top"><b>${escapeHtml(item.name)}</b><span class="rarity-${item.rarity.toLowerCase()}">${item.rarity}</span></div>
       <small>${escapeHtml(cratePreviewText(category, item))} · ${owned ? "UNLOCKED" : `${itemOdds.toFixed(itemOdds % 1 ? 1 : 0)}% drop`}</small>
       <div class="cosmetic-preview" style="${previewStyle}">${escapeHtml(preview)}</div>
-      <button class="economy-action ${owned && !equipped ? "primary" : ""}" data-equip-category="${category.key}" data-equip-item="${item.id}" ${!owned || equipped ? "disabled" : ""}>${action}</button>
+      <button class="economy-action ${owned && !equipped ? "primary" : ""}" data-equip-category="${category.key}" data-equip-item="${item.id}" ${spinning || !owned || equipped ? "disabled" : ""}>${action}</button>
     </div>`;
   }).join("");
   body.innerHTML = `
@@ -1136,12 +1203,13 @@ function renderShopModal() {
     <section class="crate-panel">
       <div class="crate-art">${category.crateIcon}<i>✦</i><b>✧</b></div>
       <div class="crate-copy"><div class="shop-item-name">${escapeHtml(category.crateName)}</div><div class="economy-note">One ${category.label.toLowerCase()} reward. Duplicate protection is on; unlocked items are removed from future rolls.</div><div class="crate-odds-row">${oddsHtml || "All rewards collected"}</div></div>
-      <div class="crate-actions"><button class="economy-action crate-open" data-reset-category="${category.key}">RESET LOOK</button><button class="economy-action primary crate-open" data-open-crate="${category.key}" ${empty || profile.shinies < category.cratePrice ? "disabled" : ""}>${empty ? "COLLECTED" : `OPEN · ${category.cratePrice} ✨`}</button></div>
+      <div class="crate-actions"><button class="economy-action crate-open" data-reset-category="${category.key}" ${spinning ? "disabled" : ""}>RESET LOOK</button><button class="economy-action primary crate-open" data-open-crate="${category.key}" ${spinning || empty || profile.shinies < category.cratePrice ? "disabled" : ""}>${spinning ? "SPINNING…" : empty ? "COLLECTED" : `OPEN · ${category.cratePrice} ✨`}</button></div>
     </section>
+    ${reel}
     ${reveal}
-    <div class="economy-note">Odds shown are based on rewards still available. Tiers with no remaining items redistribute their odds. Crates use earned Shinies only.</div>
+    <div class="economy-note">${spinning ? "This reward was rolled before the animation began; the odds above are the odds used for this opening." : "Odds are based on rewards still available. Tiers with no remaining items redistribute their odds. Crates use earned Shinies only."}</div>
     <div class="loot-grid">${loot}</div>
-    <div class="economy-note">Earn Shinies: daily login +${SHINY_REWARDS.daily} · elimination +${SHINY_REWARDS.kill} · match win +${SHINY_REWARDS.win}</div>
+    <div class="economy-note">Earn Shinies: daily login +${SHINY_REWARDS.daily} · Quick Match elimination +${SHINY_REWARDS.kill} · Quick Match win +${SHINY_REWARDS.win}</div>
   `;
   body.querySelectorAll("[data-shop-category]").forEach(button => button.onclick = () => {
     shopCategoryKey = button.dataset.shopCategory;
@@ -1150,6 +1218,10 @@ function renderShopModal() {
   body.querySelectorAll("[data-equip-category]").forEach(button => button.onclick = () => equipCosmetic(button.dataset.equipCategory, button.dataset.equipItem));
   body.querySelectorAll("[data-open-crate]").forEach(button => button.onclick = () => openCosmeticCrate(button.dataset.openCrate));
   body.querySelectorAll("[data-reset-category]").forEach(button => button.onclick = () => resetCosmeticCategory(button.dataset.resetCategory));
+  if(spin && !spin.started) {
+    spin.started = true;
+    requestAnimationFrame(() => startCosmeticCrateSpin(spin));
+  }
 }
 
 function renderEconomyModal() {
@@ -1180,6 +1252,7 @@ function requireLocalAccount() {
 }
 
 function closeEconomyModal(force = false) {
+  if(activeCrateSpin) return;
   if(economyModalRequired && !activeProfile() && !force) return;
   economyModalRequired = false;
   document.getElementById("economy-modal").classList.remove("show");
@@ -1216,6 +1289,7 @@ function resetCosmeticCategory(categoryKey) {
 }
 
 function openCosmeticCrate(categoryKey) {
+  if(activeCrateSpin) return;
   const profile = activeProfile();
   const category = SHOP_CATEGORIES.find(entry => entry.key === categoryKey);
   if(!profile || !category) return;
@@ -1229,14 +1303,23 @@ function openCosmeticCrate(categoryKey) {
   const pool = available.filter(item => item.rarity === tier.key);
   const item = pool[Math.floor(Math.random() * pool.length)];
   if(!item) return;
+  const stopIndex = 38;
+  const reel = Array.from({ length: 47 }, (_, index) => index === stopIndex ? item : (() => {
+    let fillerRoll = Math.random() * 100;
+    let fillerTier = odds[odds.length - 1];
+    for(const entry of odds) { fillerRoll -= entry.chance; if(fillerRoll <= 0) { fillerTier = entry; break; } }
+    const fillerPool = available.filter(entry => entry.rarity === fillerTier.key);
+    return fillerPool[Math.floor(Math.random() * fillerPool.length)] || item;
+  })());
   profile.shinies -= category.cratePrice;
   profile.owned[category.key].push(item.id);
   if(NAMEPLATE_CATEGORIES.includes(category)) profile.equipped[category.key] = item.id;
   else profile.equipped[category.key][item.hero] = item.id;
-  lastCrateReveal = { categoryKey, item };
+  lastCrateReveal = null;
+  activeCrateSpin = { id: ++crateSpinSerial, categoryKey, item, reel, stopIndex, odds: odds.map(entry => ({ ...entry })), availableIds: available.map(entry => entry.id), started: false, timer: null };
   saveAccountBook();
   syncProfileIdentity();
-  showEconomyToast(`${item.rarity} drop: ${item.name}`);
+  Snd.play("crate");
   renderEconomyModal();
 }
 
@@ -1554,55 +1637,55 @@ const HEROES = [
    n:"Bruno", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
    hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
-   a1n:"Slam", a1cd: 11.0, a1d:"Shockwave slam that stuns foes.",
+   a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 16 damage, heavy knockback, and a 1-second stun.",
    a2n:"Charge", a2cd: 14.0,
-   ad:"Wide melee swing that also deflects incoming projectiles.", a2d:"Rushes forward, BOWLING over enemies.",
-   melee: true, d:"High health tank. Heavy hammer deflects incoming shots."
+   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can deflect nearby projectiles in front of Bruno.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 14 damage, heavy knockback, and a brief stun.",
+   melee: true, d:"A durable frontline tank who controls space with a wide, hard-hitting hammer. Slam interrupts nearby enemies, while Charge lets Bruno cross a short gap and scatter anyone in his path. Time his swings to turn away incoming shots and hold space around himself."
  },
  {
    n:"Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
    hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
-   a1n:"Chain Hook", a1cd: 11.5, a1d:"Throw a chain forward (you're invulnerable). Wall: you zip to it. Foe: yank them to you, stunned. Miss: you're exposed while it reels in.",
+   a1n:"Chain Hook", a1cd: 11.5, a1d:"Launch a hook up to 220 units ahead. Hitting an enemy pulls them toward Oink and stuns them when they arrive; striking a wall pulls Oink to it. He is protected while the hook flies or reels in a target, but a miss leaves him vulnerable during the return.",
    a2n:"Cannonball", a2cd: 9.5,
-   ad:"Scrap shotgun — fires a 5-pellet spread.", a2d:"Explosive shell with huge knockback.",
-   melee: false, d:"Medium-heavy brawler. Hooks enemies and walls with a chain."
+   ad:"Fire five scrap pellets in a spread, each dealing 9 damage. It rewards close aim, where more pellets can connect.", a2d:"Fire a heavy cannonball for 27 direct damage and a blast that can hit enemies within 80 units for 15 damage, knockback, and a half-second stun.",
+   melee: false, d:"A sturdy close-range bruiser who can start fights with a hook, then punish clustered opponents with his scrap shotgun or explosive cannonball. Hooked foes are dragged into Oink's preferred range, while a wall hit gives him a quick route through the arena. A missed hook creates a brief opening, so choose the angle carefully."
  },
  {
    n:"Mango the Monkey", e:"🐵", w:"🍌", wn:"Twin Crescent Boomerang",
    role: "Skirmisher", roleCol: "#d6a71e",
    hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
-   a1n:"Cluster Bomb", a1cd: 9.0, a1d:"Lobs a fruit bomb that shatters into bananas.",
+   a1n:"Cluster Bomb", a1cd: 9.0, a1d:"Lob a fruit bomb ahead. When it bursts, six returning banana boomerangs fan out from the blast point, each dealing 10 damage and knockback on a hit.",
    a2n:"Peel Trap", a2cd: 10.5,
-   ad:"Boomerang that curves out and returns to you.", a2d:"Drops a banana peel in front to slip foes.",
-   melee: false, d:"Agile skirmisher with returning banana curves and traps."
+   ad:"Throw a crescent boomerang for 16 damage. It travels forward, then curves back toward Mango, giving him another chance to catch an opponent on its return path.", a2d:"Drop a peel 38 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 9 damage, is launched, and is stunned for 1.5 seconds.",
+   melee: false, d:"A fast skirmisher who keeps moving while boomerangs pressure opponents from different angles. Cluster Bomb scatters returning blades across a fight, and Peel Trap can punish a pursuer or guard a narrow route. Mango is less durable than the frontliners, so use speed and spacing to avoid being pinned down."
  },
  {
    n:"Sizzle", e:"🧑‍🍳", w:"🍝", wn:"Culinary Meatball Cannon",
    role: "Sniper", roleCol: "#d44722",
    hp: 130, sp: 155, col: 0xededed, cd: 1.1,
-   a1n:"Marinara", a1cd: 7.5, a1d:"Sauce pool placed ahead that slows & burns.",
+   a1n:"Marinara", a1cd: 7.5, a1d:"Place a 50-unit sauce pool 80 units ahead for 2.8 seconds. Enemies standing in it are slowed and take continuous burn damage.",
    a2n:"Backdraft", a2cd: 8.5,
-   ad:"Long-range exploding meatball.", a2d:"Vaults far backward with an ignited trail.",
-   melee: false, d:"Fragile long-range sniper with explosive zone control."
+   ad:"Fire a long-range meatball projectile for 35 damage and knockback. Its travel time rewards aiming where an opponent is moving.", a2d:"Burst backward to make space and leave five patches of flame along the retreat path. Each patch burns and slows enemies who cross it for a short time.",
+   melee: false, d:"A fragile ranged specialist who controls lanes with heavy meatball shots and lingering fire. Marinara makes a section of the arena costly to hold, while Backdraft creates distance and leaves a dangerous trail behind. Sizzle performs best when she can see a route ahead and keep opponents outside close range."
  },
  {
    n:"Quackbot", e:"🤖", w:"🦆", wn:"Cybernetic Plasma Blaster",
    role: "Assassin", roleCol: "#2b9bc4",
    hp: 110, sp: 185, col: 0x309bb0, cd: 0.25,
-   a1n:"Blink", a1cd: 6.0, a1d:"Instant short-range teleport.",
+   a1n:"Blink", a1cd: 6.0, a1d:"Dash instantly forward in up to sixteen short steps. Walls stop the movement, so Blink can slip around cover but cannot pass through it.",
    a2n:"Barrage", a2cd: 8.5,
-   ad:"Rapid-fire plasma darts.", a2d:"Unleashes a rapid stream of quacking darts.",
-   melee: false, d:"Fast glass cannon with sustained blaster fire."
+   ad:"Fire quick plasma darts for 8 damage each. Quackbot's short attack cooldown favors steady aim and repeated pressure over one large hit.", a2d:"Queue seven plasma darts in a rapid burst. Each dart deals 7.5 damage, letting the full stream punish a target who stays in the firing lane.",
+   melee: false, d:"A very fast but fragile assassin built around accurate, repeated shots. Blink changes position quickly, and Barrage adds a concentrated burst when an opponent is exposed. Quackbot relies on movement and timing to avoid trading hits with tougher champions."
  },
  {
    n:"Mycelis", e:"🍄", w:"🪄", wn:"Chitinous Spore Staff",
    role: "Tactician", roleCol: "#7d5ba6",
    hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
-   a1n:"Spore Pod", a1cd: 6.5, a1d:"Invisible trap (7s). Inflicts 15 dmg over 3s and slows.",
+   a1n:"Spore Pod", a1cd: 6.5, a1d:"Plant a hidden pod 45 units ahead. It waits for up to 7 seconds; an enemy who triggers it releases a spore cloud, becomes poisoned for 3 seconds, and is slowed. The poison deals 15 total damage.",
    a2n:"Root Entangle", a2cd: 9.0,
-   ad:"Spore bolt that inflicts lingering blight.", a2d:"Overgrowth projectile that immobilizes enemies on impact.",
-   melee: false, d:"Blight shaman wielding lingering spore poisons and root binds."
+   ad:"Fire a spore bolt for 20 damage and knockback. A poisoned opponent can be slowed again by the lingering cloud from a triggered pod.", a2d:"Launch an overgrowth projectile for 18 direct damage. On impact it bursts in a 45-unit area, dealing 12 additional damage and rooting enemies for 1.4 seconds.",
+   melee: false, d:"A tactician who shapes the fight with concealed traps and precise root projectiles. Spore Pod punishes enemies who chase through a planted route, while Root Entangle can hold a target in place for follow-up attacks. Mycelis has balanced health but relies on preparation and accurate placement to get the most from her control tools."
  },
  {
    n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
@@ -1610,10 +1693,10 @@ const HEROES = [
    hp: 200, sp: 125, col: 0x8d97a8, cd: 0.5,
    a1n:"Shield Guard", a1cd: 10.0, a1cdSquire: 7.0, a1d:"Armor only: guard for 2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Riposte (max 40); movement is 20% slower. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with no invulnerability.",
    a2n:"Riposte Lunge", a2cd: 8.0,
-   ad:"Longsword: 3-hit combo for 14 / 14 / 24 damage. The third hit lunges 40 units; the combo resets after 0.9s.", a2d:"Armor only: lunge up to 90 units for 20 + stored Riposte (max 60). Stun scales from none at 0 charge to 0.8s at 40. Charge is spent on use, even on a miss.",
+   ad:"Longsword: a 3-hit combo deals 14 / 14 / 24 damage. The third strike is a physical lunge up to 40 units; the combo resets after 0.9 seconds without another hit.", a2d:"Armor only: make a physical lunge up to 90 units, dealing 20 damage plus stored Riposte (up to 60). At 0 charge it has no stun; at 40 charge it stuns for 1 second, scaling evenly between those values. All charge is spent on use, even if the lunge misses.",
    melee: true, atkRange: 70, ab1Range: 130, ab2Range: 100,
-   passive:"Hollow Armor: his armor breaks once. At 0 HP, Dentley becomes a 55 HP Squire and nearby foes take 25 damage with knockback. Squire gets 60% damage reduction for 0.8s, moves faster, and uses an 8-damage dagger. Stand still within 40 units of the dropped armor for 1.4s to re-arm with 70 HP; the husk expires after 8s or can be destroyed.",
-   d:"Armored duelist with a stored Riposte and one Squire recovery.",
+   passive:"Hollow Armor: his armor can break once per match. At 0 armor HP, Dentley becomes a 55 HP Squire; the armor bursts for 25 damage and knockback nearby enemies, while the Squire is knocked away from the dropped husk. Squire has 60% damage reduction for 0.8 seconds, moves faster, and attacks with an 8-damage dagger. Stand still within 40 units of the husk for 1.4 seconds to re-arm with 70 HP. The husk expires after 8 seconds or can be destroyed.",
+   d:"A duelist who turns defense into a counterattack. Armor form uses Shield Guard to face incoming threats, reduce damage, and store Riposte for a physical lunge; the longsword combo rewards staying on target. If the armor breaks, Dentley survives once as a faster Squire and can fight or risk returning to the dropped armor to re-arm."
  }
 ];
 
@@ -2206,7 +2289,7 @@ function syncRemoteCrate(data) {
       remoteCrateVisual.userData.bomb.visible = false;
       if(!remoteCrateVisual.userData.exploded) {
         remoteCrateVisual.userData.exploded = true;
-        spawn3DRing(data.x, data.z, 125, 0xff7238);
+        spawn3DRing(data.x, data.z, 150, 0xff7238);
         spawnSparks(data.x, data.z, 0xff8a35, 12);
         Snd.play("crate");
       }
@@ -2900,6 +2983,18 @@ function spawnPickup() {
     }
   }
 
+  return spawnPickupAt(rx, rz, choice.k, choice);
+}
+
+function spawnPickupAt(rx, rz, kind, suppliedChoice = null) {
+  const types = suppliedChoice ? [suppliedChoice] : [
+    { k:"hp", color: 0x45d988, apply:(ent)=>{
+      ent.hp = Math.min(ent.mhp, ent.hp + 35);
+      spawnDamageNumber(ent.x, ent.z, "+35", "#45d988");
+    }},
+    { k:"speed", color: 0xffd000, apply:(ent)=>{ ent.speedBoost = 3.5; } }
+  ];
+  const choice = types.find(type => type.k === kind) || types[0];
   const geo = new THREE.OctahedronGeometry(8.5);
   const mat = new THREE.MeshStandardMaterial({ color: choice.color, metalness: 0.35, roughness: 0.2 });
   const mesh = new THREE.Mesh(geo, mat);
@@ -2907,6 +3002,7 @@ function spawnPickup() {
   scene.add(mesh);
 
   Pickups.push({ uid: "pk_" + Math.random().toString(36).slice(2, 8), kind: choice.k, x: rx, z: rz, r: 14, mesh, apply: choice.apply, life: 20 });
+  return true;
 }
 
 function spawnWorldCrate() {
@@ -2920,7 +3016,7 @@ function spawnWorldCrate() {
   }
   if(!pos) { crateSpawnTimer = 6; return false; }
   const mesh = makeCrateVisual(); mesh.position.set(pos[0], 0, pos[1]);
-  worldCrate = { id:"crate_" + Math.random().toString(36).slice(2, 9), x:pos[0], z:pos[1], r:24, hp:70, bombT:null, bombOwner:null, mesh, lastCount:-1 };
+  worldCrate = { id:"crate_" + Math.random().toString(36).slice(2, 9), x:pos[0], z:pos[1], r:24, hp:70, bombT:null, bombOwner:null, rewardType:null, mesh, lastCount:-1 };
   return true;
 }
 
@@ -2930,10 +3026,23 @@ function damageWorldCrate(amount, attacker = null) {
   c.hp -= Math.max(1, amount);
   spawnSparks(c.x, c.z, 0xffbd68, 5);
   if(c.hp > 0) { spawnDamageNumber(c.x, c.z, "CRATE " + Math.ceil(c.hp), "#ffd28a"); return; }
-  c.hp = 0; c.bombT = 3.0; c.bombOwner = attacker; c.lastCount = 3;
-  c.mesh.userData.crate.visible = false; c.mesh.userData.bomb.visible = true;
-  spawnDamageNumber(c.x, c.z, "BOMB!", "#ff7845");
-  spawn3DRing(c.x, c.z, 30, 0xff8b35);
+  c.hp = 0;
+  c.rewardType = ["bomb", "hp", "speed"][Math.floor(Math.random() * 3)];
+  if(c.rewardType === "bomb") {
+    c.bombT = 3.0; c.bombOwner = attacker; c.lastCount = 3;
+    c.mesh.userData.crate.visible = false; c.mesh.userData.bomb.visible = true;
+    spawnDamageNumber(c.x, c.z, "BOMB!", "#ff7845");
+    spawn3DRing(c.x, c.z, 30, 0xff8b35);
+  } else {
+    const px = c.x, pz = c.z;
+    const label = c.rewardType === "hp" ? "HEALTH KIT" : "SPEED BOOST";
+    spawnPickupAt(px, pz, c.rewardType);
+    spawnDamageNumber(px, pz, label, c.rewardType === "hp" ? "#45d988" : "#ffd000");
+    spawn3DRing(px, pz, 38, c.rewardType === "hp" ? 0x45d988 : 0xffd000);
+    disposeHierarchy(c.mesh);
+    worldCrate = null;
+    crateSpawnTimer = 22 + Math.random() * 12;
+  }
   Snd.play("crate");
 }
 
@@ -2976,14 +3085,14 @@ function updateWorldCrate(dt) {
   c.exploded = true; c.bombT = 0.35;
   c.mesh.userData.bomb.visible = false;
   shakeIfNearby(bx, bz, 10, 240);
-  spawn3DRing(bx, bz, 125, 0xff7238);
+  spawn3DRing(bx, bz, 150, 0xff7238);
   spawnSparks(bx, bz, 0xff8a35, 16);
   Snd.play("death");
   for(const e of E) {
     const d = Math.hypot(e.x - bx, e.z - bz);
-    if(!e.dead && d < 125 && hasLOS(bx, bz, e.x, e.z)) {
+    if(!e.dead && d < 150 && hasLOS(bx, bz, e.x, e.z)) {
       const angle = Math.atan2(e.z - bz, e.x - bx);
-      hurt(e, 48 * (1 - d / 190), angle, 420, owner);
+      hurt(e, 52 * (1 - d / 205), angle, 420, owner);
     }
   }
 }
@@ -3290,7 +3399,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
       attacker.killStreak++;
       attacker.lastKillTime = matchTime;
       killMeta = { streak: attacker.killStreak, multi: attacker.killChain };
-      if(attacker.netId === myNetId) awardShinies(SHINY_REWARDS.kill, "Elimination");
+      if(matchIsQuickMatch && attacker.netId === myNetId) awardShinies(SHINY_REWARDS.kill, "Elimination");
     }
     Snd.play("death");
     addKillFeed(attacker && attacker !== t ? attacker : null, t, killMeta);
@@ -3876,7 +3985,7 @@ function updateAI(e, dt) {
 
   if(worldCrate && worldCrate.bombT !== null && !worldCrate.exploded) {
     const bombDist = Math.hypot(e.x - worldCrate.x, e.z - worldCrate.z);
-    if(bombDist < 135) moveAng = Math.atan2(e.z - worldCrate.z, e.x - worldCrate.x);
+    if(bombDist < 160) moveAng = Math.atan2(e.z - worldCrate.z, e.x - worldCrate.x);
   }
 
   let da = targetAng - e.a;
@@ -3952,7 +4061,7 @@ function syncHUD() {
 }
 
 function showResultScreen(isVictory, winnerId = null, stats = []) {
-  const winShinies = isVictory && pl ? awardShinies(SHINY_REWARDS.win, "Match victory", false) : 0;
+  const winShinies = isVictory && pl && matchIsQuickMatch ? awardShinies(SHINY_REWARDS.win, "Quick Match victory", false) : 0;
   state = "result";
   matchOver = true;
   Snd.musicStop();
@@ -4124,6 +4233,7 @@ function leaveLobby(msg) {
   isMultiplayer = false;
   isLobbyLeader = false;
   hostVisibilityPaused = false;
+  matchIsQuickMatch = false;
   setHostPauseBanner(false);
   leaderId = null;
   peerConnections.clear();
@@ -4132,6 +4242,7 @@ function leaveLobby(msg) {
   lastSeqByPeer.clear();
   quickMatchRooms = null;
   quickMatchHosted = false;
+  lobbyIsQuickMatch = false;
   quickMatchAutoStart = null;
   qmClientCountdown = null;
   qmRendezvousStarted = false;
@@ -4178,7 +4289,7 @@ function setupConnectionEvents(conn) {
     // Keep every client's roster in sync when someone leaves
     if(isLobbyLeader) {
       outgoingSeq++;
-      broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, seq: outgoingSeq });
+      broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch || matchIsQuickMatch), seq: outgoingSeq });
     }
 
     // A failed Quick Match join attempt (room gone or rejected) — try the next room.
@@ -4281,7 +4392,7 @@ function handleIncomingData(conn, data) {
     }
     if(isLobbyLeader) {
       outgoingSeq++;
-      broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, seq: outgoingSeq });
+      broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch || matchIsQuickMatch), seq: outgoingSeq });
       // A brand-new member who arrived mid-round spectates the live match until the next one
       if(!r && (state === "play" || state === "countdown" || state === "intro")) {
         try {
@@ -4289,7 +4400,8 @@ function handleIncomingData(conn, data) {
             type: "SPECTATE_MODE",
             mapIndex: selectedMapIndex,
             storm: Math.round(stormRadius),
-            mtime: Math.round(matchTime * 10) / 10
+            mtime: Math.round(matchTime * 10) / 10,
+            quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch || matchIsQuickMatch)
           });
         } catch(e) {}
       }
@@ -4305,6 +4417,7 @@ function handleIncomingData(conn, data) {
     quickMatchRooms = null; // joined successfully — normal lobby behavior from here
     disarmQmWatchdog();     // landed — disarm the search watchdog
     roster = data.roster;
+    lobbyIsQuickMatch = !!data.quickMatch;
     if(data.leaderId) {
       leaderId = data.leaderId;
       isLobbyLeader = (myNetId === leaderId);
@@ -4332,7 +4445,8 @@ function handleIncomingData(conn, data) {
     launchMeshMatch(
       data.spawns && typeof data.spawns === "object" ? data.spawns : {},
       data.heroes && typeof data.heroes === "object" ? data.heroes : {},
-      data.identities && typeof data.identities === "object" ? data.identities : {}
+      data.identities && typeof data.identities === "object" ? data.identities : {},
+      !!data.quickMatch
     );
   }
   else if(data.type === "CLIENT_INPUT") {
@@ -4429,7 +4543,7 @@ function handleIncomingData(conn, data) {
         ? (getRemoteActorByNetId(data.attackerId) || { ci: data.attackerCi, username: data.attackerName })
         : null;
       if(killer && !killer.username) killer.username = data.attackerName || null;
-      if(data.attackerId === myNetId) awardShinies(SHINY_REWARDS.kill, "Elimination");
+      if(matchIsQuickMatch && data.attackerId === myNetId) awardShinies(SHINY_REWARDS.kill, "Elimination");
       addKillFeed(killer, victim, { streak: data.streak || 0, multi: data.multi || 0 });
     }
   }
@@ -4586,7 +4700,7 @@ setInterval(() => {
       }
       if(isLobbyLeader) {
         outgoingSeq++;
-        broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, seq: outgoingSeq });
+        broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch || matchIsQuickMatch), seq: outgoingSeq });
       }
       if(state === "menu") refreshLobbyMenu();
     }
@@ -4635,7 +4749,7 @@ function wireHostPeer() {
       // Room code collision — immediately retry with a fresh code
       const wasQM = quickMatchHosted;
       hostMultiplayerLobby();
-      if(wasQM) quickMatchHosted = true;
+      if(wasQM) { quickMatchHosted = true; lobbyIsQuickMatch = true; }
       return;
     }
     alert("Could not register room code. Try hosting again!");
@@ -4646,7 +4760,9 @@ function wireHostPeer() {
 window.hostMultiplayerLobby = function() {
   if(!requireLocalAccount()) return;
   stopDemo();
+  matchIsQuickMatch = false;
   quickMatchHosted = false;
+  lobbyIsQuickMatch = false;
   quickMatchAutoStart = null;
   currentLobbyCode = gen4LetterCode();
   const roomLeaderId = "brawlbound-room-" + currentLobbyCode;
@@ -4862,10 +4978,12 @@ function ensureLivePeer(then) {
 window.quickMatch = function() {
   if(!requireLocalAccount()) return;
   stopDemo();
+  matchIsQuickMatch = false;
   if(peer) peer.destroy();
   peer = null;
   quickMatchRooms = null;
   quickMatchHosted = false;
+  lobbyIsQuickMatch = false;
   quickMatchAutoStart = null;
   qmClientCountdown = null;
   qmSeq++;
@@ -5007,6 +5125,7 @@ function quickMatchRendezvous(codes) {
     currentLobbyCode = code;
     quickMatchRooms = null;
     quickMatchHosted = true;
+    lobbyIsQuickMatch = true;
     quickMatchAutoStart = null;
     qmClientCountdown = null;
     peerConnections.clear();
@@ -5212,7 +5331,7 @@ function dentleyLunge(e) {
   if(e.form === 1) { e.c3 = 0; return; } // the Squire has no armor to lunge with
   const charge = e.riposte;
   const dmg = 20 + charge;
-  const stun = charge > 0 ? Math.min(0.8, charge / 40 * 0.8) : 0;
+  const stun = charge > 0 ? Math.min(1.0, charge / 40) : 0;
   e.riposte = 0; // charge is spent even if the lunge misses
   beginDentleyLunge(e, 90, 0.24, dmg, 220, false, stun);
 }
@@ -5235,7 +5354,7 @@ function breakArmor(t, a) {
   t.armorBreakUsed = true;
   t.form = 1; t.hp = 55; t.mhp = 55;
   t.guard = 0; t.grace = 0.8; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
-  t.kx = Math.cos(a) * 320; t.kz = Math.sin(a) * 320; // knocked ~40 units from the breaking hit
+  t.kx = Math.cos(a) * 520; t.kz = Math.sin(a) * 520; // send the Squire farther from the armor husk
   const h = { id: "hk_" + Math.random().toString(36).slice(2, 8), x: t.x, z: t.z, hp: 100, life: 8, owner: t, mesh: makeHuskMesh() };
   h.mesh.position.set(t.x, 0, t.z);
   scene.add(h.mesh);
@@ -5510,6 +5629,8 @@ window.cancelLobby = function() {
   peer = null;
   isMultiplayer = false;
   isLobbyLeader = false;
+  matchIsQuickMatch = false;
+  lobbyIsQuickMatch = false;
   leaderId = null;
   peerConnections.clear();
   roster = [];
@@ -5635,6 +5756,8 @@ window.launchSoloMatch = function() {
   }
   isMultiplayer = false;
   isLobbyLeader = false;
+  matchIsQuickMatch = false;
+  lobbyIsQuickMatch = false;
   leaderId = null;
   peerConnections.clear();
   roster = [];
@@ -5694,13 +5817,16 @@ window.startLobbyMatch = function() {
     spawns: spawnMap,
     heroes: heroMap,
     identities: identityMap,
+    quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch),
     seq: outgoingSeq
   });
 
-  launchMeshMatch(spawnMap, heroMap, identityMap);
+  launchMeshMatch(spawnMap, heroMap, identityMap, !!(quickMatchHosted || lobbyIsQuickMatch));
 };
 
-function launchMeshMatch(spawnMap, heroMap = {}, identityMap = {}) {
+function launchMeshMatch(spawnMap, heroMap = {}, identityMap = {}, quickMatch = false) {
+  matchIsQuickMatch = !!quickMatch;
+  lobbyIsQuickMatch = !!quickMatch;
   clearSceneEntities();
   teamMode = false;
   const chosenMap = MAPS[selectedMapIndex];
@@ -5729,6 +5855,8 @@ function launchMeshMatch(spawnMap, heroMap = {}, identityMap = {}) {
 // A player who joined while a round is live: they spectate the rest of that round
 // first-person, then play normally when the next round starts.
 function enterSpectateLobby(info) {
+  matchIsQuickMatch = !!info.quickMatch;
+  lobbyIsQuickMatch = !!info.quickMatch;
   stopDemo();
   demoActive = false;
   clearSceneEntities();
