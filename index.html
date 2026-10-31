@@ -5481,10 +5481,8 @@ function menu(msg) {
       if(demoActive) rebuildShowcase();
       if(isMultiplayer) {
         const me = roster.find(x => x.id === myNetId);
-        if(me) me.hero = p1HeroChoice;
+        if(me) { me.hero = p1HeroChoice; me.tagCosmetics = getNameplateCosmeticIds(); me.skins = getSkinSelection(); }
         outgoingSeq++;
-        const me = roster.find(x => x.id === myNetId);
-        if(me) { me.tagCosmetics = getNameplateCosmeticIds(); me.skins = getSkinSelection(); }
         broadcastToPeers({ type: "HELLO", id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
       }
     };
@@ -6612,6 +6610,10 @@ Watch out: phasing is not invulnerability; keep Wisp damageable and unable to at
 
 
 - Make Bullets go in any direction of the mouse (vertical also).
+- Add Usernames (Accounts, basically)
+- Add a Currency (Shinies)
+- Add a Shop
 - Add Champion and Weapon skins
 - Add Auras
+- Add Nametag Colors/Nametag border Colors/Nametag background design
 - Add Daily challenges (Can only be done in Quick Matches)
