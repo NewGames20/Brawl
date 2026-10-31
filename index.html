@@ -1360,7 +1360,7 @@ function syncProfileIdentity() {
   if(demoActive) rebuildShowcase();
   if(isMultiplayer) {
     outgoingSeq++;
-    const packet = { type: "HELLO", arenaVersion:3, id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
+    const packet = { type: "HELLO", arenaVersion:4, id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
     if(isLobbyLeader) broadcastToPeers(packet);
     else if(leaderId && peerConnections.has(leaderId)) {
       const conn = peerConnections.get(leaderId);
@@ -1798,6 +1798,29 @@ const HEROES = [
 // Captain Oink's chain hook tuning
 const CHAIN = { max: 220, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 450, retractTime: 0.6 };
 
+// Champion body sizes: one shared radius drives movement, combat hits and the model scale.
+const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5];
+function championRadius(ci,form=0){return (CHAMPION_RADII[ci]||16)*(ci===6&&form===1?.82:1);}
+function applyChampionModelSize(model,ci,form=0){
+ if(!model)return;
+ const scale=championRadius(ci,form)/16*(model.userData.bbPresentationScale||1);
+ model.scale.setScalar(scale);
+}
+function applyChampionBodySize(entity){
+ entity.r=championRadius(entity.ci,entity.form||0);
+ applyChampionModelSize(entity.mesh,entity.ci,entity.form||0);
+}
+function moveChampion(entity,dx,dz){
+ if(!Number.isFinite(dx)||!Number.isFinite(dz))return;
+ const steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dz))/3));
+ const sx=dx/steps,sz=dz/steps;
+ for(let i=0;i<steps;i++){
+ if(!blocked(entity.x+sx,entity.z,entity.r))entity.x+=sx;
+ if(!blocked(entity.x,entity.z+sz,entity.r))entity.z+=sz;
+ }
+ if(!blocked(entity.x,entity.z,entity.r)){entity.lastSafeX=entity.x;entity.lastSafeZ=entity.z;}
+}
+
 // --- MAP CONFIGURATIONS ---
 const MAPS=[
  {id:"bbq",name:"BBQ Bay",floorCol:0x49362b,wallCol:0x5b3931,accent:0xffa34e,
@@ -1809,7 +1832,10 @@ const MAPS=[
  {id:"conveyor",name:"Conveyor Kitchen",floorCol:0x192d38,wallCol:0x3d5967,accent:0x48e4e3,
  outline:[[14,14],[W-14,14],[W-14,H*.35],[W-108,H*.35],[W-108,H*.65],[W-14,H*.65],[W-14,H-14],[14,H-14],[14,H*.65],[108,H*.65],[108,H*.35],[14,H*.35]],
  voids:[[0,H*.35,108,H*.30],[W-108,H*.35,108,H*.30]],
- cover:[[W*.31,H*.21,64,48],[W*.61,H*.21,64,48],[W*.31,H*.71,64,48],[W*.61,H*.71,64,48]],
+ cover:[[W*.31,H*.21,64,48],[W*.61,H*.21,64,48],[W*.31,H*.71,64,48],[W*.61,H*.71,64,48],
+ [143,H*.5-48,64,96],[W-207,H*.5-48,64,96]],
+ squeezeGaps:[{x:125.5,z:H*.5,width:35,length:96},{x:W-125.5,z:H*.5,width:35,length:96}],
+ spawns:[[W*.18,H*.22],[W*.82,H*.78],[W*.82,H*.22],[W*.18,H*.78],[W*.5,62],[W*.5,H-62],[W*.285,H*.5],[W*.715,H*.5]],
  vents:[],belts:[[W*.21,H*.43,W*.58,36,1,0],[W*.21,H*.53,W*.58,36,-1,0]]}
 ];
 for(const def of MAPS)def.rects=[...def.cover,...def.voids];
@@ -2547,6 +2573,13 @@ function updateArenaMechanics(dt){
  }
 }
 
+function addKitchenServiceMarkers(def){
+ for(const gap of def.squeezeGaps||[]){
+ const mat=new THREE.MeshBasicMaterial({color:0xa0eacf,transparent:true,opacity:.55,depthWrite:false});
+ for(const offset of [-32,0,32]){const mark=new THREE.Mesh(new THREE.PlaneGeometry(14,2),mat);mark.rotation.x=-Math.PI/2;mark.position.set(gap.x,1.15,gap.z+offset);mapGroup.add(mark);}
+ }
+}
+
 function build3DMap(def){
  const textures=new Set();mapGroup.traverse(o=>{for(const m of (Array.isArray(o.material)?o.material:[o.material]))if(m&&m.map)textures.add(m.map);});for(const tex of textures)tex.dispose();
  while(mapGroup.children.length)disposeHierarchy(mapGroup.children[0]);arenaVents=[];arenaBeltArrows=[];
@@ -2554,8 +2587,8 @@ function build3DMap(def){
  const floor=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:kitchenFloorTexture(def),roughness:.62,metalness:.28}));floor.receiveShadow=true;mapGroup.add(floor);
  const surround=new THREE.Mesh(new THREE.PlaneGeometry(W+600,H+600),new THREE.MeshStandardMaterial({color:def.id==="bbq"?0x103a48:0x080e19,roughness:def.id==="bbq"?.25:.8,metalness:.45}));surround.rotation.x=-Math.PI/2;surround.position.set(W/2,-8,H/2);mapGroup.add(surround);
  const wallMat=new THREE.MeshStandardMaterial({color:def.wallCol,roughness:.42,metalness:def.id==="conveyor"?.72:.35}),trimMat=new THREE.MeshStandardMaterial({color:def.accent,emissive:def.accent,emissiveIntensity:.5,roughness:.3,metalness:.6});
- for(let i=0;i<def.outline.length;i++){const a=def.outline[i],b=def.outline[(i+1)%def.outline.length],length=Math.hypot(b[0]-a[0],b[1]-a[1]),angle=-Math.atan2(b[1]-a[1],b[0]-a[0]);const wall=arenaBox((a[0]+b[0])/2,32.5,(a[1]+b[1])/2,length,65,B,wallMat);wall.rotation.y=angle;const trim=arenaBox(wall.position.x,65,wall.position.z,length,2,2.2,trimMat);trim.rotation.y=angle;}
- buildThemedCover(def);
+ for(let i=0;i<def.outline.length;i++){const a=def.outline[i],b=def.outline[(i+1)%def.outline.length],length=Math.hypot(b[0]-a[0],b[1]-a[1]),angle=-Math.atan2(b[1]-a[1],b[0]-a[0]);const wall=arenaBox((a[0]+b[0])/2,32.5,(a[1]+b[1])/2,length,65,B,wallMat);wall.position.x+=(b[1]-a[1])/length*B/2;wall.position.z-=(b[0]-a[0])/length*B/2;wall.rotation.y=angle;const trim=arenaBox(wall.position.x,65,wall.position.z,length,2,2.2,trimMat);trim.rotation.y=angle;}
+ buildThemedCover(def);addKitchenServiceMarkers(def);
  for(const [x,z,w,d] of def.vents){const top=arenaBox(x+w/2,1,z+d/2,w,1.5,d,new THREE.MeshStandardMaterial({color:0x2a2829,emissive:0x220900,emissiveIntensity:.2,metalness:.7,roughness:.35}));const fire=new THREE.Group();for(let j=0;j<7;j++){const f=new THREE.Mesh(new THREE.ConeGeometry(4.5,26+(j%3)*7,6),new THREE.MeshBasicMaterial({color:j%2?0xffb333:0xff592b,transparent:true,opacity:.75,depthWrite:false}));f.position.set(x+8+j*(w-16)/6,16,z+d/2);fire.add(f);}fire.visible=false;mapGroup.add(fire);arenaVents.push({top,fire});for(let k=0;k<8;k++)arenaBox(x+5+k*(w-10)/7,2.5,z+d/2,2,2,d,wallMat);}
  for(const b of def.belts){arenaBox(b[0]+b[2]/2,1,b[1]+b[3]/2,b[2],2,b[3],new THREE.MeshStandardMaterial({color:0x132d35,roughness:.65,metalness:.45}));for(const side of [-1,1])arenaBox(b[0]+b[2]/2,2,b[1]+b[3]/2+side*b[3]/2,b[2],2,2,trimMat);
  for(let j=0;j<12;j++){const arrow=new THREE.Group();for(const side of [-1,1]){const line=new THREE.Mesh(new THREE.BoxGeometry(12,.7,2),trimMat);line.position.z=side*4;line.rotation.y=side*(b[4]>0?Math.PI/4:-Math.PI/4);arrow.add(line);}arrow.position.set(b[0]+10+j*(b[2]-20)/12,2.6,b[1]+b[3]/2);arrow.userData={belt:b,offset:j*(b[2]-20)/12};mapGroup.add(arrow);arenaBeltArrows.push(arrow);}}
@@ -2839,6 +2872,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   applyChampionSkin(grp, heroIndex, skinItemFor("championSkins", heroIndex, { equipped: skinSelection }));
   applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, { equipped: skinSelection }));
 
+  applyChampionModelSize(grp,heroIndex);
   scene.add(grp);
   return grp;
 }
@@ -3112,7 +3146,7 @@ function damageWorldCrate(amount, attacker = null) {
 
 function pushWorldCrate(e, prevX, prevZ, dt) {
   const c = worldCrate;
-  if(!c || c.exploded || (isMultiplayer && !isLobbyLeader)) return;
+  if(!c||c.y>0||c.exploded||(isMultiplayer&&!isLobbyLeader))return;
   const dx = c.x - e.x, dz = c.z - e.z, d = Math.hypot(dx, dz), minD = c.r + e.r;
   if(d >= minD || d < 0.001) return;
   let nx = dx / d, nz = dz / d;
@@ -3231,7 +3265,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tag
   if(isLocalP1) mesh.visible = false;
 
   return {
-    ci, x, z, r:16,
+    ci,x,z,r:championRadius(ci),lastSafeX:x,lastSafeZ:z,
     bobPhase: Math.random() * 6.28,
     targetX: x, targetZ: z, targetA: 0,
     pitch: 0, targetP: 0, moveSpd: 0,
@@ -3349,22 +3383,20 @@ function hasLOS(x1, z1, x2, z2) {
   return true;
 }
 
-function pushCollisions(e) {
-  for(const h of Husks) {
-    const dx = e.x - h.x, dz = e.z - h.z, d = Math.hypot(dx, dz), m = 14 + e.r;
-    if(d < m) { e.x = h.x + (d > 0 ? dx / d : 1) * m; e.z = h.z + (d > 0 ? dz / d : 0) * m; }
-  }
-  e.x = Math.max(B+e.r, Math.min(W-B-e.r, e.x));
-  e.z = Math.max(B+e.r, Math.min(H-B-e.r, e.z));
-
-  for(const [rx, ry, rw, rh] of currentRects) {
-    const cx = Math.max(rx, Math.min(e.x, rx+rw)), cz = Math.max(ry, Math.min(e.z, ry+rh));
-    const dx = e.x - cx, dz = e.z - cz, d = Math.hypot(dx, dz);
-    if(d < e.r) {
-      if(d > 0) { e.x += (dx/d)*(e.r-d); e.z += (dz/d)*(e.r-d); }
-      else e.z -= e.r;
-    }
-  }
+function pushCollisions(e){
+ for(let pass=0;pass<4;pass++){
+ for(const h of Husks){const dx=e.x-h.x,dz=e.z-h.z,d=Math.hypot(dx,dz),m=14+e.r;if(d<m){e.x=h.x+(d>0?dx/d:1)*m;e.z=h.z+(d>0?dz/d:0)*m;}}
+ e.x=Math.max(B+e.r,Math.min(W-B-e.r,e.x));e.z=Math.max(B+e.r,Math.min(H-B-e.r,e.z));
+ for(const [x,z,w,d] of currentRects){
+ const cx=Math.max(x,Math.min(e.x,x+w)),cz=Math.max(z,Math.min(e.z,z+d)),dx=e.x-cx,dz=e.z-cz,dist=Math.hypot(dx,dz);
+ if(dist>=e.r)continue;
+ if(dist>0){e.x+=dx/dist*(e.r-dist+.001);e.z+=dz/dist*(e.r-dist+.001);}
+ else{const options=[[Math.abs(e.x-x),x-e.r-.001,e.z],[Math.abs(x+w-e.x),x+w+e.r+.001,e.z],[Math.abs(e.z-z),e.x,z-e.r-.001],[Math.abs(z+d-e.z),e.x,z+d+e.r+.001]].sort((a,b)=>a[0]-b[0]);e.x=options[0][1];e.z=options[0][2];}
+ }
+ if(!blocked(e.x,e.z,e.r))break;
+ }
+ if(blocked(e.x,e.z,e.r)&&Number.isFinite(e.lastSafeX)&&!blocked(e.lastSafeX,e.lastSafeZ,e.r)){e.x=e.lastSafeX;e.z=e.lastSafeZ;}
+ if(!blocked(e.x,e.z,e.r)){e.lastSafeX=e.x;e.lastSafeZ=e.z;}
 }
 
 // --- SPECTATING (first-person view through the spectated player's eyes) ---
@@ -3905,8 +3937,7 @@ function updateChain(e, dt) {
   } else if(c.phase === "pullSelf") {
     // Only the machine that controls Oink moves him; everyone else sees him arrive via the network
     if(e === pl || e.ai) {
-      e.x += cs * CHAIN.pullSelfSpd * dt;
-      e.z += sn * CHAIN.pullSelfSpd * dt;
+      moveChampion(e,cs*CHAIN.pullSelfSpd*dt,sn*CHAIN.pullSelfSpd*dt);
     }
     if(Math.hypot(c.tx - e.x, c.tz - e.z) <= e.r + 6 || c.t > 0.7) done = true;
   } else if(c.phase === "pullEnemy") {
@@ -4389,7 +4420,7 @@ function setupConnectionEvents(conn) {
     peerConnections.set(conn.peer, conn);
     lastSeenByPeer.set(conn.peer, Date.now());
     outgoingSeq++;
-    conn.send({ type: "HELLO", arenaVersion:3, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
+    conn.send({ type: "HELLO", arenaVersion:4, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
   });
 
   conn.on("data", data => {
@@ -4488,8 +4519,8 @@ function handleIncomingData(conn, data) {
 
   if(data.type === "HELLO") {
  if(isLobbyLeader&&data.id!==conn.peer)return;
- if(!isLobbyLeader&&conn.peer===leaderId&&data.id===leaderId&&data.arenaVersion!==3){if(quickMatchRooms){try{conn.close();}catch(e){}return;}leaveLobby("Everyone must use the six-second vote / BBQ Bay cover update.");return;}
- if(isLobbyLeader&&data.arenaVersion!==3){try{conn.send({type:"REJECT",reason:"Please use the six-second vote / BBQ Bay cover update to join this lobby."});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},300);return;}
+ if(!isLobbyLeader&&conn.peer===leaderId&&data.id===leaderId&&data.arenaVersion!==4){if(quickMatchRooms){try{conn.close();}catch(e){}return;}leaveLobby("Everyone must use the champion-size / Kitchen-passage update.");return;}
+ if(isLobbyLeader&&data.arenaVersion!==4){try{conn.send({type:"REJECT",reason:"Please use the champion-size / Kitchen-passage update to join this lobby."});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},300);return;}
     const hero = Number.isInteger(data.hero) && data.hero >= RANDOM_HERO && data.hero < HEROES.length ? data.hero : 0;
     let r = roster.find(x => x.id === data.id);
     const username = safeNetworkUsername(data.username || (r && r.username) || "Player", data.id);
@@ -4581,7 +4612,9 @@ function handleIncomingData(conn, data) {
     if(!isLobbyLeader || hostVisibilityPaused || data.id !== conn.peer ||
        !Number.isFinite(data.x) || !Number.isFinite(data.z) || !Number.isFinite(data.a)) return;
     const ent = getRemoteActorByNetId(data.id);
-    if(ent && !ent.dead) {
+    if(ent&&!ent.dead){
+      applyChampionBodySize(ent);
+      if(blocked(data.x,data.z,ent.r))return;
       ent.targetX = data.x;
       ent.targetZ = data.z;
       ent.targetA = data.a;
@@ -4598,7 +4631,7 @@ function handleIncomingData(conn, data) {
           // Local hit feedback + death handling from the authoritative host state
           if(item.hp < pl.hp && !pl.dead) applyLocalHitFeedback(pl.hp - item.hp);
           pl.hp = item.hp;
-          pl.mhp = item.mh || pl.mhp; pl.form = item.fm || 0;
+          pl.mhp=item.mh||pl.mhp;pl.form=item.fm||0;applyChampionBodySize(pl);
           pl.guard = item.gd || 0; pl.riposte = item.rp || 0;
           // Replicate host-applied status effects so stuns/slows/poison actually stop a client
           pl.stun = Math.max(pl.stun, item.st || 0);
@@ -4641,7 +4674,7 @@ function handleIncomingData(conn, data) {
         ent.targetA = item.a;
         ent.targetP = item.p || 0;
         ent.hp = item.hp;
-        ent.mhp = item.mh || ent.mhp; ent.form = item.fm || 0;
+        ent.mhp=item.mh||ent.mhp;ent.form=item.fm||0;applyChampionBodySize(ent);
         ent.guard = item.gd || 0; ent.riposte = item.rp || 0;
         ent.dead = item.dead;
         ent.stun = item.st || 0;
@@ -5394,13 +5427,8 @@ function refreshLobbyMenu() {
   menu(`Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode || "..."}</span> ] - (${roster.length}/6 Players) ${isLobbyLeader ? '👑 (Host)' : ''}${qmLine}`);
 }
 
-window.selectMap = function(idx) {
-  if(roundVote){sendRoundChoice("vote",idx);return;}
-  selectedMapIndex = idx;
-  ov.querySelectorAll(".map-selector .tab-btn").forEach((b, i) => {
-    b.classList.toggle("selected", i === idx);
-  });
-  if(state === "menu" && !isMultiplayer) startDemo(); // rebuild showcase on the new map
+window.selectMap=function(idx){
+ if(roundVote)sendRoundChoice("vote",idx);
 };
 
 window.selectControlScheme = function(scheme) {
@@ -5484,7 +5512,7 @@ function makeHuskMesh() {
 // Armor hits 0 HP: it bursts off and Dentley lives on as the Squire (host / solo only)
 function breakArmor(t, a) {
   t.armorBreakUsed = true;
-  t.form = 1; t.hp = 55; t.mhp = 55;
+  t.form=1;t.hp=55;t.mhp=55;applyChampionBodySize(t);
   t.guard = 0; t.grace = 0.8; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
   t.kx = Math.cos(a) * 520; t.kz = Math.sin(a) * 520; // send the Squire farther from the armor husk
   const h = { id: "hk_" + Math.random().toString(36).slice(2, 8), x: t.x, z: t.z, hp: 100, life: 8, owner: t, mesh: makeHuskMesh() };
@@ -5505,7 +5533,7 @@ function breakArmor(t, a) {
 
 function rearm(e) {
   const h = e.husk;
-  e.form = 0; e.mhp = HEROES[6].hp; e.hp = 70; e.chan = 0; e.c2 = 0; e.husk = null;
+  e.form=0;applyChampionBodySize(e);e.mhp=HEROES[6].hp;e.hp=70; e.chan = 0; e.c2 = 0; e.husk = null;
   if(h) { disposeHierarchy(h.mesh); const i = Husks.indexOf(h); if(i >= 0) Husks.splice(i, 1); }
   spawn3DRing(e.x, e.z, 40, 0x9fc5ff);
   spawnDamageNumber(e.x, e.z, "RE-ARMORED", "#9fc5ff");
@@ -5611,6 +5639,7 @@ function champDetailHTML(ci) {
       <div class="statbar"><span>HP</span><div class="sb-track"><div class="sb-fill" style="width:${hpPct}%"></div></div><b>${c.hp}</b></div>
       <div class="statbar"><span>SPD</span><div class="sb-track"><div class="sb-fill spd" style="width:${spPct}%"></div></div><b>${c.sp}</b></div>
     </div>
+    <div class="cd-summary">Body size: ${["Largest","Large","Small","Medium","Smallest","Medium","Medium-large"][ci]} · ${ci===0?"Use the main routes; too large for Kitchen service gaps.":"Fits the Kitchen service passages."}</div>
     <div class="cd-weapon">${c.w} <b>${c.wn}</b> — ${c.ad}</div>
     <div class="cd-summary">${c.d}</div>
     ${c.passive ? `<div class="cd-ability"><span class="cd-passive-label">P</span><div class="cd-ab-body"><b>Passive · Hollow Armor</b><br>${c.passive}</div></div>` : ""}
@@ -5689,12 +5718,6 @@ function menu(msg) {
         </div>
 
         <div style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
-          <div class="map-selector">
-            ${MAPS.map((m, i) => `
-              <button class="tab-btn ${i === selectedMapIndex ? 'selected' : ''}" onclick="selectMap(${i})">${m.name}</button>
-            `).join("")}
-          </div>
-
           <div class="control-selector">
             <button class="tab-btn ${controlScheme === 'wasd' ? 'selected' : ''}" data-scheme="wasd" onclick="selectControlScheme('wasd')">WASD Controls</button>
             <button class="tab-btn ${controlScheme === 'arrows' ? 'selected' : ''}" data-scheme="arrows" onclick="selectControlScheme('arrows')">Arrow Keys Controls</button>
@@ -5736,7 +5759,7 @@ function menu(msg) {
         const me = roster.find(x => x.id === myNetId);
         if(me) { me.hero = p1HeroChoice; me.tagCosmetics = getNameplateCosmeticIds(); me.skins = getSkinSelection(); }
         outgoingSeq++;
-        broadcastToPeers({ type: "HELLO", arenaVersion:3, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
+        broadcastToPeers({ type: "HELLO", arenaVersion:4, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
       }
     };
   });
@@ -5870,7 +5893,7 @@ function rebuildShowcase() {
     podium.add(q);
   } else {
     const model = createDetailedHeroModel(p1HeroChoice, false, true, null, null, getSkinSelection());
-    model.scale.set(1.55, 1.55, 1.55);
+    model.userData.bbPresentationScale=1.55;applyChampionModelSize(model,p1HeroChoice);
     podium.add(model);
   }
   const baseY = centerObstacleHeight();
@@ -6361,6 +6384,7 @@ function upd(dt) {
 
   // ENTITIES
   for(const e of E) {
+    applyChampionBodySize(e);
     if(e.dead) {
       if(e.mesh) e.mesh.visible = false;
       if(e.chain) endChain(e);
@@ -6388,8 +6412,7 @@ function upd(dt) {
       e.mesh.visible = !(isSpectating && e === spectateTarget);
       if(!e.ai) { // remote players follow network targets; bots drive themselves
         const netFollow = 1 - Math.exp(-dt * 15);
-        e.x += (e.targetX - e.x) * netFollow;
-        e.z += (e.targetZ - e.z) * netFollow;
+        moveChampion(e,(e.targetX-e.x)*netFollow,(e.targetZ-e.z)*netFollow);
         e.a = lerpAngle(e.a, e.targetA, netFollow);
         e.pitch += ((e.targetP || 0) - e.pitch) * netFollow;
       }
@@ -6430,8 +6453,7 @@ function upd(dt) {
 
     if(e.chargeT > 0) {
       e.chargeT -= dt;
-      e.x += e.chargeVx * dt;
-      e.z += e.chargeVz * dt;
+      moveChampion(e,e.chargeVx*dt,e.chargeVz*dt);
       pushCollisions(e);
       for(const t of E) {
         if(t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6 && areEnemies(e, t)) {
@@ -6500,8 +6522,7 @@ function upd(dt) {
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? 0.8 : 1.0);
       const l = Math.hypot(mx, mz) || 1;
-      e.x += (mx/l) * s * dt;
-      e.z += (mz/l) * s * dt;
+      moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
 
       if(at && e.c1 <= 0) attack(e);
       if(ab1 && e.c2 <= 0) ability1(e);
@@ -6512,8 +6533,7 @@ function upd(dt) {
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? 0.8 : 1.0);
       const l = Math.hypot(mx, mz) || 1;
-      e.x += (mx/l) * s * dt;
-      e.z += (mz/l) * s * dt;
+      moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
 
       if(at && e.c1 <= 0) attack(e);
       if(ab1 && e.c2 <= 0) ability1(e);
@@ -6522,8 +6542,7 @@ function upd(dt) {
 
     if(e === pl) { P1_ab1 = 0; P1_ab2 = 0; }
 
-    e.x += e.kx * dt;
-    e.z += e.kz * dt;
+    moveChampion(e,e.kx*dt,e.kz*dt);
     const fr = 1 - Math.min(1, 8*dt);
     e.kx *= fr; e.kz *= fr;
 
@@ -6531,13 +6550,13 @@ function upd(dt) {
       if(o !== e && !o.dead) {
         const dx = e.x - o.x, dz = e.z - o.z, d = Math.hypot(dx, dz), m = e.r + o.r;
         if(d > 0 && d < m) {
-          e.x += (dx/d)*(m-d)*0.5;
-          e.z += (dz/d)*(m-d)*0.5;
+          moveChampion(e,(dx/d)*(m-d)*.5,(dz/d)*(m-d)*.5);
         }
       }
     }
     pushCollisions(e);
-    pushWorldCrate(e, prevX, prevZ, dt);
+    pushWorldCrate(e,prevX,prevZ,dt);
+    pushCollisions(e);
 
     // Pickups (host-authoritative: only the host or solo play collects; clients see them via snapshots)
     if(!isMultiplayer || isLobbyLeader) {
@@ -6573,7 +6592,7 @@ function upd(dt) {
         const sq = e.form === 1;
         for(const part of e.mesh.armorParts) part.visible = !sq;
         if(e.mesh.shield) e.mesh.shield.visible = e.guard > 0 && !sq;
-        e.mesh.scale.setScalar(sq ? 0.82 : 1);
+        applyChampionBodySize(e);
       }
       const ratio = Math.max(0, e.hp / e.mhp);
       e.mesh.hpBar.scale.x = ratio;
