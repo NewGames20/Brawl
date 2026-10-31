@@ -1360,7 +1360,7 @@ function syncProfileIdentity() {
   if(demoActive) rebuildShowcase();
   if(isMultiplayer) {
     outgoingSeq++;
-    const packet = { type: "HELLO", arenaVersion:5, id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
+    const packet = { type: "HELLO", arenaVersion:ARENA_PROTOCOL_VERSION, id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
     if(isLobbyLeader) broadcastToPeers(packet);
     else if(leaderId && peerConnections.has(leaderId)) {
       const conn = peerConnections.get(leaderId);
@@ -4252,7 +4252,8 @@ window.returnToMenu = function() {
 };
 
 // --- Six-second map voting and host-resolved rematches ---
-let roundVote=null,roundVoteSerial=0,pendingRoundReady=false;
+let roundVote=null,roundVoteSerial=0,pendingRoundReady=false,lastRoundStatePacket=null,lastRoundStartPacket=null,pendingStartGamePacket=null,lastStartedRoundId=null;
+const ARENA_PROTOCOL_VERSION=6;
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=[0,0,0];for(const m of members){const v=votes[m.id];if(v===0||v===1||v===-1)counts[v===-1?2:v]++;}const max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===2?Math.floor(random()*MAPS.length):winner;
 }
@@ -4260,11 +4261,12 @@ function roundMembers(){return isMultiplayer?roster:[{id:myNetId,hero:p1HeroChoi
 function clearRoundVote(){roundVote=null;pendingRoundReady=false;const el=document.getElementById("round-panel");if(el)el.remove();document.body.classList.remove("round-open");}
 function beginRoundVote(initial=false){
  if(roundVote){renderRoundVote();return;}if(isMultiplayer&&!isLobbyLeader)return;if(isMultiplayer&&roster.length<2){showEconomyToast("Need at least two players to start.");return;}
+ lastRoundStatePacket=null;lastRoundStartPacket=null;pendingStartGamePacket=null;
  const ready=Object.create(null),heroes=Object.create(null);for(const r of roundMembers()){ready[r.id]=initial;heroes[r.id]=r.id===myNetId?p1HeroChoice:r.hero;}
  roundVote={id:myNetId+"_round_"+(++roundVoteSerial)+"_"+Date.now(),endsAt:Date.now()+6000,votes:Object.create(null),ready,heroes,chosen:null,allowLateVotes:!initial};quickMatchAutoStart=null;qmClientCountdown=null;renderRoundVote();broadcastRoundVote();
 }
 function broadcastRoundVote(){
- if(!roundVote||!isMultiplayer||!isLobbyLeader)return;outgoingSeq++;broadcastToPeers({type:"ROUND_STATE",id:myNetId,seq:outgoingSeq,roundId:roundVote.id,remaining:Math.max(0,roundVote.endsAt-Date.now()),votes:roundVote.votes,ready:roundVote.ready,heroes:roundVote.heroes,chosen:roundVote.chosen,allowLateVotes:roundVote.allowLateVotes});
+ if(!roundVote||!isMultiplayer||!isLobbyLeader)return;outgoingSeq++;lastRoundStatePacket={type:"ROUND_STATE",id:myNetId,seq:outgoingSeq,roundId:roundVote.id,remaining:Math.max(0,roundVote.endsAt-Date.now()),votes:{...roundVote.votes},ready:{...roundVote.ready},heroes:{...roundVote.heroes},chosen:roundVote.chosen,allowLateVotes:roundVote.allowLateVotes};broadcastToPeers(lastRoundStatePacket);
 }
 function acceptRoundChoice(id,data){
  if(!roundVote||data.roundId!==roundVote.id||!roundMembers().some(r=>r.id===id))return false;
@@ -4291,7 +4293,7 @@ function renderRoundVote(){
 }
 function tickRoundVote(){
  if(!roundVote)return;if(isMultiplayer&&!isLobbyLeader){renderRoundVote();return;}const members=roundMembers();
- if(Date.now()>=roundVote.endsAt){if(roundVote.chosen===null)roundVote.chosen=chooseVotedMap(roundVote.votes,members);if(members.length>=(isMultiplayer?2:1)&&members.every(r=>roundVote.ready[r.id])){selectedMapIndex=roundVote.chosen;for(const r of roster)if(Number.isInteger(roundVote.heroes[r.id]))r.hero=roundVote.heroes[r.id];p1HeroChoice=roundVote.heroes[myNetId]??p1HeroChoice;const multi=isMultiplayer;clearRoundVote();if(multi)launchVotedMatch();else launchSoloChosen();return;}}
+ if(Date.now()>=roundVote.endsAt){if(roundVote.chosen===null)roundVote.chosen=chooseVotedMap(roundVote.votes,members);if(members.length>=(isMultiplayer?2:1)&&members.every(r=>roundVote.ready[r.id])){selectedMapIndex=roundVote.chosen;for(const r of roster)if(Number.isInteger(roundVote.heroes[r.id]))r.hero=roundVote.heroes[r.id];p1HeroChoice=roundVote.heroes[myNetId]??p1HeroChoice;const multi=isMultiplayer,roundId=roundVote.id;clearRoundVote();if(multi)launchVotedMatch(roundId);else launchSoloChosen();return;}}
  renderRoundVote();broadcastRoundVote();
 }
 setInterval(tickRoundVote,300);
@@ -4417,7 +4419,7 @@ function setupConnectionEvents(conn) {
     peerConnections.set(conn.peer, conn);
     lastSeenByPeer.set(conn.peer, Date.now());
     outgoingSeq++;
-    conn.send({ type: "HELLO", arenaVersion:5, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
+    conn.send({ type: "HELLO", arenaVersion:ARENA_PROTOCOL_VERSION, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
   });
 
   conn.on("data", data => {
@@ -4471,6 +4473,20 @@ function setHostPauseBanner(paused) {
   if(banner) banner.classList.toggle("show", !!paused);
 }
 
+function startReceivedRound(data) {
+  if(!data||typeof data.roundId!=="string"||data.roundId===lastStartedRoundId)return;
+  pendingStartGamePacket=null;
+  lastStartedRoundId=data.roundId;
+  clearRoundVote();
+  selectedMapIndex=Number.isInteger(data.mapIndex)&&MAPS[data.mapIndex]?data.mapIndex:0;
+  launchMeshMatch(
+    data.spawns&&typeof data.spawns==="object"?data.spawns:{},
+    data.heroes&&typeof data.heroes==="object"?data.heroes:{},
+    data.identities&&typeof data.identities==="object"?data.identities:{},
+    !!data.quickMatch
+  );
+}
+
 function handleIncomingData(conn, data) {
   if(!data || !data.type) return;
 
@@ -4501,10 +4517,11 @@ function handleIncomingData(conn, data) {
     return;
   }
 
+  if(data.type==="ROUND_SYNC_REQUEST"){if(!isLobbyLeader||data.id!==conn.peer)return;if(lastRoundStatePacket&&(!data.roundId||data.roundId===lastRoundStatePacket.roundId)){outgoingSeq++;conn.send({...lastRoundStatePacket,seq:outgoingSeq});}if(lastRoundStartPacket&&(!data.roundId||data.roundId===lastRoundStartPacket.roundId)){outgoingSeq++;lastRoundStartPacket={...lastRoundStartPacket,seq:outgoingSeq};conn.send(lastRoundStartPacket);}return;}
   if(data.type==="ROUND_CHOICE"){if(!isLobbyLeader||data.id!==conn.peer)return;if(data.action==="request"){if(state!=="menu"&&state!=="result")return;if(!roundVote)beginRoundVote(false);if(!roundVote)return;const roundId=roundVote.id;if(data.choice===-1||data.choice===0||data.choice===1)acceptRoundChoice(conn.peer,{...data,roundId,action:"vote"});if(Number.isInteger(data.hero))acceptRoundChoice(conn.peer,{...data,roundId,action:"hero"});if(typeof data.ready==="boolean")acceptRoundChoice(conn.peer,{...data,roundId,action:"ready"});return;}acceptRoundChoice(conn.peer,data);return;}
- if(data.type==="ROUND_STATE"){
- if(isLobbyLeader||conn.peer!==leaderId||data.id!==leaderId||typeof data.roundId!=="string")return;if(state!=="menu"&&state!=="result")return;
-  roundVote={id:data.roundId,endsAt:Date.now()+Math.max(0,Math.min(6000,Number(data.remaining)||0)),votes:data.votes&&typeof data.votes==="object"?data.votes:{},ready:data.ready&&typeof data.ready==="object"?data.ready:{},heroes:data.heroes&&typeof data.heroes==="object"?data.heroes:{},chosen:Number.isInteger(data.chosen)&&MAPS[data.chosen]?data.chosen:null,allowLateVotes:!!data.allowLateVotes};renderRoundVote();if(pendingRoundReady){pendingRoundReady=false;sendRoundChoice("ready",true);}return;
+  if(data.type==="ROUND_STATE"){
+  if(isLobbyLeader||conn.peer!==leaderId||data.id!==leaderId||typeof data.roundId!=="string")return;const syncingRound=pendingStartGamePacket&&pendingStartGamePacket.roundId===data.roundId;if(state!=="menu"&&state!=="result"&&!matchOver&&!syncingRound)return;
+   roundVote={id:data.roundId,endsAt:Date.now()+Math.max(0,Math.min(6000,Number(data.remaining)||0)),votes:data.votes&&typeof data.votes==="object"?data.votes:{},ready:data.ready&&typeof data.ready==="object"?data.ready:{},heroes:data.heroes&&typeof data.heroes==="object"?data.heroes:{},chosen:Number.isInteger(data.chosen)&&MAPS[data.chosen]?data.chosen:null,allowLateVotes:!!data.allowLateVotes};renderRoundVote();if(pendingRoundReady){pendingRoundReady=false;sendRoundChoice("ready",true);}if(pendingStartGamePacket&&pendingStartGamePacket.roundId===roundVote.id)startReceivedRound(pendingStartGamePacket);return;
  }
  if(data.type === "HOST_PAUSE") {
     if(isLobbyLeader || data.id !== leaderId) return;
@@ -4516,8 +4533,8 @@ function handleIncomingData(conn, data) {
 
   if(data.type === "HELLO") {
  if(isLobbyLeader&&data.id!==conn.peer)return;
- if(!isLobbyLeader&&conn.peer===leaderId&&data.id===leaderId&&data.arenaVersion!==5){if(quickMatchRooms){try{conn.close();}catch(e){}return;}leaveLobby("Everyone must use the BBQ shortcut clearance update.");return;}
- if(isLobbyLeader&&data.arenaVersion!==5){try{conn.send({type:"REJECT",reason:"Please use the BBQ shortcut clearance update to join this lobby."});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},300);return;}
+ if(!isLobbyLeader&&conn.peer===leaderId&&data.id===leaderId&&data.arenaVersion!==ARENA_PROTOCOL_VERSION){if(quickMatchRooms){try{conn.close();}catch(e){}return;}leaveLobby("Everyone must update to the latest game version.");return;}
+ if(isLobbyLeader&&data.arenaVersion!==ARENA_PROTOCOL_VERSION){try{conn.send({type:"REJECT",reason:"Please update to the latest game version to join this lobby."});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},300);return;}
     const hero = Number.isInteger(data.hero) && data.hero >= RANDOM_HERO && data.hero < HEROES.length ? data.hero : 0;
     let r = roster.find(x => x.id === data.id);
     const username = safeNetworkUsername(data.username || (r && r.username) || "Player", data.id);
@@ -4597,15 +4614,10 @@ function handleIncomingData(conn, data) {
   }
   else if(data.type === "START_GAME") {
     if(isLobbyLeader||conn.peer!==leaderId)return;
-    clearRoundVote();
     if(quickMatchRooms) return; // still joining — ignore games we haven't been admitted to
-    selectedMapIndex = Number.isInteger(data.mapIndex) && MAPS[data.mapIndex] ? data.mapIndex : 0;
-    launchMeshMatch(
-      data.spawns && typeof data.spawns === "object" ? data.spawns : {},
-      data.heroes && typeof data.heroes === "object" ? data.heroes : {},
-      data.identities && typeof data.identities === "object" ? data.identities : {},
-      !!data.quickMatch
-    );
+    if(data.roundId===lastStartedRoundId)return;
+    if(typeof data.roundId!=="string"||!roundVote||roundVote.id!==data.roundId){pendingStartGamePacket=data;outgoingSeq++;conn.send({type:"ROUND_SYNC_REQUEST",id:myNetId,seq:outgoingSeq,roundId:data.roundId});return;}
+    startReceivedRound(data);
   }
   else if(data.type === "CLIENT_INPUT") {
     if(!isLobbyLeader || hostVisibilityPaused || data.id !== conn.peer ||
@@ -5771,7 +5783,7 @@ function menu(msg) {
         const me = roster.find(x => x.id === myNetId);
         if(me) { me.hero = p1HeroChoice; me.tagCosmetics = getNameplateCosmeticIds(); me.skins = getSkinSelection(); }
         outgoingSeq++;
-        broadcastToPeers({ type: "HELLO", arenaVersion:5, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
+        broadcastToPeers({ type: "HELLO", arenaVersion:ARENA_PROTOCOL_VERSION, id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
       }
     };
   });
@@ -5958,7 +5970,7 @@ function launchSoloChosen() {
   initMatchView();
 };
 
-function launchVotedMatch() {
+function launchVotedMatch(roundId) {
   if(roster.length < 2) {
     alert("Need at least 2 players in the lobby to start a match!");
     return;
@@ -5982,15 +5994,19 @@ function launchVotedMatch() {
   launchMeshMatch(spawnMap, heroMap, identityMap, !!(quickMatchHosted || lobbyIsQuickMatch));
 
   outgoingSeq++;
-  broadcastToPeers({
+  lastRoundStartPacket={
     type: "START_GAME",
+    id: myNetId,
+    roundId,
     mapIndex: selectedMapIndex,
     spawns: spawnMap,
     heroes: heroMap,
     identities: identityMap,
     quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch),
     seq: outgoingSeq
-  });
+  };
+  lastStartedRoundId=roundId;
+  broadcastToPeers(lastRoundStartPacket);
 
 };
 
@@ -6115,6 +6131,7 @@ function updateMatchIntro(dt) {
 
 function initMatchView() {
   clearRoundVote();
+  clearHeldInputs();
   yaw = 0; pitch = 0;
   cameraHolder.rotation.set(0, 0, 0);
   camera.rotation.set(0, 0, 0);
