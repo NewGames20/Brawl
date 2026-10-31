@@ -810,9 +810,20 @@ const SKIN_CATEGORIES = [
     { id: "dentley-dawnknight", hero: 6, name: "Dawn Knight", rarity: "Uncommon", base: "#59617e", accent: "#ffe29b", glow: "#ffd05a" }
   ]}
 ];
+// BB_FONT_CRATE_REVEAL_V1
+// BB_DUPLICATE_REFUNDS_V1
+NAMEPLATE_CATEGORIES.push({key:"nameFonts",label:"Nametag Fonts",cratePrice:80,crateName:"Letterpress Font Cache",crateIcon:"Aa",items:[
+ {id:"font-mono",name:"Terminal",rarity:"Common",family:"'Courier New',monospace",weight:800},
+ {id:"font-serif",name:"Royal Serif",rarity:"Common",family:"Georgia,serif",weight:800},
+ {id:"font-trebuchet",name:"Trailblazer",rarity:"Uncommon",family:"'Trebuchet MS',sans-serif",weight:800},
+ {id:"font-rounded",name:"Playful",rarity:"Uncommon",family:"'Comic Sans MS',cursive",weight:800},
+ {id:"font-impact",name:"Heavy Hitter",rarity:"Rare",family:"Impact,'Arial Black',sans-serif",weight:900},
+ {id:"font-slanted",name:"Star Script",rarity:"Epic",family:"Georgia,serif",weight:800,italic:true}
+]});
+
 const SHOP_CATEGORIES = [...NAMEPLATE_CATEGORIES, ...SKIN_CATEGORIES];
 const USERNAME_FILTER_TERMS = ["fuck", "shit", "bitch", "bastard", "asshole", "cunt", "dick", "whore", "slut", "faggot", "nigger", "nazi", "retard", "kike", "spic"];
-const DEFAULT_COSMETIC_SELECTION = { nameColors: "default", borderColors: "default", backgrounds: "default" };
+const DEFAULT_COSMETIC_SELECTION = { nameColors: "default", borderColors: "default", backgrounds: "default", nameFonts: "default" };
 
 function escapeHtml(value) {
   return String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
@@ -836,6 +847,7 @@ function shopItem(categoryKey, itemId) {
   const category = shopCategory(categoryKey);
   const found = category.items.find(item => item.id === itemId);
   if(found) return found;
+  if(itemId === "default" && categoryKey === "nameFonts")return {id:"default",name:"Classic",family:"'Outfit',system-ui",weight:800};
   if(itemId === "default" && categoryKey === "nameColors") return { id: "default", name: "Classic White", color: "#f5f4f8" };
   if(itemId === "default" && categoryKey === "borderColors") return { id: "default", name: "No Border", color: null, style: "none" };
   if(itemId === "default" && categoryKey === "backgrounds") return { id: "default", name: "Clear Glass", from: null, to: null, pattern: "none" };
@@ -888,7 +900,8 @@ function normalizeStoredProfile(profile) {
   const balance = Math.max(0, Math.floor(Number(profile && profile.shinies) || 0));
   return {
     id, username, shinies: balance, owned, equipped,
-    dailyChallenges: normalizeDailyChallenges(profile && profile.dailyChallenges),
+    pendingCrate: normalizePendingCrate(profile&&profile.pendingCrate),
+    dailyChallenges: normalizeDailyChallenges(profile&&profile.dailyChallenges),
     lastDailyDate: /^\d{4}-\d{2}-\d{2}$/.test(profile && profile.lastDailyDate || "") ? profile.lastDailyDate : ""
   };
 }
@@ -909,33 +922,27 @@ function loadAccountBook() {
 }
 
 // One-time migration: retire the old multi-profile account book.
-const SINGLE_RESET_KEY = "bb_single_account_reset_20261031_v1";
-if(Store.get(SINGLE_RESET_KEY, "") !== "done") {
-  Store.set("bb_accounts_v1", JSON.stringify({activeId:null,profiles:[]}));
-  Store.set(ACCOUNT_STORAGE_KEY, JSON.stringify({activeId:null,profiles:[]}));
-  Store.set(SINGLE_RESET_KEY, "done");
+const SINGLE_RESET_KEY="bb_single_account_reset_20261031_v1";
+if(Store.get(SINGLE_RESET_KEY,"")!=="done"){
+ Store.set("bb_accounts_v1",JSON.stringify({activeId:null,profiles:[]}));
+ Store.set(ACCOUNT_STORAGE_KEY,JSON.stringify({activeId:null,profiles:[]}));
+ Store.set(SINGLE_RESET_KEY,"done");
 }
 let accountBook = loadAccountBook();
 
-const uiNametagCache = new Map();
-function usernameTagHTML(username, selection) {
-  const name=String(username || "Player"),ids=sanitizeCosmeticSelection(selection),key=JSON.stringify([name,ids]);
-  let image=uiNametagCache.get(key);
-  if(!image) {
-    image=drawNameplateCanvas(name,getNameplateStyle(ids)).toDataURL("image/png");
-    if(uiNametagCache.size>=160)uiNametagCache.delete(uiNametagCache.keys().next().value);
-    uiNametagCache.set(key,image);
-  }
-  return `<img class="bb-ui-nametag" src="${image}" alt="${escapeHtml(name)}" title="${escapeHtml(name)}">`;
+const uiNametagCache=new Map();
+function usernameTagHTML(username,selection){
+ const name=String(username||"Player"),ids=sanitizeCosmeticSelection(selection),key=JSON.stringify([name,ids]);
+ let image=uiNametagCache.get(key);
+ if(!image){image=drawNameplateCanvas(name,getNameplateStyle(ids)).toDataURL("image/png");if(uiNametagCache.size>=160)uiNametagCache.delete(uiNametagCache.keys().next().value);uiNametagCache.set(key,image);}
+ return `<img class="bb-ui-nametag" src="${image}" alt="${escapeHtml(name)}" title="${escapeHtml(name)}">`;
 }
-function entityUsernameTag(entity) {
-  const local=entity && (entity.netId===myNetId || entity.id===myNetId),profile=local?activeProfile():null;
-  const fallback=entity && Number.isInteger(entity.ci) && HEROES[entity.ci]?HEROES[entity.ci].n:"Player";
-  return usernameTagHTML(profile?profile.username:entity && entity.username || fallback,profile?getNameplateCosmeticIds(profile):entity && entity.tagCosmetics);
+function entityUsernameTag(entity){
+ const local=entity&&(entity.netId===myNetId||entity.id===myNetId),profile=local?activeProfile():null;
+ const fallback=entity&&Number.isInteger(entity.ci)&&HEROES[entity.ci]?HEROES[entity.ci].n:"Player";
+ return usernameTagHTML(profile?profile.username:entity&&entity.username||fallback,profile?getNameplateCosmeticIds(profile):entity&&entity.tagCosmetics);
 }
-function setNametagContent(element,html) {
-  if(element && element._bbTagHTML!==html){element.innerHTML=html;element._bbTagHTML=html;}
-}
+function setNametagContent(element,html){if(element&&element._bbTagHTML!==html){element.innerHTML=html;element._bbTagHTML=html;}}
 
 let economyModalView = "account";
 let economyModalRequired = false;
@@ -944,16 +951,16 @@ let lastCrateReveal = null;
 let activeCrateSpin = null;
 let crateSpinSerial = 0;
 let economyToastTimer = null;
-function saveAccountBook() {
- accountBook.profiles=accountBook.profiles.slice(0,1);
- accountBook.activeId=accountBook.profiles[0]?.id || null;
- Store.set(ACCOUNT_STORAGE_KEY,JSON.stringify(accountBook));
-}
 function activeProfile() { return accountBook.profiles.find(profile => profile.id === accountBook.activeId) || null; }
 function activeUsername() { return activeProfile()?.username || "Player"; }
 function localDayKey() {
   const date = new Date();
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+}
+
+function saveAccountBook(){
+ accountBook.profiles=accountBook.profiles.slice(0,1);accountBook.activeId=accountBook.profiles[0]?.id||null;
+ Store.set(ACCOUNT_STORAGE_KEY,JSON.stringify(accountBook));
 }
 
 function getNameplateCosmeticIds(profile = activeProfile()) {
@@ -965,6 +972,7 @@ function getNameplateStyle(selection = getNameplateCosmeticIds()) {
   return {
     textColor: shopItem("nameColors", ids.nameColors).color,
     border: shopItem("borderColors", ids.borderColors),
+    font: shopItem("nameFonts",ids.nameFonts),
     background: shopItem("backgrounds", ids.backgrounds)
   };
 }
@@ -1037,19 +1045,20 @@ function accountToolbarHTML() {
   return `<div class="account-toolbar"><span id="account-summary">${summary}</span><button class="lobby-btn" onclick="openAccountModal()">Account</button><button class="lobby-btn" onclick="openDailyChallenges()">📅 Daily Challenges</button><button class="lobby-btn action-accent" onclick="openShop()">✨ Shinies Shop</button></div>`;
 }
 
-function renderAccountModal() {
+function renderAccountModal(){
  const profile=activeProfile();
  document.getElementById("economy-title").textContent=profile?"Your Account":"Create Your Account";
- document.getElementById("economy-close").style.display=economyModalRequired && !profile?"none":"";
+ document.getElementById("economy-close").style.display=economyModalRequired&&!profile?"none":"";
  document.getElementById("economy-body").innerHTML=profile?`
  <div>${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))}</div>
  <p class="economy-note">One account is saved in this browser. Rename it without losing Shinies, cosmetics, or challenge progress. Extra accounts and account switching are disabled.</p>
- <form class="account-form" onsubmit="event.preventDefault(); renameCurrentAccount();"><input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" value="${escapeHtml(profile.username)}" aria-label="Username"><button class="economy-action primary" type="submit">Rename Account</button></form><div class="account-error" id="account-error"></div>`:`
- <p class="economy-note">Old accounts have been reset for the single-account update. Create your one local account. Your new progress will save normally in this browser.</p>
- <form class="account-form" onsubmit="event.preventDefault(); createOrSwitchAccount();"><input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="3–16 character username" aria-label="Username"><button class="economy-action primary" type="submit">Create Account</button></form><div class="account-error" id="account-error"></div>`;
+ <form class="account-form" onsubmit="event.preventDefault();renameCurrentAccount();"><input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" value="${escapeHtml(profile.username)}" aria-label="Username"><button class="economy-action primary" type="submit">Rename Account</button></form><div class="account-error" id="account-error"></div>`:`
+ <p class="economy-note">Create your one local account. Your progress saves in this browser.</p>
+ <form class="account-form" onsubmit="event.preventDefault();createOrSwitchAccount();"><input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="3–16 character username" aria-label="Username"><button class="economy-action primary" type="submit">Create Account</button></form><div class="account-error" id="account-error"></div>`;
 }
 
 function renderSavedProfiles(){return "";}
+
 
 function showAccountError(message) {
   const el = document.getElementById("account-error");
@@ -1057,7 +1066,7 @@ function showAccountError(message) {
 }
 
 function activateAccount(profile) {
- if(accountBook.profiles.length && accountBook.profiles[0].id!==profile.id)return false;
+ if(accountBook.profiles.length&&accountBook.profiles[0].id!==profile.id)return false;
   if(sameLobbyName(profile.username, myNetId)) { showAccountError("That name is already used by someone in this lobby."); return false; }
   accountBook.activeId = profile.id;
   lastCrateReveal = null;
@@ -1072,8 +1081,7 @@ function activateAccount(profile) {
 }
 
 function createOrSwitchAccount() {
- const saved=loadAccountBook();
- if(saved.profiles.length){accountBook=saved;renderAccountModal();showAccountError("Only one account is allowed. Rename your current account instead.");return;}
+ const saved=loadAccountBook();if(saved.profiles.length){accountBook=saved;renderAccountModal();showAccountError("Only one account is allowed. Rename your current account instead.");return;}
   const input = document.getElementById("account-username-input");
   const result = validateUsername(input ? input.value : "");
   if(!result.ok) { showAccountError(result.error); return; }
@@ -1107,7 +1115,9 @@ function renameCurrentAccount() {
 
 function switchAccount(){renderAccountModal();}
 
+
 function cosmeticPreviewCss(categoryKey, item) {
+  if(categoryKey==="nameFonts")return `font-family:${item.family};font-weight:${item.weight||800};font-style:${item.italic?"italic":"normal"};`;
   if(categoryKey === "nameColors") {
     const color = item.color;
     return color && typeof color === "object"
@@ -1120,11 +1130,10 @@ function cosmeticPreviewCss(categoryKey, item) {
   return "";
 }
 
-function crateOddsFor(category, profile) {
-  const available = category.items.filter(item => !profile.owned[category.key].includes(item.id));
-  const tiers = CRATE_RARITY_ODDS.filter(tier => available.some(item => item.rarity === tier.key));
-  const total = tiers.reduce((sum, tier) => sum + tier.chance, 0) || 1;
-  return tiers.map(tier => ({ ...tier, chance: tier.chance * 100 / total }));
+function crateOddsFor(category,profile){
+ const tiers=CRATE_RARITY_ODDS.filter(tier=>category.items.some(item=>item.rarity===tier.key));
+ const total=tiers.reduce((sum,tier)=>sum+tier.chance,0)||1;
+ return tiers.map(tier=>({...tier,chance:tier.chance*100/total}));
 }
 
 function cosmeticIsEquipped(profile, category, item) {
@@ -1147,16 +1156,27 @@ function crateSpinHTML(category, spin) {
   return `<div class="crate-reel-shell" aria-live="polite"><div class="crate-reel-title">✨ OPENING ${escapeHtml(category.crateName.toUpperCase())} ✨</div><div class="crate-reel-window"><div class="crate-reel-track">${cards}</div><div class="crate-reel-marker"></div></div><div class="crate-reel-subtitle">The center card is your reward · this roll uses the odds shown above</div></div>`;
 }
 
-function finishCosmeticCrateSpin(spinId) {
-  const spin = activeCrateSpin;
-  if(!spin || spin.id !== spinId) return;
-  if(spin.timer) clearTimeout(spin.timer);
-  activeCrateSpin = null;
-  lastCrateReveal = { categoryKey: spin.categoryKey, item: spin.item };
-  Snd.play("pickup");
-  showEconomyToast(`${spin.item.rarity} drop: ${spin.item.name}`);
-  const modal = document.getElementById("economy-modal");
-  if(modal && modal.classList.contains("show") && economyModalView === "shop") renderEconomyModal();
+function finishCosmeticCrateSpin(spinId){
+ const spin=activeCrateSpin;if(!spin||spin.id!==spinId)return;
+ const profile=accountBook.profiles.find(profile=>profile.id===spin.profileId),pending=profile&&profile.pendingCrate;
+ if(!pending||pending.categoryKey!==spin.categoryKey||pending.itemId!==spin.item.id)return;
+ if(spin.timer)clearTimeout(spin.timer);
+ const category=shopCategory(spin.categoryKey);
+ const duplicate=pending.duplicate===true||profile.owned[category.key].includes(spin.item.id);
+ const spent=Number.isFinite(pending.spent)?pending.spent:category.cratePrice;
+ const refund=duplicate?Math.floor(Math.max(0,spent)/2):0;
+ if(duplicate)profile.shinies+=refund;
+ else{
+  profile.owned[category.key].push(spin.item.id);
+  if(NAMEPLATE_CATEGORIES.includes(category))profile.equipped[category.key]=spin.item.id;
+  else profile.equipped[category.key][spin.item.hero]=spin.item.id;
+ }
+ profile.pendingCrate=null;saveAccountBook();activeCrateSpin=null;
+ lastCrateReveal={categoryKey:spin.categoryKey,item:spin.item,duplicate,refund};
+ if(activeProfile()?.id===profile.id){if(duplicate)updateEconomyDisplays();else syncProfileIdentity();}
+ Snd.play("pickup");showEconomyToast(duplicate?`Duplicate: ${spin.item.name} · +${refund} Shinies refunded`:`${spin.item.rarity} drop: ${spin.item.name}`);
+ const modal=document.getElementById("economy-modal");
+ if(modal&&modal.classList.contains("show")&&economyModalView==="shop")renderEconomyModal();
 }
 
 function startCosmeticCrateSpin(spin) {
@@ -1184,6 +1204,7 @@ function renderShopModal() {
     body.innerHTML = `<p class="economy-note">Create a username first to earn Shinies and keep your purchases.</p><button class="economy-action primary" onclick="openAccountModal(true)">Create Account</button>`;
     return;
   }
+  resumePendingCrate(profile);
   const category = shopCategory(shopCategoryKey);
   const spin = activeCrateSpin && activeCrateSpin.categoryKey === category.key ? activeCrateSpin : null;
   const spinning = !!activeCrateSpin;
@@ -1200,15 +1221,15 @@ function renderShopModal() {
     const tierOdds = odds.find(tier => tier.key === item.rarity);
     const tierSize = spin
       ? spin.availableIds.filter(id => category.items.some(entry => entry.id === id && entry.rarity === item.rarity)).length
-      : category.items.filter(entry => entry.rarity === item.rarity && !profile.owned[category.key].includes(entry.id)).length;
-    const itemOdds = !owned && tierOdds && tierSize ? tierOdds.chance / tierSize : 0;
+      : category.items.filter(entry=>entry.rarity===item.rarity).length;
+    const itemOdds = tierOdds && tierSize ? tierOdds.chance / tierSize : 0;
     const previewStyle = cosmeticPreviewCss(category.key, item);
-    const preview = category.key === "nameColors" || category.key === "borderColors" || category.key === "backgrounds"
+    const preview = category.key === "nameColors" || category.key === "borderColors" || category.key === "backgrounds" || category.key === "nameFonts"
       ? profile.username : `${HEROES[item.hero].e} ${HEROES[item.hero].n}`;
     const action = equipped ? "EQUIPPED" : owned ? "EQUIP" : "LOCKED";
     return `<div class="loot-card ${owned ? "unlocked" : "locked"} ${equipped ? "equipped" : ""}">
       <div class="loot-card-top"><b>${escapeHtml(item.name)}</b><span class="rarity-${item.rarity.toLowerCase()}">${item.rarity}</span></div>
-      <small>${escapeHtml(cratePreviewText(category, item))} · ${owned ? "UNLOCKED" : `${itemOdds.toFixed(itemOdds % 1 ? 1 : 0)}% drop`}</small>
+      <small>${escapeHtml(cratePreviewText(category, item))} · ${itemOdds.toFixed(itemOdds % 1 ? 1 : 0)}% drop${owned?" · OWNED (duplicate refunds 50%)":""}</small>
       <div class="cosmetic-preview" style="${previewStyle}">${escapeHtml(preview)}</div>
       <button class="economy-action ${owned && !equipped ? "primary" : ""}" data-equip-category="${category.key}" data-equip-item="${item.id}" ${spinning || !owned || equipped ? "disabled" : ""}>${action}</button>
     </div>`;
@@ -1217,13 +1238,14 @@ function renderShopModal() {
     <div class="economy-tabs">${tabs}</div>
     <section class="crate-panel">
       <div class="crate-art">${category.crateIcon}<i>✦</i><b>✧</b></div>
-      <div class="crate-copy"><div class="shop-item-name">${escapeHtml(category.crateName)}</div><div class="economy-note">One ${category.label.toLowerCase()} reward. Duplicate protection is on; unlocked items are removed from future rolls.</div><div class="crate-odds-row">${oddsHtml || "All rewards collected"}</div></div>
+      <div class="crate-copy"><div class="shop-item-name">${escapeHtml(category.crateName)}</div><div class="economy-note">One ${category.label.toLowerCase()} reward. Duplicates are possible. A duplicate refunds 50% of the Shinies spent after the reveal.</div><div class="crate-odds-row">${oddsHtml || "All rewards collected"}</div></div>
       <div class="crate-actions"><button class="economy-action crate-open" data-reset-category="${category.key}" ${spinning ? "disabled" : ""}>RESET LOOK</button><button class="economy-action primary crate-open" data-open-crate="${category.key}" ${spinning || empty || profile.shinies < category.cratePrice ? "disabled" : ""}>${spinning ? "SPINNING…" : empty ? "COLLECTED" : `OPEN · ${category.cratePrice} ✨`}</button></div>
     </section>
     ${reel}
     ${reveal}
-    <div class="economy-note">${spinning ? "This reward was rolled before the animation began; the odds above are the odds used for this opening." : "Odds are based on rewards still available. Tiers with no remaining items redistribute their odds. Crates use earned Shinies only."}</div>
-    <div class="loot-grid">${loot}</div>
+    ${lastCrateReveal&&lastCrateReveal.categoryKey===category.key&&lastCrateReveal.duplicate?`<div class="economy-note" role="status">DUPLICATE · +${lastCrateReveal.refund} Shinies refunded (50% of this opening). Your equipped cosmetic has not changed.</div>`:""}
+    <div class="economy-note">${spinning ? "This reward was rolled before the animation began; the odds above are the odds used for this opening." : "All items remain in the pool, including owned items. Duplicate drops refund 50% of the opening price. Crates use earned Shinies only."}</div>
+    ${spinning?'<div class="economy-note">Opening your crate... rewards and equip options appear after the reveal.</div>':`<div class="loot-grid">${loot}</div>`}
     <div class="economy-note">Earn Shinies: daily login +${SHINY_REWARDS.daily} · Quick Match elimination +${SHINY_REWARDS.kill} · Quick Match win +${SHINY_REWARDS.win}</div>
   `;
   body.querySelectorAll("[data-shop-category]").forEach(button => button.onclick = () => {
@@ -1244,7 +1266,7 @@ function renderEconomyModal() {
   const title = document.getElementById("economy-title");
   title.textContent = economyModalView === "shop" ? "Shinies Shop" : (activeProfile() ? "Account" : "Create Your Account");
   updateEconomyDisplays();
-  if(economyModalView === "shop")renderShopModal();else if(economyModalView==="daily")renderDailyChallenges();else renderAccountModal();
+  if(economyModalView==="shop")renderShopModal();else if(economyModalView==="daily")renderDailyChallenges();else renderAccountModal();
   modal.classList.add("show");
 }
 
@@ -1274,6 +1296,7 @@ function closeEconomyModal(force = false) {
 }
 
 function equipCosmetic(categoryKey, itemId) {
+ if(activeCrateSpin||activeProfile()?.pendingCrate)return;
   const profile = activeProfile();
   const category = SHOP_CATEGORIES.find(entry => entry.key === categoryKey);
   if(profile && category && NAMEPLATE_CATEGORIES.includes(category) && itemId === "default") {
@@ -1294,6 +1317,7 @@ function equipCosmetic(categoryKey, itemId) {
 }
 
 function resetCosmeticCategory(categoryKey) {
+ if(activeCrateSpin||activeProfile()?.pendingCrate)return;
   const profile = activeProfile();
   const category = SHOP_CATEGORIES.find(entry => entry.key === categoryKey);
   if(!profile || !category) return;
@@ -1303,39 +1327,21 @@ function resetCosmeticCategory(categoryKey) {
   showEconomyToast("Default look equipped"); renderEconomyModal();
 }
 
-function openCosmeticCrate(categoryKey) {
-  if(activeCrateSpin) return;
-  const profile = activeProfile();
-  const category = SHOP_CATEGORIES.find(entry => entry.key === categoryKey);
-  if(!profile || !category) return;
-  const available = category.items.filter(item => !profile.owned[category.key].includes(item.id));
-  if(!available.length) { showEconomyToast("You collected every item in this crate"); return; }
-  if(profile.shinies < category.cratePrice) { showEconomyToast(`You need ${category.cratePrice - profile.shinies} more Shinies`); return; }
-  const odds = crateOddsFor(category, profile);
-  let roll = Math.random() * 100;
-  let tier = odds[odds.length - 1];
-  for(const entry of odds) { roll -= entry.chance; if(roll <= 0) { tier = entry; break; } }
-  const pool = available.filter(item => item.rarity === tier.key);
-  const item = pool[Math.floor(Math.random() * pool.length)];
-  if(!item) return;
-  const stopIndex = 38;
-  const reel = Array.from({ length: 47 }, (_, index) => index === stopIndex ? item : (() => {
-    let fillerRoll = Math.random() * 100;
-    let fillerTier = odds[odds.length - 1];
-    for(const entry of odds) { fillerRoll -= entry.chance; if(fillerRoll <= 0) { fillerTier = entry; break; } }
-    const fillerPool = available.filter(entry => entry.rarity === fillerTier.key);
-    return fillerPool[Math.floor(Math.random() * fillerPool.length)] || item;
-  })());
-  profile.shinies -= category.cratePrice;
-  profile.owned[category.key].push(item.id);
-  if(NAMEPLATE_CATEGORIES.includes(category)) profile.equipped[category.key] = item.id;
-  else profile.equipped[category.key][item.hero] = item.id;
-  lastCrateReveal = null;
-  activeCrateSpin = { id: ++crateSpinSerial, categoryKey, item, reel, stopIndex, odds: odds.map(entry => ({ ...entry })), availableIds: available.map(entry => entry.id), started: false, timer: null };
-  saveAccountBook();
-  syncProfileIdentity();
-  Snd.play("crate");
-  renderEconomyModal();
+function openCosmeticCrate(categoryKey){
+ if(activeCrateSpin)return;
+ const profile=activeProfile(),category=SHOP_CATEGORIES.find(c=>c.key===categoryKey);
+ if(!profile||!category)return;
+ if(profile.pendingCrate){resumePendingCrate(profile);renderEconomyModal();return;}
+ const available=category.items.slice();if(!available.length)return;
+ if(profile.shinies<category.cratePrice){showEconomyToast(`You need ${category.cratePrice-profile.shinies} more Shinies`);return;}
+ const odds=crateOddsFor(category,profile);
+ let roll=Math.random()*100,tier=odds[odds.length-1];
+ for(const entry of odds){roll-=entry.chance;if(roll<=0){tier=entry;break;}}
+ const pool=available.filter(item=>item.rarity===tier.key),item=pool[Math.floor(Math.random()*pool.length)];if(!item)return;
+ const spent=category.cratePrice,duplicate=profile.owned[category.key].includes(item.id);
+ profile.shinies-=spent;profile.pendingCrate={categoryKey:category.key,itemId:item.id,spent,duplicate};
+ activeCrateSpin=createCrateSpin(profile,category,item,odds,available);lastCrateReveal=null;
+ saveAccountBook();updateEconomyDisplays();Snd.play("crate");renderEconomyModal();
 }
 
 function syncProfileIdentity() {
@@ -1369,6 +1375,33 @@ window.renameCurrentAccount = renameCurrentAccount;
 window.openCosmeticCrate = openCosmeticCrate;
 
 
+function normalizePendingCrate(value){
+ const category=value&&SHOP_CATEGORIES.find(c=>c.key===value.categoryKey);
+ if(!category||!category.items.some(item=>item.id===value.itemId))return null;
+ const spent=Number.isFinite(value.spent)&&value.spent>=0?Math.floor(value.spent):category.cratePrice;
+ return {categoryKey:category.key,itemId:value.itemId,spent,duplicate:typeof value.duplicate==="boolean"?value.duplicate:null};
+}
+function createCrateSpin(profile,category,item,odds,available){
+ const stopIndex=38;
+ const reel=Array.from({length:47},(_,index)=>{
+  if(index===stopIndex)return item;
+  let roll=Math.random()*100,tier=odds[odds.length-1];
+  for(const entry of odds){roll-=entry.chance;if(roll<=0){tier=entry;break;}}
+  const pool=available.filter(entry=>entry.rarity===tier.key);
+  return pool[Math.floor(Math.random()*pool.length)]||item;
+ });
+ return {id:++crateSpinSerial,profileId:profile.id,categoryKey:category.key,item,reel,stopIndex,odds:odds.map(entry=>({...entry})),availableIds:available.map(entry=>entry.id),started:false,timer:null};
+}
+function resumePendingCrate(profile){
+ if(activeCrateSpin||!profile.pendingCrate)return;
+ const category=SHOP_CATEGORIES.find(c=>c.key===profile.pendingCrate.categoryKey);
+ const item=category&&category.items.find(item=>item.id===profile.pendingCrate.itemId);
+ if(!item)return;
+ const available=category.items.slice(),odds=crateOddsFor(category,profile);
+ activeCrateSpin=createCrateSpin(profile,category,item,odds,available);shopCategoryKey=category.key;lastCrateReveal=null;
+}
+
+
 const DAILY_POOL=[
  {id:"play1",event:"matches",target:1,reward:30,text:"Finish 1 Quick Match"},
  {id:"play3",event:"matches",target:3,reward:60,text:"Finish 3 Quick Matches"},
@@ -1378,14 +1411,13 @@ const DAILY_POOL=[
  {id:"win2",event:"wins",target:2,reward:100,text:"Win 2 Quick Matches"}
 ];
 function normalizeDailyChallenges(value){
- const result={date:value && /^\d{4}-\d{2}-\d{2}$/.test(value.date)?value.date:"",progress:{},claimed:[]};
+ const result={date:value&&/^\d{4}-\d{2}-\d{2}$/.test(value.date)?value.date:"",progress:{},claimed:[]};
  for(const key of ["kills","matches","wins"])result.progress[key]=Math.max(0,Math.floor(Number(value?.progress?.[key])||0));
  result.claimed=Array.isArray(value?.claimed)?value.claimed.filter(id=>typeof id==="string"):[];return result;
 }
 function dailyState(profile=activeProfile()){
  if(!profile)return null;
- if(!profile.dailyChallenges || profile.dailyChallenges.date!==localDayKey()){
- profile.dailyChallenges=normalizeDailyChallenges(null);profile.dailyChallenges.date=localDayKey();saveAccountBook();}
+ if(!profile.dailyChallenges||profile.dailyChallenges.date!==localDayKey()){profile.dailyChallenges=normalizeDailyChallenges(null);profile.dailyChallenges.date=localDayKey();saveAccountBook();}
  return profile.dailyChallenges;
 }
 function dailySelection(date=localDayKey()){
@@ -1393,14 +1425,13 @@ function dailySelection(date=localDayKey()){
  return [DAILY_POOL[day%2],DAILY_POOL[2+Math.floor(day/2)%2],DAILY_POOL[4+Math.floor(day/4)%2]];
 }
 function progressDaily(event){
- if(!matchIsQuickMatch || !pl || pl.netId!==myNetId || demoActive)return;
+ if(!matchIsQuickMatch||!pl||pl.netId!==myNetId||demoActive)return;
  const daily=dailyState();if(!daily)return;daily.progress[event]=(daily.progress[event]||0)+1;saveAccountBook();
 }
 function claimDailyChallenge(id){
  const profile=activeProfile(),daily=dailyState(profile),c=dailySelection().find(c=>c.id===id);
- if(!daily || !c || daily.claimed.includes(id) || (daily.progress[c.event]||0)<c.target)return;
- daily.claimed.push(id);profile.shinies+=c.reward;saveAccountBook();updateEconomyDisplays();
- showEconomyToast(`Daily challenge: +${c.reward} Shinies`);renderDailyChallenges();
+ if(!daily||!c||daily.claimed.includes(id)||(daily.progress[c.event]||0)<c.target)return;
+ daily.claimed.push(id);profile.shinies+=c.reward;saveAccountBook();updateEconomyDisplays();showEconomyToast(`Daily challenge: +${c.reward} Shinies`);renderDailyChallenges();
 }
 function renderDailyChallenges(){
  const daily=dailyState(),profile=activeProfile(),next=new Date();next.setHours(24,0,0,0);
@@ -1412,7 +1443,7 @@ function renderDailyChallenges(){
  }).join(""):"Create an account first."}</div>`;
 }
 function openDailyChallenges(){if(!requireLocalAccount())return;economyModalView="daily";renderEconomyModal();}
-setInterval(()=>{if(document.getElementById("economy-modal").classList.contains("show") && economyModalView==="daily")renderDailyChallenges();},10000);
+setInterval(()=>{if(document.getElementById("economy-modal").classList.contains("show")&&economyModalView==="daily")renderDailyChallenges();},10000);
 
 // --- GRAPHICS PRESETS ---
 // scale = render resolution (1 = full). Lower presets also drop shadows, extra light, dust, sparks, glows and flame particles.
@@ -1700,7 +1731,7 @@ const HEROES = [
    hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
    a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 16 damage, heavy knockback, and a 1-second stun.",
    a2n:"Charge", a2cd: 14.0,
-   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can deflect nearby projectiles in front of Bruno.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 14 damage, heavy knockback, and a brief stun.",
+   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Oink’s bullets and cannonballs, Sizzle’s meatballs, and Quackbot’s bullets in front of Bruno. Bananas and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 14 damage, heavy knockback, and a brief stun.",
    melee: true, d:"A durable frontline tank who controls space with a wide, hard-hitting hammer. Slam interrupts nearby enemies, while Charge lets Bruno cross a short gap and scatter anyone in his path. Time his swings to turn away incoming shots and hold space around himself."
  },
  {
@@ -1718,7 +1749,7 @@ const HEROES = [
    hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
    a1n:"Cluster Bomb", a1cd: 9.0, a1d:"Lob a fruit bomb ahead. When it bursts, six returning banana boomerangs fan out from the blast point, each dealing 10 damage and knockback on a hit.",
    a2n:"Peel Trap", a2cd: 10.5,
-   ad:"Throw a crescent boomerang for 16 damage. It travels forward, then curves back toward Mango, giving him another chance to catch an opponent on its return path.", a2d:"Drop a peel 38 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 9 damage, is launched, and is stunned for 1.5 seconds.",
+   ad:"Throw a crescent boomerang for 16 damage. Cannot be reflected: they are bananas, not bullets! It travels forward, then curves back toward Mango, giving him another chance to catch an opponent on its return path.", a2d:"Drop a peel 38 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 9 damage, is launched, and is stunned for 1.5 seconds.",
    melee: false, d:"A fast skirmisher who keeps moving while boomerangs pressure opponents from different angles. Cluster Bomb scatters returning blades across a fight, and Peel Trap can punish a pursuer or guard a narrow route. Mango is less durable than the frontliners, so use speed and spacing to avoid being pinned down."
  },
  {
@@ -1745,7 +1776,7 @@ const HEROES = [
    hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
    a1n:"Spore Pod", a1cd: 6.5, a1d:"Plant a hidden pod 45 units ahead. It waits for up to 7 seconds; an enemy who triggers it releases a spore cloud, becomes poisoned for 3 seconds, and is slowed. The poison deals 15 total damage.",
    a2n:"Root Entangle", a2cd: 9.0,
-   ad:"Fire a spore bolt for 20 damage and knockback. A poisoned opponent can be slowed again by the lingering cloud from a triggered pod.", a2d:"Launch an overgrowth projectile for 18 direct damage. On impact it bursts in a 45-unit area, dealing 12 additional damage and rooting enemies for 1.4 seconds.",
+   ad:"Cannot be reflected: these are shots of magical powers beyond reflection. Fire a spore bolt for 20 damage and knockback. A poisoned opponent can be slowed again by the lingering cloud from a triggered pod.", a2d:"Launch an overgrowth projectile for 18 direct damage. On impact it bursts in a 45-unit area, dealing 12 additional damage and rooting enemies for 1.4 seconds.",
    melee: false, d:"A tactician who shapes the fight with concealed traps and precise root projectiles. Spore Pod punishes enemies who chase through a planted route, while Root Entangle can hold a target in place for follow-up attacks. Mycelis has balanced health but relies on preparation and accurate placement to get the most from her control tools."
  },
  {
@@ -2182,7 +2213,8 @@ function drawNameplateCanvas(message, style = {}) {
     ctx.restore();
   }
 
-  ctx.font = "800 27px 'Outfit', system-ui";
+  const font=tagStyle.font || {family:"'Outfit',system-ui",weight:800};
+  ctx.font=`${font.italic?"italic ":""}${font.weight||800} 27px ${font.family}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.strokeStyle = "rgba(0,0,0,0.96)";
@@ -2197,10 +2229,9 @@ function drawNameplateCanvas(message, style = {}) {
   ctx.fillText(message, 180, 37);
   return can;
 }
-function makeNameplate(message,style={}) {
+function makeNameplate(message,style={}){
  const tex=new THREE.CanvasTexture(drawNameplateCanvas(message,style));
- const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true}));
- sprite.scale.set(25,5,1);return sprite;
+ const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true}));sprite.scale.set(25,5,1);return sprite;
 }
 
 function showAnnouncer(message) {
@@ -3530,26 +3561,22 @@ function melee(e, rng, d, kb, noReflect) {
   if(!noReflect) reflect(e, rng);
 }
 
-function reflect(e, r) {
-  for(const p of P) {
-    if(p.o !== e && Math.hypot(p.x - e.x, p.z - e.z) < r + 15) {
-      let da = Math.atan2(p.z - e.z, p.x - e.x) - e.a;
-      da = Math.atan2(Math.sin(da), Math.cos(da));
-      if(Math.abs(da) < 1.25) {
-        spawn3DRing(p.x, p.z, 20, 0xffffff);
-        if(p.t === "b") {
-          p.life = 0;
-        } else {
-          const spd = Math.hypot(p.vx, p.vz) * 1.1;
-          p.vx = Math.cos(e.a) * spd;
-          p.vz = Math.sin(e.a) * spd;
-          p.o = e;
-          p.hit.clear();
-          p.life = Math.min(p.life + 0.3, 1.2);
-        }
-      }
-    }
-  }
+function reflect(e,r){
+ for(const p of P){
+  if(p.o===e||p.life<=0||!["s","meatball","cannonball"].includes(p.t))continue;
+  if(Math.hypot(p.x-e.x,p.z-e.z)>=r+15)continue;
+  const angle=Math.atan2(p.z-e.z,p.x-e.x)-e.a,da=Math.atan2(Math.sin(angle),Math.cos(angle));
+  if(Math.abs(da)>=1.25)continue;
+  spawn3DRing(p.x,p.z,20,0xffffff);
+  const speed=Math.hypot(p.vx,p.vz)*1.1;
+  p.vx=Math.cos(e.a)*speed;p.vz=Math.sin(e.a)*speed;p.o=e;p.hit.clear();p.life=Math.min(p.life+0.3,1.2);orientProjectile(p);
+ }
+}
+function orientProjectile(p){
+ if(p.t==="s"){
+  p.mesh.rotation.set(0,0,0);
+  p.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(p.vx,0,p.vz).normalize());
+ }else p.mesh.rotation.y=p.rot;
 }
 
 function shot(e, a, o) {
@@ -3568,7 +3595,7 @@ function shot(e, a, o) {
     mesh.add(glow);
   }
 
-  P.push(Object.assign({
+  const projectile=Object.assign({
     x: startX,
     z: startZ,
     vx: Math.cos(a)*o.s,
@@ -3579,7 +3606,8 @@ function shot(e, a, o) {
     age: 0,
     out: true,
     mesh
-  }, o));
+  }, o);
+  orientProjectile(projectile);P.push(projectile);
 }
 
 function dentleyGuardActive(e) {
@@ -4123,7 +4151,7 @@ function syncHUD() {
 }
 
 function showResultScreen(isVictory, winnerId = null, stats = []) {
- if(state === "result")return;
+ if(state==="result")return;
  progressDaily("matches");if(isVictory)progressDaily("wins");
   const winShinies = isVictory && pl && matchIsQuickMatch ? awardShinies(SHINY_REWARDS.win, "Quick Match victory", false) : 0;
   state = "result";
@@ -6546,7 +6574,7 @@ function upd(dt) {
     p.rot += dt * 11;
 
     p.mesh.position.set(p.x, 14, p.z);
-    p.mesh.rotation.y = p.rot;
+    orientProjectile(p);
 
     if(!finalize && p.out && (!isMultiplayer || isLobbyLeader)) {
       for(const h of Husks) {
@@ -6670,11 +6698,11 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 window.addEventListener("storage",event=>{
- if(event.key!==ACCOUNT_STORAGE_KEY || !event.newValue)return;
+ if(event.key!==ACCOUNT_STORAGE_KEY||!event.newValue)return;
  accountBook=loadAccountBook();updateEconomyDisplays();
  if(document.getElementById("economy-modal").classList.contains("show"))renderEconomyModal();
 });
-if(document.fonts && document.fonts.ready)document.fonts.ready.then(()=>{uiNametagCache.clear();updateEconomyDisplays();});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{uiNametagCache.clear();updateEconomyDisplays();});
 // Initial launch
 currentRects = MAPS[0].rects;
 build3DMap(MAPS[0]);
@@ -6813,10 +6841,4 @@ Watch out: phasing is not invulnerability; keep Wisp damageable and unable to at
 
 
 - Make Bullets go in any direction of the mouse (vertical also).
-- Add Usernames (Accounts, basically)
-- Add a Currency (Shinies)
-- Add a Shop
-- Add Champion and Weapon skins
 - Add Auras
-- Add Nametag Colors/Nametag border Colors/Nametag background design
-- Add Daily challenges (Can only be done in Quick Matches)
