@@ -303,6 +303,12 @@ html, body {
 }
 .cd-ab-body { font-size: 10.5px; color: var(--text-muted); line-height: 1.4; text-align: left; }
 .cd-ab-body b { color: #fff; font-size: 11.5px; }
+.cd-summary {
+  font-size: 10.5px; color: #c9c4d6; line-height: 1.45; text-align: left;
+  background: rgba(255,255,255,0.04); border-left: 2px solid rgba(159,180,214,0.65);
+  border-radius: 0 8px 8px 0; padding: 7px 9px;
+}
+.cd-passive-label { color: #cfd8ea; font-weight: 900; letter-spacing: 0.5px; }
 .cd-chip {
   font-size: 9px; font-weight: 800; color: var(--accent);
   background: rgba(61,184,245,0.14); border: 1px solid rgba(61,184,245,0.35);
@@ -378,6 +384,20 @@ html, body {
   z-index: 1; transition: width 0.05s linear;
 }
 .cd-text { position: relative; z-index: 2; }
+#riposte-meter {
+  position: absolute; left: 24px; bottom: 72px; width: 274px; padding: 6px 9px 7px;
+  display: none; border: 1px solid rgba(159,197,255,0.45); border-radius: 9px;
+  background: rgba(15,14,20,0.9); box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  font: 800 10px 'Space Grotesk', sans-serif; color: #d8e7ff; letter-spacing: 0.5px;
+}
+#riposte-meter.visible { display: block; }
+#riposte-meter-label { display: block; margin-bottom: 4px; }
+#riposte-track { height: 7px; overflow: hidden; border-radius: 5px; background: rgba(255,255,255,0.12); }
+#riposte-fill {
+  width: 0; height: 100%; border-radius: inherit;
+  background: linear-gradient(90deg, #4b8fe8, #b8d8ff);
+  box-shadow: 0 0 10px rgba(159,197,255,0.55); transition: width 0.08s linear;
+}
 
 #compass {
   position: absolute; top: 22px; right: 24px;
@@ -484,6 +504,10 @@ html, body {
     <div id="hud-cooldowns">
       <div class="cd-bar"><div id="cd1-fill" class="cd-fill"></div><span id="cd1-label" class="cd-text">[E] A1</span></div>
       <div class="cd-bar"><div id="cd2-fill" class="cd-fill"></div><span id="cd2-label" class="cd-text">[Q] A2</span></div>
+    </div>
+    <div id="riposte-meter" aria-live="polite">
+      <span id="riposte-meter-label">RIPOSTE 0 / 40</span>
+      <div id="riposte-track"><div id="riposte-fill"></div></div>
     </div>
     <div id="center-msg">3</div>
   </div>
@@ -907,11 +931,12 @@ const HEROES = [
    n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
    role: "Duelist", roleCol: "#9fb4d6",
    hp: 200, sp: 125, col: 0x8d97a8, cd: 0.5,
-   a1n:"Shield Guard", a1cd: 9.0, a1d:"Raise your shield for 1.4s: blocks 65% of projectiles and 50% of melee/zone damage from the front, storing it as Riposte. Squire form: Dagger Feint, a quick sidestep.",
+   a1n:"Shield Guard", a1cd: 9.0, a1cdSquire: 7.0, a1d:"Armor only: guard for 2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage becomes Riposte (max 40); movement is 20% slower, and the first-person sword swaps to a shield. Squire form: Dagger Feint, a 70-unit sidestep with no invulnerability (7s cooldown).",
    a2n:"Riposte Lunge", a2cd: 8.0,
-   ad:"3-hit combo (14 / 14 / 24); the finisher lunges forward.", a2d:"Lunge up to 90 units for 20 + stored Riposte. Armor only.",
+   ad:"Longsword: a 3-hit combo (14 / 14 / 24 damage); the finisher lunges about 40 units and has 0.8s recovery. The combo resets after 0.9s.", a2d:"Armor only: make a real lunge up to 90 units and strike for 20 + stored Riposte (max 60), with no stun. Charge is spent on activation, even on a miss.",
    melee: true, atkRange: 70, ab1Range: 130, ab2Range: 100,
-   d:"Armored duelist. When his armor breaks, a speedy Squire must win it back.",
+   passive:"Hollow Armor: when his 200 HP armor breaks, Dentley survives as a 55 HP Squire, is knocked about 40 units away, and blasts enemies within 70 units for 25 damage with knockback. He gains 0.5s of damage grace (40% damage reduction). Squire moves at 210 speed, attacks with an 8-damage dagger, and cannot Riposte Lunge. Recover the dropped 100 HP armor husk by standing still within 35 units for 1s; it expires after 8s or can be destroyed. If lost, Dentley stays in Squire form. Re-arm with 70 HP.",
+   d:"A 200 HP armored duelist with a three-hit longsword combo, a frontal damage-blocking guard that stores Riposte, and a charging finisher. Breaking his armor leaves a fast Squire who must recover the dropped armor to return to full form.",
  }
 ];
 
@@ -1865,12 +1890,73 @@ function setupViewmodel(heroIndex) {
     disposeHierarchy(viewmodelHolder.children[0]);
   }
   viewmodelHolder.wep = null;
+  viewmodelHolder.shield = null;
   viewmodelCi = heroIndex;
   if(heroIndex === null) return;
   const wep = createHighQualityWeapon(heroIndex, true);
   wep.scale.set(0.48, 0.48, 0.48);
   viewmodelHolder.add(wep);
   viewmodelHolder.wep = wep;
+  if(heroIndex === 6) {
+    const shield = createDentleyShieldViewmodel();
+    shield.visible = false;
+    viewmodelHolder.add(shield);
+    viewmodelHolder.shield = shield;
+  }
+}
+
+function createDentleyShieldViewmodel() {
+  const root = new THREE.Group();
+  const arm = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.4, 1.8, 14, 12),
+    new THREE.MeshStandardMaterial({ color: 0xd99b77, roughness: 0.55 })
+  );
+  arm.rotation.x = -Math.PI / 2.7;
+  arm.position.set(0.6, -3.6, 3.6);
+  root.add(arm);
+
+  const shape = new THREE.Shape();
+  shape.moveTo(-14, 18);
+  shape.lineTo(14, 18);
+  shape.lineTo(13, -3);
+  shape.quadraticCurveTo(12, -13, 0, -20);
+  shape.quadraticCurveTo(-12, -13, -13, -3);
+  shape.closePath();
+  const shieldGeo = new THREE.ExtrudeGeometry(shape, {
+    depth: 2.6, bevelEnabled: true, bevelSegments: 2,
+    steps: 1, bevelSize: 1.2, bevelThickness: 0.8
+  });
+  const shield = new THREE.Mesh(shieldGeo, new THREE.MeshStandardMaterial({
+    color: 0x356ca8, metalness: 0.72, roughness: 0.3,
+    emissive: 0x102b48, emissiveIntensity: 0.38
+  }));
+  shield.position.set(-2, 0, -2);
+  root.add(shield);
+
+  const trim = new THREE.LineSegments(
+    new THREE.EdgesGeometry(shieldGeo),
+    new THREE.LineBasicMaterial({ color: 0xd6e4fa, transparent: true, opacity: 0.9 })
+  );
+  trim.position.copy(shield.position);
+  root.add(trim);
+
+  const steel = new THREE.MeshStandardMaterial({ color: 0xdce6f5, metalness: 0.88, roughness: 0.24 });
+  const crest = new THREE.Mesh(new THREE.BoxGeometry(2.2, 27, 1.1), steel);
+  crest.position.set(-2, 0, 1.6);
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(18, 2.2, 1.1), steel);
+  bar.position.set(-2, 3, 1.6);
+  root.add(crest, bar);
+
+  root.position.set(-4.1, 1.1, -1.4);
+  root.scale.setScalar(0.68);
+  return root;
+}
+
+function syncDentleyViewmodel(entity) {
+  if(viewmodelCi !== 6) return;
+  const guarding = !!(entity && entity.ci === 6 && entity.form === 0 && entity.guard > 0);
+  if(viewmodelHolder.wep) viewmodelHolder.wep.visible = !guarding;
+  if(viewmodelHolder.shield) viewmodelHolder.shield.visible = guarding;
 }
 
 function spawnProjectileMesh(type) {
@@ -2176,6 +2262,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null) {
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
     chargeVx: 0, chargeVz: 0, chargeT: 0,
+    lungeVx: 0, lungeVz: 0, lungeA: 0, lungeT: 0, lungeDamage: 0, lungeKb: 0, lungeFinisher: false, lungeHit: new Set(),
     activePod: null,
     sporePoison: 0,
     sporeAttacker: null,
@@ -2297,7 +2384,7 @@ function damageSourceColor(attacker, target) {
   return (HEROES[attacker.ci] && HEROES[attacker.ci].roleCol) || "#ff5544";
 }
 
-function hurt(t, rawDmg, a, kb, attacker = null, blk = 0.5) {
+function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
   if(t.dead) return;
   if(isMultiplayer && !isLobbyLeader) return;
   if(t.chain && t.chain.inv) return; // Captain Oink is invulnerable while his chain is out / hooking
@@ -2305,9 +2392,9 @@ function hurt(t, rawDmg, a, kb, attacker = null, blk = 0.5) {
 
   if(t.ci === 6) { // Dentley: squire grace, Shield Guard
     if(t.grace > 0) rawDmg *= 0.6;
-    if(t.guard > 0 && blk > 0 && attacker && attacker !== t &&
+    if(t.guard > 0 && damageType !== "unblockable" && (!attacker || attacker !== t) &&
        Math.abs(Math.atan2(Math.sin(a + Math.PI - t.a), Math.cos(a + Math.PI - t.a))) <= 1.31) {
-      const soaked = rawDmg * blk;
+      const soaked = rawDmg * (damageType === "projectile" ? 0.75 : 0.60);
       rawDmg -= soaked;
       t.riposte = Math.min(40, t.riposte + soaked);
       if(soaked >= 1) spawnSparks(t.x, t.z, 0x9fc5ff, 3);
@@ -2962,10 +3049,24 @@ function updateAI(e, dt) {
 
 function syncHUD() {
   const targetEnt = isSpectating ? spectateTarget : pl;
-  if(!targetEnt) return;
+  if(!targetEnt) {
+    syncDentleyViewmodel(null);
+    document.getElementById("riposte-meter").classList.remove("visible");
+    return;
+  }
   const c = HEROES[targetEnt.ci];
   
   const sq = targetEnt.ci === 6 && targetEnt.form === 1;
+  syncDentleyViewmodel(targetEnt);
+  const riposteMeter = document.getElementById("riposte-meter");
+  const hasRiposte = targetEnt.ci === 6;
+  riposteMeter.classList.toggle("visible", hasRiposte);
+  if(hasRiposte) {
+    const charge = Math.max(0, Math.min(40, targetEnt.riposte || 0));
+    document.getElementById("riposte-meter-label").innerText =
+      `RIPOSTE ${Math.round(charge)} / 40${targetEnt.guard > 0 ? " · GUARD UP" : (sq ? " · SQUIRE" : "")}`;
+    document.getElementById("riposte-fill").style.width = (charge / 40 * 100) + "%";
+  }
   const ab1LabelKey = controlScheme === "wasd" ? "[E]" : "[R-SHIFT]";
   const ab2LabelKey = controlScheme === "wasd" ? "[Q]" : "[/]";
 
@@ -3360,6 +3461,7 @@ function handleIncomingData(conn, data) {
           if(item.hp < pl.hp && !pl.dead) applyLocalHitFeedback(pl.hp - item.hp);
           pl.hp = item.hp;
           pl.mhp = item.mh || pl.mhp; pl.form = item.fm || 0;
+          pl.guard = item.gd || 0; pl.riposte = item.rp || 0;
           // Replicate host-applied status effects so stuns/slows/poison actually stop a client
           pl.stun = Math.max(pl.stun, item.st || 0);
           pl.slow = Math.max(pl.slow, item.sl || 0);
@@ -3395,6 +3497,7 @@ function handleIncomingData(conn, data) {
         ent.targetP = item.p || 0;
         ent.hp = item.hp;
         ent.mhp = item.mh || ent.mhp; ent.form = item.fm || 0;
+        ent.guard = item.gd || 0; ent.riposte = item.rp || 0;
         ent.dead = item.dead;
         ent.stun = item.st || 0;
         ent.slow = item.sl || 0;
@@ -3496,7 +3599,7 @@ setInterval(() => {
       kx: Math.round(e.kx),
       kz: Math.round(e.kz),
       kl: e.killedBy,
-      fm: e.form, mh: e.mhp
+      fm: e.form, mh: e.mhp, gd: e.guard > 0 ? e.guard : 0, rp: e.riposte
     }));
     broadcastToPeers({
       type: "SNAPSHOT",
@@ -4149,6 +4252,19 @@ window.selectControlScheme = function(scheme) {
 };
 
 // --- DENTLEY: Hollow Armor, Squire & Husk ---
+function beginDentleyLunge(e, distance, duration, damage, knockback, finisher = false) {
+  e.lungeT = duration;
+  e.lungeA = e.a;
+  e.lungeVx = Math.cos(e.a) * distance / duration;
+  e.lungeVz = Math.sin(e.a) * distance / duration;
+  e.lungeDamage = damage;
+  e.lungeKb = knockback;
+  e.lungeFinisher = finisher;
+  e.lungeHit = new Set();
+  e.swing = Math.max(e.swing, duration);
+  spawn3DRing(e.x, e.z, 30, 0xcfd8ea);
+}
+
 function dentleyAttack(e) {
   if(e.form === 1) { e.c1 = 0.3; melee(e, 50, 8, 40, true); return; } // Squire dagger
   if(!(e.comboT > 0)) e.combo = 0;
@@ -4156,18 +4272,15 @@ function dentleyAttack(e) {
   e.combo = (n + 1) % 3; e.comboT = 0.9;
   e.c1 = n === 2 ? 0.8 : 0.5;
   if(n === 2) {
-    for(let i = 0; i < 5; i++) { // the third swing lunges 40 units
-      const nx = e.x + Math.cos(e.a) * 8, nz = e.z + Math.sin(e.a) * 8;
-      if(blocked(nx, nz, e.r)) break;
-      e.x = nx; e.z = nz;
-    }
+    beginDentleyLunge(e, 40, 0.18, 24, 220, true);
+    return;
   }
-  melee(e, 70, n === 2 ? 24 : 14, n === 2 ? 220 : 90, true);
+  melee(e, 70, 14, 90, true);
 }
 
 function dentleyGuard(e, c) {
   if(e.form === 0) { // Shield Guard
-    e.c2 = c.a1cd; e.guard = 1.4;
+    e.c2 = c.a1cd; e.guard = 2.0;
     spawn3DRing(e.x, e.z, 26, 0x9fc5ff);
     return;
   }
@@ -4186,18 +4299,7 @@ function dentleyLunge(e) {
   if(e.form === 1) { e.c3 = 0; return; } // the Squire has no armor to lunge with
   const dmg = 20 + e.riposte;
   e.riposte = 0; // charge is spent even if the lunge misses
-  spawn3DRing(e.x, e.z, 30, 0xcfd8ea);
-  let hit = null;
-  for(let i = 0; i < 15 && !hit; i++) {
-    const nx = e.x + Math.cos(e.a) * 6, nz = e.z + Math.sin(e.a) * 6;
-    if(blocked(nx, nz, e.r)) break;
-    e.x = nx; e.z = nz;
-    for(const t of E) {
-      if(t !== e && !t.dead && areEnemies(e, t) && Math.hypot(t.x - e.x, t.z - e.z) < e.r + t.r + 6) { hit = t; break; }
-    }
-  }
-  if(hit && (!isMultiplayer || isLobbyLeader)) hurt(hit, dmg, e.a, 220, e);
-  spawn3DRing(e.x, e.z, 30, 0xcfd8ea);
+  beginDentleyLunge(e, 90, 0.24, dmg, 220);
 }
 
 function makeHuskMesh() {
@@ -4343,7 +4445,9 @@ function champDetailHTML(ci) {
       <div class="statbar"><span>SPD</span><div class="sb-track"><div class="sb-fill spd" style="width:${spPct}%"></div></div><b>${c.sp}</b></div>
     </div>
     <div class="cd-weapon">${c.w} <b>${c.wn}</b> — ${c.ad}</div>
-    <div class="cd-ability"><span class="key-badge">E</span><div class="cd-ab-body"><b>${c.a1n}</b> <span class="cd-chip">${c.a1cd}s</span><br>${c.a1d}</div></div>
+    <div class="cd-summary">${c.d}</div>
+    ${c.passive ? `<div class="cd-ability"><span class="cd-passive-label">P</span><div class="cd-ab-body"><b>Passive · Hollow Armor</b><br>${c.passive}</div></div>` : ""}
+    <div class="cd-ability"><span class="key-badge">E</span><div class="cd-ab-body"><b>${c.a1n}</b> <span class="cd-chip">${c.a1cdSquire ? `${c.a1cd}s / ${c.a1cdSquire}s Squire` : `${c.a1cd}s`}</span><br>${c.a1d}</div></div>
     <div class="cd-ability"><span class="key-badge">Q</span><div class="cd-ab-body"><b>${c.a2n}</b> <span class="cd-chip">${c.a2cd}s</span><br>${c.a2d}</div></div>
   `;
 }
@@ -5117,7 +5221,7 @@ function upd(dt) {
     if(e.sporePoison > 0) {
       const tickDamage = (15 / 3.0) * dt;
       e.sporePoison -= dt;
-      hurt(e, tickDamage, 0, 0, e.sporeAttacker, 0);
+      hurt(e, tickDamage, 0, 0, e.sporeAttacker, "unblockable");
     }
 
     if(e.ci !== 5 || !e.activePod) {
@@ -5144,10 +5248,44 @@ function upd(dt) {
       }
     }
 
+    const lunging = e.lungeT > 0;
+    if(lunging) {
+      e.a = e.lungeA;
+      const step = Math.min(dt, e.lungeT);
+      const nx = e.x + e.lungeVx * step;
+      const nz = e.z + e.lungeVz * step;
+      if(!blocked(nx, nz, e.r)) {
+        e.x = nx; e.z = nz;
+      } else {
+        e.lungeT = 0;
+      }
+      if(!e.lungeFinisher) {
+        for(const t of E) {
+          if(t === e || t.dead || e.lungeHit.has(t) || !areEnemies(e, t)) continue;
+          const targetPos = getCombatPosition(t, e);
+          const dx = targetPos.x - e.x, dz = targetPos.z - e.z;
+          if(Math.hypot(dx, dz) < e.r + t.r + 8 &&
+             Math.abs(Math.atan2(Math.sin(Math.atan2(dz, dx) - e.a), Math.cos(Math.atan2(dz, dx) - e.a))) < 1.15) {
+            e.lungeHit.add(t);
+            hurt(t, e.lungeDamage, Math.atan2(dz, dx), e.lungeKb, e);
+          }
+        }
+      }
+      e.lungeT = Math.max(0, e.lungeT - dt);
+      if(e.lungeT <= 0) {
+        if(e.lungeFinisher) melee(e, 70, e.lungeDamage, e.lungeKb, true);
+        e.lungeVx = 0; e.lungeVz = 0;
+        e.lungeFinisher = false;
+        spawn3DRing(e.x, e.z, 30, 0xcfd8ea);
+      }
+    }
+
     if(e.stun > 0) {
       e.stun -= dt;
     } else if(e.chain) {
       // Oink is committed to his chain: no moving or attacking until it finishes
+    } else if(lunging) {
+      // Dentley's combo finisher and Riposte Lunge carry him forward until the charge ends
     } else if(e === pl) {
       const forwardKey = controlScheme === "wasd" ? K.KeyW : K.ArrowUp;
       const backKey = controlScheme === "wasd" ? K.KeyS : K.ArrowDown;
@@ -5313,7 +5451,7 @@ function upd(dt) {
            && areEnemies(p.o, t)
            && Math.hypot(targetPos.x - p.x, targetPos.z - p.z) < t.r + 9) {
           p.hit.add(t);
-          hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o, 0.65);
+          hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o, "projectile");
           if(p.t !== "b") {
             finalize = true;
             break; // a terminating hit stops further collisions this frame
@@ -5498,7 +5636,7 @@ Watch out: keep the wall discoverable through collision feedback, and make copie
 REF · Ranged (MAYBE)
 HP 170, speed 150. Weapon: WHISTLE DART, 13 damage every 0.65s (20 DPS).
 Passive, CHALK LINE: when Ref marks a player, a visible line connects them for 3s. Enemies crossing it are slowed by 25% for 1s.
-Ability 1, RED CARD (10s): throw a red card at one player. A hit marks them for 4s; Ref's next hit on them deals +25% damage and consumes the mark.
+Ability 1, RED CARD (10s): throw a red card at one player. A hit marks them for 4s; the Ref's next hit on them deals +25% damage and consumes the mark.
 Ability 2, BLOW THE WHISTLE (16s): after a 0.5s wind-up, freezes enemy basic attacks in a 180-unit radius for 1.7s. Ref can still attack. Movement and abilities remain available.
 Why it's fun: he can isolate a target for a damage bonus, then use a whistle to reset a close fight.
 Watch out: the whistle only affects nearby enemies, not the whole match.
@@ -5506,7 +5644,7 @@ Watch out: the whistle only affects nearby enemies, not the whole match.
 
 GHOST · Ranged (MAYBE?)
 HP 145, speed 180. Weapon: GHOSTFIRE, 13 damage every 0.7s (about 19 DPS), medium range.
-Ability 1, PHASE WALK (12s): for 1.5s, Wisp phases through map obstacles but not the arena boundary. Wisp cannot attack or use abilities during the phase and remains damageable. Leaves a visible haunting trail; enemies crossing it are slowed by 25% for 0.8s.
+Ability 1, PHASE WALK (12s): for 1.5s, Wisp phases through map obstacles but not the arena boundary. Wisp cannot attack or use abilities while phasing and remains damageable. Leaves a visible haunting trail; enemies crossing it are slowed by 25% for 0.8s.
 Ability 2, HAUNT (13s): send a slow spirit through walls toward a target point up to 240 units away. It bursts in a visible 70-unit circle for 12 damage and briefly outlines enemies hit for Wisp. It does not pass through the outer arena wall.
 Why it's fun: phase through a wall to reposition, but the trail tells opponents where Wisp went.
 Watch out: phasing is not invulnerability; keep Wisp damageable and unable to attack during the phase.
@@ -5517,10 +5655,7 @@ Watch out: phasing is not invulnerability; keep Wisp damageable and unable to at
 
 
 - Balance Changes (make someone meta that wasn't before)
-- Remove Map
 - Make Bullets go in any direction of the mouse (vertical also).
-- Add a new Champion
-- Add an option for it to give you a Champion randomly
 - Add Usernames (Accounts, basically)
 - Add a Currency (Shinies)
 - Add a Shop
