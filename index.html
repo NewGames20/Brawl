@@ -4252,33 +4252,33 @@ window.returnToMenu = function() {
 };
 
 // --- Six-second map voting and host-resolved rematches ---
-let roundVote=null,roundVoteSerial=0;
+let roundVote=null,roundVoteSerial=0,pendingRoundReady=false;
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=[0,0,0];for(const m of members){const v=votes[m.id];if(v===0||v===1||v===-1)counts[v===-1?2:v]++;}const max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===2?Math.floor(random()*MAPS.length):winner;
 }
 function roundMembers(){return isMultiplayer?roster:[{id:myNetId,hero:p1HeroChoice,username:activeUsername(),tagCosmetics:getNameplateCosmeticIds()}];}
-function clearRoundVote(){roundVote=null;const el=document.getElementById("round-panel");if(el)el.remove();document.body.classList.remove("round-open");}
+function clearRoundVote(){roundVote=null;pendingRoundReady=false;const el=document.getElementById("round-panel");if(el)el.remove();document.body.classList.remove("round-open");}
 function beginRoundVote(initial=false){
  if(roundVote){renderRoundVote();return;}if(isMultiplayer&&!isLobbyLeader)return;if(isMultiplayer&&roster.length<2){showEconomyToast("Need at least two players to start.");return;}
  const ready=Object.create(null),heroes=Object.create(null);for(const r of roundMembers()){ready[r.id]=initial;heroes[r.id]=r.id===myNetId?p1HeroChoice:r.hero;}
- roundVote={id:myNetId+"_round_"+(++roundVoteSerial)+"_"+Date.now(),endsAt:Date.now()+6000,votes:Object.create(null),ready,heroes,chosen:null};quickMatchAutoStart=null;qmClientCountdown=null;renderRoundVote();broadcastRoundVote();
+ roundVote={id:myNetId+"_round_"+(++roundVoteSerial)+"_"+Date.now(),endsAt:Date.now()+6000,votes:Object.create(null),ready,heroes,chosen:null,allowLateVotes:!initial};quickMatchAutoStart=null;qmClientCountdown=null;renderRoundVote();broadcastRoundVote();
 }
 function broadcastRoundVote(){
- if(!roundVote||!isMultiplayer||!isLobbyLeader)return;outgoingSeq++;broadcastToPeers({type:"ROUND_STATE",id:myNetId,seq:outgoingSeq,roundId:roundVote.id,remaining:Math.max(0,roundVote.endsAt-Date.now()),votes:roundVote.votes,ready:roundVote.ready,heroes:roundVote.heroes,chosen:roundVote.chosen});
+ if(!roundVote||!isMultiplayer||!isLobbyLeader)return;outgoingSeq++;broadcastToPeers({type:"ROUND_STATE",id:myNetId,seq:outgoingSeq,roundId:roundVote.id,remaining:Math.max(0,roundVote.endsAt-Date.now()),votes:roundVote.votes,ready:roundVote.ready,heroes:roundVote.heroes,chosen:roundVote.chosen,allowLateVotes:roundVote.allowLateVotes});
 }
 function acceptRoundChoice(id,data){
  if(!roundVote||data.roundId!==roundVote.id||!roundMembers().some(r=>r.id===id))return false;
- if(data.action==="vote"&&Date.now()<roundVote.endsAt&&(data.choice===-1||data.choice===0||data.choice===1))roundVote.votes[id]=data.choice;
+ if(data.action==="vote"&&(roundVote.allowLateVotes||Date.now()<roundVote.endsAt)&&(data.choice===-1||data.choice===0||data.choice===1))roundVote.votes[id]=data.choice;
  else if(data.action==="hero"&&Number.isInteger(data.hero)&&data.hero>=RANDOM_HERO&&data.hero<HEROES.length){roundVote.heroes[id]=data.hero;const r=roster.find(r=>r.id===id);if(r)r.hero=data.hero;if(id===myNetId)p1HeroChoice=data.hero;}
  else if(data.action==="ready")roundVote.ready[id]=!!data.ready;else return false;
  renderRoundVote();broadcastRoundVote();return true;
 }
 function sendRoundChoice(action,value){
- if(!roundVote)return;const packet={type:"ROUND_CHOICE",id:myNetId,roundId:roundVote.id,action};if(action==="vote")packet.choice=value;if(action==="hero"){packet.hero=Number(value);p1HeroChoice=Number(value);}if(action==="ready")packet.ready=!!value;
+ if(!roundVote){if(action==="ready"&&value&&isMultiplayer&&!isLobbyLeader){pendingRoundReady=true;const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;c.send({type:"ROUND_CHOICE",id:myNetId,seq:outgoingSeq,action:"request"});}}return;}const packet={type:"ROUND_CHOICE",id:myNetId,roundId:roundVote.id,action};if(action==="vote")packet.choice=value;if(action==="hero"){packet.hero=Number(value);p1HeroChoice=Number(value);}if(action==="ready")packet.ready=!!value;
  if(!isMultiplayer||isLobbyLeader)acceptRoundChoice(myNetId,packet);else{const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;packet.seq=outgoingSeq;c.send(packet);}}
 }
 function requestRematch(){
- if(!roundVote){if(!isMultiplayer||isLobbyLeader)beginRoundVote(false);else{showEconomyToast("Waiting for the host's next-round vote...");return;}}sendRoundChoice("ready",true);
+ if(!roundVote&&(!isMultiplayer||isLobbyLeader))beginRoundVote(false);sendRoundChoice("ready",true);
 }
 function renderRoundVote(){
  if(!roundVote)return;document.body.classList.add("round-open");let panel=document.getElementById("round-panel");if(!panel){panel=document.createElement("section");panel.id="round-panel";panel.setAttribute("aria-label","Next round map vote and champion selection");document.body.appendChild(panel);}
@@ -4287,11 +4287,11 @@ function renderRoundVote(){
  panel.innerHTML=`<div class="round-title">NEXT ROUND <span id="round-clock"></span></div><div class="round-options">${[0,1,-1].map((v,i)=>`<button class="economy-action ${voted===v?"primary":""}" data-vote="${v}">${v===-1?"🎲 Random":MAPS[v].name} · ${counts[i]}</button>`).join("")}<label>Champion <select id="round-champion" class="economy-action"><option value="-1" ${hero===-1?"selected":""}>🎲 Random</option>${HEROES.map((h,i)=>`<option value="${i}" ${i===hero?"selected":""}>${h.e} ${escapeHtml(h.n)}</option>`).join("")}</select></label><button id="round-ready" class="economy-action primary">${ready?"✓ READY — click to cancel":"REMATCH / READY"}</button><button id="round-leave" class="economy-action">${isMultiplayer?"Leave lobby":"Back to menu"}</button></div><div class="round-status">${members.map(r=>`<span>${escapeHtml(r.username||"Player")}: ${roundVote.ready[r.id]?"✓ ready":"choosing"}</span>`).join(" · ")}</div>`;
  panel.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>sendRoundChoice("vote",Number(b.dataset.vote)));panel.querySelector("#round-champion").onchange=e=>sendRoundChoice("hero",Number(e.target.value));panel.querySelector("#round-ready").onclick=()=>sendRoundChoice("ready",!roundVote.ready[myNetId]);panel.querySelector("#round-leave").onclick=()=>{if(isMultiplayer)leaveLobby("You left the lobby.");else{clearRoundVote();returnToMenu();}};
  }
- const remaining=Math.max(0,Math.ceil((roundVote.endsAt-Date.now())/1000)),clock=panel.querySelector("#round-clock");if(clock)clock.textContent=remaining?`Map vote closes in ${remaining}s`:roundVote.chosen!==null?`${MAPS[roundVote.chosen].name} · waiting for everyone to ready`:"Vote closed · waiting for players";panel.querySelectorAll("[data-vote]").forEach(b=>b.disabled=remaining===0);
+ const remaining=Math.max(0,Math.ceil((roundVote.endsAt-Date.now())/1000)),clock=panel.querySelector("#round-clock");if(clock)clock.textContent=remaining?`Map vote closes in ${remaining}s`:roundVote.allowLateVotes&&roundVote.chosen!==null?`${MAPS[roundVote.chosen].name} · voting stays open until everyone is ready`:roundVote.chosen!==null?`${MAPS[roundVote.chosen].name} · waiting for everyone to ready`:"Vote closed · waiting for players";panel.querySelectorAll("[data-vote]").forEach(b=>b.disabled=remaining===0&&!roundVote.allowLateVotes);
 }
 function tickRoundVote(){
  if(!roundVote)return;if(isMultiplayer&&!isLobbyLeader){renderRoundVote();return;}const members=roundMembers();
- if(Date.now()>=roundVote.endsAt){if(roundVote.chosen===null)roundVote.chosen=chooseVotedMap(roundVote.votes,members);if(members.length>=(isMultiplayer?2:1)&&members.every(r=>roundVote.ready[r.id])){selectedMapIndex=roundVote.chosen;for(const r of roster)if(Number.isInteger(roundVote.heroes[r.id]))r.hero=roundVote.heroes[r.id];p1HeroChoice=roundVote.heroes[myNetId]??p1HeroChoice;const multi=isMultiplayer;clearRoundVote();if(multi)launchVotedMatch();else launchSoloChosen();return;}}
+ if(Date.now()>=roundVote.endsAt){if(roundVote.chosen===null||roundVote.allowLateVotes)roundVote.chosen=chooseVotedMap(roundVote.votes,members);if(members.length>=(isMultiplayer?2:1)&&members.every(r=>roundVote.ready[r.id])){selectedMapIndex=roundVote.chosen;for(const r of roster)if(Number.isInteger(roundVote.heroes[r.id]))r.hero=roundVote.heroes[r.id];p1HeroChoice=roundVote.heroes[myNetId]??p1HeroChoice;const multi=isMultiplayer;clearRoundVote();if(multi)launchVotedMatch();else launchSoloChosen();return;}}
  renderRoundVote();broadcastRoundVote();
 }
 setInterval(tickRoundVote,300);
@@ -4501,10 +4501,10 @@ function handleIncomingData(conn, data) {
     return;
   }
 
-  if(data.type==="ROUND_CHOICE"){if(!isLobbyLeader||data.id!==conn.peer)return;acceptRoundChoice(conn.peer,data);return;}
+  if(data.type==="ROUND_CHOICE"){if(!isLobbyLeader||data.id!==conn.peer)return;if(data.action==="request"){if(state!=="menu"&&state!=="result")return;if(!roundVote)beginRoundVote(false);if(roundVote)acceptRoundChoice(conn.peer,{...data,roundId:roundVote.id,action:"ready",ready:true});return;}acceptRoundChoice(conn.peer,data);return;}
  if(data.type==="ROUND_STATE"){
  if(isLobbyLeader||conn.peer!==leaderId||data.id!==leaderId||typeof data.roundId!=="string")return;if(state!=="menu"&&state!=="result")return;
- roundVote={id:data.roundId,endsAt:Date.now()+Math.max(0,Math.min(6000,Number(data.remaining)||0)),votes:data.votes&&typeof data.votes==="object"?data.votes:{},ready:data.ready&&typeof data.ready==="object"?data.ready:{},heroes:data.heroes&&typeof data.heroes==="object"?data.heroes:{},chosen:Number.isInteger(data.chosen)&&MAPS[data.chosen]?data.chosen:null};renderRoundVote();return;
+  roundVote={id:data.roundId,endsAt:Date.now()+Math.max(0,Math.min(6000,Number(data.remaining)||0)),votes:data.votes&&typeof data.votes==="object"?data.votes:{},ready:data.ready&&typeof data.ready==="object"?data.ready:{},heroes:data.heroes&&typeof data.heroes==="object"?data.heroes:{},chosen:Number.isInteger(data.chosen)&&MAPS[data.chosen]?data.chosen:null,allowLateVotes:!!data.allowLateVotes};renderRoundVote();if(pendingRoundReady){pendingRoundReady=false;sendRoundChoice("ready",true);}return;
  }
  if(data.type === "HOST_PAUSE") {
     if(isLobbyLeader || data.id !== leaderId) return;
