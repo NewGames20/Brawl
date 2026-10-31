@@ -4563,6 +4563,7 @@ function handleIncomingData(conn, data) {
     if(state === "menu") refreshLobbyMenu();
   }
   else if(data.type === "ROSTER_SYNC") {
+    if(conn.peer !== leaderId || data.leaderId !== conn.peer) return;
     // The host broadcasts roster updates to every open connection — including joiners
     // still waiting for admission. While quick-matching, only a roster that actually
     // contains us counts as "joined"; otherwise keep waiting (a REJECT or the join
@@ -4584,11 +4585,12 @@ function handleIncomingData(conn, data) {
     if(state === "menu") refreshLobbyMenu();
   }
   else if(data.type === "QM_COUNTDOWN") {
+    if(conn.peer !== leaderId) return;
     qmClientCountdown = data.remaining;
     if(state === "menu") refreshLobbyMenu();
   }
   else if(data.type === "SPECTATE_MODE") {
-    if(isLobbyLeader) return;
+    if(isLobbyLeader || conn.peer !== leaderId) return;
     quickMatchRooms = null; // joined successfully — normal lobby behavior from here
     disarmQmWatchdog();     // landed — disarm the search watchdog
     enterSpectateLobby(data);
@@ -4883,6 +4885,7 @@ function wireHostPeer() {
             type: "ROOM_INFO",
             players: roster.length,
             capacity: 6,
+            quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch),
             phase: (state === "play" || state === "countdown" || state === "intro") ? "live" : "waiting"
           });
         } catch(e) {}
@@ -4986,6 +4989,7 @@ let qmActiveConn = null;  // the connection driving the current quick-match join
 let qmWatchdog = null;   // safety net: if a search is still running after 20s, recover instead of hanging
 let qmRescued = false;   // first watchdog deadline already fired (recovery in progress)?
 let qmGen = 0;           // search generation — invalidates stale async callbacks (claims, probes, joins)
+let qmTriedRooms = new Set();
 
 // Arm/disarm the search watchdog. Disarmed on any successful landing (room admission,
 // spectator admission, hosting) and on cancellation.
@@ -5021,6 +5025,7 @@ function fireQmWatchdog() {
     qmRescued = true;
     qmGen++;                    // invalidate all in-flight search callbacks
     quickMatchRooms = null;     // disarm stuck join-attempt timers
+    qmTriedRooms.clear();
     currentLobbyCode = null;    // no longer mid-join
     qmRendezvousStarted = false; // allow a fresh rendezvous
     // The old search peer is obsolete — destroy it so its late open/error callbacks
@@ -5149,6 +5154,7 @@ window.quickMatch = function() {
   qmClientCountdown = null;
   qmSeq++;
   qmRendezvousStarted = false;
+  qmTriedRooms.clear();
 
   isMultiplayer = true;
   isLobbyLeader = false;
@@ -5187,18 +5193,18 @@ window.quickMatch = function() {
           qmQuerying = true;
           const statuses = await Promise.all(rooms.map(async roomId => {
             const info = await queryRoomStatus(roomId);
-            return info ? { roomId, players: info.players, capacity: info.capacity || 6 } : null;
+            return info ? { roomId, players: info.players, capacity: info.capacity || 6, quickMatch: info.quickMatch === true } : null;
           }));
           qmQuerying = false;
           if(gen !== qmGen) return; // search was invalidated while probing
           const openRooms = statuses
-            .filter(s => s && s.players < s.capacity)
+            .filter(s => s && s.quickMatch && s.players < s.capacity)
             .sort((a, b) => b.players - a.players);
           if(openRooms.length > 0) {
             quickMatchRooms = openRooms.map(s => s.roomId);
             tryNextQuickMatchRoom();
           } else {
-            // Every listed room is full — use quick-match rendezvous codes
+            // No discoverable Quick Match room is open — use rendezvous codes
             startQuickMatchRendezvous();
           }
         } else {
@@ -5223,12 +5229,12 @@ function startQuickMatchRendezvous() {
     qmQuerying = true;
     Promise.all(QM_CODES.map(async code => {
       const info = await queryRoomStatus("brawlbound-room-" + code);
-      return info ? { code, players: info.players, capacity: info.capacity || 6 } : null;
+      return info ? { code, players: info.players, capacity: info.capacity || 6, quickMatch: info.quickMatch === true } : null;
     })).then(statuses => {
       if(gen !== qmGen) return; // search was invalidated while probing
       qmQuerying = false;
       const open = statuses
-        .filter(s => s && s.players < s.capacity)
+        .filter(s => s && s.quickMatch && s.players < s.capacity)
         .sort((a, b) => b.players - a.players);
       if(open.length > 0) {
         quickMatchRooms = open.map(s => "brawlbound-room-" + s.code);
@@ -5247,10 +5253,8 @@ function startQuickMatchRendezvous() {
 // 2) Rendezvous: try to CLAIM a quick-match room code. A taken code means a host is
 //    already waiting there — join them. If we claim it, we become the host.
 function quickMatchRendezvous(codes) {
+  codes = codes.filter(code => !qmTriedRooms.has("brawlbound-room-" + code));
   if(codes.length === 0) {
-    // Every QM code is taken or unreachable AND every join failed — the world is
-    // full or the matchmaking service is down. Stop with a retryable error instead
-    // of an undiscoverable random-code lobby (Quick Match clients only probe QM codes).
     console.warn("Quick Match: no open room found and no QM code claimable");
     leaveLobby("\u26A1 Quick Match couldn't find an open lobby (or create one) right now. \nPlease try again in a minute!");
     return;
@@ -5258,6 +5262,7 @@ function quickMatchRendezvous(codes) {
   const gen = qmGen; // this claim belongs to the current search generation
   const code = codes.shift();
   const roomId = "brawlbound-room-" + code;
+  qmTriedRooms.add(roomId);
   const claim = new Peer(roomId);
   let settled = false;
   let claimTimer = null;
@@ -5301,8 +5306,13 @@ function quickMatchRendezvous(codes) {
     try { claim.destroy(); } catch(e) {}
     if(gen !== qmGen) return; // search was invalidated — do not cascade
     if(err && err.type === "unavailable-id") {
-      // A host already holds this code — join their lobby (remaining codes are fallbacks)
-      joinQuickRoom(roomId, codes);
+      queryRoomStatus(roomId).then(info => {
+        if(gen !== qmGen) return;
+        if(info && info.quickMatch === true && info.players < (info.capacity || 6)) joinQuickRoom(roomId, codes);
+        else quickMatchRendezvous(codes);
+      }).catch(() => {
+        if(gen === qmGen) quickMatchRendezvous(codes);
+      });
     } else {
       // Broker hiccup on this code — try the next one
       quickMatchRendezvous(codes);
@@ -5350,13 +5360,12 @@ function joinQuickRoom(roomId, remainingCodes) {
 function tryNextQuickMatchRoom() {
   if(!quickMatchRooms) return;
   if(quickMatchRooms.length === 0) {
-    // Tried every open room without success — claim a discoverable QM code and host
-    // there (bounded by the claim timeouts and the search watchdog). If the claim
-    // flow is exhausted too, it ends with a retryable error, never a random-code room.
-    quickMatchRendezvous(QM_CODES.slice());
+    quickMatchRendezvous(QM_CODES.filter(code => !qmTriedRooms.has("brawlbound-room-" + code)));
     return;
   }
   const roomId = quickMatchRooms.shift();
+  if(qmTriedRooms.has(roomId)) { tryNextQuickMatchRoom(); return; }
+  qmTriedRooms.add(roomId);
   const gen = qmGen; // this join attempt belongs to the current search generation
   ensureLivePeer(() => {
     if(gen !== qmGen || !quickMatchRooms) return; // joined/ended while waiting for a live peer
@@ -5792,6 +5801,7 @@ window.cancelLobby = function() {
   lastSeenByPeer.clear();
   lastSeqByPeer.clear();
   quickMatchRooms = null;
+  qmTriedRooms.clear();
   quickMatchHosted = false;
   quickMatchAutoStart = null;
   qmClientCountdown = null;
