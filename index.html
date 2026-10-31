@@ -533,6 +533,36 @@ html, body {
   background: rgba(4,5,9,0.74); color: #fff; font: 900 12px 'Outfit',sans-serif;
   text-shadow: 0 1px 3px #000; text-align: center;
 }
+.crate-panel {
+  display: flex; align-items: center; gap: 14px; margin: 2px 0 12px; padding: 14px;
+  border: 1px solid rgba(255,209,102,0.32); border-radius: 15px;
+  background: radial-gradient(ellipse at 8% 50%,rgba(156,82,255,0.22),transparent 38%), linear-gradient(130deg,rgba(34,26,59,0.92),rgba(13,15,26,0.96));
+  box-shadow: inset 0 0 26px rgba(167,111,255,0.08),0 8px 26px rgba(0,0,0,0.25);
+}
+.crate-art {
+  position: relative; display: grid; place-items: center; flex: 0 0 72px; height: 72px;
+  border: 1px solid rgba(255,230,158,0.54); border-radius: 18px; color: #ffe8a2; font-size: 38px;
+  background: linear-gradient(145deg,rgba(255,223,132,0.18),rgba(133,82,255,0.22));
+  box-shadow: 0 0 24px rgba(190,128,255,0.3),inset 0 0 16px rgba(255,255,255,0.08);
+}
+.crate-art i,.crate-art b { position: absolute; color: #fff7cd; text-shadow: 0 0 8px #efbaff; font-style: normal; }
+.crate-art i { top: 2px; right: 8px; font-size: 15px; }.crate-art b { bottom: 3px; left: 7px; font-size: 12px; }
+.crate-copy { flex: 1; min-width: 0; }.crate-copy .economy-note { margin: 4px 0 8px; }
+.crate-odds-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.crate-odds,.loot-card-top span,.crate-reveal span { padding: 3px 6px; border-radius: 999px; background: rgba(0,0,0,0.28); font-size: 9px; font-weight: 900; white-space: nowrap; }
+.crate-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+.crate-open { min-width: 118px; min-height: 42px; }
+.loot-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(168px,1fr)); gap: 9px; }
+.loot-card { display: flex; flex-direction: column; gap: 7px; padding: 10px; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: linear-gradient(155deg,rgba(255,255,255,0.055),rgba(8,9,15,0.46)); }
+.loot-card.locked { filter: saturate(0.68); opacity: 0.72; }.loot-card.unlocked { border-color: rgba(130,224,255,0.24); }
+.loot-card.equipped { border-color: rgba(82,238,166,0.68); box-shadow: inset 0 0 18px rgba(69,217,136,0.09),0 0 12px rgba(69,217,136,0.08); }
+.loot-card-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; color: #fff; font-size: 12px; }
+.loot-card small { min-height: 15px; color: var(--text-muted); font-size: 10px; }
+.rarity-common { color: #e1e7f2 !important; }.rarity-uncommon { color: #70efaa !important; }.rarity-rare { color: #66c9ff !important; }
+.rarity-epic { color: #d59bff !important; }.rarity-legendary { color: #ffd36c !important; text-shadow: 0 0 9px rgba(255,181,54,0.55); }
+.crate-reveal { display: flex; align-items: center; gap: 12px; margin: 10px 0 13px; padding: 12px; border: 1px solid rgba(255,211,108,0.5); border-radius: 12px; background: linear-gradient(115deg,rgba(144,87,255,0.17),rgba(244,173,48,0.1)); box-shadow: 0 0 22px rgba(182,126,255,0.12); }
+.crate-reveal > div:nth-child(2) { display: flex; flex-direction: column; gap: 4px; flex: 1; }.crate-reveal small { color: var(--text-muted); }
+.reveal-spark { color: #ffe58a; font-size: 30px; text-shadow: 0 0 16px #ffba4d; }
 #economy-toast {
   position: fixed; top: 18px; left: 50%; z-index: 75; transform: translate(-50%,-8px);
   max-width: min(92vw,520px); padding: 10px 16px; border: 1px solid rgba(255,209,102,0.5);
@@ -541,10 +571,18 @@ html, body {
   transition: opacity 0.16s ease, transform 0.16s ease;
 }
 #economy-toast.show { opacity: 1; transform: translate(-50%,0); }
+#host-paused-banner {
+  position: fixed; left: 50%; top: 16px; z-index: 74; display: none; transform: translateX(-50%);
+  max-width: min(92vw,680px); padding: 11px 17px; border: 1px solid rgba(255,211,108,0.62); border-radius: 12px;
+  background: rgba(17,14,26,0.96); color: #ffe8a6; box-shadow: 0 8px 28px rgba(0,0,0,0.45),0 0 20px rgba(195,132,255,0.16);
+  font-size: 13px; font-weight: 900; text-align: center; pointer-events: none;
+}
+#host-paused-banner.show { display: block; }
 @media (max-width: 600px) {
   .economy-card { padding: 15px; }
   .economy-title { font-size: 20px; }
   .economy-head { flex-wrap: wrap; }
+  .crate-panel { align-items: flex-start; flex-wrap: wrap; }.crate-copy { flex-basis: calc(100% - 90px); }.crate-open { margin-left: auto; }
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -610,6 +648,7 @@ html, body {
     </div>
   </div>
   <div id="economy-toast" role="status" aria-live="polite"></div>
+  <div id="host-paused-banner" role="status" aria-live="polite">Match paused while the host is away. It will resume when they return.</div>
 </div>
 
 <script>
@@ -684,31 +723,64 @@ const Store = {
 
 const ACCOUNT_STORAGE_KEY = "bb_accounts_v1";
 const SHINY_REWARDS = { daily: 25, kill: 10, win: 50 };
-const SHOP_CATEGORIES = [
-  { key: "nameColors", label: "Nametag Colors", items: [
-    { id: "default", name: "Classic White", price: 0, color: "#f5f4f8" },
-    { id: "azure", name: "Azure", price: 70, color: "#63d5ff" },
-    { id: "coral", name: "Coral", price: 70, color: "#ff8b76" },
-    { id: "emerald", name: "Emerald", price: 85, color: "#72f0ae" },
-    { id: "gold", name: "Gold", price: 100, color: "#ffd166" },
-    { id: "violet", name: "Violet", price: 85, color: "#c7a0ff" }
+const COSMETIC_HERO_COUNT = 7;
+const CRATE_RARITY_ODDS = [
+  { key: "Common", chance: 48 }, { key: "Uncommon", chance: 27 },
+  { key: "Rare", chance: 16 }, { key: "Epic", chance: 7 }, { key: "Legendary", chance: 2 }
+];
+const NAMEPLATE_CATEGORIES = [
+  { key: "nameColors", label: "Nametag Colors", cratePrice: 160, crateName: "Prismatic Color Cache", crateIcon: "🌈", items: [
+    { id: "ember-soul", name: "Ember Soul", rarity: "Common", color: { from: "#fff0a6", to: "#ff552e" } },
+    { id: "glacier-arc", name: "Glacier Arc", rarity: "Common", color: { from: "#c3ffff", to: "#4199ff" } },
+    { id: "verdant-relic", name: "Verdant Relic", rarity: "Uncommon", color: { from: "#e6ff9a", to: "#12c58d" } },
+    { id: "starfall", name: "Starfall", rarity: "Uncommon", color: { from: "#fff0c4", to: "#c483ff" } },
+    { id: "void-prism", name: "Void Prism", rarity: "Rare", color: { from: "#68f4ff", to: "#b33bff" } },
+    { id: "blood-moon", name: "Blood Moon", rarity: "Rare", color: { from: "#ffc0da", to: "#f22954" } },
+    { id: "solar-crown", name: "Solar Crown", rarity: "Epic", color: { from: "#fff8ad", to: "#ff8a21" } },
+    { id: "aurora-crown", name: "Aurora Crown", rarity: "Legendary", color: { from: "#a7fff4", to: "#ff8be8" } }
   ]},
-  { key: "borderColors", label: "Nametag Border Colors", items: [
-    { id: "default", name: "No Border", price: 0, color: null },
-    { id: "azure", name: "Azure Edge", price: 80, color: "#63d5ff" },
-    { id: "coral", name: "Coral Edge", price: 80, color: "#ff8b76" },
-    { id: "emerald", name: "Emerald Edge", price: 80, color: "#72f0ae" },
-    { id: "gold", name: "Gold Edge", price: 100, color: "#ffd166" },
-    { id: "violet", name: "Violet Edge", price: 90, color: "#c7a0ff" }
+  { key: "borderColors", label: "Nametag Borders", cratePrice: 160, crateName: "Runebound Border Cache", crateIcon: "💠", items: [
+    { id: "copper-rune", name: "Copper Rune", rarity: "Common", color: "#ff9a5c", style: "rune" },
+    { id: "ice-filament", name: "Ice Filament", rarity: "Common", color: "#8bf4ff", style: "double" },
+    { id: "jade-circuit", name: "Jade Circuit", rarity: "Uncommon", color: "#70ffc5", style: "circuit" },
+    { id: "stormglass", name: "Stormglass", rarity: "Uncommon", color: "#a5baff", style: "double" },
+    { id: "phoenix-wire", name: "Phoenix Wire", rarity: "Rare", color: "#ff6749", style: "corners" },
+    { id: "deep-space", name: "Deep Space", rarity: "Rare", color: "#b27aff", style: "rune" },
+    { id: "crown-of-stars", name: "Crown of Stars", rarity: "Epic", color: "#ffe68b", style: "stars" },
+    { id: "dragon-regalia", name: "Dragon Regalia", rarity: "Legendary", color: "#ffcf73", style: "ornate" }
   ]},
-  { key: "backgrounds", label: "Nametag Backgrounds", items: [
-    { id: "default", name: "Clear Glass", price: 0, from: null, to: null, pattern: "none" },
-    { id: "carbon", name: "Carbon Grid", price: 100, from: "rgba(10,13,22,0.92)", to: "rgba(35,39,54,0.86)", pattern: "grid" },
-    { id: "sunset", name: "Sunset Fade", price: 130, from: "rgba(117,40,35,0.88)", to: "rgba(224,118,54,0.84)", pattern: "none" },
-    { id: "ocean", name: "Deep Ocean", price: 130, from: "rgba(9,44,78,0.92)", to: "rgba(34,125,151,0.82)", pattern: "none" },
-    { id: "nebula", name: "Nebula", price: 160, from: "rgba(49,24,82,0.92)", to: "rgba(138,48,98,0.82)", pattern: "stars" }
+  { key: "backgrounds", label: "Nametag Designs", cratePrice: 200, crateName: "Mythic Pattern Cache", crateIcon: "🌌", items: [
+    { id: "emberforge", name: "Emberforge", rarity: "Common", from: "rgba(64,18,18,0.94)", to: "rgba(255,107,36,0.7)", pattern: "grid" },
+    { id: "moonlit", name: "Moonlit Observatory", rarity: "Common", from: "rgba(10,22,54,0.95)", to: "rgba(81,105,173,0.72)", pattern: "stars" },
+    { id: "jade-temple", name: "Jade Temple", rarity: "Uncommon", from: "rgba(5,54,46,0.95)", to: "rgba(71,189,128,0.72)", pattern: "hex" },
+    { id: "sunken-relic", name: "Sunken Relic", rarity: "Uncommon", from: "rgba(5,37,67,0.95)", to: "rgba(16,157,176,0.76)", pattern: "waves" },
+    { id: "royal-nebula", name: "Royal Nebula", rarity: "Rare", from: "rgba(39,13,74,0.96)", to: "rgba(178,58,166,0.78)", pattern: "constellation" },
+    { id: "crimson-circuit", name: "Crimson Circuit", rarity: "Rare", from: "rgba(50,8,29,0.96)", to: "rgba(221,40,83,0.78)", pattern: "circuit" },
+    { id: "dragon-scroll", name: "Dragon Scroll", rarity: "Epic", from: "rgba(67,36,10,0.96)", to: "rgba(191,119,29,0.8)", pattern: "runes" },
+    { id: "astral-tide", name: "Astral Tide", rarity: "Legendary", from: "rgba(6,22,53,0.97)", to: "rgba(75,49,188,0.82)", pattern: "aurora" }
   ]}
 ];
+const SKIN_CATEGORIES = [
+  { key: "weaponSkins", label: "Weapon Skins", cratePrice: 260, crateName: "Arsenal Cache", crateIcon: "⚔️", items: [
+    { id: "bruno-sunforged", hero: 0, name: "Sunforged Sledge", rarity: "Epic", base: "#38201b", accent: "#ffb12e", glow: "#ff5728" },
+    { id: "oink-abyssal", hero: 1, name: "Abyssal Broadside", rarity: "Rare", base: "#102d45", accent: "#63e7ff", glow: "#0ab9e0" },
+    { id: "mango-prism", hero: 2, name: "Prism Crescent", rarity: "Uncommon", base: "#3e175f", accent: "#ffc84d", glow: "#cf4dff" },
+    { id: "sizzle-dragonfire", hero: 3, name: "Dragonfire Kitchen", rarity: "Legendary", base: "#4b1314", accent: "#ffe06b", glow: "#ff3d1e" },
+    { id: "quackbot-neon", hero: 4, name: "Neon Quacker", rarity: "Epic", base: "#082c38", accent: "#50fff1", glow: "#00d9ff" },
+    { id: "mycelis-mooncap", hero: 5, name: "Mooncap Scepter", rarity: "Rare", base: "#2c173e", accent: "#ff9bf4", glow: "#b94dff" },
+    { id: "dentley-sunblade", hero: 6, name: "Sunblade Oath", rarity: "Uncommon", base: "#34303f", accent: "#ffe19a", glow: "#ffb63d" }
+  ]},
+  { key: "championSkins", label: "Champion Skins", cratePrice: 320, crateName: "Champion Relic Cache", crateIcon: "👑", items: [
+    { id: "bruno-starwarden", hero: 0, name: "Starwarden Bruno", rarity: "Epic", base: "#17457a", accent: "#76eaff", glow: "#248dff" },
+    { id: "oink-admiral", hero: 1, name: "Admiral Abyss", rarity: "Rare", base: "#174050", accent: "#75f1d2", glow: "#28d4cb" },
+    { id: "mango-temple", hero: 2, name: "Temple Trickster", rarity: "Uncommon", base: "#81501f", accent: "#ffe282", glow: "#ffb21e" },
+    { id: "sizzle-dragonchef", hero: 3, name: "Dragon Chef", rarity: "Legendary", base: "#781d22", accent: "#ffd36d", glow: "#ff482b" },
+    { id: "quackbot-overdrive", hero: 4, name: "Neon Overdrive", rarity: "Epic", base: "#12465a", accent: "#87fff4", glow: "#16e5ff" },
+    { id: "mycelis-oracle", hero: 5, name: "Astral Oracle", rarity: "Rare", base: "#463064", accent: "#d9a5ff", glow: "#ad64ff" },
+    { id: "dentley-dawnknight", hero: 6, name: "Dawn Knight", rarity: "Uncommon", base: "#59617e", accent: "#ffe29b", glow: "#ffd05a" }
+  ]}
+];
+const SHOP_CATEGORIES = [...NAMEPLATE_CATEGORIES, ...SKIN_CATEGORIES];
 const USERNAME_FILTER_TERMS = ["fuck", "shit", "bitch", "bastard", "asshole", "cunt", "dick", "whore", "slut", "faggot", "nigger", "nazi", "retard", "kike", "spic"];
 const DEFAULT_COSMETIC_SELECTION = { nameColors: "default", borderColors: "default", backgrounds: "default" };
 
@@ -730,12 +802,33 @@ function validateUsername(raw) {
 }
 
 function shopCategory(key) { return SHOP_CATEGORIES.find(category => category.key === key) || SHOP_CATEGORIES[0]; }
-function shopItem(categoryKey, itemId) { return shopCategory(categoryKey).items.find(item => item.id === itemId) || shopCategory(categoryKey).items[0]; }
+function shopItem(categoryKey, itemId) {
+  const category = shopCategory(categoryKey);
+  const found = category.items.find(item => item.id === itemId);
+  if(found) return found;
+  if(itemId === "default" && categoryKey === "nameColors") return { id: "default", name: "Classic White", color: "#f5f4f8" };
+  if(itemId === "default" && categoryKey === "borderColors") return { id: "default", name: "No Border", color: null, style: "none" };
+  if(itemId === "default" && categoryKey === "backgrounds") return { id: "default", name: "Clear Glass", from: null, to: null, pattern: "none" };
+  return category.items[0];
+}
 function sanitizeCosmeticSelection(value) {
   const result = {};
-  for(const category of SHOP_CATEGORIES) {
+  for(const category of NAMEPLATE_CATEGORIES) {
     const candidate = value && typeof value[category.key] === "string" ? value[category.key] : "default";
     result[category.key] = category.items.some(item => item.id === candidate) ? candidate : "default";
+  }
+  return result;
+}
+
+function sanitizeSkinSelection(value) {
+  const result = { weaponSkins: {}, championSkins: {} };
+  for(const category of SKIN_CATEGORIES) {
+    const source = value && value[category.key] && typeof value[category.key] === "object" ? value[category.key] : {};
+    for(let hero = 0; hero < COSMETIC_HERO_COUNT; hero++) {
+      const candidate = typeof source[hero] === "string" ? source[hero] : "default";
+      const item = category.items.find(entry => entry.hero === hero && entry.id === candidate);
+      result[category.key][hero] = item ? item.id : "default";
+    }
   }
   return result;
 }
@@ -749,8 +842,19 @@ function normalizeStoredProfile(profile) {
     const list = profile && profile.owned && Array.isArray(profile.owned[category.key]) ? profile.owned[category.key] : [];
     owned[category.key] = [...new Set(["default", ...list.filter(id => category.items.some(item => item.id === id))])];
   }
-  const equipped = sanitizeCosmeticSelection(profile && profile.equipped);
-  for(const category of SHOP_CATEGORIES) if(!owned[category.key].includes(equipped[category.key])) equipped[category.key] = "default";
+  const equipped = {
+    ...sanitizeCosmeticSelection(profile && profile.equipped),
+    weaponSkins: {}, championSkins: {}
+  };
+  for(const category of SKIN_CATEGORIES) {
+    const saved = profile && profile.equipped && profile.equipped[category.key];
+    for(let hero = 0; hero < COSMETIC_HERO_COUNT; hero++) {
+      const candidate = saved && typeof saved[hero] === "string" ? saved[hero] : "default";
+      const item = category.items.find(entry => entry.hero === hero && entry.id === candidate);
+      equipped[category.key][hero] = item && owned[category.key].includes(item.id) ? item.id : "default";
+    }
+  }
+  for(const category of NAMEPLATE_CATEGORIES) if(!owned[category.key].includes(equipped[category.key])) equipped[category.key] = "default";
   const balance = Math.max(0, Math.floor(Number(profile && profile.shinies) || 0));
   return {
     id, username, shinies: balance, owned, equipped,
@@ -776,6 +880,7 @@ let accountBook = loadAccountBook();
 let economyModalView = "account";
 let economyModalRequired = false;
 let shopCategoryKey = "nameColors";
+let lastCrateReveal = null;
 let economyToastTimer = null;
 function saveAccountBook() { Store.set(ACCOUNT_STORAGE_KEY, JSON.stringify(accountBook)); }
 function activeProfile() { return accountBook.profiles.find(profile => profile.id === accountBook.activeId) || null; }
@@ -793,9 +898,24 @@ function getNameplateStyle(selection = getNameplateCosmeticIds()) {
   const ids = sanitizeCosmeticSelection(selection);
   return {
     textColor: shopItem("nameColors", ids.nameColors).color,
-    borderColor: shopItem("borderColors", ids.borderColors).color,
+    border: shopItem("borderColors", ids.borderColors),
     background: shopItem("backgrounds", ids.backgrounds)
   };
+}
+
+function getSkinSelection(profile = activeProfile()) {
+  return sanitizeSkinSelection(profile && profile.equipped);
+}
+
+function skinItemFor(categoryKey, heroIndex, profile = activeProfile()) {
+  if(!profile || !profile.equipped || !profile.equipped[categoryKey]) return null;
+  const id = profile.equipped[categoryKey][heroIndex] || "default";
+  return id === "default" ? null : (shopCategory(categoryKey).items.find(item => item.hero === heroIndex && item.id === id) || null);
+}
+
+function sameLobbyName(username, exceptId = myNetId) {
+  const key = String(username || "").normalize("NFKC").trim().toLocaleLowerCase();
+  return Array.isArray(roster) && roster.some(player => player.id !== exceptId && String(player.username || "").normalize("NFKC").trim().toLocaleLowerCase() === key);
 }
 
 function safeNetworkUsername(value, id = "") {
@@ -860,7 +980,7 @@ function renderAccountModal() {
   close.style.display = economyModalRequired && !profile ? "none" : "";
   if(!profile) {
     body.innerHTML = `
-      <p class="economy-note">Choose a username for matches and leaderboards. Your local profile saves your Shinies and purchases in this browser.</p>
+      <p class="economy-note">Choose a filtered username. Names are unique on this browser and in each lobby; your profile, Shinies, and purchases save in this browser.</p>
       <form class="account-form" onsubmit="event.preventDefault(); createOrSwitchAccount();">
         <input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="3–16 character username" aria-label="Username">
         <button class="economy-action primary" type="submit">Create / Switch</button>
@@ -870,7 +990,7 @@ function renderAccountModal() {
     `;
   } else {
     body.innerHTML = `
-      <p class="economy-note">Signed in locally as <b>${escapeHtml(profile.username)}</b>. Shinies and cosmetics are saved on this browser.</p>
+      <p class="economy-note">Signed in locally as <b>${escapeHtml(profile.username)}</b>. Shinies and cosmetics are saved on this browser. Lobby hosts reject duplicate names.</p>
       <form class="account-form" onsubmit="event.preventDefault(); createOrSwitchAccount();">
         <input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="Enter a new or saved username" aria-label="Username">
         <button class="economy-action primary" type="submit">Create / Switch</button>
@@ -900,7 +1020,9 @@ function showAccountError(message) {
 }
 
 function activateAccount(profile) {
+  if(sameLobbyName(profile.username, myNetId)) { showAccountError("That name is already used by someone in this lobby."); return false; }
   accountBook.activeId = profile.id;
+  lastCrateReveal = null;
   saveAccountBook();
   economyModalRequired = false;
   claimDailyShinies();
@@ -908,18 +1030,20 @@ function activateAccount(profile) {
   closeEconomyModal(true);
   updateEconomyDisplays();
   if(document.getElementById("economy-modal").classList.contains("show") && economyModalView === "account") renderAccountModal();
+  return true;
 }
 
 function createOrSwitchAccount() {
   const input = document.getElementById("account-username-input");
   const result = validateUsername(input ? input.value : "");
   if(!result.ok) { showAccountError(result.error); return; }
+  if(sameLobbyName(result.value, myNetId)) { showAccountError("That name is already used by someone in this lobby."); return; }
   const existing = accountBook.profiles.find(profile => profile.username.toLocaleLowerCase() === result.value.toLocaleLowerCase());
   if(existing) { activateAccount(existing); return; }
   const owned = {};
   for(const category of SHOP_CATEGORIES) owned[category.key] = ["default"];
   const id = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : ("acct_" + Math.random().toString(36).slice(2, 12));
-  const profile = { id, username: result.value, shinies: 0, owned, equipped: { ...DEFAULT_COSMETIC_SELECTION }, lastDailyDate: "" };
+  const profile = { id, username: result.value, shinies: 0, owned, equipped: { ...DEFAULT_COSMETIC_SELECTION, weaponSkins: {}, championSkins: {} }, lastDailyDate: "" };
   accountBook.profiles.push(profile);
   activateAccount(profile);
 }
@@ -930,6 +1054,7 @@ function renameCurrentAccount() {
   if(!profile) return createOrSwitchAccount();
   const result = validateUsername(input ? input.value : "");
   if(!result.ok) { showAccountError(result.error); return; }
+  if(sameLobbyName(result.value, myNetId)) { showAccountError("That name is already used by someone in this lobby."); return; }
   const duplicate = accountBook.profiles.find(other => other.id !== profile.id && other.username.toLocaleLowerCase() === result.value.toLocaleLowerCase());
   if(duplicate) { showAccountError("That username is already saved on this browser."); return; }
   profile.username = result.value;
@@ -946,10 +1071,33 @@ function switchAccount(id) {
 }
 
 function cosmeticPreviewCss(categoryKey, item) {
-  if(categoryKey === "nameColors") return `color:${item.color};`;
-  if(categoryKey === "borderColors") return item.color ? `border:2px solid ${item.color};` : "border:1px solid rgba(255,255,255,0.16);";
+  if(categoryKey === "nameColors") {
+    const color = item.color;
+    return color && typeof color === "object"
+      ? `background:linear-gradient(90deg,${color.from},${color.to});-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;`
+      : `color:${color || "#fff"};`;
+  }
+  if(categoryKey === "borderColors") return item.color ? `border:2px solid ${item.color};box-shadow:0 0 12px ${item.color};` : "border:1px solid rgba(255,255,255,0.16);";
+  if(item.base) return `background:linear-gradient(120deg,${item.base},${item.accent});border-color:${item.glow};box-shadow:0 0 15px ${item.glow};`;
   if(item.from) return `background:linear-gradient(120deg,${item.from},${item.to});`;
   return "";
+}
+
+function crateOddsFor(category, profile) {
+  const available = category.items.filter(item => !profile.owned[category.key].includes(item.id));
+  const tiers = CRATE_RARITY_ODDS.filter(tier => available.some(item => item.rarity === tier.key));
+  const total = tiers.reduce((sum, tier) => sum + tier.chance, 0) || 1;
+  return tiers.map(tier => ({ ...tier, chance: tier.chance * 100 / total }));
+}
+
+function cosmeticIsEquipped(profile, category, item) {
+  if(NAMEPLATE_CATEGORIES.includes(category)) return profile.equipped[category.key] === item.id;
+  return profile.equipped[category.key][item.hero] === item.id;
+}
+
+function cratePreviewText(category, item) {
+  if(item.hero != null) return `${HEROES[item.hero].e} ${HEROES[item.hero].n} · ${category.key === "weaponSkins" ? "weapon" : "champion"}`;
+  return category.label.replace("Nametag ", "");
 }
 
 function renderShopModal() {
@@ -961,29 +1109,47 @@ function renderShopModal() {
   }
   const category = shopCategory(shopCategoryKey);
   const tabs = SHOP_CATEGORIES.map(item => `<button class="economy-tab ${item.key === category.key ? "selected" : ""}" data-shop-category="${item.key}">${item.label}</button>`).join("");
-  const items = category.items.map(item => {
+  const odds = crateOddsFor(category, profile);
+  const empty = odds.length === 0;
+  const oddsHtml = odds.map(tier => `<span class="crate-odds rarity-${tier.key.toLowerCase()}">${tier.key} ${tier.chance.toFixed(tier.chance % 1 ? 1 : 0)}%</span>`).join("");
+  const reveal = lastCrateReveal && lastCrateReveal.categoryKey === category.key
+    ? `<div class="crate-reveal"><div class="reveal-spark">✦</div><div><b>${escapeHtml(lastCrateReveal.item.name)}</b><span class="rarity-${lastCrateReveal.item.rarity.toLowerCase()}">${lastCrateReveal.item.rarity}</span><small>${escapeHtml(cratePreviewText(category, lastCrateReveal.item))}</small></div><div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key, lastCrateReveal.item)}">${escapeHtml(profile.username)}</div></div>` : "";
+  const loot = category.items.map(item => {
     const owned = profile.owned[category.key].includes(item.id);
-    const equipped = profile.equipped[category.key] === item.id;
-    const label = equipped ? "EQUIPPED" : owned ? "EQUIP" : `BUY · ${item.price} ✨`;
-    const disabled = equipped || (!owned && profile.shinies < item.price);
+    const equipped = owned && cosmeticIsEquipped(profile, category, item);
+    const tierOdds = odds.find(tier => tier.key === item.rarity);
+    const tierSize = category.items.filter(entry => entry.rarity === item.rarity && !profile.owned[category.key].includes(entry.id)).length;
+    const itemOdds = !owned && tierOdds && tierSize ? tierOdds.chance / tierSize : 0;
     const previewStyle = cosmeticPreviewCss(category.key, item);
-    return `<div class="shop-item ${equipped ? "equipped" : ""}">
-      <div><div class="shop-item-name">${escapeHtml(item.name)}</div><div class="shop-item-price">${item.price ? `${item.price} Shinies` : "Free"}</div></div>
-      <div class="cosmetic-preview" style="${previewStyle}">${escapeHtml(profile.username)}</div>
-      <button class="economy-action ${owned ? "" : "primary"}" data-buy-category="${category.key}" data-buy-item="${item.id}" ${disabled ? "disabled" : ""}>${label}</button>
+    const preview = category.key === "nameColors" || category.key === "borderColors" || category.key === "backgrounds"
+      ? profile.username : `${HEROES[item.hero].e} ${HEROES[item.hero].n}`;
+    const action = equipped ? "EQUIPPED" : owned ? "EQUIP" : "LOCKED";
+    return `<div class="loot-card ${owned ? "unlocked" : "locked"} ${equipped ? "equipped" : ""}">
+      <div class="loot-card-top"><b>${escapeHtml(item.name)}</b><span class="rarity-${item.rarity.toLowerCase()}">${item.rarity}</span></div>
+      <small>${escapeHtml(cratePreviewText(category, item))} · ${owned ? "UNLOCKED" : `${itemOdds.toFixed(itemOdds % 1 ? 1 : 0)}% drop`}</small>
+      <div class="cosmetic-preview" style="${previewStyle}">${escapeHtml(preview)}</div>
+      <button class="economy-action ${owned && !equipped ? "primary" : ""}" data-equip-category="${category.key}" data-equip-item="${item.id}" ${!owned || equipped ? "disabled" : ""}>${action}</button>
     </div>`;
   }).join("");
   body.innerHTML = `
     <div class="economy-tabs">${tabs}</div>
-    <div class="economy-note">Buy a nametag color, border color, or background. Purchases stay with your local account and equip immediately.</div>
-    <div class="shop-grid">${items}</div>
+    <section class="crate-panel">
+      <div class="crate-art">${category.crateIcon}<i>✦</i><b>✧</b></div>
+      <div class="crate-copy"><div class="shop-item-name">${escapeHtml(category.crateName)}</div><div class="economy-note">One ${category.label.toLowerCase()} reward. Duplicate protection is on; unlocked items are removed from future rolls.</div><div class="crate-odds-row">${oddsHtml || "All rewards collected"}</div></div>
+      <div class="crate-actions"><button class="economy-action crate-open" data-reset-category="${category.key}">RESET LOOK</button><button class="economy-action primary crate-open" data-open-crate="${category.key}" ${empty || profile.shinies < category.cratePrice ? "disabled" : ""}>${empty ? "COLLECTED" : `OPEN · ${category.cratePrice} ✨`}</button></div>
+    </section>
+    ${reveal}
+    <div class="economy-note">Odds shown are based on rewards still available. Tiers with no remaining items redistribute their odds. Crates use earned Shinies only.</div>
+    <div class="loot-grid">${loot}</div>
     <div class="economy-note">Earn Shinies: daily login +${SHINY_REWARDS.daily} · elimination +${SHINY_REWARDS.kill} · match win +${SHINY_REWARDS.win}</div>
   `;
   body.querySelectorAll("[data-shop-category]").forEach(button => button.onclick = () => {
     shopCategoryKey = button.dataset.shopCategory;
     renderEconomyModal();
   });
-  body.querySelectorAll("[data-buy-category]").forEach(button => button.onclick = () => buyOrEquipCosmetic(button.dataset.buyCategory, button.dataset.buyItem));
+  body.querySelectorAll("[data-equip-category]").forEach(button => button.onclick = () => equipCosmetic(button.dataset.equipCategory, button.dataset.equipItem));
+  body.querySelectorAll("[data-open-crate]").forEach(button => button.onclick = () => openCosmeticCrate(button.dataset.openCrate));
+  body.querySelectorAll("[data-reset-category]").forEach(button => button.onclick = () => resetCosmeticCategory(button.dataset.resetCategory));
 }
 
 function renderEconomyModal() {
@@ -1019,21 +1185,58 @@ function closeEconomyModal(force = false) {
   document.getElementById("economy-modal").classList.remove("show");
 }
 
-function buyOrEquipCosmetic(categoryKey, itemId) {
+function equipCosmetic(categoryKey, itemId) {
   const profile = activeProfile();
   const category = SHOP_CATEGORIES.find(entry => entry.key === categoryKey);
+  if(profile && category && NAMEPLATE_CATEGORIES.includes(category) && itemId === "default") {
+    profile.equipped[categoryKey] = "default";
+    saveAccountBook(); syncProfileIdentity(); lastCrateReveal = null; renderEconomyModal(); return;
+  }
   const item = category && category.items.find(entry => entry.id === itemId);
   if(!profile || !category || !item) return;
   const owned = profile.owned[category.key].includes(item.id);
-  if(!owned) {
-    if(profile.shinies < item.price) { showEconomyToast("You need more Shinies for that item"); return; }
-    profile.shinies -= item.price;
-    profile.owned[category.key].push(item.id);
-  }
-  profile.equipped[category.key] = item.id;
+  if(!owned) return;
+  if(NAMEPLATE_CATEGORIES.includes(category)) profile.equipped[category.key] = item.id;
+  else profile.equipped[category.key][item.hero] = item.id;
   saveAccountBook();
   syncProfileIdentity();
-  showEconomyToast(owned ? `${item.name} equipped` : `${item.name} purchased and equipped`);
+  lastCrateReveal = null;
+  showEconomyToast(`${item.name} equipped`);
+  renderEconomyModal();
+}
+
+function resetCosmeticCategory(categoryKey) {
+  const profile = activeProfile();
+  const category = SHOP_CATEGORIES.find(entry => entry.key === categoryKey);
+  if(!profile || !category) return;
+  if(NAMEPLATE_CATEGORIES.includes(category)) profile.equipped[categoryKey] = "default";
+  else for(let hero = 0; hero < COSMETIC_HERO_COUNT; hero++) profile.equipped[categoryKey][hero] = "default";
+  saveAccountBook(); syncProfileIdentity(); lastCrateReveal = null;
+  showEconomyToast("Default look equipped"); renderEconomyModal();
+}
+
+function openCosmeticCrate(categoryKey) {
+  const profile = activeProfile();
+  const category = SHOP_CATEGORIES.find(entry => entry.key === categoryKey);
+  if(!profile || !category) return;
+  const available = category.items.filter(item => !profile.owned[category.key].includes(item.id));
+  if(!available.length) { showEconomyToast("You collected every item in this crate"); return; }
+  if(profile.shinies < category.cratePrice) { showEconomyToast(`You need ${category.cratePrice - profile.shinies} more Shinies`); return; }
+  const odds = crateOddsFor(category, profile);
+  let roll = Math.random() * 100;
+  let tier = odds[odds.length - 1];
+  for(const entry of odds) { roll -= entry.chance; if(roll <= 0) { tier = entry; break; } }
+  const pool = available.filter(item => item.rarity === tier.key);
+  const item = pool[Math.floor(Math.random() * pool.length)];
+  if(!item) return;
+  profile.shinies -= category.cratePrice;
+  profile.owned[category.key].push(item.id);
+  if(NAMEPLATE_CATEGORIES.includes(category)) profile.equipped[category.key] = item.id;
+  else profile.equipped[category.key][item.hero] = item.id;
+  lastCrateReveal = { categoryKey, item };
+  saveAccountBook();
+  syncProfileIdentity();
+  showEconomyToast(`${item.rarity} drop: ${item.name}`);
   renderEconomyModal();
 }
 
@@ -1041,13 +1244,16 @@ function syncProfileIdentity() {
   const profile = activeProfile();
   if(!profile) return;
   const tagCosmetics = getNameplateCosmeticIds(profile);
+  const skins = getSkinSelection(profile);
   const self = roster.find(player => player.id === myNetId);
-  if(self) { self.username = profile.username; self.tagCosmetics = tagCosmetics; }
+  if(self) { self.username = profile.username; self.tagCosmetics = tagCosmetics; self.skins = skins; }
   const localEntity = typeof E !== "undefined" && E.find(entity => entity.netId === myNetId);
-  if(localEntity) setEntityIdentity(localEntity, profile.username, tagCosmetics);
+  if(localEntity) { setEntityIdentity(localEntity, profile.username, tagCosmetics); setEntitySkins(localEntity, skins); }
+  if(pl && pl.netId === myNetId) setupViewmodel(pl.ci);
+  if(demoActive) rebuildShowcase();
   if(isMultiplayer) {
     outgoingSeq++;
-    const packet = { type: "HELLO", id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, seq: outgoingSeq };
+    const packet = { type: "HELLO", id: myNetId, hero: p1HeroChoice, username: profile.username, tagCosmetics, skins, seq: outgoingSeq };
     if(isLobbyLeader) broadcastToPeers(packet);
     else if(leaderId && peerConnections.has(leaderId)) {
       const conn = peerConnections.get(leaderId);
@@ -1062,6 +1268,7 @@ window.openAccountModal = openAccountModal;
 window.closeEconomyModal = closeEconomyModal;
 window.createOrSwitchAccount = createOrSwitchAccount;
 window.renameCurrentAccount = renameCurrentAccount;
+window.openCosmeticCrate = openCosmeticCrate;
 
 // --- GRAPHICS PRESETS ---
 // scale = render resolution (1 = full). Lower presets also drop shadows, extra light, dust, sparks, glows and flame particles.
@@ -1089,6 +1296,7 @@ let specSwayTarget = null, lastSpecYaw = 0, lastSpecPitch = 0;
 let peer = null;
 let isMultiplayer = false;
 let isLobbyLeader = false;
+let hostVisibilityPaused = false;
 let currentLobbyCode = null;
 let leaderId = null;
 let myNetId = "local_" + Math.random().toString(36).substring(2, 7);
@@ -1760,7 +1968,7 @@ function makeTextSprite(message, color = "#ffffff", size = 32) {
 function makeNameplate(message, style = {}) {
   const tagStyle = style && typeof style === "object" ? style : { textColor: style };
   const can = document.createElement("canvas");
-  can.width = 256; can.height = 48;
+  can.width = 360; can.height = 72;
   const ctx = can.getContext("2d");
   const drawRoundRect = (x, y, w, h, r) => {
     ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
@@ -1768,37 +1976,85 @@ function makeNameplate(message, style = {}) {
     ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
     ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
   };
-  if(tagStyle.background && tagStyle.background.from) {
-    const gradient = ctx.createLinearGradient(0, 0, 256, 48);
-    gradient.addColorStop(0, tagStyle.background.from);
-    gradient.addColorStop(1, tagStyle.background.to || tagStyle.background.from);
-    drawRoundRect(4, 3, 248, 42, 10); ctx.fillStyle = gradient; ctx.fill();
-    if(tagStyle.background.pattern === "grid") {
-      ctx.save(); ctx.clip(); ctx.strokeStyle = "rgba(160,200,255,0.12)"; ctx.lineWidth = 1;
-      for(let x = 12; x < 256; x += 16) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 48); ctx.stroke(); }
-      for(let y = 8; y < 48; y += 12) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(256, y); ctx.stroke(); }
-      ctx.restore();
-    } else if(tagStyle.background.pattern === "stars") {
-      ctx.save(); ctx.clip(); ctx.fillStyle = "rgba(255,255,255,0.28)";
-      for(const [x,y] of [[20,12],[47,34],[211,15],[238,33],[186,37],[78,10]]) { ctx.beginPath(); ctx.arc(x,y,1.4,0,Math.PI*2); ctx.fill(); }
-      ctx.restore();
+  drawRoundRect(3, 3, 354, 66, 15);
+  const bg = tagStyle.background || {};
+  const fill = ctx.createLinearGradient(0, 0, 360, 72);
+  fill.addColorStop(0, bg.from || "rgba(9,10,18,0.82)");
+  fill.addColorStop(1, bg.to || "rgba(22,25,40,0.72)");
+  ctx.fillStyle = fill; ctx.fill();
+  ctx.save(); drawRoundRect(3, 3, 354, 66, 15); ctx.clip();
+  ctx.lineWidth = 1.2;
+  const pattern = bg.pattern || "none";
+  if(pattern === "grid") {
+    ctx.strokeStyle = "rgba(255,190,112,0.23)";
+    for(let x = 0; x < 360; x += 18) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 72); ctx.stroke(); }
+    for(let y = 0; y < 72; y += 14) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(360, y); ctx.stroke(); }
+  } else if(pattern === "stars" || pattern === "constellation") {
+    const stars = [[20,17],[54,47],[87,18],[126,54],[165,23],[198,48],[237,15],[278,48],[322,22],[342,57],[105,39],[218,34],[301,12]];
+    if(pattern === "constellation") { ctx.strokeStyle = "rgba(210,205,255,0.32)"; ctx.beginPath(); stars.forEach(([x,y],i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.stroke(); }
+    ctx.fillStyle = "rgba(255,255,255,0.82)";
+    stars.forEach(([x,y],i) => { ctx.beginPath(); ctx.arc(x,y,i % 4 === 0 ? 2.2 : 1.15,0,Math.PI*2); ctx.fill(); });
+  } else if(pattern === "hex") {
+    ctx.strokeStyle = "rgba(168,255,213,0.25)";
+    for(let row=-1; row<4; row++) for(let col=-1; col<14; col++) {
+      const x = col * 32 + (row % 2) * 16, y = row * 26;
+      ctx.beginPath(); for(let i=0;i<6;i++){const a=Math.PI/3*i;const px=x+10*Math.cos(a),py=y+10*Math.sin(a);i?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.closePath(); ctx.stroke();
     }
+  } else if(pattern === "waves" || pattern === "aurora") {
+    for(let line=0; line<4; line++) {
+      ctx.beginPath();
+      for(let x=0;x<=360;x+=6) { const y=15+line*14+Math.sin(x/34+line*1.7)*(pattern === "aurora" ? 9 : 5); x?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+      ctx.strokeStyle = pattern === "aurora" ? `rgba(121,255,226,${0.12+line*0.035})` : `rgba(106,230,255,${0.16+line*0.04})`;
+      ctx.lineWidth = pattern === "aurora" ? 4 : 2; ctx.stroke();
+    }
+  } else if(pattern === "circuit") {
+    ctx.strokeStyle = "rgba(255,118,154,0.42)"; ctx.lineWidth = 2;
+    for(let y=13;y<70;y+=22) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(35,y); ctx.lineTo(45,y+8); ctx.lineTo(78,y+8); ctx.moveTo(360,y); ctx.lineTo(325,y); ctx.lineTo(315,y-8); ctx.lineTo(285,y-8); ctx.stroke(); }
+    ctx.fillStyle = "rgba(255,190,205,0.7)"; for(const [x,y] of [[35,13],[78,21],[325,13],[285,5],[45,35],[315,27]]) { ctx.beginPath(); ctx.arc(x,y,2.5,0,Math.PI*2); ctx.fill(); }
+  } else if(pattern === "runes") {
+    ctx.strokeStyle = "rgba(255,218,132,0.36)"; ctx.lineWidth = 2;
+    for(let x=15;x<360;x+=30) { ctx.beginPath(); ctx.moveTo(x,12); ctx.lineTo(x+7,25); ctx.lineTo(x-2,37); ctx.lineTo(x+7,55); ctx.stroke(); ctx.beginPath(); ctx.arc(x+2,34,7,0,Math.PI*1.45); ctx.stroke(); }
   }
-  if(tagStyle.borderColor) {
-    drawRoundRect(4, 3, 248, 42, 10); ctx.strokeStyle = tagStyle.borderColor; ctx.lineWidth = 3; ctx.stroke();
+  const sheen = ctx.createLinearGradient(0, 0, 0, 72);
+  sheen.addColorStop(0, "rgba(255,255,255,0.22)"); sheen.addColorStop(0.42, "rgba(255,255,255,0.035)"); sheen.addColorStop(1, "rgba(0,0,0,0.18)");
+  ctx.fillStyle = sheen; ctx.fillRect(0,0,360,72); ctx.restore();
+
+  const border = tagStyle.border || (tagStyle.borderColor ? { color: tagStyle.borderColor, style: "double" } : null);
+  if(border && border.color) {
+    ctx.save(); ctx.shadowColor = border.color; ctx.shadowBlur = 12;
+    drawRoundRect(4, 4, 352, 64, 14); ctx.strokeStyle = border.color; ctx.lineWidth = 3; ctx.stroke();
+    ctx.shadowBlur = 0;
+    if(["double","rune","ornate"].includes(border.style)) {
+      drawRoundRect(10, 10, 340, 52, 11); ctx.globalAlpha = 0.72; ctx.lineWidth = 1.2; ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    if(["corners","stars","ornate"].includes(border.style)) {
+      ctx.fillStyle = border.color;
+      for(const [x,y] of [[13,13],[347,13],[13,59],[347,59]]) { ctx.save(); ctx.translate(x,y); ctx.rotate(Math.PI/4); ctx.fillRect(-3,-3,6,6); ctx.restore(); }
+      if(border.style === "ornate") for(const x of [37,323]) { ctx.beginPath(); ctx.arc(x,36,5,0,Math.PI*2); ctx.fill(); }
+    }
+    if(border.style === "circuit") {
+      ctx.strokeStyle = border.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(20,36); ctx.lineTo(30,27); ctx.lineTo(39,27); ctx.moveTo(340,36); ctx.lineTo(330,45); ctx.lineTo(321,45); ctx.stroke();
+    }
+    ctx.restore();
   }
-  ctx.font = "700 22px 'Outfit', system-ui";
+
+  ctx.font = "800 27px 'Outfit', system-ui";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.strokeStyle = "rgba(0,0,0,0.85)";
-  ctx.lineWidth = 5;
-  ctx.strokeText(message, 128, 24);
-  ctx.fillStyle = tagStyle.textColor || "#ffffff";
-  ctx.fillText(message, 128, 24);
+  ctx.strokeStyle = "rgba(0,0,0,0.96)";
+  ctx.lineWidth = 6;
+  ctx.strokeText(message, 180, 37);
+  const textColor = tagStyle.textColor;
+  if(textColor && typeof textColor === "object" && textColor.from) {
+    const textGradient = ctx.createLinearGradient(68, 24, 292, 52);
+    textGradient.addColorStop(0, textColor.from); textGradient.addColorStop(1, textColor.to || textColor.from);
+    ctx.fillStyle = textGradient;
+  } else ctx.fillStyle = textColor || "#ffffff";
+  ctx.fillText(message, 180, 37);
   const tex = new THREE.CanvasTexture(can);
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
   const sprite = new THREE.Sprite(mat);
-  sprite.scale.set(24, 4.5, 1);
+  sprite.scale.set(25, 5, 1);
   return sprite;
 }
 
@@ -2161,6 +2417,7 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
     const armGeo = new THREE.CylinderGeometry(1.4, 1.8, 14, 12);
     const armMat = new THREE.MeshStandardMaterial({ color: 0xd99b77, roughness: 0.55 });
     const arm = new THREE.Mesh(armGeo, armMat);
+    arm.userData.bbArm = true;
     arm.rotation.x = -Math.PI / 2.7;
     arm.position.set(0.6, -3.6, 3.6);
     root.add(arm);
@@ -2313,7 +2570,52 @@ function addHeroDetails(grp, headGrp, heroIndex) {
   }
 }
 
-function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, playerName = null, tagCosmetics = null) {
+function applyChampionSkin(model, heroIndex, item) {
+  if(!model) return;
+  if(model.skinFx) { disposeHierarchy(model.skinFx); model.skinFx = null; }
+  if(model.bodyMat) {
+    model.bodyMat.color.set(item ? item.base : HEROES[heroIndex].col);
+    model.bodyMat.emissive.set(item ? item.glow : 0x000000);
+    model.bodyMat.emissiveIntensity = item ? 0.24 : 0;
+    model.bodyMat.needsUpdate = true;
+  }
+  if(!item) return;
+  const fx = new THREE.Group();
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(15.5, 0.85, 7, 32), new THREE.MeshBasicMaterial({ color: item.accent, transparent: true, opacity: 0.9 }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 2.2; fx.add(ring);
+  const crest = new THREE.Mesh(new THREE.OctahedronGeometry(2.5, 0), new THREE.MeshStandardMaterial({ color: item.accent, emissive: item.glow, emissiveIntensity: 0.8, metalness: 0.4, roughness: 0.24 }));
+  crest.position.set(0, 48, 0); fx.add(crest);
+  model.add(fx); model.skinFx = fx;
+}
+
+function applyWeaponSkin(weapon, item) {
+  if(!weapon) return;
+  weapon.traverse(node => {
+    if(!node.isMesh || !node.material || node.userData.bbArm) return;
+    const materials = Array.isArray(node.material) ? node.material : [node.material];
+    for(const material of materials) {
+      if(!material.color) continue;
+      if(material.userData.bbBaseColor === undefined) material.userData.bbBaseColor = material.color.getHex();
+      if(material.userData.bbBaseEmissive === undefined && material.emissive) material.userData.bbBaseEmissive = material.emissive.getHex();
+      if(material.userData.bbBaseEmissiveIntensity === undefined) material.userData.bbBaseEmissiveIntensity = material.emissiveIntensity || 0;
+      if(item) {
+        material.color.set((Number(material.metalness) || 0) > 0.5 ? item.accent : item.base);
+        if(material.emissive) { material.emissive.set(item.glow); material.emissiveIntensity = 0.42; }
+      } else {
+        material.color.setHex(material.userData.bbBaseColor);
+        if(material.emissive) { material.emissive.setHex(material.userData.bbBaseEmissive || 0); material.emissiveIntensity = material.userData.bbBaseEmissiveIntensity; }
+      }
+      material.needsUpdate = true;
+    }
+  });
+  if(weapon.skinGem) { weapon.remove(weapon.skinGem); disposeHierarchy(weapon.skinGem); weapon.skinGem = null; }
+  if(item) {
+    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(2.1, 0), new THREE.MeshStandardMaterial({ color: item.accent, emissive: item.glow, emissiveIntensity: 1.1, metalness: 0.48, roughness: 0.2 }));
+    gem.position.set(0, 10, 0); weapon.add(gem); weapon.skinGem = gem;
+  }
+}
+
+function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, playerName = null, tagCosmetics = null, skins = null) {
   const grp = new THREE.Group();
   grp.userData.isLocalPlayer = isPlayer;
 
@@ -2379,6 +2681,9 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   grp.add(wep);
   grp.weapon = wep;
   grp.bodyMat = bodyMat;
+  const skinSelection = sanitizeSkinSelection(skins);
+  applyChampionSkin(grp, heroIndex, skinItemFor("championSkins", heroIndex, { equipped: skinSelection }));
+  applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, { equipped: skinSelection }));
 
   scene.add(grp);
   return grp;
@@ -2394,6 +2699,8 @@ function setupViewmodel(heroIndex) {
   if(heroIndex === null) return;
   const wep = createHighQualityWeapon(heroIndex, true);
   wep.scale.set(0.48, 0.48, 0.48);
+  const profile = activeProfile();
+  applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, profile));
   viewmodelHolder.add(wep);
   viewmodelHolder.wep = wep;
   if(heroIndex === 6) {
@@ -2722,11 +3029,12 @@ const BOT_PERSONALITIES = [
   { id:"opportunist", label:"Opportunist", aggro:0.74, risk:0.7, range:0.95, pickup:1.3, weakTarget:0.62, attack:0.82, ability:0.82 }
 ];
 
-function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tagCosmetics = null) {
+function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tagCosmetics = null, skins = null) {
   const c = HEROES[ci];
   const isLocalP1 = (playerNum === 1);
   const displayUsername = username ? safeNetworkUsername(username, netId) : (isLocalP1 ? activeUsername() : (playerNum === 2 ? `${c.e} ${c.n}` : null));
   const selectedTagCosmetics = tagCosmetics ? sanitizeCosmeticSelection(tagCosmetics) : (isLocalP1 ? getNameplateCosmeticIds() : { ...DEFAULT_COSMETIC_SELECTION });
+  const selectedSkins = skins ? sanitizeSkinSelection(skins) : (isLocalP1 ? getSkinSelection() : sanitizeSkinSelection(null));
   const personality = BOT_PERSONALITIES[Math.floor(Math.random() * BOT_PERSONALITIES.length)];
   const ai = (isLocalP1 || isMultiplayer || (netId && !netId.startsWith("bot_"))) ? null : {
     personality: personality.id,
@@ -2744,7 +3052,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tag
     alertTimer: 0
   };
 
-  const mesh = createDetailedHeroModel(ci, isLocalP1, false, displayUsername, selectedTagCosmetics);
+  const mesh = createDetailedHeroModel(ci, isLocalP1, false, displayUsername, selectedTagCosmetics, selectedSkins);
   if(isLocalP1) mesh.visible = false;
 
   return {
@@ -2760,6 +3068,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tag
     netId: netId,
     username: displayUsername,
     tagCosmetics: selectedTagCosmetics,
+    skins: selectedSkins,
     team, kills: 0, killStreak: 0, killChain: 0, lastKillTime: -999,
     dmg: 0, deathTime: null, killedBy: null, pending: [],
     emote: -1, emoteT: 0, emoteCooldown: 0, emoteSprite: null,
@@ -2794,6 +3103,16 @@ function setEntityIdentity(entity, username, tagCosmetics) {
   entity.mesh.nameplate = tag;
 }
 
+function setEntitySkins(entity, skins) {
+  if(!entity) return;
+  const next = sanitizeSkinSelection(skins);
+  if(JSON.stringify(entity.skins) === JSON.stringify(next)) return;
+  entity.skins = next;
+  if(!entity.mesh || entity.mesh.userData.isLocalPlayer) return;
+  applyChampionSkin(entity.mesh, entity.ci, skinItemFor("championSkins", entity.ci, { equipped: next }));
+  applyWeaponSkin(entity.mesh.weapon, skinItemFor("weaponSkins", entity.ci, { equipped: next }));
+}
+
 // Keep recent host-side fighter positions so client-fired attacks can be checked
 // against the positions the shooter was actually seeing over the network.
 function recordCombatHistory() {
@@ -2809,13 +3128,15 @@ function recordCombatHistory() {
   }
 }
 
-function getCombatPosition(target, attacker = null) {
+function getCombatPosition(target, attacker = null, projectileTravelMs = 0) {
   const history = target.combatHistory;
   const rewindMs = isMultiplayer && isLobbyLeader && attacker && attacker !== pl
     ? attacker.hitRewindMs : 0;
   if(!(rewindMs > 0) || !history || history.length === 0) return target;
 
-  const sampleTime = performance.now() - rewindMs;
+  // As a client-fired projectile travels, advance the historical target point by
+  // the same amount so slow shots don't keep aiming at where the target used to be.
+  const sampleTime = performance.now() - Math.max(0, rewindMs - Math.max(0, projectileTravelMs));
   if(sampleTime <= history[0].time) return history[0];
   for(let i = 1; i < history.length; i++) {
     const next = history[i];
@@ -3119,6 +3440,7 @@ function executeAttack(e) {
 }
 
 function attack(e) {
+  if(hostVisibilityPaused && isMultiplayer) return;
   if(dentleyGuardActive(e)) return;
   // Send the intent BEFORE executing locally so movement abilities (Blink, Backdraft)
   // aren't applied twice on remote machines from the post-move position.
@@ -3235,6 +3557,7 @@ function executeAbility1(e) {
 }
 
 function ability1(e) {
+  if(hostVisibilityPaused && isMultiplayer) return;
   if(dentleyGuardActive(e)) return;
   if(isMultiplayer) sendActionIntent("AB1", e.a, e.x, e.z);
   executeAbility1(e);
@@ -3322,6 +3645,7 @@ function executeAbility2(e) {
 }
 
 function ability2(e) {
+  if(hostVisibilityPaused && isMultiplayer) return;
   if(dentleyGuardActive(e)) return;
   if(e.ci === 6 && e.form === 1) return; // the Squire has no Riposte Lunge
   if(isMultiplayer) sendActionIntent("AB2", e.a, e.x, e.z);
@@ -3729,6 +4053,7 @@ function gen4LetterCode() {
 }
 
 function sendActionIntent(act, a, x, z) {
+  if(hostVisibilityPaused && isMultiplayer) return;
   outgoingSeq++;
   const packet = { type: "ACTION_INTENT", id: myNetId, act, a, x, z, seq: outgoingSeq };
   if(isLobbyLeader) {
@@ -3751,7 +4076,7 @@ function actionCooldownSlack(conn) {
 }
 
 function actionHitRewind(conn) {
-  return Math.min(260, Math.max(80, peerRttMs(conn) / 2 + 80));
+  return Math.min(300, Math.max(70, peerRttMs(conn) / 2 + 55));
 }
 
 function actionPose(ent, data, validate = false) {
@@ -3798,6 +4123,8 @@ function leaveLobby(msg) {
   peer = null;
   isMultiplayer = false;
   isLobbyLeader = false;
+  hostVisibilityPaused = false;
+  setHostPauseBanner(false);
   leaderId = null;
   peerConnections.clear();
   roster = [];
@@ -3834,7 +4161,7 @@ function setupConnectionEvents(conn) {
     peerConnections.set(conn.peer, conn);
     lastSeenByPeer.set(conn.peer, Date.now());
     outgoingSeq++;
-    conn.send({ type: "HELLO", id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), seq: outgoingSeq });
+    conn.send({ type: "HELLO", id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
   });
 
   conn.on("data", data => {
@@ -3882,6 +4209,11 @@ function setupConnectionEvents(conn) {
   });
 }
 
+function setHostPauseBanner(paused) {
+  const banner = document.getElementById("host-paused-banner");
+  if(banner) banner.classList.toggle("show", !!paused);
+}
+
 function handleIncomingData(conn, data) {
   if(!data || !data.type) return;
 
@@ -3912,11 +4244,27 @@ function handleIncomingData(conn, data) {
     return;
   }
 
+  if(data.type === "HOST_PAUSE") {
+    if(isLobbyLeader || data.id !== leaderId) return;
+    hostVisibilityPaused = !!data.paused;
+    setHostPauseBanner(hostVisibilityPaused);
+    if(!hostVisibilityPaused) lastT = performance.now();
+    return;
+  }
+
   if(data.type === "HELLO") {
+    if(isLobbyLeader && data.id !== conn.peer) return;
     const hero = Number.isInteger(data.hero) && data.hero >= RANDOM_HERO && data.hero < HEROES.length ? data.hero : 0;
     let r = roster.find(x => x.id === data.id);
     const username = safeNetworkUsername(data.username || (r && r.username) || "Player", data.id);
+    const duplicateName = roster.find(player => player.id !== data.id && String(player.username || "").normalize("NFKC").trim().toLocaleLowerCase() === username.toLocaleLowerCase());
+    if(isLobbyLeader && duplicateName) {
+      try { conn.send({ type: "REJECT", reason: "That username is already being used in this lobby." }); } catch(e) {}
+      setTimeout(() => { try { conn.close(); } catch(e) {} }, 200);
+      return;
+    }
     const tagCosmetics = sanitizeCosmeticSelection(data.tagCosmetics || (r && r.tagCosmetics));
+    const skins = sanitizeSkinSelection(data.skins || (r && r.skins));
     if(!r) {
       // Seat check happens again here so two simultaneous joiners can't overfill the lobby
       if(roster.length >= 6) {
@@ -3924,11 +4272,12 @@ function handleIncomingData(conn, data) {
         setTimeout(() => { try { conn.close(); } catch(e) {} }, 200);
         return;
       }
-      roster.push({ id: data.id, hero, username, tagCosmetics });
+      roster.push({ id: data.id, hero, username, tagCosmetics, skins });
     } else {
       r.hero = hero;
       r.username = username;
       r.tagCosmetics = tagCosmetics;
+      r.skins = skins;
     }
     if(isLobbyLeader) {
       outgoingSeq++;
@@ -3987,7 +4336,7 @@ function handleIncomingData(conn, data) {
     );
   }
   else if(data.type === "CLIENT_INPUT") {
-    if(!isLobbyLeader || data.id !== conn.peer ||
+    if(!isLobbyLeader || hostVisibilityPaused || data.id !== conn.peer ||
        !Number.isFinite(data.x) || !Number.isFinite(data.z) || !Number.isFinite(data.a)) return;
     const ent = getRemoteActorByNetId(data.id);
     if(ent && !ent.dead) {
@@ -4028,11 +4377,17 @@ function handleIncomingData(conn, data) {
 
       let ent = getRemoteActorByNetId(item.id);
       if(!ent && !item.dead) {
-        ent = mk(item.ci, item.x, item.z, 2, item.id, null, item.un, item.tc);
+        ent = mk(item.ci, item.x, item.z, 2, item.id, null, item.un, item.tc, { championSkins: { [item.ci]: item.cs || "default" }, weaponSkins: { [item.ci]: item.ws || "default" } });
         E.push(ent);
       }
       if(ent) {
         if(item.un !== undefined || item.tc !== undefined) setEntityIdentity(ent, item.un, item.tc);
+        if(item.cs !== undefined || item.ws !== undefined) {
+          const skinUpdate = sanitizeSkinSelection(ent.skins);
+          if(item.cs !== undefined) skinUpdate.championSkins[item.ci] = item.cs;
+          if(item.ws !== undefined) skinUpdate.weaponSkins[item.ci] = item.ws;
+          setEntitySkins(ent, skinUpdate);
+        }
         if(item.dead && !ent.dead) {
           ent.dead = true;
           ent.deathTime = matchTime;
@@ -4086,6 +4441,7 @@ function handleIncomingData(conn, data) {
     showResultScreen(iWon, data.winnerId, data.stats || []);
   }
   else if(data.type === "ACTION_INTENT") {
+    if(hostVisibilityPaused) return;
     const ent = getRemoteActorByNetId(data.id);
     let accepted = !isLobbyLeader;
     if(isLobbyLeader) {
@@ -4128,7 +4484,7 @@ function broadcastToPeers(obj) {
   });
 }
 
-// Host snapshot broadcast (~25 Hz)
+// Host snapshots run at 30 Hz to keep remote aim and movement close to what clients see.
 setInterval(() => {
   if(isMultiplayer && isLobbyLeader && (state === "play" || state === "countdown" || state === "intro")) {
     outgoingSeq++;
@@ -4149,7 +4505,9 @@ setInterval(() => {
       kz: Math.round(e.kz),
       kl: e.killedBy,
       fm: e.form, mh: e.mhp, gd: e.guard > 0 ? e.guard : 0, rp: e.riposte,
-      un: e.username, tc: e.tagCosmetics
+      un: e.username, tc: e.tagCosmetics,
+      cs: e.skins && e.skins.championSkins ? e.skins.championSkins[e.ci] : "default",
+      ws: e.skins && e.skins.weaponSkins ? e.skins.weaponSkins[e.ci] : "default"
     }));
     broadcastToPeers({
       type: "SNAPSHOT",
@@ -4161,11 +4519,11 @@ setInterval(() => {
       storm: Math.round(stormRadius)
     });
   }
-}, 40);
+}, 33);
 
-// Client movement upload (~30 Hz)
+// Client movement uploads at 60 Hz so the host has a fresh movement and aim sample.
 setInterval(() => {
-  if(isMultiplayer && !isLobbyLeader && pl && !pl.dead && (state === "play" || state === "countdown")) {
+  if(isMultiplayer && !isLobbyLeader && !hostVisibilityPaused && pl && !pl.dead && (state === "play" || state === "countdown")) {
     outgoingSeq++;
     const packet = {
       type: "CLIENT_INPUT",
@@ -4181,7 +4539,7 @@ setInterval(() => {
       if(conn && conn.open) conn.send(packet);
     }
   }
-}, 33);
+}, 16);
 
 // Heartbeat
 setInterval(() => {
@@ -4212,6 +4570,7 @@ setInterval(() => {
   if(!isMultiplayer) return;
   const now = Date.now();
   for(const [id, lastSeen] of lastSeenByPeer.entries()) {
+    if(id === leaderId && !isLobbyLeader && hostVisibilityPaused) continue;
     if(now - lastSeen > 6000) {
       removePeerEntity(id);
       roster = roster.filter(r => r.id !== id);
@@ -4298,7 +4657,7 @@ window.hostMultiplayerLobby = function() {
   peer = new Peer(roomLeaderId);
   isLobbyLeader = true;
   isMultiplayer = true;
-  roster = [{ id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds() }];
+  roster = [{ id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection() }];
   peerConnections.clear();
   lastSeenByPeer.clear();
   lastSeqByPeer.clear();
@@ -4644,7 +5003,7 @@ function quickMatchRendezvous(codes) {
     leaderId = myNetId;
     isLobbyLeader = true;
     isMultiplayer = true;
-    roster = [{ id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds() }];
+    roster = [{ id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection() }];
     currentLobbyCode = code;
     quickMatchRooms = null;
     quickMatchHosted = true;
@@ -5124,7 +5483,9 @@ function menu(msg) {
         const me = roster.find(x => x.id === myNetId);
         if(me) me.hero = p1HeroChoice;
         outgoingSeq++;
-        broadcastToPeers({ type: "HELLO", id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), seq: outgoingSeq });
+        const me = roster.find(x => x.id === myNetId);
+        if(me) { me.tagCosmetics = getNameplateCosmeticIds(); me.skins = getSkinSelection(); }
+        broadcastToPeers({ type: "HELLO", id: myNetId, hero: p1HeroChoice, username: activeUsername(), tagCosmetics: getNameplateCosmeticIds(), skins: getSkinSelection(), seq: outgoingSeq });
       }
     };
   });
@@ -5256,7 +5617,7 @@ function rebuildShowcase() {
     q.position.y = 38;
     podium.add(q);
   } else {
-    const model = createDetailedHeroModel(p1HeroChoice, false, true);
+    const model = createDetailedHeroModel(p1HeroChoice, false, true, null, null, getSkinSelection());
     model.scale.set(1.55, 1.55, 1.55);
     podium.add(model);
   }
@@ -5323,7 +5684,8 @@ window.startLobbyMatch = function() {
   roster.forEach(r => {
     identityMap[r.id] = {
       username: r.id === myNetId ? activeUsername() : safeNetworkUsername(r.username, r.id),
-      tagCosmetics: sanitizeCosmeticSelection(r.tagCosmetics)
+      tagCosmetics: sanitizeCosmeticSelection(r.tagCosmetics),
+      skins: sanitizeSkinSelection(r.skins)
     };
   });
 
@@ -5355,7 +5717,7 @@ function launchMeshMatch(spawnMap, heroMap = {}, identityMap = {}) {
     const isMe = (r.id === myNetId);
     const hv = Number.isInteger(heroMap[r.id]) && HEROES[heroMap[r.id]] ? heroMap[r.id] : resolveHero(r.hero);
     const identity = identityMap[r.id] || r;
-    const ent = mk(hv, sp[0], sp[1], isMe ? 1 : 2, r.id, null, identity.username, identity.tagCosmetics);
+    const ent = mk(hv, sp[0], sp[1], isMe ? 1 : 2, r.id, null, identity.username, identity.tagCosmetics, identity.skins);
     E.push(ent);
     if(isMe) {
       pl = ent;
@@ -5764,10 +6126,11 @@ function upd(dt) {
       // Hide the body of the player whose eyes we're looking through
       e.mesh.visible = !(isSpectating && e === spectateTarget);
       if(!e.ai) { // remote players follow network targets; bots drive themselves
-        e.x += (e.targetX - e.x) * 0.22;
-        e.z += (e.targetZ - e.z) * 0.22;
-        e.a = lerpAngle(e.a, e.targetA, 0.22);
-        e.pitch += ((e.targetP || 0) - e.pitch) * 0.22;
+        const netFollow = 1 - Math.exp(-dt * 15);
+        e.x += (e.targetX - e.x) * netFollow;
+        e.z += (e.targetZ - e.z) * netFollow;
+        e.a = lerpAngle(e.a, e.targetA, netFollow);
+        e.pitch += ((e.targetP || 0) - e.pitch) * netFollow;
       }
     }
 
@@ -5978,6 +6341,7 @@ function upd(dt) {
       // Bruno's hammer deflect destroys boomerangs mid-flight (reflect() zeroes life)
       if(p.life <= 0) finalize = true;
     } else {
+      p.age += dt;
       p.life -= dt;
       if(p.life <= 0) finalize = true;
     }
@@ -6016,7 +6380,7 @@ function upd(dt) {
 
     if(!finalize) {
       for(const t of E) {
-        const targetPos = getCombatPosition(t, p.o);
+        const targetPos = getCombatPosition(t, p.o, p.age * 1000);
         if(t !== p.o && !t.dead && !p.hit.has(t)
            && areEnemies(p.o, t)
            && Math.hypot(targetPos.x - p.x, targetPos.z - p.z) < t.r + 9) {
@@ -6078,8 +6442,10 @@ function loop(now) {
   lastT = now;
   resize();
 
-  if(state === "intro" || state === "countdown" || state === "play") upd(dt);
-  else if(state === "menu" && demoActive) upd(dt);
+  if(!hostVisibilityPaused) {
+    if(state === "intro" || state === "countdown" || state === "play") upd(dt);
+    else if(state === "menu" && demoActive) upd(dt);
+  }
 
   if(demoActive) {
     const t = now / 1000;
@@ -6115,7 +6481,23 @@ menu("Select a champion to battle in the arena!");
 if(activeProfile()) claimDailyShinies();
 else openAccountModal(true);
 document.addEventListener("visibilitychange", () => {
-  if(!document.hidden) claimDailyShinies();
+  if(document.hidden) {
+    if(isMultiplayer && isLobbyLeader && (state === "play" || state === "countdown" || state === "intro") && !hostVisibilityPaused) {
+      hostVisibilityPaused = true;
+      setHostPauseBanner(true);
+      outgoingSeq++;
+      broadcastToPeers({ type: "HOST_PAUSE", id: myNetId, paused: true, seq: outgoingSeq });
+    }
+    return;
+  }
+  claimDailyShinies();
+  if(isMultiplayer && isLobbyLeader && hostVisibilityPaused) {
+    hostVisibilityPaused = false;
+    lastT = performance.now();
+    setHostPauseBanner(false);
+    outgoingSeq++;
+    broadcastToPeers({ type: "HOST_PAUSE", id: myNetId, paused: false, seq: outgoingSeq });
+  }
 });
 requestAnimationFrame(loop);
 </script>
@@ -6230,10 +6612,6 @@ Watch out: phasing is not invulnerability; keep Wisp damageable and unable to at
 
 
 - Make Bullets go in any direction of the mouse (vertical also).
-- Add Usernames (Accounts, basically)
-- Add a Currency (Shinies)
-- Add a Shop
 - Add Champion and Weapon skins
 - Add Auras
-- Add Nametag Colors/Nametag border Colors/Nametag background design
 - Add Daily challenges (Can only be done in Quick Matches)
