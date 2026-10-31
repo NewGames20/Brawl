@@ -895,7 +895,7 @@ const HEROES = [
    n:"Mango the Monkey", e:"🐵", w:"🍌", wn:"Twin Crescent Boomerang",
    role: "Skirmisher", roleCol: "#d6a71e",
    hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
-   a1n:"Cluster Bomb", a1cd: 9.0, a1d:"Lobs a fruit bomb that shatters into bananas.",
+   a1n:"Cluster Bomb", a1cd: 9.5, a1d:"Lobs a fruit bomb that shatters into bananas.",
    a2n:"Peel Trap", a2cd: 10.5,
    ad:"Boomerang that curves out and returns to you.", a2d:"Drops a banana peel in front to slip foes.",
    melee: false, d:"Agile skirmisher with returning banana curves and traps."
@@ -912,8 +912,8 @@ const HEROES = [
  {
    n:"Quackbot", e:"🤖", w:"🦆", wn:"Cybernetic Plasma Blaster",
    role: "Assassin", roleCol: "#2b9bc4",
-   hp: 110, sp: 185, col: 0x309bb0, cd: 0.25,
-   a1n:"Blink", a1cd: 6.0, a1d:"Instant short-range teleport.",
+   hp: 110, sp: 185, col: 0x309bb0, cd: 0.23,
+   a1n:"Blink", a1cd: 5.0, a1d:"Instant short-range teleport.",
    a2n:"Barrage", a2cd: 8.5,
    ad:"Rapid-fire plasma darts.", a2d:"Unleashes a rapid stream of quacking darts.",
    melee: false, d:"Fast glass cannon with sustained blaster fire."
@@ -931,12 +931,12 @@ const HEROES = [
    n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
    role: "Duelist", roleCol: "#9fb4d6",
    hp: 200, sp: 125, col: 0x8d97a8, cd: 0.5,
-   a1n:"Shield Guard", a1cd: 9.0, a1cdSquire: 7.0, a1d:"Armor only: guard for 2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage becomes Riposte (max 40); movement is 20% slower, and the first-person sword swaps to a shield. Squire form: Dagger Feint, a 70-unit sidestep with no invulnerability (7s cooldown).",
+   a1n:"Shield Guard", a1cd: 10.0, a1cdSquire: 7.0, a1d:"Armor only: guard for 2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Riposte (max 40); movement is 20% slower. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with no invulnerability.",
    a2n:"Riposte Lunge", a2cd: 8.0,
-   ad:"Longsword: a 3-hit combo (14 / 14 / 24 damage); the finisher lunges about 40 units and has 0.8s recovery. The combo resets after 0.9s.", a2d:"Armor only: make a real lunge up to 90 units and strike for 20 + stored Riposte (max 60), with no stun. Charge is spent on activation, even on a miss.",
+   ad:"Longsword: 3-hit combo for 14 / 14 / 24 damage. The third hit lunges 40 units; the combo resets after 0.9s.", a2d:"Armor only: lunge up to 90 units for 20 + stored Riposte (max 60). Charge is spent on use, even on a miss. No stun.",
    melee: true, atkRange: 70, ab1Range: 130, ab2Range: 100,
-   passive:"Hollow Armor: when his 200 HP armor breaks, Dentley survives as a 55 HP Squire, is knocked about 40 units away, and blasts enemies within 70 units for 25 damage with knockback. He gains 0.5s of damage grace (40% damage reduction). Squire moves at 210 speed, attacks with an 8-damage dagger, and cannot Riposte Lunge. Recover the dropped 100 HP armor husk by standing still within 35 units for 1s; it expires after 8s or can be destroyed. If lost, Dentley stays in Squire form. Re-arm with 70 HP.",
-   d:"A 200 HP armored duelist with a three-hit longsword combo, a frontal damage-blocking guard that stores Riposte, and a charging finisher. Breaking his armor leaves a fast Squire who must recover the dropped armor to return to full form.",
+   passive:"Hollow Armor: his armor breaks once. At 0 HP, Dentley becomes a 55 HP Squire and nearby foes take 25 damage with knockback. Squire gets 50% damage reduction for 0.7s, moves faster, and uses an 8-damage dagger. Stand still within 30 units of the dropped armor for 1.4s to re-arm with 70 HP; the husk expires after 8s or can be destroyed.",
+   d:"Armored duelist with a stored Riposte and one Squire recovery.",
  }
 ];
 
@@ -1954,7 +1954,7 @@ function createDentleyShieldViewmodel() {
 
 function syncDentleyViewmodel(entity) {
   if(viewmodelCi !== 6) return;
-  const guarding = !!(entity && entity.ci === 6 && entity.form === 0 && entity.guard > 0);
+  const guarding = dentleyGuardActive(entity);
   if(viewmodelHolder.wep) viewmodelHolder.wep.visible = !guarding;
   if(viewmodelHolder.shield) viewmodelHolder.shield.visible = guarding;
 }
@@ -2268,7 +2268,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null) {
     sporeAttacker: null,
     chain: null,                                   // Captain Oink's chain hook
     combatHistory: [], hitRewindMs: 0,
-    form: 0, combo: 0, comboT: 0, guard: 0, riposte: 0, grace: 0, chan: 0, husk: null, rearmed: false, feintDir: -1,
+    form: 0, combo: 0, comboT: 0, guard: 0, riposte: 0, grace: 0, chan: 0, husk: null, armorBreakUsed: false, feintDir: -1,
     mesh
   };
 }
@@ -2391,7 +2391,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
 
   if(t.ci === 6) { // Dentley: squire grace, Shield Guard
-    if(t.grace > 0) rawDmg *= 0.6;
+    if(t.grace > 0) rawDmg *= 0.5;
     if(t.guard > 0 && damageType !== "unblockable" && (!attacker || attacker !== t) &&
        Math.abs(Math.atan2(Math.sin(a + Math.PI - t.a), Math.cos(a + Math.PI - t.a))) <= 1.31) {
       const soaked = rawDmg * (damageType === "projectile" ? 0.75 : 0.60);
@@ -2435,7 +2435,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
     playHitConfirm();
   }
 
-  if(t.hp <= 0 && t.ci === 6 && t.form === 0) { breakArmor(t, a); return; } // armor breaks, Squire lives on
+  if(t.hp <= 0 && t.ci === 6 && t.form === 0 && !t.armorBreakUsed) { breakArmor(t, a); return; } // armor can break only once
   if(t.hp <= 0) {
     t.hp = 0;
     t.dead = true;
@@ -2566,7 +2566,12 @@ function shot(e, a, o) {
   }, o));
 }
 
+function dentleyGuardActive(e) {
+  return !!(e && e.ci === 6 && e.form === 0 && e.guard > 0);
+}
+
 function executeAttack(e) {
+  if(dentleyGuardActive(e)) return;
   const c = HEROES[e.ci];
   e.c1 = c.cd;
   Snd.play(c.melee ? "melee" : "shoot");
@@ -2590,6 +2595,7 @@ function executeAttack(e) {
 }
 
 function attack(e) {
+  if(dentleyGuardActive(e)) return;
   // Send the intent BEFORE executing locally so movement abilities (Blink, Backdraft)
   // aren't applied twice on remote machines from the post-move position.
   if(isMultiplayer) sendActionIntent("ATTACK", e.a, e.x, e.z);
@@ -2597,6 +2603,7 @@ function attack(e) {
 }
 
 function executeAbility1(e) {
+  if(dentleyGuardActive(e)) return;
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 1);
   if(e.ci === 6) { dentleyGuard(e, c); return; }
@@ -2704,11 +2711,13 @@ function executeAbility1(e) {
 }
 
 function ability1(e) {
+  if(dentleyGuardActive(e)) return;
   if(isMultiplayer) sendActionIntent("AB1", e.a, e.x, e.z);
   executeAbility1(e);
 }
 
 function executeAbility2(e) {
+  if(dentleyGuardActive(e)) return;
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 2);
   e.c3 = c.a2cd;
@@ -2789,6 +2798,7 @@ function executeAbility2(e) {
 }
 
 function ability2(e) {
+  if(dentleyGuardActive(e)) return;
   if(e.ci === 6 && e.form === 1) return; // the Squire has no Riposte Lunge
   if(isMultiplayer) sendActionIntent("AB2", e.a, e.x, e.z);
   executeAbility2(e);
@@ -4317,8 +4327,9 @@ function makeHuskMesh() {
 
 // Armor hits 0 HP: it bursts off and Dentley lives on as the Squire (host / solo only)
 function breakArmor(t, a) {
+  t.armorBreakUsed = true;
   t.form = 1; t.hp = 55; t.mhp = 55;
-  t.guard = 0; t.grace = 0.5; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
+  t.guard = 0; t.grace = 0.7; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
   t.kx = Math.cos(a) * 320; t.kz = Math.sin(a) * 320; // knocked ~40 units from the breaking hit
   const h = { id: "hk_" + Math.random().toString(36).slice(2, 8), x: t.x, z: t.z, hp: 100, life: 8, owner: t, mesh: makeHuskMesh() };
   h.mesh.position.set(t.x, 0, t.z);
@@ -4338,7 +4349,7 @@ function breakArmor(t, a) {
 
 function rearm(e) {
   const h = e.husk;
-  e.form = 0; e.rearmored = true; e.mhp = HEROES[6].hp; e.hp = 70; e.chan = 0; e.c2 = 0; e.husk = null;
+  e.form = 0; e.mhp = HEROES[6].hp; e.hp = 70; e.chan = 0; e.c2 = 0; e.husk = null;
   if(h) { disposeHierarchy(h.mesh); const i = Husks.indexOf(h); if(i >= 0) Husks.splice(i, 1); }
   spawn3DRing(e.x, e.z, 40, 0x9fc5ff);
   spawnDamageNumber(e.x, e.z, "RE-ARMORED", "#9fc5ff");
@@ -4358,11 +4369,11 @@ function updateHusks(dt) {
       Husks.splice(i, 1);
     }
   }
-  for(const e of E) { // re-armour channel: stand still within 35 units for 1s
+  for(const e of E) { // re-armour channel: stand still within 30 units for 1.4s
     if(e.ci !== 6 || e.form !== 1 || e.dead || !e.husk) { e.chan = 0; continue; }
-    if(Math.hypot(e.x - e.husk.x, e.z - e.husk.z) < 35 && e.moveSpd < 14 && e.stun <= 0) {
+    if(Math.hypot(e.x - e.husk.x, e.z - e.husk.z) < 30 && e.moveSpd < 14 && e.stun <= 0) {
       e.chan += dt;
-      if(e.chan >= 1) rearm(e);
+      if(e.chan >= 1.4) rearm(e);
     } else e.chan = 0;
   }
 }
@@ -5652,7 +5663,6 @@ Watch out: phasing is not invulnerability; keep Wisp damageable and unable to at
 
 
     --- NEXT MAJOR UPDATE ---
-
 
 - Balance Changes (make someone meta that wasn't before)
 - Make Bullets go in any direction of the mouse (vertical also).
