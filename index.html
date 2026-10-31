@@ -605,6 +605,16 @@ html, body {
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<style id="bb-nametags">
+.bb-ui-nametag{display:inline-block;width:200px;max-width:100%;height:auto;aspect-ratio:5/1;vertical-align:middle;object-fit:contain;flex-shrink:0}
+#intro-name .bb-ui-nametag,#bb-result-winner .bb-ui-nametag{width:300px}
+.bb-hero-label{display:block;font:700 11px Outfit,system-ui;color:#bdb8d1;margin-top:4px;letter-spacing:.3px}
+.stats-row>span:first-child{min-width:0}.stats-row .bb-ui-nametag{width:140px}
+.account-toolbar #account-summary{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
+#bb-result-winner{text-align:center;width:100%}.result-card{max-height:92vh;overflow:auto;max-width:660px}
+.kf-entry .bb-ui-nametag{width:140px}.kf-entry{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.bb-lobby-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:1020px;width:100%}
+</style>
 </head>
 <body>
 <div id="wrap">
@@ -741,7 +751,7 @@ const Store = {
   }
 };
 
-const ACCOUNT_STORAGE_KEY = "bb_accounts_v1";
+const ACCOUNT_STORAGE_KEY = "bb_account_single_v2";
 const SHINY_REWARDS = { daily: 25, kill: 10, win: 50 };
 const COSMETIC_HERO_COUNT = 7;
 const CRATE_RARITY_ODDS = [
@@ -878,6 +888,7 @@ function normalizeStoredProfile(profile) {
   const balance = Math.max(0, Math.floor(Number(profile && profile.shinies) || 0));
   return {
     id, username, shinies: balance, owned, equipped,
+    dailyChallenges: normalizeDailyChallenges(profile && profile.dailyChallenges),
     lastDailyDate: /^\d{4}-\d{2}-\d{2}$/.test(profile && profile.lastDailyDate || "") ? profile.lastDailyDate : ""
   };
 }
@@ -892,11 +903,40 @@ function loadAccountBook() {
       const key = profile.username.toLocaleLowerCase();
       if(!seen.has(key)) { unique.push(profile); seen.add(key); }
     }
-    return { activeId: unique.some(profile => profile.id === parsed.activeId) ? parsed.activeId : null, profiles: unique };
+    const only=unique.find(profile=>profile.id===parsed.activeId)||unique[0];
+    return {activeId:only?only.id:null,profiles:only?[only]:[]};
   } catch(e) { return { activeId: null, profiles: [] }; }
 }
 
+// One-time migration: retire the old multi-profile account book.
+const SINGLE_RESET_KEY = "bb_single_account_reset_20261031_v1";
+if(Store.get(SINGLE_RESET_KEY, "") !== "done") {
+  Store.set("bb_accounts_v1", JSON.stringify({activeId:null,profiles:[]}));
+  Store.set(ACCOUNT_STORAGE_KEY, JSON.stringify({activeId:null,profiles:[]}));
+  Store.set(SINGLE_RESET_KEY, "done");
+}
 let accountBook = loadAccountBook();
+
+const uiNametagCache = new Map();
+function usernameTagHTML(username, selection) {
+  const name=String(username || "Player"),ids=sanitizeCosmeticSelection(selection),key=JSON.stringify([name,ids]);
+  let image=uiNametagCache.get(key);
+  if(!image) {
+    image=drawNameplateCanvas(name,getNameplateStyle(ids)).toDataURL("image/png");
+    if(uiNametagCache.size>=160)uiNametagCache.delete(uiNametagCache.keys().next().value);
+    uiNametagCache.set(key,image);
+  }
+  return `<img class="bb-ui-nametag" src="${image}" alt="${escapeHtml(name)}" title="${escapeHtml(name)}">`;
+}
+function entityUsernameTag(entity) {
+  const local=entity && (entity.netId===myNetId || entity.id===myNetId),profile=local?activeProfile():null;
+  const fallback=entity && Number.isInteger(entity.ci) && HEROES[entity.ci]?HEROES[entity.ci].n:"Player";
+  return usernameTagHTML(profile?profile.username:entity && entity.username || fallback,profile?getNameplateCosmeticIds(profile):entity && entity.tagCosmetics);
+}
+function setNametagContent(element,html) {
+  if(element && element._bbTagHTML!==html){element.innerHTML=html;element._bbTagHTML=html;}
+}
+
 let economyModalView = "account";
 let economyModalRequired = false;
 let shopCategoryKey = "nameColors";
@@ -904,7 +944,11 @@ let lastCrateReveal = null;
 let activeCrateSpin = null;
 let crateSpinSerial = 0;
 let economyToastTimer = null;
-function saveAccountBook() { Store.set(ACCOUNT_STORAGE_KEY, JSON.stringify(accountBook)); }
+function saveAccountBook() {
+ accountBook.profiles=accountBook.profiles.slice(0,1);
+ accountBook.activeId=accountBook.profiles[0]?.id || null;
+ Store.set(ACCOUNT_STORAGE_KEY,JSON.stringify(accountBook));
+}
 function activeProfile() { return accountBook.profiles.find(profile => profile.id === accountBook.activeId) || null; }
 function activeUsername() { return activeProfile()?.username || "Player"; }
 function localDayKey() {
@@ -957,7 +1001,7 @@ function showEconomyToast(message) {
 function updateEconomyDisplays() {
   const profile = activeProfile();
   const summary = document.getElementById("account-summary");
-  if(summary) summary.textContent = profile ? `👤 ${profile.username} · ✨ ${profile.shinies} Shinies` : "Create a local account to save Shinies and cosmetics";
+  if(summary)setNametagContent(summary,profile?`${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))} · ✨ ${profile.shinies} Shinies`:"Create a local account to save Shinies and cosmetics");
   const currency = document.getElementById("hud-currency");
   if(currency) currency.textContent = `✨ ${profile ? profile.shinies : 0} Shinies`;
   const wallet = document.getElementById("economy-wallet");
@@ -989,52 +1033,23 @@ function claimDailyShinies() {
 
 function accountToolbarHTML() {
   const profile = activeProfile();
-  const summary = profile ? `👤 ${escapeHtml(profile.username)} · <span class="wallet">✨ ${profile.shinies} Shinies</span>` : "Create an account to save your Shinies";
-  return `<div class="account-toolbar"><span id="account-summary">${summary}</span><button class="lobby-btn" onclick="openAccountModal()">Account</button><button class="lobby-btn action-accent" onclick="openShop()">✨ Shinies Shop</button></div>`;
+  const summary = profile ? `👤 ${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))} · <span class="wallet">✨ ${profile.shinies} Shinies</span>` : "Create an account to save your Shinies";
+  return `<div class="account-toolbar"><span id="account-summary">${summary}</span><button class="lobby-btn" onclick="openAccountModal()">Account</button><button class="lobby-btn" onclick="openDailyChallenges()">📅 Daily Challenges</button><button class="lobby-btn action-accent" onclick="openShop()">✨ Shinies Shop</button></div>`;
 }
 
 function renderAccountModal() {
-  const profile = activeProfile();
-  const title = document.getElementById("economy-title");
-  const close = document.getElementById("economy-close");
-  const body = document.getElementById("economy-body");
-  title.textContent = profile ? "Account" : "Create Your Account";
-  close.style.display = economyModalRequired && !profile ? "none" : "";
-  if(!profile) {
-    body.innerHTML = `
-      <p class="economy-note">Choose a filtered username. Names are unique on this browser and in each lobby; your profile, Shinies, and purchases save in this browser.</p>
-      <form class="account-form" onsubmit="event.preventDefault(); createOrSwitchAccount();">
-        <input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="3–16 character username" aria-label="Username">
-        <button class="economy-action primary" type="submit">Create / Switch</button>
-      </form>
-      <div class="account-error" id="account-error"></div>
-      ${renderSavedProfiles()}
-    `;
-  } else {
-    body.innerHTML = `
-      <p class="economy-note">Signed in locally as <b>${escapeHtml(profile.username)}</b>. Shinies and cosmetics are saved on this browser. Lobby hosts reject duplicate names.</p>
-      <form class="account-form" onsubmit="event.preventDefault(); createOrSwitchAccount();">
-        <input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="Enter a new or saved username" aria-label="Username">
-        <button class="economy-action primary" type="submit">Create / Switch</button>
-        <button class="economy-action" type="button" onclick="renameCurrentAccount()">Rename Current</button>
-      </form>
-      <div class="account-error" id="account-error"></div>
-      <div class="economy-note">Saved profiles on this browser</div>
-      ${renderSavedProfiles()}
-    `;
-  }
-  body.querySelectorAll("[data-account-id]").forEach(button => {
-    button.onclick = () => switchAccount(button.dataset.accountId);
-  });
+ const profile=activeProfile();
+ document.getElementById("economy-title").textContent=profile?"Your Account":"Create Your Account";
+ document.getElementById("economy-close").style.display=economyModalRequired && !profile?"none":"";
+ document.getElementById("economy-body").innerHTML=profile?`
+ <div>${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))}</div>
+ <p class="economy-note">One account is saved in this browser. Rename it without losing Shinies, cosmetics, or challenge progress. Extra accounts and account switching are disabled.</p>
+ <form class="account-form" onsubmit="event.preventDefault(); renameCurrentAccount();"><input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" value="${escapeHtml(profile.username)}" aria-label="Username"><button class="economy-action primary" type="submit">Rename Account</button></form><div class="account-error" id="account-error"></div>`:`
+ <p class="economy-note">Old accounts have been reset for the single-account update. Create your one local account. Your new progress will save normally in this browser.</p>
+ <form class="account-form" onsubmit="event.preventDefault(); createOrSwitchAccount();"><input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="3–16 character username" aria-label="Username"><button class="economy-action primary" type="submit">Create Account</button></form><div class="account-error" id="account-error"></div>`;
 }
 
-function renderSavedProfiles() {
-  if(!accountBook.profiles.length) return "";
-  return `<div class="profile-list">${accountBook.profiles.map(profile => {
-    const active = profile.id === accountBook.activeId;
-    return `<button class="profile-choice ${active ? "active" : ""}" data-account-id="${escapeHtml(profile.id)}"><span>${escapeHtml(profile.username)}${active ? " · ACTIVE" : ""}</span><span>✨ ${profile.shinies}</span></button>`;
-  }).join("")}</div>`;
-}
+function renderSavedProfiles(){return "";}
 
 function showAccountError(message) {
   const el = document.getElementById("account-error");
@@ -1042,6 +1057,7 @@ function showAccountError(message) {
 }
 
 function activateAccount(profile) {
+ if(accountBook.profiles.length && accountBook.profiles[0].id!==profile.id)return false;
   if(sameLobbyName(profile.username, myNetId)) { showAccountError("That name is already used by someone in this lobby."); return false; }
   accountBook.activeId = profile.id;
   lastCrateReveal = null;
@@ -1056,6 +1072,8 @@ function activateAccount(profile) {
 }
 
 function createOrSwitchAccount() {
+ const saved=loadAccountBook();
+ if(saved.profiles.length){accountBook=saved;renderAccountModal();showAccountError("Only one account is allowed. Rename your current account instead.");return;}
   const input = document.getElementById("account-username-input");
   const result = validateUsername(input ? input.value : "");
   if(!result.ok) { showAccountError(result.error); return; }
@@ -1087,10 +1105,7 @@ function renameCurrentAccount() {
   updateEconomyDisplays();
 }
 
-function switchAccount(id) {
-  const profile = accountBook.profiles.find(candidate => candidate.id === id);
-  if(profile) activateAccount(profile);
-}
+function switchAccount(){renderAccountModal();}
 
 function cosmeticPreviewCss(categoryKey, item) {
   if(categoryKey === "nameColors") {
@@ -1229,7 +1244,7 @@ function renderEconomyModal() {
   const title = document.getElementById("economy-title");
   title.textContent = economyModalView === "shop" ? "Shinies Shop" : (activeProfile() ? "Account" : "Create Your Account");
   updateEconomyDisplays();
-  if(economyModalView === "shop") renderShopModal(); else renderAccountModal();
+  if(economyModalView === "shop")renderShopModal();else if(economyModalView==="daily")renderDailyChallenges();else renderAccountModal();
   modal.classList.add("show");
 }
 
@@ -1352,6 +1367,52 @@ window.closeEconomyModal = closeEconomyModal;
 window.createOrSwitchAccount = createOrSwitchAccount;
 window.renameCurrentAccount = renameCurrentAccount;
 window.openCosmeticCrate = openCosmeticCrate;
+
+
+const DAILY_POOL=[
+ {id:"play1",event:"matches",target:1,reward:30,text:"Finish 1 Quick Match"},
+ {id:"play3",event:"matches",target:3,reward:60,text:"Finish 3 Quick Matches"},
+ {id:"kill3",event:"kills",target:3,reward:40,text:"Get 3 Quick Match eliminations"},
+ {id:"kill6",event:"kills",target:6,reward:70,text:"Get 6 Quick Match eliminations"},
+ {id:"win1",event:"wins",target:1,reward:60,text:"Win 1 Quick Match"},
+ {id:"win2",event:"wins",target:2,reward:100,text:"Win 2 Quick Matches"}
+];
+function normalizeDailyChallenges(value){
+ const result={date:value && /^\d{4}-\d{2}-\d{2}$/.test(value.date)?value.date:"",progress:{},claimed:[]};
+ for(const key of ["kills","matches","wins"])result.progress[key]=Math.max(0,Math.floor(Number(value?.progress?.[key])||0));
+ result.claimed=Array.isArray(value?.claimed)?value.claimed.filter(id=>typeof id==="string"):[];return result;
+}
+function dailyState(profile=activeProfile()){
+ if(!profile)return null;
+ if(!profile.dailyChallenges || profile.dailyChallenges.date!==localDayKey()){
+ profile.dailyChallenges=normalizeDailyChallenges(null);profile.dailyChallenges.date=localDayKey();saveAccountBook();}
+ return profile.dailyChallenges;
+}
+function dailySelection(date=localDayKey()){
+ const day=Math.floor(Date.parse(date+"T00:00:00Z")/86400000);
+ return [DAILY_POOL[day%2],DAILY_POOL[2+Math.floor(day/2)%2],DAILY_POOL[4+Math.floor(day/4)%2]];
+}
+function progressDaily(event){
+ if(!matchIsQuickMatch || !pl || pl.netId!==myNetId || demoActive)return;
+ const daily=dailyState();if(!daily)return;daily.progress[event]=(daily.progress[event]||0)+1;saveAccountBook();
+}
+function claimDailyChallenge(id){
+ const profile=activeProfile(),daily=dailyState(profile),c=dailySelection().find(c=>c.id===id);
+ if(!daily || !c || daily.claimed.includes(id) || (daily.progress[c.event]||0)<c.target)return;
+ daily.claimed.push(id);profile.shinies+=c.reward;saveAccountBook();updateEconomyDisplays();
+ showEconomyToast(`Daily challenge: +${c.reward} Shinies`);renderDailyChallenges();
+}
+function renderDailyChallenges(){
+ const daily=dailyState(),profile=activeProfile(),next=new Date();next.setHours(24,0,0,0);
+ const minutes=Math.max(1,Math.ceil((next-Date.now())/60000));
+ document.getElementById("economy-title").textContent="Daily Challenges";
+ document.getElementById("economy-body").innerHTML=`${profile?usernameTagHTML(profile.username,getNameplateCosmeticIds(profile)):""}<p class="economy-note">Quick Matches only. Resets at local midnight, in ${Math.floor(minutes/60)}h ${minutes%60}m. Claim rewards before the reset.</p><div class="shop-grid">${daily?dailySelection().map(c=>{
+ const p=Math.min(c.target,daily.progress[c.event]||0),claimed=daily.claimed.includes(c.id);
+ return `<div class="shop-item"><div class="shop-item-name">${c.text}</div><div class="shop-item-price">✨ ${c.reward} Shinies</div><progress max="${c.target}" value="${p}" aria-label="${c.text}"></progress><span>${p} / ${c.target}</span><button class="economy-action primary" onclick="claimDailyChallenge('${c.id}')" ${claimed||p<c.target?"disabled":""}>${claimed?"CLAIMED":"CLAIM REWARD"}</button></div>`;
+ }).join(""):"Create an account first."}</div>`;
+}
+function openDailyChallenges(){if(!requireLocalAccount())return;economyModalView="daily";renderEconomyModal();}
+setInterval(()=>{if(document.getElementById("economy-modal").classList.contains("show") && economyModalView==="daily")renderDailyChallenges();},10000);
 
 // --- GRAPHICS PRESETS ---
 // scale = render resolution (1 = full). Lower presets also drop shadows, extra light, dust, sparks, glows and flame particles.
@@ -2048,7 +2109,7 @@ function makeTextSprite(message, color = "#ffffff", size = 32) {
   return sprite;
 }
 
-function makeNameplate(message, style = {}) {
+function drawNameplateCanvas(message, style = {}) {
   const tagStyle = style && typeof style === "object" ? style : { textColor: style };
   const can = document.createElement("canvas");
   can.width = 360; can.height = 72;
@@ -2134,11 +2195,12 @@ function makeNameplate(message, style = {}) {
     ctx.fillStyle = textGradient;
   } else ctx.fillStyle = textColor || "#ffffff";
   ctx.fillText(message, 180, 37);
-  const tex = new THREE.CanvasTexture(can);
-  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
-  const sprite = new THREE.Sprite(mat);
-  sprite.scale.set(25, 5, 1);
-  return sprite;
+  return can;
+}
+function makeNameplate(message,style={}) {
+ const tex=new THREE.CanvasTexture(drawNameplateCanvas(message,style));
+ const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true}));
+ sprite.scale.set(25,5,1);return sprite;
 }
 
 function showAnnouncer(message) {
@@ -2159,7 +2221,7 @@ function addKillFeed(attacker, victim, meta = {}) {
     el.classList.add("elimination");
     const k = HEROES[attacker.ci];
     const attackerName = attacker.username || `${k.e} ${k.n}`;
-    el.textContent = `${victimName} was eliminated by ${attackerName}`;
+    el.innerHTML=`${entityUsernameTag(victim)} <span>was eliminated by</span> ${entityUsernameTag(attacker)}`;
     if(meta.multi >= 2) {
       const callout = meta.multi === 2 ? "DOUBLE KILL" : meta.multi === 3 ? "TRIPLE KILL" : "MULTI-KILL";
       showAnnouncer(callout);
@@ -2168,7 +2230,7 @@ function addKillFeed(attacker, victim, meta = {}) {
     }
   } else {
     el.classList.add("storm");
-    el.textContent = `${victimName} was cooked by the storm`;
+    el.innerHTML=`${entityUsernameTag(victim)} <span>was cooked by the storm</span>`;
   }
   feed.appendChild(el);
   setTimeout(() => el.remove(), 4500);
@@ -3399,7 +3461,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
       attacker.killStreak++;
       attacker.lastKillTime = matchTime;
       killMeta = { streak: attacker.killStreak, multi: attacker.killChain };
-      if(matchIsQuickMatch && attacker.netId === myNetId) awardShinies(SHINY_REWARDS.kill, "Elimination");
+      if(matchIsQuickMatch && attacker.netId === myNetId) {awardShinies(SHINY_REWARDS.kill,"Elimination");progressDaily("kills");}
     }
     Snd.play("death");
     addKillFeed(attacker && attacker !== t ? attacker : null, t, killMeta);
@@ -4038,7 +4100,7 @@ function syncHUD() {
   const ab2LabelKey = controlScheme === "wasd" ? "[Q]" : "[/]";
 
   const playerName = targetEnt.username || (targetEnt === pl ? activeUsername() : `${c.e} ${c.n}`);
-  document.getElementById("hud-player-name").innerText = `${playerName} · ${c.n} ${isSpectating ? '(SPECTATING)' : ''}`;
+  setNametagContent(document.getElementById("hud-player-name"),`${entityUsernameTag(targetEnt)}<span class="bb-hero-label">${escapeHtml(c.n)} ${isSpectating?"(SPECTATING)":""}</span>`);
   document.getElementById("hud-currency").innerText = `✨ ${activeProfile() ? activeProfile().shinies : 0} Shinies`;
   document.getElementById("hud-player-hp").innerText = `HP: ${Math.ceil(targetEnt.hp)} / ${targetEnt.mhp}`;
   document.getElementById("hud-hp-fill").style.width = Math.max(0, (targetEnt.hp / targetEnt.mhp) * 100) + "%";
@@ -4061,6 +4123,8 @@ function syncHUD() {
 }
 
 function showResultScreen(isVictory, winnerId = null, stats = []) {
+ if(state === "result")return;
+ progressDaily("matches");if(isVictory)progressDaily("wins");
   const winShinies = isVictory && pl && matchIsQuickMatch ? awardShinies(SHINY_REWARDS.win, "Quick Match victory", false) : 0;
   state = "result";
   matchOver = true;
@@ -4078,7 +4142,11 @@ function showResultScreen(isVictory, winnerId = null, stats = []) {
   damageOverlay.style.opacity = 0;
   Snd.play(isVictory ? "win" : "lose");
 
-  const w = winnerId ? E.find(e => e.netId === winnerId) : null;
+  const w=winnerId?E.find(e=>e.netId===winnerId):null;
+ let winnerTag=document.getElementById("bb-result-winner");
+ if(!winnerTag){winnerTag=document.createElement("div");winnerTag.id="bb-result-winner";resultTitle.insertAdjacentElement("afterend",winnerTag);}
+ const winnerIdentity=stats.find(entry=>entry.id===winnerId)||w;
+ winnerTag.innerHTML=winnerIdentity?`<div class="bb-hero-label">${isVictory?"YOU WON":"ROUND WINNER"}</div>${entityUsernameTag(winnerIdentity)}`:"";
 
   if(!pl) {
     // Mid-round joiner: they watched as a spectator and join the fight next round
@@ -4108,7 +4176,7 @@ function showResultScreen(isVictory, winnerId = null, stats = []) {
           const c = HEROES[s.ci];
           const me = s.id === myNetId;
           const mm = Math.floor(s.t / 60), ss = String(s.t % 60).padStart(2, "0");
-          const playerName = escapeHtml(s.username || `${c.e} ${c.n}`);
+          const playerName=entityUsernameTag(s);
           return `<div class="stats-row ${me ? 'me' : ''}"><span>${medals[idx] || "🎖️"} ${playerName} · ${c.e} ${c.n}${me ? " (YOU)" : ""}</span><span>${s.k} K · ${s.d} DMG · ${mm}:${ss}</span></div>`;
         }).join("") + `</div>`
       : "";
@@ -4120,7 +4188,7 @@ function endMatch(winnerId, winnerTeam = null) {
   if(matchOver) return;
   matchOver = true;
   const stats = E.map(e => ({
-    id: e.netId, ci: e.ci, username: e.username, k: e.kills, d: Math.round(e.dmg),
+    id: e.netId, ci: e.ci, username: e.username, tagCosmetics: sanitizeCosmeticSelection(e.tagCosmetics), k: e.kills, d: Math.round(e.dmg),
     t: Math.round(e.dead ? (e.deathTime || 0) : matchTime), dead: e.dead
   }));
   if(isMultiplayer && isLobbyLeader) {
@@ -4543,7 +4611,7 @@ function handleIncomingData(conn, data) {
         ? (getRemoteActorByNetId(data.attackerId) || { ci: data.attackerCi, username: data.attackerName })
         : null;
       if(killer && !killer.username) killer.username = data.attackerName || null;
-      if(matchIsQuickMatch && data.attackerId === myNetId) awardShinies(SHINY_REWARDS.kill, "Elimination");
+      if(matchIsQuickMatch && data.attackerId === myNetId) {awardShinies(SHINY_REWARDS.kill,"Elimination");progressDaily("kills");}
       addKillFeed(killer, victim, { streak: data.streak || 0, multi: data.multi || 0 });
     }
   }
@@ -5511,6 +5579,7 @@ function menu(msg) {
     </div>
 
     ${accountToolbarHTML()}
+    ${isMultiplayer?`<div class="bb-lobby-tags">${roster.map(r=>entityUsernameTag(r)).join("")}</div>`:""}
 
     <div class="lobby-panel">
       ${!isMultiplayer ? `
@@ -5925,8 +5994,8 @@ function updateMatchIntro(dt) {
       if(e.mesh.hpGrp) e.mesh.hpGrp.lookAt(cameraHolder.position);
     }
     const hero = HEROES[current.ci];
-    introName.textContent = hero.n;
-    introMeta.textContent = (index + 1) + " / " + fighters.length + " · " + hero.role;
+    setNametagContent(introName,entityUsernameTag(current));
+    introMeta.textContent=hero.e+" "+hero.n+" · "+(index+1)+" / "+fighters.length+" · "+hero.role;
   }
 
   if(introElapsed >= duration) {
@@ -6600,6 +6669,12 @@ function loop(now) {
   else renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
+window.addEventListener("storage",event=>{
+ if(event.key!==ACCOUNT_STORAGE_KEY || !event.newValue)return;
+ accountBook=loadAccountBook();updateEconomyDisplays();
+ if(document.getElementById("economy-modal").classList.contains("show"))renderEconomyModal();
+});
+if(document.fonts && document.fonts.ready)document.fonts.ready.then(()=>{uiNametagCache.clear();updateEconomyDisplays();});
 // Initial launch
 currentRects = MAPS[0].rects;
 build3DMap(MAPS[0]);
@@ -6632,7 +6707,7 @@ requestAnimationFrame(loop);
 
 <!-- FUTURE CHAMPIONS
 
-MICA Â· Ranged
+MICA · Ranged
 
 Two ranged forms; switching never restores health.
 Skitter: 125 HP, speed 180. Chromadarts: 8 damage every 0.5 seconds (16 DPS).
@@ -6642,7 +6717,7 @@ Skitter Ability 2, PRISMATIC GLARE (9s): Mica releases a blinding flash in a 360
 Bastion Ability 2, FOCUSED PRISM (11s): charge a narrow, long-range beam with a clear wind-up (1s) and an obvious aim line (slows you down 25% while winding). A hit deals 50 damage, but the charge leaves Mica exposed.
 
 
-RICO Â· Ranged
+RICO · Ranged
 
 Ranged billiard-ball launcher. Basic cue balls ricochet twice.
 Rico: 170 HP, speed 150. Cue Ball: 15 damage every 1 second (15 DPS).
@@ -6650,7 +6725,7 @@ Ability 1, BUMPER (11s): places one bumper (5s lifetime); Rico's cue balls bounc
 Ability 2, BANK SHOT (9s): empowers the next shot to ricochet up to five times. Each ricochet adds 20% of base damage. The ability is consumed when fired, even if the shot misses.
 
 
-KAMO Â· Ranged
+KAMO · Ranged
 
 Kamo: 130 HP, speed 175. Weapon: TAG SPITTER, fast sticky globs, 10 damage every 0.5s (20 DPS), projectile speed 450.
 Each hit paints the target for 3s; only Kamo sees an outline through walls.
@@ -6659,7 +6734,7 @@ Ability 2, CAMOUFLAGE (14s cooldown, lasts 6s): Kamo goes invisible. While camou
 Watch out: keep the ambush bonus to the first hit and make the reveal, shimmer, and tongue readable.
 
 
-GRUFF Â· Melee 
+GRUFF · Melee 
 
 STONE TALONS, a fast two-hit rake, range 62, 13 damage every 0.6s (about 22 DPS).
 Gruff: 175 HP, speed 160.
@@ -6668,7 +6743,7 @@ Ability 2, SWOOP AND SLAM (13s): rise over 0.35s, hover up to 2.5s, and steer at
 When the timer ends (or you press Ability 2 again to cancel), Gruff drops straight down: radius 65, knockback 160, 0.4s stun, and Gruff gets 25% damage reduction for 1s. Damage scales with air time: bailing out at 0.4s deals 12; a full-time hover deals 26. Canceling early is a dodge, not a free hit.
 
 
-BOWLER Â· Ranged
+BOWLER · Ranged
 
 Throws a medium-range bowling ball on the ground, with small knockback on hit.
 Bowler: 205 HP, speed 130. Bowling Ball: 25 damage every 1.25 seconds (20 DPS).
@@ -6678,37 +6753,37 @@ Ability 2, STRIKE (12s): pressing the ability button brings up a trajectory indi
 
 ------------
 
-GRAVEL Â· Ranged (MAYBE?)
+GRAVEL · Ranged (MAYBE?)
 HP 215, speed 120. Weapon: PEBBLE PITCH, a lobbed stone, 20 damage every 0.9s (about 22 DPS), range ~280.
 Ability 1, RAISE WALL (11s): a 70x16 slab erupts 60 units ahead (0.4s rise) and lasts 6s or until it reaches 100 HP. Blocks movement, line of sight, and projectiles. Anyone standing on its footprint is shoved aside.
 Ability 2, QUAKE (15s): ground pound, radius 150. Every MAP obstacle in range sinks into the floor for 6s (walkable, sight lines open), and enemies in range take 12 damage and a 0.5s stun. He rearranges the arena mid-fight: strip a sniper's perch, flush Mycelis out of her hiding spot.
 Needs: dynamic obstacles. The outer arena walls never sink.
 
 
-JACKPOT Â· Ranged (MAYBE!)
-HP 160, speed 150. Weapon: LUCKY REVOLVER. Every shot flips a coin: HEADS 20 damage, TAILS 6 damage, 0.6s cooldown, and the shot after a TAILS is always HEADS (pity rule). Average â‰ˆ 26 DPS. A coin icon on the HUD shows the last flip.
+JACKPOT · Ranged (MAYBE!)
+HP 160, speed 150. Weapon: LUCKY REVOLVER. Every shot flips a coin: HEADS 20 damage, TAILS 6 damage, 0.6s cooldown, and the shot after a TAILS is always HEADS (pity rule). Average ≈ 26 DPS. A coin icon on the HUD shows the last flip.
 Ability 1, ROLL THE DICE (11s): roll a d6 that floats over Jackpot so everyone sees it. 1 snake eyes: take 15 damage. 2: slowed for 2s. 3: heal 25. 4: +35% speed for 4s. 5: absorb the next 40 damage. 6 JACKPOT: heal 40, speed boost, and the next 3 shots are guaranteed heads.
 Ability 2, ALL IN (17s): wager 20% of your current HP. For 6s, every shot is heads and +20% damage. Get a kill during it, and you heal back double the wager; reach the end without one and the wager is gone.
 Why it's fun: high-variance party energy that's readable to everyone.
 Watch out: clearly show the die result and test the kill refund and stacked damage carefully.
 
 
-GRIM Â· Melee (MAYBE)
-HP 150, speed 160. Weapon: SCYTHE, a wide arc (range 75, 90Â° wide), 20 damage every 0.9s = 22 DPS. REAP: against enemies under 25% HP, the scythe deals double damage.
+GRIM · Melee (MAYBE)
+HP 150, speed 160. Weapon: SCYTHE, a wide arc (range 75, 90° wide), 20 damage every 0.9s = 22 DPS. REAP: against enemies under 25% HP, the scythe deals double damage.
 Passive, SOUL HARVEST: whenever ANYONE dies (storm deaths count), a wisp drifts out. Collect up to 5; each gives +5% damage and +5 speed.
 Ability 1, SHADE STEP (9s): for 1.4s, Grim becomes a shadow: untargetable, +40% speed, can walk through enemies (not walls).
 Ability 2, DEATH'S MARK (15s): mark one enemy in view for 6s. You see them through walls (HUD arrow) and they can't be healed (no kill-heal, no pickups). Killing the marked target refunds half of both cooldowns.
 
 
-COSMO Â· Ranged (MAYBE!)
+COSMO · Ranged (MAYBE!)
 HP 170, speed 145. Passive: three moons orbit Cosmo (radius 28). Each moon blocks ONE incoming projectile and then goes dark for 5s (they never block your view or your shots). Enemies touching a moon take 6 damage and a small shove every 0.6s (anti-melee).
-Weapon: MOON LAUNCHER fires a moon (24 damage, pierces, flies 0.9s), 0.7s cooldown. A launched moon only returns 3.5s later, so ammo IS defense: shoot all three, and you're exposed. Burst â‰ˆ 34 DPS, sustained â‰ˆ 20 DPS (limited by moons).
+Weapon: MOON LAUNCHER fires a moon (24 damage, pierces, flies 0.9s), 0.7s cooldown. A launched moon only returns 3.5s later, so ammo IS defense: shoot all three, and you're exposed. Burst ≈ 34 DPS, sustained ≈ 20 DPS (limited by moons).
 Ability 1, MOON TAG: requires a ready orbiting moon, and only one Moon Tag can be active at a time. Shoot one moon at the enemy in Cosmo's crosshair. The moon cannot be broken, homes in on that enemy, and floats above them. Click Ability 1 again to drop the moon onto the target for 24 damage and a 1.1s stun. After the hit, the moon goes dark, returns to Cosmo, and takes its normal 5s recovery before orbiting again. If the target dies before the second click, the moon returns without hitting and takes the same recovery.
 Ability 2, GRAVITY WELL (13s): after a visible 0.5s wind-up, creates a medium-sized well that pulls enemies toward the center for 5s and slows them by 25%.
 Why it's fun: send a moon to protect a teammate, then use the gravity field to shape where the next fight happens. Each deployed moon trades Cosmo's own defense for team control.
 
 
-MIME  Â· Ranged (MAYBE)
+MIME  · Ranged (MAYBE)
 HP 150, speed 165. Weapon: AIR JAB, a short-range compressed-air strike, 14 damage every 0.7s.
 Ability 1, INVISIBLE WALLS (10s): place one 90x12 wall for 4s. It blocks movement and projectiles for both teams. It is invisible at a distance and shimmers for everyone when touched. When revealed, it can be destroyed (60 HP).
 Ability 2, IMITATE (14s): For 6s, store the last hostile Ability 1 or Ability 2 that hits Mime. Reactivate to copy its basic effect at 70% strength or duration. The source and timer are shown to everyone. Passives, transformations, global effects and summons cannot be copied. With no stored ability, Imitate is unavailable.
@@ -6716,7 +6791,7 @@ Why it's fun: the wall is the defining trick, while Imitate makes opponents thin
 Watch out: keep the wall discoverable through collision feedback, and make copied abilities readable.
 
 
-REF Â· Ranged (MAYBE)
+REF · Ranged (MAYBE)
 HP 170, speed 150. Weapon: WHISTLE DART, 13 damage every 0.65s (20 DPS).
 Passive, CHALK LINE: when Ref marks a player, a visible line connects them for 3s. Enemies crossing it are slowed by 25% for 1s.
 Ability 1, RED CARD (10s): throw a red card at one player. A hit marks them for 4s; the Ref's next hit on them deals +25% damage and consumes the mark.
@@ -6725,7 +6800,7 @@ Why it's fun: he can isolate a target for a damage bonus, then use a whistle to 
 Watch out: the whistle only affects nearby enemies, not the whole match.
 
 
-GHOST Â· Ranged (MAYBE?)
+GHOST · Ranged (MAYBE?)
 HP 145, speed 180. Weapon: GHOSTFIRE, 13 damage every 0.7s (about 19 DPS), medium range.
 Ability 1, PHASE WALK (12s): for 1.5s, Wisp phases through map obstacles but not the arena boundary. Wisp cannot attack or use abilities while phasing and remains damageable. Leaves a visible haunting trail; enemies crossing it are slowed by 25% for 0.8s.
 Ability 2, HAUNT (13s): send a slow spirit through walls toward a target point up to 240 units away. It bursts in a visible 70-unit circle for 12 damage and briefly outlines enemies hit for Wisp. It does not pass through the outer arena wall.
