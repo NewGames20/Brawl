@@ -4131,7 +4131,7 @@ function syncHUD() {
 }
 
 function showResultScreen(isVictory, winnerId = null, stats = []) {
-  if(matchOver) return;
+  if(state === "result") return;
   progressDaily("matches");
   if(isVictory) progressDaily("wins");
   const winShinies = isVictory && pl && matchIsQuickMatch ? awardShinies(SHINY_REWARDS.win, "Quick Match victory", false) : 0;
