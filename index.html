@@ -4274,7 +4274,7 @@ function acceptRoundChoice(id,data){
  renderRoundVote();broadcastRoundVote();return true;
 }
 function sendRoundChoice(action,value){
- if(!roundVote){if(action==="ready"&&value&&isMultiplayer&&!isLobbyLeader){pendingRoundReady=true;const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;c.send({type:"ROUND_CHOICE",id:myNetId,seq:outgoingSeq,action:"request"});}}return;}const packet={type:"ROUND_CHOICE",id:myNetId,roundId:roundVote.id,action};if(action==="vote")packet.choice=value;if(action==="hero"){packet.hero=Number(value);p1HeroChoice=Number(value);}if(action==="ready")packet.ready=!!value;
+ if(!roundVote){if(isMultiplayer&&!isLobbyLeader){if(action==="ready"&&value)pendingRoundReady=true;const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;const packet={type:"ROUND_CHOICE",id:myNetId,seq:outgoingSeq,action:"request",choice:action==="vote"?value:undefined,hero:action==="hero"?Number(value):undefined,ready:action==="ready"?!!value:undefined};c.send(packet);}}return;}if(roundVote.pending&&isMultiplayer&&!isLobbyLeader){if(action==="vote")roundVote.votes[myNetId]=value;if(action==="hero"){roundVote.heroes[myNetId]=Number(value);p1HeroChoice=Number(value);}if(action==="ready")roundVote.ready[myNetId]=!!value;const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;c.send({type:"ROUND_CHOICE",id:myNetId,seq:outgoingSeq,roundId:roundVote.id,action:"request",choice:action==="vote"?value:undefined,hero:action==="hero"?Number(value):undefined,ready:action==="ready"?!!value:undefined});}renderRoundVote();return;}const packet={type:"ROUND_CHOICE",id:myNetId,roundId:roundVote.id,action};if(action==="vote")packet.choice=value;if(action==="hero"){packet.hero=Number(value);p1HeroChoice=Number(value);}if(action==="ready")packet.ready=!!value;
  if(!isMultiplayer||isLobbyLeader)acceptRoundChoice(myNetId,packet);else{const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;packet.seq=outgoingSeq;c.send(packet);}}
 }
 function requestRematch(){
@@ -4501,7 +4501,7 @@ function handleIncomingData(conn, data) {
     return;
   }
 
-  if(data.type==="ROUND_CHOICE"){if(!isLobbyLeader||data.id!==conn.peer)return;if(data.action==="request"){if(state!=="menu"&&state!=="result")return;if(!roundVote)beginRoundVote(false);if(roundVote)acceptRoundChoice(conn.peer,{...data,roundId:roundVote.id,action:"ready",ready:true});return;}acceptRoundChoice(conn.peer,data);return;}
+  if(data.type==="ROUND_CHOICE"){if(!isLobbyLeader||data.id!==conn.peer)return;if(data.action==="request"){if(state!=="menu"&&state!=="result")return;if(!roundVote)beginRoundVote(false);if(!roundVote)return;const roundId=roundVote.id;if(data.choice===-1||data.choice===0||data.choice===1)acceptRoundChoice(conn.peer,{...data,roundId,action:"vote"});if(Number.isInteger(data.hero))acceptRoundChoice(conn.peer,{...data,roundId,action:"hero"});if(typeof data.ready==="boolean")acceptRoundChoice(conn.peer,{...data,roundId,action:"ready"});return;}acceptRoundChoice(conn.peer,data);return;}
  if(data.type==="ROUND_STATE"){
  if(isLobbyLeader||conn.peer!==leaderId||data.id!==leaderId||typeof data.roundId!=="string")return;if(state!=="menu"&&state!=="result")return;
   roundVote={id:data.roundId,endsAt:Date.now()+Math.max(0,Math.min(6000,Number(data.remaining)||0)),votes:data.votes&&typeof data.votes==="object"?data.votes:{},ready:data.ready&&typeof data.ready==="object"?data.ready:{},heroes:data.heroes&&typeof data.heroes==="object"?data.heroes:{},chosen:Number.isInteger(data.chosen)&&MAPS[data.chosen]?data.chosen:null,allowLateVotes:!!data.allowLateVotes};renderRoundVote();if(pendingRoundReady){pendingRoundReady=false;sendRoundChoice("ready",true);}return;
@@ -4714,6 +4714,12 @@ function handleIncomingData(conn, data) {
     const iWon = data.winnerId === myNetId ||
       (data.winnerTeam != null && data.winnerTeam !== undefined && pl && pl.team === data.winnerTeam);
     showResultScreen(iWon, data.winnerId, data.stats || []);
+    if(!roundVote) {
+      const ready=Object.create(null),heroes=Object.create(null);
+      for(const r of roundMembers()){ready[r.id]=false;heroes[r.id]=r.id===myNetId?p1HeroChoice:r.hero;}
+      roundVote={id:"pending_"+myNetId+"_"+Date.now(),endsAt:Date.now()+6000,votes:Object.create(null),ready,heroes,chosen:null,allowLateVotes:true,pending:true};
+      renderRoundVote();
+    }
   }
   else if(data.type === "ACTION_INTENT") {
     if(hostVisibilityPaused) return;
@@ -5973,6 +5979,8 @@ function launchVotedMatch() {
     };
   });
 
+  launchMeshMatch(spawnMap, heroMap, identityMap, !!(quickMatchHosted || lobbyIsQuickMatch));
+
   outgoingSeq++;
   broadcastToPeers({
     type: "START_GAME",
@@ -5984,7 +5992,6 @@ function launchVotedMatch() {
     seq: outgoingSeq
   });
 
-  launchMeshMatch(spawnMap, heroMap, identityMap, !!(quickMatchHosted || lobbyIsQuickMatch));
 };
 
 function launchMeshMatch(spawnMap, heroMap = {}, identityMap = {}, quickMatch = false) {
