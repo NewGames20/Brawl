@@ -142,29 +142,6 @@ html, body {
   letter-spacing: 0.5px; margin-top: 2px; min-height: 16px;
 }
 
-.champion-update {
-  width: min(100%, 880px);
-  flex-shrink: 0;
-  padding: 12px 18px;
-  border: 1px solid rgba(255, 138, 77, 0.4);
-  border-left: 4px solid #ff8a4d;
-  border-radius: 12px;
-  background: linear-gradient(120deg, rgba(65, 29, 22, 0.94), rgba(18, 17, 24, 0.96));
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
-}
-.champion-update-title {
-  color: #ffb58c;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 1.6px;
-  margin-bottom: 5px;
-}
-.champion-update p {
-  color: var(--text-main);
-  font-size: 14px;
-  line-height: 1.5;
-}
-.champion-update-teaser { color: #ffd08d; font-weight: 800; }
 
 .gfx-selector .tab-btn { padding: 4px 10px; font-size: 11px; }
 .map-selector, .control-selector, .gfx-selector {
@@ -269,6 +246,7 @@ html, body {
   border-color: var(--good) !important;
   box-shadow: 0 0 0 1px var(--good), 0 0 20px rgba(69, 217, 136, 0.35);
 }
+.hero-card.random-card { border-style: dashed; border-color: rgba(255,209,102,0.55); }
 .hc-check {
   position: absolute; top: 6px; right: 6px;
   width: 18px; height: 18px; border-radius: 50%;
@@ -385,7 +363,7 @@ html, body {
   display: none; color: #ffb4a8; text-transform: uppercase; letter-spacing: 1.5px;
 }
 
-#hud-cooldowns { position: absolute; bottom: 26px; left: 24px; display: flex; gap: 10px; }
+#hud-cooldowns { position: absolute; bottom: 26px; left: 24px; display: flex; flex-direction: row-reverse; gap: 10px; }
 .cd-bar {
   width: 132px; height: 36px; border-radius: 10px;
   background: rgba(15, 14, 20, 0.88); border: 1px solid rgba(255,255,255,0.18);
@@ -450,13 +428,6 @@ html, body {
 }
 .result-btn:hover { transform: translateY(-2px); filter: brightness(1.12); }
 
-#minimap {
-  position: absolute; bottom: 26px; right: 24px;
-  background: rgba(15, 14, 20, 0.85);
-  border: 1px solid var(--border); border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.55);
-  z-index: 5; pointer-events: none;
-}
 #killfeed {
   position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
   display: flex; flex-direction: column; gap: 4px; align-items: center;
@@ -500,15 +471,14 @@ html, body {
       <span id="room-badge">ARENA ZONE</span>
       <span id="storm-timer-disp">STORM: 460m</span>
     </div>
-    <canvas id="minimap" width="170" height="115"></canvas>
     <div id="killfeed"></div>
     <div id="announcer" aria-live="polite"></div>
     <div id="match-intro"><div id="intro-eyebrow">CHAMPION SPOTLIGHT</div><div id="intro-name"></div><div id="intro-meta"></div></div>
     <div id="emote-wheel" aria-hidden="true">
-      <div class="emote-option selected" data-dir="up"><b>HA!</b>TAUNT</div>
-      <div class="emote-option" data-dir="right"><b>LOL</b>LAUGH</div>
-      <div class="emote-option" data-dir="down"><b>GG</b>SALUTE</div>
-      <div class="emote-option" data-dir="left"><b>EEK!</b>PANIC</div>
+      <div class="emote-option" data-dir="up"></div>
+      <div class="emote-option" data-dir="right"></div>
+      <div class="emote-option" data-dir="down"></div>
+      <div class="emote-option" data-dir="left"></div>
       <div id="emote-hint">MOVE MOUSE · RELEASE T</div>
     </div>
     <div id="hud-cooldowns">
@@ -565,6 +535,8 @@ const announcer = document.getElementById("announcer");
 const emoteWheel = document.getElementById("emote-wheel");
 
 let p1HeroChoice = 0;
+const RANDOM_HERO = -1; // "Random" pick: resolved only when the match starts
+function resolveHero(c) { return c === RANDOM_HERO ? Math.floor(Math.random() * HEROES.length) : c; }
 let controlScheme = "wasd"; // 'wasd' or 'arrows'
 let screenShake = 0;
 let damageVignetteT = 0;
@@ -848,7 +820,7 @@ const Snd = {
   abilityCue(heroIndex, slot) {
     const cues = [
       ["melee", "ability"], ["ability", "hitconfirm"], ["bounce", "ability"],
-      ["flame", "ability"], ["beep", "go"], ["ability", "beep"]
+      ["flame", "ability"], ["beep", "go"], ["ability", "beep"], ["bounce", "melee"]
     ];
     const cue = (cues[heroIndex] || cues[0])[slot - 1];
     this.play(cue);
@@ -878,7 +850,7 @@ function disposeHierarchy(node) {
 // --- HERO ATTRIBUTES ---
 const HEROES = [
  {
-   n:"Bruno the Bear", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
+   n:"Bruno", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
    hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
    a1n:"Slam", a1cd: 11.0, a1d:"Shockwave slam that stuns foes.",
@@ -887,7 +859,7 @@ const HEROES = [
    melee: true, d:"High health tank. Heavy hammer deflects incoming shots."
  },
  {
-   n:"Captain Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
+   n:"Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
    hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
    a1n:"Chain Hook", a1cd: 11.5, a1d:"Throw a chain forward (you're invulnerable). Wall: you zip to it. Foe: yank them to you, stunned. Miss: you're exposed while it reels in.",
@@ -905,7 +877,7 @@ const HEROES = [
    melee: false, d:"Agile skirmisher with returning banana curves and traps."
  },
  {
-   n:"Chef Sizzle", e:"🧑‍🍳", w:"🍝", wn:"Culinary Meatball Cannon",
+   n:"Sizzle", e:"🧑‍🍳", w:"🍝", wn:"Culinary Meatball Cannon",
    role: "Sniper", roleCol: "#d44722",
    hp: 130, sp: 155, col: 0xededed, cd: 1.1,
    a1n:"Marinara", a1cd: 7.5, a1d:"Sauce pool placed ahead that slows & burns.",
@@ -930,6 +902,16 @@ const HEROES = [
    a2n:"Root Entangle", a2cd: 9.0,
    ad:"Spore bolt that inflicts lingering blight.", a2d:"Overgrowth projectile that immobilizes enemies on impact.",
    melee: false, d:"Blight shaman wielding lingering spore poisons and root binds."
+ },
+ {
+   n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
+   role: "Duelist", roleCol: "#9fb4d6",
+   hp: 200, sp: 125, col: 0x8d97a8, cd: 0.5,
+   a1n:"Shield Guard", a1cd: 9.0, a1d:"Raise your shield for 1.4s: blocks 65% of projectiles and 50% of melee/zone damage from the front, storing it as Riposte. Squire form: Dagger Feint, a quick sidestep.",
+   a2n:"Riposte Lunge", a2cd: 8.0,
+   ad:"3-hit combo (14 / 14 / 24); the finisher lunges forward.", a2d:"Lunge up to 90 units for 20 + stored Riposte. Armor only.",
+   melee: true, atkRange: 70, ab1Range: 130, ab2Range: 100,
+   d:"Armored duelist. When his armor breaks, a speedy Squire must win it back.",
  }
 ];
 
@@ -1103,15 +1085,11 @@ const K = {}, M = { down: 0 };
 let P1_ab1 = 0, P1_ab2 = 0;
 let emoteWheelOpen = false, emoteSelection = 0;
 let emoteVector = { x: 0, y: 0 };
-const EMOTES = [
-  { label: "TAUNT", text: "HA!", color: "#ffd166" },
-  { label: "LAUGH", text: "LOL", color: "#ffe66d" },
-  { label: "SALUTE", text: "GG", color: "#72e6a6" },
-  { label: "PANIC", text: "EEK!", color: "#ff8b8b" }
-];
+const EMOTES = []; // add { label, text, color } entries here (up to 4) to fill the emote wheel
 
 function setEmoteSelection(index) {
-  emoteSelection = ((index % EMOTES.length) + EMOTES.length) % EMOTES.length;
+  if(!Number.isInteger(index) || index < 0 || index >= EMOTES.length) return;
+  emoteSelection = index;
   if(!emoteWheel) return;
   emoteWheel.querySelectorAll(".emote-option").forEach((option, i) => option.classList.toggle("selected", i === emoteSelection));
 }
@@ -1123,9 +1101,10 @@ function setEmoteSelectionFromVector(x, y) {
 }
 
 function openEmoteWheel() {
-  if(emoteWheelOpen || !emoteWheel || state !== "play" || isSpectating || !pl || pl.dead) return;
+  if(emoteWheelOpen || !emoteWheel || !EMOTES.length || state !== "play" || isSpectating || !pl || pl.dead) return;
   emoteWheelOpen = true;
   emoteVector = { x: 0, y: 0 };
+  renderEmoteWheel();
   setEmoteSelection(0);
   emoteWheel.classList.add("open");
   emoteWheel.setAttribute("aria-hidden", "false");
@@ -1702,6 +1681,15 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
     const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.1, 32, 12), woodMat);
     shaft.position.y = 8;
     root.add(shaft);
+  } else if(heroIndex === 6) {
+    const steel = new THREE.MeshStandardMaterial({ color: 0xcfd6e2, metalness: 0.9, roughness: 0.2 });
+    const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 9, 8), new THREE.MeshStandardMaterial({ color: 0x4a3020, roughness: 0.7 }));
+    grip.position.y = 4;
+    const guard = new THREE.Mesh(new THREE.BoxGeometry(11, 1.6, 2.4), steel);
+    guard.position.y = 9.5;
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(3.2, 30, 0.9), steel);
+    blade.position.y = 25;
+    root.add(grip, guard, blade);
   }
   return root;
 }
@@ -1779,6 +1767,27 @@ function addHeroDetails(grp, headGrp, heroIndex) {
       dot.position.set(Math.cos(a) * 5.8, 9.4, Math.sin(a) * 5.8);
       headGrp.add(dot);
     }
+  } else if(heroIndex === 6) { // Dentley: plumed helm, pauldrons, shield (hidden once he is down to his Squire)
+    const steel = M(0x9aa3b4, { metalness: 0.85, roughness: 0.32 });
+    const helm = new THREE.Mesh(new THREE.SphereGeometry(9.6, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.62), steel);
+    helm.position.y = 0.6;
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(8, 1.6, 1), new THREE.MeshBasicMaterial({ color: 0x07080c }));
+    visor.position.set(0, 1.8, 9.6);
+    const plume = new THREE.Mesh(new THREE.BoxGeometry(2.2, 6, 9), M(0xc0392b));
+    plume.position.set(0, 11.5, -1);
+    headGrp.add(helm, visor, plume);
+    const pads = [-1, 1].map(sx => {
+      const p = new THREE.Mesh(new THREE.SphereGeometry(5.2, 10, 8), steel);
+      p.position.set(sx * 13.5, 24, 0);
+      grp.add(p);
+      return p;
+    });
+    const shield = new THREE.Mesh(new THREE.BoxGeometry(15, 22, 2.4), M(0x3a6ea5, { metalness: 0.6, roughness: 0.35 }));
+    shield.position.set(-10, 16, 13);
+    shield.visible = false;
+    grp.add(shield);
+    grp.shield = shield;
+    grp.armorParts = [helm, visor, plume, ...pads];
   }
 }
 
@@ -2089,6 +2098,7 @@ function updateWorldCrate(dt) {
 let E = [], P = [], F = [], Pickups = [], Zones = [], DamageNumbers = [];
 let worldCrate = null, remoteCrateVisual = null, remoteCrateId = null, crateSpawnTimer = 0;
 let state = "menu", pl = null;
+let Husks = [];
 let itemSpawnTimer = 0, countdown = 3.0;
 
 // --- MENU DEMO MODE: live bot battle behind the menu, orbiting camera, champion showcase ---
@@ -2171,6 +2181,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null) {
     sporeAttacker: null,
     chain: null,                                   // Captain Oink's chain hook
     combatHistory: [], hitRewindMs: 0,
+    form: 0, combo: 0, comboT: 0, guard: 0, riposte: 0, grace: 0, chan: 0, husk: null, rearmed: false, feintDir: -1,
     mesh
   };
 }
@@ -2213,6 +2224,7 @@ function getCombatPosition(target, attacker = null) {
 }
 
 function blocked(x, z, r) {
+  for(const h of Husks) if(Math.hypot(x - h.x, z - h.z) < 14 + r) return true;
   if(x < B+r || z < B+r || x > W-B-r || z > H-B-r) return true;
   for(const [rx, ry, rw, rh] of currentRects) {
     const cx = Math.max(rx, Math.min(x, rx+rw));
@@ -2234,6 +2246,10 @@ function hasLOS(x1, z1, x2, z2) {
 }
 
 function pushCollisions(e) {
+  for(const h of Husks) {
+    const dx = e.x - h.x, dz = e.z - h.z, d = Math.hypot(dx, dz), m = 14 + e.r;
+    if(d < m) { e.x = h.x + (d > 0 ? dx / d : 1) * m; e.z = h.z + (d > 0 ? dz / d : 0) * m; }
+  }
   e.x = Math.max(B+e.r, Math.min(W-B-e.r, e.x));
   e.z = Math.max(B+e.r, Math.min(H-B-e.r, e.z));
 
@@ -2281,12 +2297,23 @@ function damageSourceColor(attacker, target) {
   return (HEROES[attacker.ci] && HEROES[attacker.ci].roleCol) || "#ff5544";
 }
 
-function hurt(t, rawDmg, a, kb, attacker = null) {
+function hurt(t, rawDmg, a, kb, attacker = null, blk = 0.5) {
   if(t.dead) return;
   if(isMultiplayer && !isLobbyLeader) return;
   if(t.chain && t.chain.inv) return; // Captain Oink is invulnerable while his chain is out / hooking
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
 
+  if(t.ci === 6) { // Dentley: squire grace, Shield Guard
+    if(t.grace > 0) rawDmg *= 0.6;
+    if(t.guard > 0 && blk > 0 && attacker && attacker !== t &&
+       Math.abs(Math.atan2(Math.sin(a + Math.PI - t.a), Math.cos(a + Math.PI - t.a))) <= 1.31) {
+      const soaked = rawDmg * blk;
+      rawDmg -= soaked;
+      t.riposte = Math.min(40, t.riposte + soaked);
+      if(soaked >= 1) spawnSparks(t.x, t.z, 0x9fc5ff, 3);
+    }
+    t.chan = 0; // any damage interrupts re-armouring
+  }
   t.hp -= rawDmg;
   if(attacker && attacker !== t && rawDmg > 0) attacker.dmg += rawDmg;
   t.fl = 0.12;
@@ -2321,6 +2348,7 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
     playHitConfirm();
   }
 
+  if(t.hp <= 0 && t.ci === 6 && t.form === 0) { breakArmor(t, a); return; } // armor breaks, Squire lives on
   if(t.hp <= 0) {
     t.hp = 0;
     t.dead = true;
@@ -2364,7 +2392,7 @@ function hurt(t, rawDmg, a, kb, attacker = null) {
   }
 }
 
-function melee(e, rng, d, kb) {
+function melee(e, rng, d, kb, noReflect) {
   e.swing = 0.25;
   spawn3DRing(e.x, e.z, rng, 0xffb042);
   if(isMultiplayer && !isLobbyLeader) return;
@@ -2378,7 +2406,7 @@ function melee(e, rng, d, kb) {
         da = Math.atan2(Math.sin(da), Math.cos(da));
         if(Math.abs(da) < 1.15 && hasLOS(e.x, e.z, targetPos.x, targetPos.z) && areEnemies(e, t)) {
           hurt(t, d, Math.atan2(dz, dx), kb, e);
-          t.slow = 0.7;
+          if(!noReflect) t.slow = 0.7;
         }
       }
     }
@@ -2389,7 +2417,14 @@ function melee(e, rng, d, kb) {
     let da = Math.atan2(dz, dx) - e.a; da = Math.atan2(Math.sin(da), Math.cos(da));
     if(d < rng + c.r && Math.abs(da) < 1.15 && hasLOS(e.x, e.z, c.x, c.z)) damageWorldCrate(35, e);
   }
-  reflect(e, rng);
+  if(!isMultiplayer || isLobbyLeader) {
+    for(const h of Husks) {
+      const hx = h.x - e.x, hz = h.z - e.z;
+      let ha = Math.atan2(hz, hx) - e.a; ha = Math.atan2(Math.sin(ha), Math.cos(ha));
+      if(h.owner !== e && Math.hypot(hx, hz) < rng + 14 && Math.abs(ha) < 1.15) { h.hp -= d; spawnSparks(h.x, h.z, 0xaab2c0, 3); }
+    }
+  }
+  if(!noReflect) reflect(e, rng);
 }
 
 function reflect(e, r) {
@@ -2448,7 +2483,9 @@ function executeAttack(e) {
   const c = HEROES[e.ci];
   e.c1 = c.cd;
   Snd.play(c.melee ? "melee" : "shoot");
-  if(c.melee) {
+  if(e.ci === 6) {
+    dentleyAttack(e);
+  } else if(c.melee) {
     melee(e, 80, 30, 360);
   } else if(e.ci === 1) {
     for(let i = -2; i <= 2; i++) {
@@ -2475,6 +2512,7 @@ function attack(e) {
 function executeAbility1(e) {
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 1);
+  if(e.ci === 6) { dentleyGuard(e, c); return; }
   if(e.ci === 0) {
     e.c2 = c.a1cd;
     shakeIfNearby(e.x, e.z, 7, 145);
@@ -2587,6 +2625,7 @@ function executeAbility2(e) {
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 2);
   e.c3 = c.a2cd;
+  if(e.ci === 6) { dentleyLunge(e); return; }
   if(e.ci === 0) {
     e.chargeT = 0.32;
     e.chargeVx = Math.cos(e.a) * 460;
@@ -2663,6 +2702,7 @@ function executeAbility2(e) {
 }
 
 function ability2(e) {
+  if(e.ci === 6 && e.form === 1) return; // the Squire has no Riposte Lunge
   if(isMultiplayer) sendActionIntent("AB2", e.a, e.x, e.z);
   executeAbility2(e);
 }
@@ -2847,8 +2887,11 @@ function updateAI(e, dt) {
 
   const distFromCenter = Math.hypot(e.x - W/2, e.z - H/2);
   const ringDanger = distFromCenter > stormRadius - 35;
+  const seekHusk = e.ci === 6 && e.form === 1 && e.husk && e.husk.life > 1.2;
+  if(seekHusk) { nearestPickup = e.husk; bestPickDist = Math.hypot(e.husk.x - e.x, e.husk.z - e.z); }
 
   if(ringDanger) e.ai.state = "RUN_CENTER";
+  else if(seekHusk) e.ai.state = "SEEK_HEAL";
   else if(isLowHP && nearestPickup && bestPickDist < 360 && Math.random() < 0.72 * e.ai.pickupBias) e.ai.state = "SEEK_HEAL";
   else if(isLowHP && Math.random() < (0.78 - e.ai.risk * 0.62)) e.ai.state = "RETREAT";
   else if(e.ai.currentTarget) e.ai.state = "FIGHT";
@@ -2922,6 +2965,7 @@ function syncHUD() {
   if(!targetEnt) return;
   const c = HEROES[targetEnt.ci];
   
+  const sq = targetEnt.ci === 6 && targetEnt.form === 1;
   const ab1LabelKey = controlScheme === "wasd" ? "[E]" : "[R-SHIFT]";
   const ab2LabelKey = controlScheme === "wasd" ? "[Q]" : "[/]";
 
@@ -2934,14 +2978,14 @@ function syncHUD() {
     document.getElementById("cd1-fill").style.width = (remainRatio * 100) + "%";
     document.getElementById("cd1-label").innerText = `${ab1LabelKey} POD ACTIVE`;
   } else {
-    const cd1Prog = targetEnt.c2 <= 0 ? 1 : Math.max(0, (1 - targetEnt.c2 / c.a1cd));
+    const cd1Prog = targetEnt.c2 <= 0 ? 1 : Math.max(0, (1 - targetEnt.c2 / (sq ? 7 : c.a1cd)));
     document.getElementById("cd1-fill").style.width = (cd1Prog * 100) + "%";
-    document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${c.a1n}`;
+    document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${sq ? "Dagger Feint" : c.a1n}`;
   }
 
-  const cd2Prog = targetEnt.c3 <= 0 ? 1 : (1 - targetEnt.c3 / c.a2cd);
+  const cd2Prog = sq ? 0 : targetEnt.c3 <= 0 ? 1 : (1 - targetEnt.c3 / c.a2cd);
   document.getElementById("cd2-fill").style.width = (cd2Prog * 100) + "%";
-  document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${c.a2n}`;
+  document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${sq ? "No Armor" : c.a2n}`;
 
   stormTimerDisp.innerText = `STORM: ${Math.round(stormRadius)}m`;
 }
@@ -3230,7 +3274,7 @@ function handleIncomingData(conn, data) {
   }
 
   if(data.type === "HELLO") {
-    const hero = Number.isInteger(data.hero) && data.hero >= 0 && data.hero < HEROES.length ? data.hero : 0;
+    const hero = Number.isInteger(data.hero) && data.hero >= RANDOM_HERO && data.hero < HEROES.length ? data.hero : 0;
     let r = roster.find(x => x.id === data.id);
     if(!r) {
       // Seat check happens again here so two simultaneous joiners can't overfill the lobby
@@ -3293,7 +3337,7 @@ function handleIncomingData(conn, data) {
   else if(data.type === "START_GAME") {
     if(quickMatchRooms) return; // still joining — ignore games we haven't been admitted to
     selectedMapIndex = Number.isInteger(data.mapIndex) && MAPS[data.mapIndex] ? data.mapIndex : 0;
-    launchMeshMatch(data.spawns && typeof data.spawns === "object" ? data.spawns : {});
+    launchMeshMatch(data.spawns && typeof data.spawns === "object" ? data.spawns : {}, data.heroes && typeof data.heroes === "object" ? data.heroes : {});
   }
   else if(data.type === "CLIENT_INPUT") {
     if(!isLobbyLeader || data.id !== conn.peer ||
@@ -3315,6 +3359,7 @@ function handleIncomingData(conn, data) {
           // Local hit feedback + death handling from the authoritative host state
           if(item.hp < pl.hp && !pl.dead) applyLocalHitFeedback(pl.hp - item.hp);
           pl.hp = item.hp;
+          pl.mhp = item.mh || pl.mhp; pl.form = item.fm || 0;
           // Replicate host-applied status effects so stuns/slows/poison actually stop a client
           pl.stun = Math.max(pl.stun, item.st || 0);
           pl.slow = Math.max(pl.slow, item.sl || 0);
@@ -3349,6 +3394,7 @@ function handleIncomingData(conn, data) {
         ent.targetA = item.a;
         ent.targetP = item.p || 0;
         ent.hp = item.hp;
+        ent.mhp = item.mh || ent.mhp; ent.form = item.fm || 0;
         ent.dead = item.dead;
         ent.stun = item.st || 0;
         ent.slow = item.sl || 0;
@@ -3357,6 +3403,7 @@ function handleIncomingData(conn, data) {
     }
     syncRemotePickups(data.pickups || []);
     syncRemoteCrate(data.crate || null);
+    syncRemoteHusks(data.husks || []);
     // Authoritative storm state (keeps mid-round spectators in sync with the host)
     if(data.storm !== undefined) stormRadius = data.storm;
   }
@@ -3448,13 +3495,15 @@ setInterval(() => {
       sb: e.speedBoost > 0 ? e.speedBoost : 0,
       kx: Math.round(e.kx),
       kz: Math.round(e.kz),
-      kl: e.killedBy
+      kl: e.killedBy,
+      fm: e.form, mh: e.mhp
     }));
     broadcastToPeers({
       type: "SNAPSHOT",
       seq: outgoingSeq,
       entities: snapEntities,
       pickups: Pickups.map(pk => ({ id: pk.uid, k: pk.kind, x: pk.x, z: pk.z })),
+      husks: Husks.map(h => ({ id: h.id, x: h.x, z: h.z, hp: h.hp, l: h.life })),
       crate: worldCrate ? { id:worldCrate.id, x:worldCrate.x, z:worldCrate.z, hp:worldCrate.hp, bombT:worldCrate.bombT, exploded:!!worldCrate.exploded } : null,
       storm: Math.round(stormRadius)
     });
@@ -4095,13 +4144,188 @@ window.selectControlScheme = function(scheme) {
   });
   const foot = document.getElementById("footer-controls-text");
   if(foot) {
-    foot.innerHTML = controlScheme === "wasd" 
-      ? '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">WASD</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">E</span> Ability 1</span> · <span><span class="key-badge">Q</span> Ability 2</span> · <span><span class="key-badge">HOLD T</span> Emotes</span>'
-      : '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">ARROWS</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">R-SHIFT</span> Ability 1</span> · <span><span class="key-badge">/</span> Ability 2</span> · <span><span class="key-badge">HOLD T</span> Emotes</span>';
+    foot.innerHTML = controlsHTML();
   }
 };
 
+// --- DENTLEY: Hollow Armor, Squire & Husk ---
+function dentleyAttack(e) {
+  if(e.form === 1) { e.c1 = 0.3; melee(e, 50, 8, 40, true); return; } // Squire dagger
+  if(!(e.comboT > 0)) e.combo = 0;
+  const n = e.combo;
+  e.combo = (n + 1) % 3; e.comboT = 0.9;
+  e.c1 = n === 2 ? 0.8 : 0.5;
+  if(n === 2) {
+    for(let i = 0; i < 5; i++) { // the third swing lunges 40 units
+      const nx = e.x + Math.cos(e.a) * 8, nz = e.z + Math.sin(e.a) * 8;
+      if(blocked(nx, nz, e.r)) break;
+      e.x = nx; e.z = nz;
+    }
+  }
+  melee(e, 70, n === 2 ? 24 : 14, n === 2 ? 220 : 90, true);
+}
+
+function dentleyGuard(e, c) {
+  if(e.form === 0) { // Shield Guard
+    e.c2 = c.a1cd; e.guard = 1.4;
+    spawn3DRing(e.x, e.z, 26, 0x9fc5ff);
+    return;
+  }
+  e.c2 = 7; e.feintDir = -e.feintDir; // Squire: Dagger Feint sidestep
+  const sa = e.a + Math.PI / 2 * e.feintDir;
+  for(let i = 0; i < 7; i++) {
+    const nx = e.x + Math.cos(sa) * 10, nz = e.z + Math.sin(sa) * 10;
+    if(blocked(nx, nz, e.r)) break;
+    e.x = nx; e.z = nz;
+  }
+  e.c1 = Math.max(e.c1, 0.2);
+  spawn3DRing(e.x, e.z, 22, 0xcfd8ea);
+}
+
+function dentleyLunge(e) {
+  if(e.form === 1) { e.c3 = 0; return; } // the Squire has no armor to lunge with
+  const dmg = 20 + e.riposte;
+  e.riposte = 0; // charge is spent even if the lunge misses
+  spawn3DRing(e.x, e.z, 30, 0xcfd8ea);
+  let hit = null;
+  for(let i = 0; i < 15 && !hit; i++) {
+    const nx = e.x + Math.cos(e.a) * 6, nz = e.z + Math.sin(e.a) * 6;
+    if(blocked(nx, nz, e.r)) break;
+    e.x = nx; e.z = nz;
+    for(const t of E) {
+      if(t !== e && !t.dead && areEnemies(e, t) && Math.hypot(t.x - e.x, t.z - e.z) < e.r + t.r + 6) { hit = t; break; }
+    }
+  }
+  if(hit && (!isMultiplayer || isLobbyLeader)) hurt(hit, dmg, e.a, 220, e);
+  spawn3DRing(e.x, e.z, 30, 0xcfd8ea);
+}
+
+function makeHuskMesh() {
+  const g = new THREE.Group();
+  const m = new THREE.MeshStandardMaterial({ color: 0x7c8696, metalness: 0.8, roughness: 0.4 });
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(10, 12, 26, 12), m);
+  body.position.y = 13; body.castShadow = true;
+  const helm = new THREE.Mesh(new THREE.SphereGeometry(8.5, 12, 10), m);
+  helm.position.y = 32;
+  const slit = new THREE.Mesh(new THREE.BoxGeometry(8, 1.4, 1), new THREE.MeshBasicMaterial({ color: 0x0a0a10 }));
+  slit.position.set(0, 32, 8);
+  g.add(body, helm, slit);
+  return g;
+}
+
+// Armor hits 0 HP: it bursts off and Dentley lives on as the Squire (host / solo only)
+function breakArmor(t, a) {
+  t.form = 1; t.hp = 55; t.mhp = 55;
+  t.guard = 0; t.grace = 0.5; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
+  t.kx = Math.cos(a) * 320; t.kz = Math.sin(a) * 320; // knocked ~40 units from the breaking hit
+  const h = { id: "hk_" + Math.random().toString(36).slice(2, 8), x: t.x, z: t.z, hp: 100, life: 8, owner: t, mesh: makeHuskMesh() };
+  h.mesh.position.set(t.x, 0, t.z);
+  scene.add(h.mesh);
+  Husks.push(h); t.husk = h;
+  spawn3DRing(t.x, t.z, 70, 0xcfd8ea);
+  spawnSparks(t.x, t.z, 0xcfd8ea, 14);
+  spawnDamageNumber(t.x, t.z, "ARMOR BROKEN", "#cfd8ea");
+  shakeIfNearby(t.x, t.z, 8, 200);
+  Snd.play("crate");
+  for(const o of E) {
+    if(o !== t && !o.dead && areEnemies(t, o) && Math.hypot(o.x - t.x, o.z - t.z) < 70 + o.r) {
+      hurt(o, 25, Math.atan2(o.z - t.z, o.x - t.x), 140, t);
+    }
+  }
+}
+
+function rearm(e) {
+  const h = e.husk;
+  e.form = 0; e.rearmored = true; e.mhp = HEROES[6].hp; e.hp = 70; e.chan = 0; e.c2 = 0; e.husk = null;
+  if(h) { disposeHierarchy(h.mesh); const i = Husks.indexOf(h); if(i >= 0) Husks.splice(i, 1); }
+  spawn3DRing(e.x, e.z, 40, 0x9fc5ff);
+  spawnDamageNumber(e.x, e.z, "RE-ARMORED", "#9fc5ff");
+  Snd.play("pickup");
+}
+
+function updateHusks(dt) {
+  const auth = !isMultiplayer || isLobbyLeader;
+  if(!auth) return; // clients receive husks through snapshots
+  for(let i = Husks.length - 1; i >= 0; i--) {
+    const h = Husks[i];
+    h.life -= dt;
+    if(h.life <= 0 || h.hp <= 0) {
+      if(h.owner && h.owner.husk === h) h.owner.husk = null;
+      spawnSparks(h.x, h.z, 0xaab2c0, 8);
+      disposeHierarchy(h.mesh);
+      Husks.splice(i, 1);
+    }
+  }
+  for(const e of E) { // re-armour channel: stand still within 35 units for 1s
+    if(e.ci !== 6 || e.form !== 1 || e.dead || !e.husk) { e.chan = 0; continue; }
+    if(Math.hypot(e.x - e.husk.x, e.z - e.husk.z) < 35 && e.moveSpd < 14 && e.stun <= 0) {
+      e.chan += dt;
+      if(e.chan >= 1) rearm(e);
+    } else e.chan = 0;
+  }
+}
+
+function syncRemoteHusks(list) {
+  const seen = new Set();
+  for(const s of list) {
+    seen.add(s.id);
+    let h = Husks.find(x => x.id === s.id);
+    if(!h) {
+      h = { id: s.id, x: s.x, z: s.z, hp: s.hp, life: s.l, owner: null, mesh: makeHuskMesh() };
+      h.mesh.position.set(s.x, 0, s.z);
+      scene.add(h.mesh);
+      Husks.push(h);
+    }
+    h.hp = s.hp; h.life = s.l;
+  }
+  for(let i = Husks.length - 1; i >= 0; i--) {
+    if(!seen.has(Husks[i].id)) { disposeHierarchy(Husks[i].mesh); Husks.splice(i, 1); }
+  }
+}
+
+function makeMysterySprite() {
+  const can = document.createElement("canvas");
+  can.width = 128; can.height = 128;
+  const ctx = can.getContext("2d");
+  ctx.font = "900 112px 'Space Grotesk', system-ui";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.shadowColor = "#ffb347"; ctx.shadowBlur = 18;
+  ctx.fillStyle = "#ffe08a";
+  ctx.fillText("?", 64, 68);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(can), transparent: true }));
+  s.scale.set(34, 34, 1);
+  return s;
+}
+
+function renderEmoteWheel() {
+  if(!emoteWheel) return;
+  emoteWheel.querySelectorAll(".emote-option").forEach((option, i) => {
+    const em = EMOTES[i];
+    option.innerHTML = em ? "<b>" + em.text + "</b>" + em.label : "EMPTY";
+    option.style.opacity = em ? "1" : "0.35";
+  });
+}
+
+function controlsHTML() {
+  const k = t => '<span class="key-badge">' + t + '</span>';
+  const keys = controlScheme === "wasd" ? ["WASD", "E", "Q"] : ["ARROWS", "R-SHIFT", "/"];
+  const parts = [
+    "<span>" + k("MOUSE") + " Look</span>", "<span>" + k(keys[0]) + " Move</span>",
+    "<span>" + k("L-CLICK") + " Attack</span>", "<span>" + k(keys[1]) + " Ability 1</span>",
+    "<span>" + k(keys[2]) + " Ability 2</span>"
+  ];
+  if(EMOTES.length) parts.push("<span>" + k("HOLD T") + " Emotes</span>");
+  return parts.join(" · ");
+}
+
 function champDetailHTML(ci) {
+  if(ci === RANDOM_HERO) return `
+    <div class="cd-hero">
+      <span class="cd-emoji">🎲</span>
+      <div><div class="cd-name">Random Champion</div><div class="cd-role" style="color:#ffd166;">Mystery · ???</div></div>
+      <div class="cd-tag">YOUR CHAMPION</div>
+    </div>
+    <div class="cd-weapon">❓ <b>Who will you be?</b> — You won't find out until the match begins. Every match rolls a new champion!</div>`;
   const c = HEROES[ci];
   const hpPct = Math.min(100, Math.round(c.hp / 240 * 100));
   const spPct = Math.min(100, Math.round(c.sp / 190 * 100));
@@ -4146,11 +4370,6 @@ function menu(msg) {
       <div class="tagline">Pick a champion · Survive the shrinking storm · Last one standing wins</div>
       <div class="subtitle">${msg}</div>
     </div>
-
-    <aside class="champion-update" aria-label="Champion update">
-      <div class="champion-update-title">CHAMPION UPDATE</div>
-      <p>A huge new update is coming soon with a new champion. <span class="champion-update-teaser">Watch out for an honorable gentleman!</span></p>
-    </aside>
 
     <div class="lobby-panel">
       ${!isMultiplayer ? `
@@ -4213,9 +4432,7 @@ function menu(msg) {
         <div class="champ-detail" id="champ-detail">${champDetailHTML(p1HeroChoice)}</div>
         <div class="footer-bar">
           <span id="footer-controls-text">
-            ${controlScheme === 'wasd' 
-              ? '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">WASD</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">E</span> Ability 1</span> · <span><span class="key-badge">Q</span> Ability 2</span> · <span><span class="key-badge">HOLD T</span> Emotes</span>'
-              : '<span><span class="key-badge">MOUSE</span> Look</span> · <span><span class="key-badge">ARROWS</span> Move</span> · <span><span class="key-badge">L-CLICK</span> Attack</span> · <span><span class="key-badge">R-SHIFT</span> Ability 1</span> · <span><span class="key-badge">/</span> Ability 2</span> · <span><span class="key-badge">HOLD T</span> Emotes</span>'}
+            ${controlsHTML()}
           </span>
           <span style="color:#45d988">⚔️ Kills restore 15% Max HP</span>
         </div>
@@ -4223,10 +4440,16 @@ function menu(msg) {
     </div>
   `;
 
+  const heroGrid = ov.querySelector(".hero-grid");
+  if(heroGrid) {
+    const rnd = p1HeroChoice === RANDOM_HERO;
+    heroGrid.insertAdjacentHTML("beforeend", '<div class="hero-card random-card ' + (rnd ? 'chosen' : '') + '" data-i="' + RANDOM_HERO + '" style="--rc:#ffd166;"><div class="hc-check">' + (rnd ? '✓' : '') + '</div><div class="hc-emoji">🎲</div><div class="hc-name">Random</div><div class="hc-role" style="color:#ffd166;">Mystery</div><div class="hc-stats"><span>❤ ???</span><span>⚡ ???</span></div></div>');
+  }
   ov.querySelectorAll(".hero-card").forEach(b => {
     b.onclick = () => {
       p1HeroChoice = +b.dataset.i;
-      ov.querySelectorAll(".hero-card").forEach((card, ci) => {
+      ov.querySelectorAll(".hero-card").forEach(card => {
+        const ci = +card.dataset.i;
         card.classList.toggle("chosen", ci === p1HeroChoice);
         const check = card.querySelector(".hc-check");
         if(check) check.textContent = ci === p1HeroChoice ? "✓" : "";
@@ -4293,6 +4516,8 @@ function clearSceneEntities() {
   worldCrate = null; crateSpawnTimer = 10 + Math.random() * 10;
   if(remoteCrateVisual) disposeHierarchy(remoteCrateVisual);
   remoteCrateVisual = null; remoteCrateId = null;
+  for(const h of Husks) disposeHierarchy(h.mesh);
+  Husks = [];
   E = []; P = []; F = []; Zones = []; Pickups = []; DamageNumbers = [];
   for(const s of SparkPool) { s.life = 0; s.m.visible = false; }
 }
@@ -4359,13 +4584,19 @@ function rebuildShowcase() {
   const glowRingGeo = new THREE.RingGeometry(26, 29, 30);
   glowRingGeo.rotateX(-Math.PI / 2);
   const glowRing = new THREE.Mesh(glowRingGeo, new THREE.MeshBasicMaterial({
-    color: HEROES[p1HeroChoice].roleCol, transparent: true, opacity: 0.75, side: THREE.DoubleSide
+    color: p1HeroChoice === RANDOM_HERO ? "#ffd166" : HEROES[p1HeroChoice].roleCol, transparent: true, opacity: 0.75, side: THREE.DoubleSide
   }));
   glowRing.position.y = 5.4;
   podium.add(glowRing);
-  const model = createDetailedHeroModel(p1HeroChoice, false, true);
-  model.scale.set(1.55, 1.55, 1.55);
-  podium.add(model);
+  if(p1HeroChoice === RANDOM_HERO) {
+    const q = makeMysterySprite();
+    q.position.y = 38;
+    podium.add(q);
+  } else {
+    const model = createDetailedHeroModel(p1HeroChoice, false, true);
+    model.scale.set(1.55, 1.55, 1.55);
+    podium.add(model);
+  }
   const baseY = centerObstacleHeight();
   podium.position.set(W/2, baseY, H/2);
   podium.userData.baseY = baseY;
@@ -4397,9 +4628,10 @@ window.launchSoloMatch = function() {
 
   const spawns = shuffle(SPAWNS);
 
-  E = [mk(p1HeroChoice, spawns[0][0], spawns[0][1], 1, myNetId)];
+  const myHero = resolveHero(p1HeroChoice);
+  E = [mk(myHero, spawns[0][0], spawns[0][1], 1, myNetId)];
   pl = E[0];
-  setupViewmodel(p1HeroChoice);
+  setupViewmodel(myHero);
 
   const botCount = Math.floor(Math.random() * 3) + 2;
   for(let i = 1; i <= botCount; i++) {
@@ -4421,19 +4653,22 @@ window.startLobbyMatch = function() {
   roster.forEach((r, idx) => {
     spawnMap[r.id] = spawns[idx % spawns.length];
   });
+  const heroMap = {}; // the host rolls Random picks so every player sees the same champions
+  roster.forEach(r => { heroMap[r.id] = resolveHero(r.hero); });
 
   outgoingSeq++;
   broadcastToPeers({
     type: "START_GAME",
     mapIndex: selectedMapIndex,
     spawns: spawnMap,
+    heroes: heroMap,
     seq: outgoingSeq
   });
 
-  launchMeshMatch(spawnMap);
+  launchMeshMatch(spawnMap, heroMap);
 };
 
-function launchMeshMatch(spawnMap) {
+function launchMeshMatch(spawnMap, heroMap = {}) {
   clearSceneEntities();
   teamMode = false;
   const chosenMap = MAPS[selectedMapIndex];
@@ -4446,11 +4681,12 @@ function launchMeshMatch(spawnMap) {
   roster.forEach(r => {
     const sp = spawnMap[r.id] || [W/2, H/2];
     const isMe = (r.id === myNetId);
-    const ent = mk(r.hero, sp[0], sp[1], isMe ? 1 : 2, r.id);
+    const hv = Number.isInteger(heroMap[r.id]) && HEROES[heroMap[r.id]] ? heroMap[r.id] : resolveHero(r.hero);
+    const ent = mk(hv, sp[0], sp[1], isMe ? 1 : 2, r.id);
     E.push(ent);
     if(isMe) {
       pl = ent;
-      setupViewmodel(r.hero);
+      setupViewmodel(hv);
     }
   });
 
@@ -4702,7 +4938,6 @@ function upd(dt) {
       Snd.play("go");
       centerMsg.style.display = "none";
     }
-    drawMinimap();
     return;
   }
 
@@ -4826,6 +5061,8 @@ function upd(dt) {
     }
   }
 
+  updateHusks(dt);
+
   // ENTITIES
   for(const e of E) {
     if(e.dead) {
@@ -4861,7 +5098,7 @@ function upd(dt) {
       }
     }
 
-    e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt;
+    e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt; e.guard -= dt; e.comboT -= dt; e.grace -= dt;
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
     e.emoteCooldown = Math.max(0, e.emoteCooldown - dt);
     if(e.emoteT > 0) {
@@ -4880,7 +5117,7 @@ function upd(dt) {
     if(e.sporePoison > 0) {
       const tickDamage = (15 / 3.0) * dt;
       e.sporePoison -= dt;
-      hurt(e, tickDamage, 0, 0, e.sporeAttacker);
+      hurt(e, tickDamage, 0, 0, e.sporeAttacker, 0);
     }
 
     if(e.ci !== 5 || !e.activePod) {
@@ -4927,9 +5164,9 @@ function upd(dt) {
       ab1 = P1_ab1;
       ab2 = P1_ab2;
 
-      const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
+      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
-      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
+      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? 0.8 : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       e.x += (mx/l) * s * dt;
       e.z += (mz/l) * s * dt;
@@ -4939,9 +5176,9 @@ function upd(dt) {
       if(ab2 && e.c3 <= 0) ability2(e);
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
-      const baseSpd = HEROES[e.ci].sp * (e.speedBoost > 0 ? 1.35 : 1.0);
+      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
-      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0);
+      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? 0.8 : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       e.x += (mx/l) * s * dt;
       e.z += (mz/l) * s * dt;
@@ -5000,6 +5237,12 @@ function upd(dt) {
         e.mesh.teamRing.material.opacity = 0.4 + Math.sin(matchTime * 3 + (e.bobPhase || 0)) * 0.16;
       }
 
+      if(e.mesh.armorParts) { // Dentley: armor / Squire look
+        const sq = e.form === 1;
+        for(const part of e.mesh.armorParts) part.visible = !sq;
+        if(e.mesh.shield) e.mesh.shield.visible = e.guard > 0 && !sq;
+        e.mesh.scale.setScalar(sq ? 0.82 : 1);
+      }
       const ratio = Math.max(0, e.hp / e.mhp);
       e.mesh.hpBar.scale.x = ratio;
       e.mesh.hpBar.position.x = -13 * (1 - ratio);
@@ -5038,6 +5281,13 @@ function upd(dt) {
     p.mesh.position.set(p.x, 14, p.z);
     p.mesh.rotation.y = p.rot;
 
+    if(!finalize && p.out && (!isMultiplayer || isLobbyLeader)) {
+      for(const h of Husks) {
+        if(h.owner !== p.o && Math.hypot(h.x - p.x, h.z - p.z) < 19) {
+          h.hp -= p.d || 8; spawnSparks(h.x, h.z, 0xaab2c0, 3); finalize = true; break;
+        }
+      }
+    }
     // Wall handling: boomerangs switch to their return phase, ricochet balls bank,
     // everything else dies (with its onDeath firing exactly once at finalize)
     if(!finalize && p.out && blocked(p.x, p.z, 2)) {
@@ -5063,7 +5313,7 @@ function upd(dt) {
            && areEnemies(p.o, t)
            && Math.hypot(targetPos.x - p.x, targetPos.z - p.z) < t.r + 9) {
           p.hit.add(t);
-          hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o);
+          hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o, 0.65);
           if(p.t !== "b") {
             finalize = true;
             break; // a terminating hit stops further collisions this frame
@@ -5112,59 +5362,6 @@ function upd(dt) {
     } else demoResetTimer = 0;
   }
 
-  drawMinimap();
-}
-
-// --- MINIMAP ---
-const minimapCanvas = document.getElementById("minimap");
-function drawMinimap() {
-  if(!minimapCanvas || hud.style.display === "none") return;
-  const ctx = minimapCanvas.getContext("2d");
-  const sx = minimapCanvas.width / W, sz = minimapCanvas.height / H;
-
-  ctx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
-  ctx.fillStyle = "rgba(10, 9, 14, 0.55)";
-  ctx.fillRect(0, 0, minimapCanvas.width, minimapCanvas.height);
-
-  // Walls
-  ctx.fillStyle = "rgba(255,255,255,0.3)";
-  for(const [rx, ry, rw, rh] of currentRects) {
-    ctx.fillRect(rx * sx, ry * sz, rw * sx, rh * sz);
-  }
-
-  // Storm circle
-  ctx.strokeStyle = "rgba(255,85,68,0.9)";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(W/2 * sx, H/2 * sz, stormRadius * sx, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // Pickups (host has the authoritative list; clients use synced meshes)
-  ctx.fillStyle = "#ffd000";
-  for(const pk of Pickups) {
-    ctx.beginPath();
-    ctx.arc(pk.x * sx, pk.z * sz, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  for(const [, m] of remotePickupMeshes) {
-    ctx.beginPath();
-    ctx.arc(m.position.x * sx, m.position.z * sz, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  const mapCrate = worldCrate ? worldCrate.mesh : remoteCrateVisual;
-  if(mapCrate) {
-    ctx.fillStyle = mapCrate.userData.bomb.visible ? "#ff6038" : "#c48743";
-    ctx.fillRect(mapCrate.position.x * sx - 3, mapCrate.position.z * sz - 3, 6, 6);
-  }
-
-  // Players: white = you, green = ally, red = enemy
-  for(const e of E) {
-    if(e.dead) continue;
-    ctx.fillStyle = (e === pl) ? "#ffffff" : (teamMode && pl && e.team === pl.team) ? "#45d988" : "#ff5544";
-    ctx.beginPath();
-    ctx.arc(e.x * sx, e.z * sz, 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }
 
 let lastT = performance.now();
@@ -5258,14 +5455,6 @@ Ability 1, OIL LANES (9s): deploy a long oil zone (lasts 6s, but cooldown doesn'
 Ability 2, STRIKE (12s): pressing the ability button brings up a trajectory indicator; use the Up, Left, or Right arrow keys to cycle between a straight or curving path, then Left-Click to fire a faster, larger, and higher-damage bowling ball that can't be interfered with, stuns on hit for 0.7s, and gains +30% speed and +25% damage (replacing the standard +25% speed and +20% damage) if thrown along an Oil Lane.
 
 
-SIR DENTLEY · Melee 
-
-Armored: 200 HP, speed 125. Weapon: LONGSWORD, a 3-hit combo of 14 / 14 / 24 (the third swing lunges 40 units), 0.5s between swings, combo resets after 0.9s idle. Cycle is 1.8s ≈ 29 DPS if every swing connects.
-Passive, HOLLOW ARMOR: when the armor hits 0 HP it bursts off (25 damage ring, radius 70, small knockback). Excess damage from the breaking hit does not carry into the next form. Sir Dentley lives on as the SQUIRE: 55 HP, speed 210, dagger 8 damage every 0.3s (27 DPS), no Shield Wall. For 0.5s after the armor breaks, the Squire is knocked 40 units away from the breaking hit and takes 40% less damage, but cannot attack. The empty armor stays behind as an ARMOR HUSK (solid cover, 100 HP, lasts 8s). If the Squire reaches the Husk within 8s, he must stand within 35 units and channel for 1s to re-armour with 70 HP. Taking damage, moving, or being knocked away interrupts the channel. The Husk can be destroyed to prevent recovery. Re-armouring can happen only once. Only the Squire's final death counts as an elimination (one kill-feed line, one kill-heal).
-Ability 1, SHIELD GUARD (9s): raise the shield for 1.4s. Blocks 65% of projectiles and 50% of melee/zone damage from a 150-degree front arc. Move speed -20%. Every point blocked is stored as RIPOSTE charge (cap 40). In Squire form, this becomes DAGGER FEINT (7s): a 70-unit sidestep with no invulnerability and no attack during the move. Feint is ready when the Squire first appears.
-Ability 2, RIPOSTE LUNGE (8s): lunge up to 90 units, dealing 20 + all stored Riposte charge (max +40). The lunge still deals 20 damage with no charge; no stun. Charge is spent on activation, even if the lunge misses. Can't use if in Squire.
-Why it's fun: the two health stages and "go get your armor back" mini-game stay intact; the shield rewards timing and the lunge is useful even without stored charge.
-
 ------------
 
 GRAVEL · Ranged (MAYBE?)
@@ -5327,14 +5516,11 @@ Watch out: phasing is not invulnerability; keep Wisp damageable and unable to at
     --- NEXT MAJOR UPDATE ---
 
 
-- Remove the extra part of the Champion's name (Ex: Bruno the Bear; have Bruno)
 - Balance Changes (make someone meta that wasn't before)
 - Remove Map
 - Make Bullets go in any direction of the mouse (vertical also).
 - Add a new Champion
 - Add an option for it to give you a Champion randomly
-- Switch GUI places for E and Q (Q should be on the left and E on the right).
-- Remove the default Emotes
 - Add Usernames (Accounts, basically)
 - Add a Currency (Shinies)
 - Add a Shop
