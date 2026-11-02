@@ -1741,9 +1741,9 @@ const HEROES = [
    n:"Captain Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
    hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
-   a1n:"Chain Hook", a1cd: 11.5, a1d:"Launch a hook up to 220 units ahead. Hitting an enemy pulls them toward Captain Oink and stuns them when they arrive; striking a wall pulls him to it. He is protected while the hook flies or reels in a target, but a miss leaves him vulnerable during the return.",
+   a1n:"Chain Hook", a1cd: 11.5, a1d:"Launch a hook up to 200 units ahead. Hitting an enemy pulls them toward Captain Oink and stuns them when they arrive; striking a wall pulls him to it. He is protected while the hook flies or reels in a target, but a miss leaves him rooted and vulnerable for a longer return.",
    a2n:"Cannonball", a2cd: 9.5,
-   ad:"Fire five scrap pellets in a spread, each dealing 9 damage. It rewards close aim, where more pellets can connect.", a2d:"Fire a heavy cannonball for 27 direct damage and a blast that can hit enemies within 80 units for 15 damage, knockback, and a half-second stun.",
+   ad:"Fire five scrap pellets in a spread, each dealing 8.5 damage. It rewards close aim, where more pellets can connect.", a2d:"Fire a heavy cannonball for 27 direct damage and a blast that can hit enemies within 80 units for 15 damage, knockback, and a half-second stun.",
    melee: false, d:"A sturdy close-range bruiser who can start fights with a hook, then punish clustered opponents with his scrap shotgun or explosive cannonball. Hooked foes are dragged into Captain Oink’s preferred range, while a wall hit gives him a quick route through the arena. A missed hook creates a brief opening, so choose the angle carefully."
  },
  {
@@ -1786,9 +1786,9 @@ const HEROES = [
    n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
    role: "Duelist", roleCol: "#9fb4d6",
    hp: 200, sp: 125, col: 0x8d97a8, cd: 0.5,
-   a1n:"Shield Guard", a1cd: 10.0, a1cdSquire: 7.0, a1d:"Armor only: guard for 2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Riposte (max 40); movement is 20% slower. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with no invulnerability.",
+   a1n:"Shield Guard", a1cd: 9.0, a1cdSquire: 7.0, a1d:"Armor only: guard for 2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Riposte (max 40); movement is 20% slower. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with 0.2s of invulnerability.",
    a2n:"Riposte Lunge", a2cd: 8.0,
-   ad:"Longsword: a 3-hit combo deals 14 / 14 / 24 damage. The third strike is a physical lunge up to 40 units; the combo resets after 0.9 seconds without another hit.", a2d:"Armor only: make a physical lunge up to 90 units, dealing 20 damage plus stored Riposte (up to 60). At 0 charge it has no stun; at 40 charge it stuns for 1 second, scaling evenly between those values. All charge is spent on use, even if the lunge misses.",
+   ad:"Longsword: a 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units; the combo resets after 0.9 seconds without another hit.", a2d:"Armor only: make a physical lunge up to 100 units, dealing 20 damage plus stored Riposte (up to 40). At 0 charge it has no stun; at 40 charge it stuns for 1.2 seconds, scaling evenly between those values. All charge is spent on use, even if the lunge misses.",
    melee: true, atkRange: 70, ab1Range: 130, ab2Range: 100,
    passive:"Hollow Armor: his armor can break once per match. At 0 armor HP, Dentley becomes a 55 HP Squire; the armor bursts for 25 damage and knockback nearby enemies, while the Squire is knocked away from the dropped husk. Squire has 60% damage reduction for 0.8 seconds, moves faster, and attacks with an 8-damage dagger. Stand still within 40 units of the husk for 1.4 seconds to re-arm with 70 HP. The husk expires after 8 seconds or can be destroyed.",
    d:"A duelist who turns defense into a counterattack. Armor form uses Shield Guard to face incoming threats, reduce damage, and store Riposte for a physical lunge; the longsword combo rewards staying on target. If the armor breaks, Dentley survives once as a faster Squire and can fight or risk returning to the dropped armor to re-arm."
@@ -1796,7 +1796,7 @@ const HEROES = [
 ];
 
 // Captain Oink's chain hook tuning
-const CHAIN = { max: 220, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 450, retractTime: 0.6 };
+const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 450, retractTime: 0.9 };
 
 // Champion body sizes: shared by movement, projectile/melee collision, and visible models.
 const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5];
@@ -3290,7 +3290,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tag
     sporeAttacker: null,
     chain: null,                                   // Captain Oink's chain hook
     combatHistory: [], hitRewindMs: 0,
-    form: 0, combo: 0, comboT: 0, guard: 0, riposte: 0, grace: 0, chan: 0, husk: null, armorBreakUsed: false, feintDir: -1,
+    form: 0, combo: 0, comboT: 0, guard: 0, riposte: 0, grace: 0, feintInvuln: 0, chan: 0, husk: null, armorBreakUsed: false, feintDir: -1,
     mesh
   };
 }
@@ -3431,7 +3431,7 @@ function damageSourceColor(attacker, target) {
 }
 
 function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
-  if(t.dead) return;
+  if(t.dead || t.feintInvuln > 0) return;
   if(isMultiplayer && !isLobbyLeader) return;
   if(t.chain && t.chain.inv) return; // Captain Oink is invulnerable while his chain is out / hooking
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
@@ -3627,7 +3627,7 @@ function executeAttack(e) {
     melee(e, 80, 30, 360);
   } else if(e.ci === 1) {
     for(let i = -2; i <= 2; i++) {
-      shot(e, e.a + i*0.14, {t:"s", s:410, d:9, kb:100, life:0.32});
+      shot(e, e.a + i*0.14, {t:"s", s:410, d:8.5, kb:100, life:0.32});
     }
   } else if(e.ci === 2) {
     shot(e, e.a, {t:"b", s:380, d:16, kb:140, life:99});
@@ -5566,10 +5566,10 @@ function dentleyAttack(e) {
   e.combo = (n + 1) % 3; e.comboT = 0.9;
   e.c1 = n === 2 ? 0.8 : 0.5;
   if(n === 2) {
-    beginDentleyLunge(e, 40, 0.18, 24, 220, true);
+    beginDentleyLunge(e, 50, 0.18, 25, 220, true);
     return;
   }
-  melee(e, 70, 14, 90, true);
+  melee(e, 70, 15, 90, true);
 }
 
 function dentleyGuard(e, c) {
@@ -5579,6 +5579,7 @@ function dentleyGuard(e, c) {
     return;
   }
   e.c2 = 7; e.feintDir = -e.feintDir; // Squire: Dagger Feint sidestep
+  e.feintInvuln = 0.2;
   const sa = e.a + Math.PI / 2 * e.feintDir;
   for(let i = 0; i < 7; i++) {
     const nx = e.x + Math.cos(sa) * 10, nz = e.z + Math.sin(sa) * 10;
@@ -5593,9 +5594,9 @@ function dentleyLunge(e) {
   if(e.form === 1) { e.c3 = 0; return; } // the Squire has no armor to lunge with
   const charge = e.riposte;
   const dmg = 20 + charge;
-  const stun = charge > 0 ? Math.min(1.0, charge / 40) : 0;
+  const stun = charge > 0 ? Math.min(1.2, charge / 40 * 1.2) : 0;
   e.riposte = 0; // charge is spent even if the lunge misses
-  beginDentleyLunge(e, 90, 0.24, dmg, 220, false, stun);
+  beginDentleyLunge(e, 100, 0.24, dmg, 220, false, stun);
 }
 
 function makeHuskMesh() {
@@ -6527,7 +6528,7 @@ function upd(dt) {
       }
     }
 
-    e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt; e.guard -= dt; e.comboT -= dt; e.grace -= dt;
+    e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt; e.guard -= dt; e.comboT -= dt; e.grace -= dt; e.feintInvuln = Math.max(0, e.feintInvuln - dt);
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
     e.emoteCooldown = Math.max(0, e.emoteCooldown - dt);
     if(e.emoteT > 0) {
