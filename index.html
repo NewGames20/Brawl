@@ -1786,17 +1786,17 @@ const HEROES = [
    n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
    role: "Duelist", roleCol: "#9fb4d6",
    hp: 200, sp: 125, col: 0x8d97a8, cd: 0.5,
-   a1n:"Shield Guard", a1cd: 9.0, a1cdSquire: 7.0, a1d:"Armor only: guard for 2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Riposte (max 40); movement is 20% slower. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with 0.2s of invulnerability.",
+   a1n:"Shield Guard", a1cd: 9.0, a1cdSquire: 6.5, a1d:"Armor only: guard for 2.2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Riposte (max 40); movement is 20% slower. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with 0.2s of invulnerability.",
    a2n:"Riposte Lunge", a2cd: 8.0,
    ad:"Longsword: a 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units; the combo resets after 0.9 seconds without another hit.", a2d:"Armor only: make a physical lunge up to 100 units, dealing 20 damage plus stored Riposte (up to 40). At 0 charge it has no stun; at 40 charge it stuns for 1.2 seconds, scaling evenly between those values. All charge is spent on use, even if the lunge misses.",
    melee: true, atkRange: 70, ab1Range: 130, ab2Range: 100,
-   passive:"Hollow Armor: his armor can break once per match. At 0 armor HP, Dentley becomes a 55 HP Squire; the armor bursts for 25 damage and knockback nearby enemies, while the Squire is knocked away from the dropped husk. Squire has 60% damage reduction for 0.8 seconds, moves faster, and attacks with an 8-damage dagger. Stand still within 40 units of the husk for 1.4 seconds to re-arm with 70 HP. The husk expires after 8 seconds or can be destroyed.",
+   passive:"Hollow Armor: his armor can break once per match. At 0 armor HP, Dentley becomes a 60 HP Squire; the armor bursts for 25 damage and knockback nearby enemies, while the Squire is knocked away from the dropped husk. Squire has 60% damage reduction for 0.8 seconds, moves faster, and attacks with an 8-damage dagger. Stand still within 40 units of the husk for 1.2 seconds to re-arm with 70 HP. The husk expires after 8 seconds or can be destroyed.",
    d:"A duelist who turns defense into a counterattack. Armor form uses Shield Guard to face incoming threats, reduce damage, and store Riposte for a physical lunge; the longsword combo rewards staying on target. If the armor breaks, Dentley survives once as a faster Squire and can fight or risk returning to the dropped armor to re-arm."
  }
 ];
 
 // Captain Oink's chain hook tuning
-const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 450, retractTime: 0.9 };
+const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
 
 // Champion body sizes: shared by movement, projectile/melee collision, and visible models.
 const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5];
@@ -5574,7 +5574,7 @@ function dentleyAttack(e) {
 
 function dentleyGuard(e, c) {
   if(e.form === 0) { // Shield Guard
-    e.c2 = c.a1cd; e.guard = 2.0;
+    e.c2 = c.a1cd; e.guard = 2.2;
     spawn3DRing(e.x, e.z, 26, 0x9fc5ff);
     return;
   }
@@ -5615,7 +5615,7 @@ function makeHuskMesh() {
 // Armor hits 0 HP: it bursts off and Dentley lives on as the Squire (host / solo only)
 function breakArmor(t, a) {
   t.armorBreakUsed = true;
-  t.form=1;t.hp=55;t.mhp=55;applyChampionBodySize(t);
+  t.form=1;t.hp=60;t.mhp=60;applyChampionBodySize(t);
   t.guard = 0; t.grace = 0.8; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
   t.kx = Math.cos(a) * 520; t.kz = Math.sin(a) * 520; // send the Squire farther from the armor husk
   const h = { id: "hk_" + Math.random().toString(36).slice(2, 8), x: t.x, z: t.z, hp: 100, life: 8, owner: t, mesh: makeHuskMesh() };
@@ -5656,11 +5656,11 @@ function updateHusks(dt) {
       Husks.splice(i, 1);
     }
   }
-  for(const e of E) { // re-armour channel: stand still within 40 units for 1.4s
+  for(const e of E) { // re-armour channel: stand still within 40 units for 1.2s
     if(e.ci !== 6 || e.form !== 1 || e.dead || !e.husk) { e.chan = 0; continue; }
     if(Math.hypot(e.x - e.husk.x, e.z - e.husk.z) <= 40 && e.moveSpd < 14 && e.stun <= 0) {
       e.chan += dt;
-      if(e.chan >= 1.4) rearm(e);
+      if(e.chan >= 1.2) rearm(e);
     } else e.chan = 0;
   }
 }
