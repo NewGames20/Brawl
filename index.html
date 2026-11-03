@@ -137,6 +137,11 @@ html, body {
   letter-spacing: 0.6px;
   text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.7);
 }
+.menu-announcement {
+  max-width: min(92vw, 680px); padding: 6px 12px; border: 1px solid rgba(255,209,102,0.35);
+  border-radius: 9px; background: rgba(25,20,12,0.76); color: #ffe2a0;
+  font-size: 11px; font-weight: 800; line-height: 1.4;
+}
 .subtitle {
   font-size: 12px; font-weight: 700; color: var(--accent);
   letter-spacing: 0.5px; margin-top: 2px; min-height: 16px;
@@ -216,6 +221,31 @@ html, body {
 .roster-col { flex: 1 1 auto; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .detail-col { flex: 0 0 316px; display: flex; flex-direction: column; gap: 10px; }
 @media (max-width: 860px) { .menu-cols { flex-direction: column; } .detail-col { flex: 1 1 auto; } }
+.menu-meta-footer {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+  width: 100%; max-width: 1020px; margin-top: auto; text-align: left;
+}
+.survey-link, .survey-pending {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 36px;
+  padding: 8px 12px; border: 1px solid rgba(61,184,245,0.4); border-radius: 9px;
+  background: rgba(10,24,33,0.86); color: #a9e5ff; font-size: 11px; font-weight: 900;
+  text-decoration: none;
+}
+.survey-link[hidden], .survey-pending[hidden] { display: none; }
+.survey-link:hover { border-color: var(--accent); background: rgba(17,54,72,0.94); }
+.survey-pending { border-style: dashed; color: var(--text-muted); }
+.menu-updates {
+  width: min(100%, 330px); padding: 10px 12px; border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 12px; background: rgba(12,11,18,0.88); box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+.menu-updates h2 { color: #fff; font: 900 12px 'Space Grotesk',sans-serif; letter-spacing: 0.6px; }
+.menu-updates .menu-version { margin-top: 3px; color: #ffd166; font-size: 10px; font-weight: 900; }
+.menu-updates ul { display: flex; flex-direction: column; gap: 3px; margin: 6px 0 0 15px; color: #c9c4d6; font-size: 10px; line-height: 1.35; }
+.menu-updates ul ul { margin: 3px 0 0 13px; }
+@media (max-width: 600px) {
+  .menu-meta-footer { align-items: stretch; flex-direction: column; }
+  .menu-updates { align-self: flex-end; }
+}
 
 .section-label {
   font-size: 10px; font-weight: 900; letter-spacing: 2.5px; color: var(--text-muted);
@@ -755,14 +785,45 @@ const Store = {
 };
 
 const ACCOUNT_STORAGE_KEY = "bb_account_single_v2";
-const SHINY_REWARDS = { daily: 25, kill: 10, win: 50 };
+const SHINY_REWARDS = { daily: 35, kill: 12, win: 60 };
 const COSMETIC_HERO_COUNT = 7;
 const CRATE_RARITY_ODDS = [
   { key: "Common", chance: 48 }, { key: "Uncommon", chance: 27 },
   { key: "Rare", chance: 16 }, { key: "Epic", chance: 7 }, { key: "Legendary", chance: 2 }
 ];
+const GAME_VERSION = "1.1.1";
+const MENU_ANNOUNCEMENT = "Welcome to BRAWLBOUND! Check the update panel for the latest balance changes.";
+const SURVEY_URL = ""; // Set to the published HTTPS survey URL when available.
+const CONFIGURED_SURVEY_URL = (() => {
+  if(!SURVEY_URL) return "";
+  try {
+    const url = new URL(SURVEY_URL);
+    if(url.protocol !== "https:") throw new Error("SURVEY_URL must use HTTPS.");
+    return url.href;
+  } catch(error) {
+    console.error("Invalid SURVEY_URL configuration.", error);
+    return "";
+  }
+})();
+const UPDATE_HISTORY = [{
+  version: "1.1.0",
+  changes: [
+    "Sir Dentley's base health increased from 200 to 210.",
+    "Champion skins now recolor and add visible armor details; weapon skins add model details.",
+    "Weapon skin crates now cost 400 Shinies (up from 260).",
+    "Added a configurable menu announcement and survey link."
+  ]
+}, {
+  version: GAME_VERSION,
+  changes: [
+    "Champion skin crates cost 500 Shinies, the highest price; weapon crates cost 400.",
+    "Name color and border crates cost 240; name design crates cost 300; font crates cost 120.",
+    "Quick Match rewards increased to 35 for daily login, 12 per elimination, and 60 per win.",
+    "Daily challenge rewards increased: match challenges 40/75, elimination challenges 50/90, and win challenges 75/125."
+  ]
+}];
 const NAMEPLATE_CATEGORIES = [
-  { key: "nameColors", label: "Nametag Colors", cratePrice: 160, crateName: "Prismatic Color Cache", crateIcon: "🌈", items: [
+  { key: "nameColors", label: "Nametag Colors", cratePrice: 240, crateName: "Prismatic Color Cache", crateIcon: "🌈", items: [
     { id: "ember-soul", name: "Ember Soul", rarity: "Common", color: { from: "#fff0a6", to: "#ff552e" } },
     { id: "glacier-arc", name: "Glacier Arc", rarity: "Common", color: { from: "#c3ffff", to: "#4199ff" } },
     { id: "verdant-relic", name: "Verdant Relic", rarity: "Uncommon", color: { from: "#e6ff9a", to: "#12c58d" } },
@@ -772,7 +833,7 @@ const NAMEPLATE_CATEGORIES = [
     { id: "solar-crown", name: "Solar Crown", rarity: "Epic", color: { from: "#fff8ad", to: "#ff8a21" } },
     { id: "aurora-crown", name: "Aurora Crown", rarity: "Legendary", color: { from: "#a7fff4", to: "#ff8be8" } }
   ]},
-  { key: "borderColors", label: "Nametag Borders", cratePrice: 160, crateName: "Runebound Border Cache", crateIcon: "💠", items: [
+  { key: "borderColors", label: "Nametag Borders", cratePrice: 240, crateName: "Runebound Border Cache", crateIcon: "💠", items: [
     { id: "copper-rune", name: "Copper Rune", rarity: "Common", color: "#ff9a5c", style: "rune" },
     { id: "ice-filament", name: "Ice Filament", rarity: "Common", color: "#8bf4ff", style: "double" },
     { id: "jade-circuit", name: "Jade Circuit", rarity: "Uncommon", color: "#70ffc5", style: "circuit" },
@@ -782,7 +843,7 @@ const NAMEPLATE_CATEGORIES = [
     { id: "crown-of-stars", name: "Crown of Stars", rarity: "Epic", color: "#ffe68b", style: "stars" },
     { id: "dragon-regalia", name: "Dragon Regalia", rarity: "Legendary", color: "#ffcf73", style: "ornate" }
   ]},
-  { key: "backgrounds", label: "Nametag Designs", cratePrice: 200, crateName: "Mythic Pattern Cache", crateIcon: "🌌", items: [
+  { key: "backgrounds", label: "Nametag Designs", cratePrice: 300, crateName: "Mythic Pattern Cache", crateIcon: "🌌", items: [
     { id: "emberforge", name: "Emberforge", rarity: "Common", from: "rgba(64,18,18,0.94)", to: "rgba(255,107,36,0.7)", pattern: "grid" },
     { id: "moonlit", name: "Moonlit Observatory", rarity: "Common", from: "rgba(10,22,54,0.95)", to: "rgba(81,105,173,0.72)", pattern: "stars" },
     { id: "jade-temple", name: "Jade Temple", rarity: "Uncommon", from: "rgba(5,54,46,0.95)", to: "rgba(71,189,128,0.72)", pattern: "hex" },
@@ -794,7 +855,7 @@ const NAMEPLATE_CATEGORIES = [
   ]}
 ];
 const SKIN_CATEGORIES = [
-  { key: "weaponSkins", label: "Weapon Skins", cratePrice: 260, crateName: "Arsenal Cache", crateIcon: "⚔️", items: [
+  { key: "weaponSkins", label: "Weapon Skins", cratePrice: 400, crateName: "Arsenal Cache", crateIcon: "⚔️", items: [
     { id: "bruno-sunforged", hero: 0, name: "Sunforged Sledge", rarity: "Epic", base: "#38201b", accent: "#ffb12e", glow: "#ff5728" },
     { id: "oink-abyssal", hero: 1, name: "Abyssal Broadside", rarity: "Rare", base: "#102d45", accent: "#63e7ff", glow: "#0ab9e0" },
     { id: "mango-prism", hero: 2, name: "Prism Crescent", rarity: "Uncommon", base: "#3e175f", accent: "#ffc84d", glow: "#cf4dff" },
@@ -803,7 +864,7 @@ const SKIN_CATEGORIES = [
     { id: "mycelis-mooncap", hero: 5, name: "Mooncap Scepter", rarity: "Rare", base: "#2c173e", accent: "#ff9bf4", glow: "#b94dff" },
     { id: "dentley-sunblade", hero: 6, name: "Sunblade Oath", rarity: "Uncommon", base: "#34303f", accent: "#ffe19a", glow: "#ffb63d" }
   ]},
-  { key: "championSkins", label: "Champion Skins", cratePrice: 320, crateName: "Champion Relic Cache", crateIcon: "👑", items: [
+  { key: "championSkins", label: "Champion Skins", cratePrice: 500, crateName: "Champion Relic Cache", crateIcon: "👑", items: [
     { id: "bruno-starwarden", hero: 0, name: "Starwarden Bruno", rarity: "Epic", base: "#17457a", accent: "#76eaff", glow: "#248dff" },
     { id: "oink-admiral", hero: 1, name: "Admiral Abyss", rarity: "Rare", base: "#174050", accent: "#75f1d2", glow: "#28d4cb" },
     { id: "mango-temple", hero: 2, name: "Temple Trickster", rarity: "Uncommon", base: "#81501f", accent: "#ffe282", glow: "#ffb21e" },
@@ -815,7 +876,7 @@ const SKIN_CATEGORIES = [
 ];
 // BB_FONT_CRATE_REVEAL_V1
 // BB_DUPLICATE_REFUNDS_V1
-NAMEPLATE_CATEGORIES.push({key:"nameFonts",label:"Nametag Fonts",cratePrice:80,crateName:"Letterpress Font Cache",crateIcon:"Aa",items:[
+NAMEPLATE_CATEGORIES.push({key:"nameFonts",label:"Nametag Fonts",cratePrice:120,crateName:"Letterpress Font Cache",crateIcon:"Aa",items:[
  {id:"font-mono",name:"Terminal",rarity:"Common",family:"'Courier New',monospace",weight:800},
  {id:"font-serif",name:"Royal Serif",rarity:"Common",family:"Georgia,serif",weight:800},
  {id:"font-trebuchet",name:"Trailblazer",rarity:"Uncommon",family:"'Trebuchet MS',sans-serif",weight:800},
@@ -1406,12 +1467,12 @@ function resumePendingCrate(profile){
 
 
 const DAILY_POOL=[
- {id:"play1",event:"matches",target:1,reward:30,text:"Finish 1 Quick Match"},
- {id:"play3",event:"matches",target:3,reward:60,text:"Finish 3 Quick Matches"},
- {id:"kill3",event:"kills",target:3,reward:40,text:"Get 3 Quick Match eliminations"},
- {id:"kill6",event:"kills",target:6,reward:70,text:"Get 6 Quick Match eliminations"},
- {id:"win1",event:"wins",target:1,reward:60,text:"Win 1 Quick Match"},
- {id:"win2",event:"wins",target:2,reward:100,text:"Win 2 Quick Matches"}
+ {id:"play1",event:"matches",target:1,reward:40,text:"Finish 1 Quick Match"},
+ {id:"play3",event:"matches",target:3,reward:75,text:"Finish 3 Quick Matches"},
+ {id:"kill3",event:"kills",target:3,reward:50,text:"Get 3 Quick Match eliminations"},
+ {id:"kill6",event:"kills",target:6,reward:90,text:"Get 6 Quick Match eliminations"},
+ {id:"win1",event:"wins",target:1,reward:75,text:"Win 1 Quick Match"},
+ {id:"win2",event:"wins",target:2,reward:125,text:"Win 2 Quick Matches"}
 ];
 function normalizeDailyChallenges(value){
  const result={date:value&&/^\d{4}-\d{2}-\d{2}$/.test(value.date)?value.date:"",progress:{},claimed:[]};
@@ -1785,7 +1846,7 @@ const HEROES = [
  {
    n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
    role: "Duelist", roleCol: "#9fb4d6",
-   hp: 200, sp: 125, col: 0x8d97a8, cd: 0.5,
+   hp: 210, sp: 125, col: 0x8d97a8, cd: 0.5,
    a1n:"Shield Guard", a1cd: 9.0, a1cdSquire: 6.5, a1d:"Armor only: guard for 2.2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Riposte (max 40); movement is 20% slower. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with 0.2s of invulnerability.",
    a2n:"Riposte Lunge", a2cd: 8.0,
    ad:"Longsword: a 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units; the combo resets after 0.9 seconds without another hit.", a2d:"Armor only: make a physical lunge up to 100 units, dealing 20 damage plus stored Riposte (up to 40). At 0 charge it has no stun; at 40 charge it stuns for 1.2 seconds, scaling evenly between those values. All charge is spent on use, even if the lunge misses.",
@@ -2760,6 +2821,7 @@ function addHeroDetails(grp, headGrp, heroIndex) {
 function applyChampionSkin(model, heroIndex, item) {
   if(!model) return;
   if(model.skinFx) { disposeHierarchy(model.skinFx); model.skinFx = null; }
+  if(model.skinOutfit) { disposeHierarchy(model.skinOutfit); model.skinOutfit = null; }
   if(model.bodyMat) {
     model.bodyMat.color.set(item ? item.base : HEROES[heroIndex].col);
     model.bodyMat.emissive.set(item ? item.glow : 0x000000);
@@ -2767,6 +2829,28 @@ function applyChampionSkin(model, heroIndex, item) {
     model.bodyMat.needsUpdate = true;
   }
   if(!item) return;
+  const outfit = new THREE.Group();
+  const armorMat = new THREE.MeshStandardMaterial({ color: item.base, metalness: 0.62, roughness: 0.32 });
+  const trimMat = new THREE.MeshStandardMaterial({ color: item.accent, emissive: item.glow, emissiveIntensity: 0.28, metalness: 0.48, roughness: 0.28 });
+  const cape = new THREE.Mesh(new THREE.BoxGeometry(18, 22, 1.2), armorMat);
+  cape.position.set(0, 17, -9);
+  const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(15, 11, 2.2), armorMat);
+  chestPlate.position.set(0, 16, 11.6);
+  const chestTrim = new THREE.Mesh(new THREE.BoxGeometry(11, 2, 2.6), trimMat);
+  chestTrim.position.set(0, 16, 12.9);
+  const shoulders = [-1, 1].map(side => {
+    const pad = new THREE.Mesh(new THREE.SphereGeometry(5.3, 10, 8), trimMat);
+    pad.scale.set(1.25, 0.78, 0.9);
+    pad.position.set(side * 12.2, 24, 0);
+    return pad;
+  });
+  const chestEmblem = new THREE.Mesh(new THREE.OctahedronGeometry(2.2, 0), trimMat);
+  chestEmblem.position.set(0, 22, 13.4);
+  outfit.add(cape, chestPlate, chestTrim, chestEmblem, ...shoulders);
+  outfit.traverse(node => { if(node.isMesh) node.castShadow = true; });
+  model.add(outfit);
+  model.skinOutfit = outfit;
+
   const fx = new THREE.Group();
   const ring = new THREE.Mesh(new THREE.TorusGeometry(15.5, 0.85, 7, 32), new THREE.MeshBasicMaterial({ color: item.accent, transparent: true, opacity: 0.9 }));
   ring.rotation.x = -Math.PI / 2; ring.position.y = 2.2; fx.add(ring);
@@ -2775,8 +2859,10 @@ function applyChampionSkin(model, heroIndex, item) {
   model.add(fx); model.skinFx = fx;
 }
 
-function applyWeaponSkin(weapon, item) {
+function applyWeaponSkin(weapon, item, heroIndex) {
   if(!weapon) return;
+  if(weapon.skinParts) { disposeHierarchy(weapon.skinParts); weapon.skinParts = null; }
+  weapon.skinGem = null;
   weapon.traverse(node => {
     if(!node.isMesh || !node.material || node.userData.bbArm) return;
     const materials = Array.isArray(node.material) ? node.material : [node.material];
@@ -2795,10 +2881,44 @@ function applyWeaponSkin(weapon, item) {
       material.needsUpdate = true;
     }
   });
-  if(weapon.skinGem) { weapon.remove(weapon.skinGem); disposeHierarchy(weapon.skinGem); weapon.skinGem = null; }
   if(item) {
-    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(2.1, 0), new THREE.MeshStandardMaterial({ color: item.accent, emissive: item.glow, emissiveIntensity: 1.1, metalness: 0.48, roughness: 0.2 }));
-    gem.position.set(0, 10, 0); weapon.add(gem); weapon.skinGem = gem;
+    const parts = new THREE.Group();
+    const trimMat = new THREE.MeshStandardMaterial({ color: item.accent, emissive: item.glow, emissiveIntensity: 0.48, metalness: 0.66, roughness: 0.24 });
+    const badge = new THREE.Mesh(new THREE.OctahedronGeometry(2.1, 0), trimMat);
+    badge.position.set(0, heroIndex === 6 ? 21 : 10, 0);
+    parts.add(badge);
+    if(heroIndex === 0) {
+      for(const side of [-1, 1]) {
+        const plate = new THREE.Mesh(new THREE.BoxGeometry(2.6, 6, 13), trimMat);
+        plate.position.set(side * 4.1, 23, 0);
+        parts.add(plate);
+      }
+    } else if(heroIndex === 1 || heroIndex === 3) {
+      const collar = new THREE.Mesh(new THREE.CylinderGeometry(heroIndex === 1 ? 4.7 : 2.8, heroIndex === 1 ? 4.7 : 2.8, 2, 16), trimMat);
+      collar.rotation.x = Math.PI / 2;
+      collar.position.z = heroIndex === 1 ? -7 : -10;
+      parts.add(collar);
+    } else if(heroIndex === 2) {
+      const edge = new THREE.Mesh(new THREE.TorusGeometry(6.2, 0.7, 8, 20, Math.PI * 0.72), trimMat);
+      edge.rotation.x = Math.PI / 2;
+      parts.add(edge);
+    } else if(heroIndex === 4) {
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.2, 13), trimMat);
+      rail.position.y = 3.2;
+      parts.add(rail);
+    } else if(heroIndex === 5) {
+      for(const y of [-7, 24]) {
+        const cap = new THREE.Mesh(new THREE.OctahedronGeometry(2.8, 0), trimMat);
+        cap.position.y = y;
+        parts.add(cap);
+      }
+    } else if(heroIndex === 6) {
+      const fuller = new THREE.Mesh(new THREE.BoxGeometry(1.1, 23, 0.45), trimMat);
+      fuller.position.set(0, 25, 0.7);
+      parts.add(fuller);
+    }
+    weapon.add(parts);
+    weapon.skinParts = parts;
   }
 }
 
@@ -2870,7 +2990,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   grp.bodyMat = bodyMat;
   const skinSelection = sanitizeSkinSelection(skins);
   applyChampionSkin(grp, heroIndex, skinItemFor("championSkins", heroIndex, { equipped: skinSelection }));
-  applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, { equipped: skinSelection }));
+  applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, { equipped: skinSelection }), heroIndex);
 
   applyChampionModelSize(grp,heroIndex);
   scene.add(grp);
@@ -2888,7 +3008,7 @@ function setupViewmodel(heroIndex) {
   const wep = createHighQualityWeapon(heroIndex, true);
   wep.scale.set(0.48, 0.48, 0.48);
   const profile = activeProfile();
-  applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, profile));
+  applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, profile), heroIndex);
   viewmodelHolder.add(wep);
   viewmodelHolder.wep = wep;
   if(heroIndex === 6) {
@@ -3319,7 +3439,7 @@ function setEntitySkins(entity, skins) {
   entity.skins = next;
   if(!entity.mesh || entity.mesh.userData.isLocalPlayer) return;
   applyChampionSkin(entity.mesh, entity.ci, skinItemFor("championSkins", entity.ci, { equipped: next }));
-  applyWeaponSkin(entity.mesh.weapon, skinItemFor("weaponSkins", entity.ci, { equipped: next }));
+  applyWeaponSkin(entity.mesh.weapon, skinItemFor("weaponSkins", entity.ci, { equipped: next }), entity.ci);
 }
 
 // Keep recent host-side fighter positions so client-fired attacks can be checked
@@ -5770,6 +5890,7 @@ function menu(msg) {
    ov.innerHTML = `
     <div class="menu-head">
       <div class="brand-title">BRAWLBOUND</div>
+      <div class="menu-announcement" id="menu-announcement"></div>
       <div class="tagline">Pick a champion · Survive the shrinking storm · Last one standing wins</div>
       <div class="subtitle">${msg}</div>
     </div>
@@ -5838,7 +5959,29 @@ function menu(msg) {
         </div>
       </div>
     </div>
+
+    <div class="menu-meta-footer">
+      <div>
+        <a class="survey-link" id="survey-link" hidden target="_blank" rel="noopener noreferrer">Take the player survey ↗</a>
+        <span class="survey-pending" id="survey-pending">Survey link coming soon</span>
+      </div>
+      <section class="menu-updates" aria-label="Game version and update history">
+        <h2>VERSION &amp; UPDATES</h2>
+        <div class="menu-version">BRAWLBOUND v${GAME_VERSION}</div>
+        <ul>${UPDATE_HISTORY.map(update => `<li><b>v${escapeHtml(update.version)}</b><ul>${update.changes.map(change => `<li>${escapeHtml(change)}</li>`).join("")}</ul></li>`).join("")}</ul>
+      </section>
+    </div>
   `;
+
+  const announcement = ov.querySelector("#menu-announcement");
+  if(announcement) announcement.textContent = MENU_ANNOUNCEMENT;
+  const surveyLink = ov.querySelector("#survey-link");
+  const surveyPending = ov.querySelector("#survey-pending");
+  if(CONFIGURED_SURVEY_URL && surveyLink && surveyPending) {
+    surveyLink.href = CONFIGURED_SURVEY_URL;
+    surveyLink.hidden = false;
+    surveyPending.hidden = true;
+  }
 
   const heroGrid = ov.querySelector(".hero-grid");
   if(heroGrid) {
@@ -6701,6 +6844,7 @@ function upd(dt) {
       if(e.mesh.armorParts) { // Dentley: armor / Squire look
         const sq = e.form === 1;
         for(const part of e.mesh.armorParts) part.visible = !sq;
+        if(e.mesh.skinOutfit) e.mesh.skinOutfit.visible = !sq;
         if(e.mesh.shield) e.mesh.shield.visible = e.guard > 0 && !sq;
         applyChampionBodySize(e);
       }
