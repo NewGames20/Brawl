@@ -694,7 +694,7 @@ html, body {
       <li>Cosmetics rework: champion and weapon skins visibly change models.</li>
       <li>Sir Dentley base health increased from 200 to 210.</li>
       <li>Crates: Champion 500, Arsenal 400 Shinies.</li>
-      <li>Earn more: daily login 40, Quick Match elimination 15, win 70.</li>
+      <li>Earn more: daily login 50, Quick Match elimination 15, win 75.</li>
       <li>Daily challenges now pay 45–145 Shinies.</li>
     </ul>
   </section>
@@ -785,7 +785,7 @@ const Store = {
 };
 
 const ACCOUNT_STORAGE_KEY = "bb_account_single_v2";
-const SHINY_REWARDS = { daily: 40, kill: 15, win: 70 };
+const SHINY_REWARDS = { daily: 100, kill: 15, win: 75 };
 const COSMETIC_HERO_COUNT = 7;
 const CRATE_RARITY_ODDS = [
   { key: "Common", chance: 48 }, { key: "Uncommon", chance: 27 },
@@ -793,7 +793,7 @@ const CRATE_RARITY_ODDS = [
 ];
 const MENU_ANNOUNCEMENT = "Cosmetics rework: champions and weapons now have visibly redesigned skins.";
 const NAMEPLATE_CATEGORIES = [
-  { key: "nameColors", label: "Nametag Colors", cratePrice: 240, crateName: "Prismatic Color Cache", crateIcon: "🌈", items: [
+  { key: "nameColors", label: "Nametag Colors", cratePrice: 250, crateName: "Prismatic Color Cache", crateIcon: "🌈", items: [
     { id: "ember-soul", name: "Ember Soul", rarity: "Common", color: { from: "#fff0a6", to: "#ff552e" } },
     { id: "glacier-arc", name: "Glacier Arc", rarity: "Common", color: { from: "#c3ffff", to: "#4199ff" } },
     { id: "verdant-relic", name: "Verdant Relic", rarity: "Uncommon", color: { from: "#e6ff9a", to: "#12c58d" } },
@@ -803,7 +803,7 @@ const NAMEPLATE_CATEGORIES = [
     { id: "solar-crown", name: "Solar Crown", rarity: "Epic", color: { from: "#fff8ad", to: "#ff8a21" } },
     { id: "aurora-crown", name: "Aurora Crown", rarity: "Legendary", color: { from: "#a7fff4", to: "#ff8be8" } }
   ]},
-  { key: "borderColors", label: "Nametag Borders", cratePrice: 240, crateName: "Runebound Border Cache", crateIcon: "💠", items: [
+  { key: "borderColors", label: "Nametag Borders", cratePrice: 250, crateName: "Runebound Border Cache", crateIcon: "💠", items: [
     { id: "copper-rune", name: "Copper Rune", rarity: "Common", color: "#ff9a5c", style: "rune" },
     { id: "ice-filament", name: "Ice Filament", rarity: "Common", color: "#8bf4ff", style: "double" },
     { id: "jade-circuit", name: "Jade Circuit", rarity: "Uncommon", color: "#70ffc5", style: "circuit" },
@@ -1437,12 +1437,14 @@ function resumePendingCrate(profile){
 
 
 const DAILY_POOL=[
- {id:"play1",event:"matches",target:1,reward:45,text:"Finish 1 Quick Match"},
- {id:"play3",event:"matches",target:3,reward:85,text:"Finish 3 Quick Matches"},
- {id:"kill3",event:"kills",target:3,reward:60,text:"Get 3 Quick Match eliminations"},
- {id:"kill6",event:"kills",target:6,reward:105,text:"Get 6 Quick Match eliminations"},
- {id:"win1",event:"wins",target:1,reward:90,text:"Win 1 Quick Match"},
- {id:"win2",event:"wins",target:2,reward:145,text:"Win 2 Quick Matches"}
+ {id:"play1",event:"matches",target:1,reward:35,text:"Finish 1 Quick Match"},
+  {id:"play2",event:"matches",target:2,reward:65,text:"Finish 3 Quick Matches"},
+ {id:"play3",event:"matches",target:3,reward:100,text:"Finish 3 Quick Matches"},
+ {id:"kill4",event:"kills",target:4,reward:60,text:"Get 4 Quick Match eliminations"},
+ {id:"kill7",event:"kills",target:7,reward:100,text:"Get 6 Quick Match eliminations"},
+  {id:"win1",event:"wins",target:1,reward:75,text:"Win 1 Quick Match"},
+ {id:"win2",event:"wins",target:2,reward:100,text:"Win 2 Quick Matches"},
+ {id:"win3",event:"wins",target:3,reward:150,text:"Win 3 Quick Matches"}
 ];
 function normalizeDailyChallenges(value){
  const result={date:value&&/^\d{4}-\d{2}-\d{2}$/.test(value.date)?value.date:"",progress:{},claimed:[]};
