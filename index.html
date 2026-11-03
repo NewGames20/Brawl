@@ -137,9 +137,12 @@ html, body {
   letter-spacing: 0.6px;
   text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.7);
 }
+.menu-announcement, .menu-updates {
+  border: 1px solid rgba(255,209,102,0.35); border-radius: 10px;
+  background: rgba(18,16,24,0.94); box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
 .menu-announcement {
-  max-width: min(92vw, 680px); padding: 6px 12px; border: 1px solid rgba(255,209,102,0.35);
-  border-radius: 9px; background: rgba(25,20,12,0.76); color: #ffe2a0;
+  max-width: min(92vw, 680px); padding: 6px 12px; color: #ffe2a0;
   font-size: 11px; font-weight: 800; line-height: 1.4;
 }
 .subtitle {
@@ -221,30 +224,15 @@ html, body {
 .roster-col { flex: 1 1 auto; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .detail-col { flex: 0 0 316px; display: flex; flex-direction: column; gap: 10px; }
 @media (max-width: 860px) { .menu-cols { flex-direction: column; } .detail-col { flex: 1 1 auto; } }
-.menu-meta-footer {
-  display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
-  width: 100%; max-width: 1020px; margin-top: auto; text-align: left;
-}
-.survey-link, .survey-pending {
-  display: inline-flex; align-items: center; justify-content: center; min-height: 36px;
-  padding: 8px 12px; border: 1px solid rgba(61,184,245,0.4); border-radius: 9px;
-  background: rgba(10,24,33,0.86); color: #a9e5ff; font-size: 11px; font-weight: 900;
-  text-decoration: none;
-}
-.survey-link[hidden], .survey-pending[hidden] { display: none; }
-.survey-link:hover { border-color: var(--accent); background: rgba(17,54,72,0.94); }
-.survey-pending { border-style: dashed; color: var(--text-muted); }
 .menu-updates {
-  width: min(100%, 330px); padding: 10px 12px; border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 12px; background: rgba(12,11,18,0.88); box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  position: fixed; right: 14px; bottom: 14px; z-index: 22;
+  width: min(280px, calc(100vw - 28px)); padding: 10px 12px;
+  text-align: left; pointer-events: none;
 }
 .menu-updates h2 { color: #fff; font: 900 12px 'Space Grotesk',sans-serif; letter-spacing: 0.6px; }
 .menu-updates .menu-version { margin-top: 3px; color: #ffd166; font-size: 10px; font-weight: 900; }
-.menu-updates ul { display: flex; flex-direction: column; gap: 3px; margin: 6px 0 0 15px; color: #c9c4d6; font-size: 10px; line-height: 1.35; }
-.menu-updates ul ul { margin: 3px 0 0 13px; }
 @media (max-width: 600px) {
-  .menu-meta-footer { align-items: stretch; flex-direction: column; }
-  .menu-updates { align-self: flex-end; }
+  .menu-updates { right: 8px; bottom: 8px; width: min(240px, calc(100vw - 16px)); }
 }
 
 .section-label {
@@ -698,6 +686,10 @@ html, body {
   </div>
 
   <div id="ov"></div>
+  <section class="menu-updates" id="menu-updates-panel" aria-label="Game version and update history" style="display:none">
+    <h2>VERSION &amp; UPDATES</h2>
+    <div class="menu-version">BRAWLBOUND v1.1.0</div>
+  </section>
   <div id="economy-modal" onclick="if(event.target===this) closeEconomyModal()">
     <div class="economy-card">
       <div class="economy-head">
@@ -791,37 +783,7 @@ const CRATE_RARITY_ODDS = [
   { key: "Common", chance: 48 }, { key: "Uncommon", chance: 27 },
   { key: "Rare", chance: 16 }, { key: "Epic", chance: 7 }, { key: "Legendary", chance: 2 }
 ];
-const GAME_VERSION = "1.1.1";
-const MENU_ANNOUNCEMENT = "Welcome to BRAWLBOUND! Check the update panel for the latest balance changes.";
-const SURVEY_URL = ""; // Set to the published HTTPS survey URL when available.
-const CONFIGURED_SURVEY_URL = (() => {
-  if(!SURVEY_URL) return "";
-  try {
-    const url = new URL(SURVEY_URL);
-    if(url.protocol !== "https:") throw new Error("SURVEY_URL must use HTTPS.");
-    return url.href;
-  } catch(error) {
-    console.error("Invalid SURVEY_URL configuration.", error);
-    return "";
-  }
-})();
-const UPDATE_HISTORY = [{
-  version: "1.1.0",
-  changes: [
-    "Sir Dentley's base health increased from 200 to 210.",
-    "Champion skins now recolor and add visible armor details; weapon skins add model details.",
-    "Weapon skin crates now cost 400 Shinies (up from 260).",
-    "Added a configurable menu announcement and survey link."
-  ]
-}, {
-  version: GAME_VERSION,
-  changes: [
-    "Champion skin crates cost 500 Shinies, the highest price; weapon crates cost 400.",
-    "Name color and border crates cost 240; name design crates cost 300; font crates cost 120.",
-    "Quick Match rewards increased to 35 for daily login, 12 per elimination, and 60 per win.",
-    "Daily challenge rewards increased: match challenges 40/75, elimination challenges 50/90, and win challenges 75/125."
-  ]
-}];
+const MENU_ANNOUNCEMENT = "Cosmetics rework: champions and weapons now have visibly redesigned skins.";
 const NAMEPLATE_CATEGORIES = [
   { key: "nameColors", label: "Nametag Colors", cratePrice: 240, crateName: "Prismatic Color Cache", crateIcon: "🌈", items: [
     { id: "ember-soul", name: "Ember Soul", rarity: "Common", color: { from: "#fff0a6", to: "#ff552e" } },
@@ -5886,6 +5848,8 @@ function menu(msg) {
   spectatorBanner.style.display = "none";
   const kf = document.getElementById("killfeed");
   if(kf) kf.innerHTML = "";
+  const updatesPanel = document.getElementById("menu-updates-panel");
+  if(updatesPanel) updatesPanel.style.display = "block";
 
    ov.innerHTML = `
     <div class="menu-head">
@@ -5960,28 +5924,10 @@ function menu(msg) {
       </div>
     </div>
 
-    <div class="menu-meta-footer">
-      <div>
-        <a class="survey-link" id="survey-link" hidden target="_blank" rel="noopener noreferrer">Take the player survey ↗</a>
-        <span class="survey-pending" id="survey-pending">Survey link coming soon</span>
-      </div>
-      <section class="menu-updates" aria-label="Game version and update history">
-        <h2>VERSION &amp; UPDATES</h2>
-        <div class="menu-version">BRAWLBOUND v${GAME_VERSION}</div>
-        <ul>${UPDATE_HISTORY.map(update => `<li><b>v${escapeHtml(update.version)}</b><ul>${update.changes.map(change => `<li>${escapeHtml(change)}</li>`).join("")}</ul></li>`).join("")}</ul>
-      </section>
-    </div>
   `;
 
   const announcement = ov.querySelector("#menu-announcement");
   if(announcement) announcement.textContent = MENU_ANNOUNCEMENT;
-  const surveyLink = ov.querySelector("#survey-link");
-  const surveyPending = ov.querySelector("#survey-pending");
-  if(CONFIGURED_SURVEY_URL && surveyLink && surveyPending) {
-    surveyLink.href = CONFIGURED_SURVEY_URL;
-    surveyLink.hidden = false;
-    surveyPending.hidden = true;
-  }
 
   const heroGrid = ov.querySelector(".hero-grid");
   if(heroGrid) {
@@ -6297,6 +6243,8 @@ function enterSpectateLobby(info) {
   camera.rotation.set(-0.6, 0, 0);
 
   ov.style.display = "none";
+  const updatesPanel = document.getElementById("menu-updates-panel");
+  if(updatesPanel) updatesPanel.style.display = "none";
   hud.style.display = "block";
   crosshair.style.display = "none";
   resultModal.style.display = "none";
@@ -6387,6 +6335,8 @@ function initMatchView() {
   syncHUD();
 
   ov.style.display = "none";
+  const updatesPanel = document.getElementById("menu-updates-panel");
+  if(updatesPanel) updatesPanel.style.display = "none";
   hud.style.display = "block";
   hud.classList.add("intro");
   introCard.style.display = "block";
@@ -7048,7 +6998,7 @@ requestAnimationFrame(loop);
 </body>
 </html>
 
-    --- NEXT MAJOR UPDATE ---
+    --- FUTURE STUFF ---
 
 
 - Make Bullets go in any direction of the mouse (vertical also).
