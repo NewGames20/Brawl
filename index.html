@@ -231,6 +231,7 @@ html, body {
 }
 .menu-updates h2 { color: #fff; font: 900 12px 'Space Grotesk',sans-serif; letter-spacing: 0.6px; }
 .menu-updates .menu-version { margin-top: 3px; color: #ffd166; font-size: 10px; font-weight: 900; }
+.menu-updates ul { display: flex; flex-direction: column; gap: 3px; margin: 6px 0 0 14px; color: #c9c4d6; font-size: 10px; line-height: 1.3; }
 @media (max-width: 600px) {
   .menu-updates { right: 8px; bottom: 8px; width: min(240px, calc(100vw - 16px)); }
 }
@@ -689,6 +690,13 @@ html, body {
   <section class="menu-updates" id="menu-updates-panel" aria-label="Game version and update history" style="display:none">
     <h2>VERSION &amp; UPDATES</h2>
     <div class="menu-version">BRAWLBOUND v1.1.0</div>
+    <ul>
+      <li>Cosmetics rework: champion and weapon skins visibly change models.</li>
+      <li>Sir Dentley base health increased from 200 to 210.</li>
+      <li>Crates: Champion 500, Arsenal 400 Shinies.</li>
+      <li>Earn more: daily login 40, Quick Match elimination 15, win 70.</li>
+      <li>Daily challenges now pay 45–145 Shinies.</li>
+    </ul>
   </section>
   <div id="economy-modal" onclick="if(event.target===this) closeEconomyModal()">
     <div class="economy-card">
@@ -777,7 +785,7 @@ const Store = {
 };
 
 const ACCOUNT_STORAGE_KEY = "bb_account_single_v2";
-const SHINY_REWARDS = { daily: 35, kill: 12, win: 60 };
+const SHINY_REWARDS = { daily: 40, kill: 15, win: 70 };
 const COSMETIC_HERO_COUNT = 7;
 const CRATE_RARITY_ODDS = [
   { key: "Common", chance: 48 }, { key: "Uncommon", chance: 27 },
@@ -1429,12 +1437,12 @@ function resumePendingCrate(profile){
 
 
 const DAILY_POOL=[
- {id:"play1",event:"matches",target:1,reward:40,text:"Finish 1 Quick Match"},
- {id:"play3",event:"matches",target:3,reward:75,text:"Finish 3 Quick Matches"},
- {id:"kill3",event:"kills",target:3,reward:50,text:"Get 3 Quick Match eliminations"},
- {id:"kill6",event:"kills",target:6,reward:90,text:"Get 6 Quick Match eliminations"},
- {id:"win1",event:"wins",target:1,reward:75,text:"Win 1 Quick Match"},
- {id:"win2",event:"wins",target:2,reward:125,text:"Win 2 Quick Matches"}
+ {id:"play1",event:"matches",target:1,reward:45,text:"Finish 1 Quick Match"},
+ {id:"play3",event:"matches",target:3,reward:85,text:"Finish 3 Quick Matches"},
+ {id:"kill3",event:"kills",target:3,reward:60,text:"Get 3 Quick Match eliminations"},
+ {id:"kill6",event:"kills",target:6,reward:105,text:"Get 6 Quick Match eliminations"},
+ {id:"win1",event:"wins",target:1,reward:90,text:"Win 1 Quick Match"},
+ {id:"win2",event:"wins",target:2,reward:145,text:"Win 2 Quick Matches"}
 ];
 function normalizeDailyChallenges(value){
  const result={date:value&&/^\d{4}-\d{2}-\d{2}$/.test(value.date)?value.date:"",progress:{},claimed:[]};
@@ -6998,7 +7006,7 @@ requestAnimationFrame(loop);
 </body>
 </html>
 
-    --- FUTURE STUFF ---
+    --- NEXT MAJOR UPDATE ---
 
 
 - Make Bullets go in any direction of the mouse (vertical also).
