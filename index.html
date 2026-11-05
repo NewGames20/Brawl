@@ -720,10 +720,14 @@ html, body {
 const BALANCE_PATCH = {
  dentley: {guardCooldown:10, guardDuration:2.2, minGuard:0.5,
   guardMove:0.75, releaseBoost:1.25, releaseBoostDuration:0.8,
+  // Release from minGuard through this elapsed time to earn the boost.
+  releaseBoostDeadline:1.8,
+  // Squire Dagger Feint: cooldown, damage per enemy crossed, and stun.
+  feintCooldown:7, feintDamage:10, feintStun:0.4,
   guardHalfArc:Math.PI/2, lungeCooldown:8.5, lungeBaseDamage:10,
   maxCharge:40, minStun:0.3, maxStun:1.5,
   squireGrace:1, squireDamageMultiplier:0.5,
-  recallDelay:5, recallDistance:32, rearmRange:50, rearmTime:1.5, huskLife:10},
+  recallDelay:6, recallDistance:32, rearmRange:50, rearmTime:1.5, huskLife:10},
  bruno:{slamDamage:15, slamStun:1.1, chargeDamage:10},
  mango:{bombCooldown:9, peelCooldown:11, peelDistance:40, peelDamage:10, bananaDamage:9},
  sizzle:{sauceRadius:60,sauceDuration:3},
@@ -739,9 +743,9 @@ const BALANCE_PATCH = {
 const PATCH_UPDATES = {
  version:"BRAWLBOUND v1.1.2",
  announcement:"Dentley rework: Counter Charge, early shield release, and Squire armor recall.",
- notes:["Dentley: 10s Guard, 180-degree arc, early release after 0.5s grants +25% speed for 0.8s.",
+ notes:["Dentley: 10s Guard, 180-degree arc; release between 0.5s and 1.8s to earn +25% speed for 0.8s. Later release grants no boost.",
  "Counter Lunge: 8.5s cooldown, 10 + Counter Charge damage, 0.3-1.5s stun.",
- "Squire: Recall Armor after 5s, 50% protection for 1s, rearm within 50 units for 1.5s; husk lasts 10s.",
+ "Squire: Recall Armor waiting period increased from 5s to 6s. Dagger Feint cooldown increased from 6.5s to 7s; crossing enemies deals 10 damage and stuns for 0.4s. Rearm within 50 units for 1.5s; husk lasts 10s.",
  "Bruno: Slam 15 damage / 1.1s stun; Charge 10 damage per enemy.",
  "Chef Sizzle: Marinara radius 60, duration 3s. Quackbot: Barrage 9s cooldown.",
  "Mango: Cluster Bomb 9.5s, bananas 9 damage; Peel 11s, 40-unit placement, 10 damage.",
@@ -813,12 +817,12 @@ const HEROES = [
 
    a1n:"Shield Guard",
    a1cd: BALANCE_PATCH.dentley.guardCooldown,
-   a1cdSquire: 6.5,
-   a1d:"Armored — Shield Guard: Guard for 2.2 seconds in a 180° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage builds Counter Charge, up to 40. Movement is 25% slower while guarding, and attacks and other abilities are unavailable. Press this ability again after a minimum of 0.5 seconds to release the shield early and gain 25% movement speed for 0.8 seconds. Early release does not refund the cooldown. Squire — Dagger Feint: Sidestep up to 70 units with 0.2 seconds of invulnerability. Cooldown: 6.5 seconds.",
+   a1cdSquire: BALANCE_PATCH.dentley.feintCooldown,
+   a1d:"Armored — Shield Guard: Guard for 2.2 seconds in a 180° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage builds Counter Charge, up to 40. Movement is 25% slower while guarding, and attacks and other abilities are unavailable. Press this ability again between 0.5 and 1.8 seconds after raising the shield to release it and gain 25% movement speed for 0.8 seconds. Releasing after 1.8 seconds is allowed but grants no boost; letting Guard expire naturally also grants no boost. Early release does not refund the cooldown. Squire — Dagger Feint: Sidestep up to 70 units with 0.2 seconds of invulnerability. Each enemy crossed takes 10 damage before damage reduction and is stunned for 0.4 seconds, once per activation. Walls stop the sidestep. Cooldown: 7 seconds.",
 
    a2n:"Counter Lunge",
    a2cd: BALANCE_PATCH.dentley.lungeCooldown,
-   a2d:"Armored — Counter Lunge: Lunge forward up to 100 units, dealing 10 damage plus stored Counter Charge, up to 50 total damage. Stun scales from 0.3 seconds at zero charge to 1.5 seconds at 40 charge. All charge is spent when used, even if the lunge misses. Squire — Recall Armor: Becomes available 5 seconds after turning into Squire. Press this ability to place the surviving armor husk directly in front of you. Usable once per armor break. Recall does not restore the husk's health, refresh its remaining lifetime, or immediately rearm you. Destroyed or expired armor cannot be recalled.",
+   a2d:"Armored — Counter Lunge: Lunge forward up to 100 units, dealing 10 damage plus stored Counter Charge, up to 50 total damage. Stun scales from 0.3 seconds at zero charge to 1.5 seconds at 40 charge. All charge is spent when used, even if the lunge misses. Squire — Recall Armor: Becomes available 6 seconds after turning into Squire. Press this ability to place the surviving armor husk directly in front of you. Usable once per armor break. Recall does not restore the husk's health, refresh its remaining lifetime, or immediately rearm you. Destroyed or expired armor cannot be recalled.",
 
    ad:"Armored — Longsword: A 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units. The combo resets after 0.9 seconds without another hit. Squire — Dagger: Close-range attacks deal 8 damage.",
 
@@ -3788,10 +3792,20 @@ function shot(e, a, o) {
 function canReleaseDentleyGuard(e) {
  return dentleyGuardActive(e) && e.guard <= BALANCE_PATCH.dentley.guardDuration-BALANCE_PATCH.dentley.minGuard+0.0001;
 }
+function earnsDentleyReleaseBoost(e) {
+  if(!canReleaseDentleyGuard(e)) return false;
+  const cfg = BALANCE_PATCH.dentley;
+  const elapsed = cfg.guardDuration - e.guard;
+  return elapsed >= cfg.minGuard - 0.0001 &&
+         elapsed <= cfg.releaseBoostDeadline + 0.0001;
+}
+
 function releaseDentleyGuard(e) {
- if(!canReleaseDentleyGuard(e))return false;
- e.guard=0;e.guardBoost=BALANCE_PATCH.dentley.releaseBoostDuration;
- return true; // Original Guard cooldown continues; release never refunds it.
+  if(!canReleaseDentleyGuard(e)) return false;
+  const earnsBoost = earnsDentleyReleaseBoost(e);
+  e.guard = 0;
+  e.guardBoost = earnsBoost ? BALANCE_PATCH.dentley.releaseBoostDuration : 0;
+  return true; // Guard's original cooldown continues, even on late release.
 }
 function canRecallDentleyHusk(e) {
  return !!(e&&e.ci===6&&e.form===1&&!e.dead&&e.c3<=0&&!e.huskRecallUsed&&e.husk&&e.husk.hp>0&&e.husk.life>0);
@@ -4414,7 +4428,7 @@ function syncHUD() {
   } else {
     const cd1Prog = targetEnt.c2 <= 0 ? 1 : Math.max(0, (1 - targetEnt.c2 / (sq ? c.a1cdSquire : c.a1cd)));
     document.getElementById("cd1-fill").style.width = (cd1Prog * 100) + "%";
-    document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${sq ? "Dagger Feint" : targetEnt.guard>0 ? (canReleaseDentleyGuard(targetEnt)?"Release Shield":"GUARD LOCKED") : c.a1n}`;
+    document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${sq ? "Dagger Feint" : targetEnt.guard>0 ? (canReleaseDentleyGuard(targetEnt)?(earnsDentleyReleaseBoost(targetEnt)?"Release + Speed":"Release (No Boost)"):"GUARD LOCKED") : c.a1n}`;
   }
 
   const cd2Prog = sq ? (targetEnt.huskRecallUsed||!targetEnt.husk ? 0 : Math.max(0,Math.min(1,1-targetEnt.c3/BALANCE_PATCH.dentley.recallDelay))) : targetEnt.c3 <= 0 ? 1 : Math.max(0,Math.min(1,1 - targetEnt.c3 / c.a2cd));
@@ -5846,19 +5860,47 @@ function dentleyAttack(e) {
 }
 
 function dentleyGuard(e, c) {
-  if(e.form === 0) { // Shield Guard
-    e.c2 = c.a1cd; e.guard = BALANCE_PATCH.dentley.guardDuration; e.guardBoost=0;
+  const cfg = BALANCE_PATCH.dentley;
+  if(e.form === 0) {
+    e.c2 = c.a1cd;
+    e.guard = cfg.guardDuration;
+    e.guardBoost = 0;
     spawn3DRing(e.x, e.z, 26, 0x9fc5ff);
     return;
   }
-  e.c2 = c.a1cdSquire; e.feintDir = -e.feintDir; // Squire: Dagger Feint sidestep
+
+  // Squire — Dagger Feint. Each crossed enemy is hit once per activation.
+  e.c2 = c.a1cdSquire;
+  e.feintDir = -e.feintDir;
   e.feintInvuln = 0.2;
   const sa = e.a + Math.PI / 2 * e.feintDir;
+  const hitEnemies = new Set();
+  const authoritative = !isMultiplayer || isLobbyLeader;
+
   for(let i = 0; i < 7; i++) {
-    const nx = e.x + Math.cos(sa) * 10, nz = e.z + Math.sin(sa) * 10;
+    const nx = e.x + Math.cos(sa) * 10;
+    const nz = e.z + Math.sin(sa) * 10;
     if(blocked(nx, nz, e.r)) break;
-    e.x = nx; e.z = nz;
+    e.x = nx;
+    e.z = nz;
+
+    if(authoritative) {
+      for(const target of E) {
+        if(target === e || target.dead || hitEnemies.has(target) ||
+           !areEnemies(e, target) || target.feintInvuln > 0 ||
+           (target.chain && target.chain.inv)) continue;
+        const pos = getCombatPosition(target, e);
+        if(Math.hypot(pos.x - e.x, pos.z - e.z) > e.r + target.r) continue;
+        hitEnemies.add(target);
+        hurt(target, cfg.feintDamage,
+          Math.atan2(pos.z - e.z, pos.x - e.x), 0, e);
+        if(!target.dead) {
+          target.stun = Math.max(target.stun || 0, cfg.feintStun);
+        }
+      }
+    }
   }
+
   e.c1 = Math.max(e.c1, 0.2);
   spawn3DRing(e.x, e.z, 22, 0xcfd8ea);
 }
@@ -7310,12 +7352,12 @@ requestAnimationFrame(loop);
        champions: [
       {
         type: "rework",
-        text: "Sir Dentley — Shield Guard cooldown increased from 9s to 10s. Shield arc widened from 150° to 180°, but the movement penalty increased from 20% to 25%. NEW: After guarding for at least 0.5s, press Guard again to release early and gain 25% movement speed for 0.8s. Riposte renamed to Counter Charge, and Riposte Lunge renamed to Counter Lunge. Lunge cooldown increased from 8s to 8.5s. Base damage reduced from 20 to 10; stored charge still adds up to 40 damage, reducing maximum damage from 60 to 50. Stun increased from 0–1.2s to 0.3–1.5s, depending on charge."
+        text: "Sir Dentley — Shield Guard cooldown increased from 9s to 10s. Shield arc widened from 150° to 180°, but the movement penalty increased from 20% to 25%. NEW: The early-release reward now requires releasing between 0.5s and 1.8s after raising Guard, instead of allowing it at any point after 0.5s. A successful timed release grants 25% movement speed for 0.8s. Releasing later still lowers the shield, but grants no boost; natural expiry grants no boost. Riposte renamed to Counter Charge, and Riposte Lunge renamed to Counter Lunge. Lunge cooldown increased from 8s to 8.5s. Base damage reduced from 20 to 10; stored charge still adds up to 40 damage, reducing maximum damage from 60 to 50. Stun increased from 0–1.2s to 0.3–1.5s, depending on charge."
       },
 
       {
         type: "buff",
-        text: "Squire — Gains 50% damage reduction for 1s after armor breaks. Recall Armor unlocks after 5s and can reposition the surviving husk once without refreshing its health or lifetime. Rearm by standing still within 50 units for 1.5s. Husk lifetime increased from 8s to 10s. Overall, the new recovery options outweigh the protection and channel tradeoffs."
+        text: "Squire — Gains 50% damage reduction for 1s after armor breaks. Recall Armor is Squire's Q ability: its initial waiting period increased from 5s to 6s. It can reposition the surviving husk once without refreshing its health or lifetime. Dagger Feint is Squire's E ability: cooldown increased from 6.5s to 7s, but each crossed enemy now takes 10 damage and a 0.4s stun, once per Feint. Rearm by standing still within 50 units for 1.5s. Husk lifetime increased from 8s to 10s. Overall, the new recovery options outweigh the protection and channel tradeoffs."
       },
 
       {
