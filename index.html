@@ -723,7 +723,7 @@ const BALANCE_PATCH = {
   guardHalfArc:Math.PI/2, lungeCooldown:8.5, lungeBaseDamage:10,
   maxCharge:40, minStun:0.3, maxStun:1.5,
   squireGrace:1, squireDamageMultiplier:0.5,
-  recallDelay:4, recallDistance:32, rearmRange:50, rearmTime:1.4, huskLife:10},
+  recallDelay:4, recallDistance:32, rearmRange:50, rearmTime:1.5, huskLife:10},
  bruno:{slamDamage:15, slamStun:1.1, chargeDamage:10},
  mango:{bombCooldown:9, peelCooldown:11, peelDistance:40, peelDamage:10, bananaDamage:9},
  sizzle:{sauceRadius:60,sauceDuration:3},
@@ -810,13 +810,27 @@ const HEROES = [
    n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
    role: "Duelist", roleCol: "#9fb4d6",
    hp: 210, sp: 125, col: 0x8d97a8, cd: 0.5,
-   a1n:"Shield Guard", a1cd: BALANCE_PATCH.dentley.guardCooldown, a1cdSquire: 6.5, a1d:"Armor only: guard for 2.2s in a 180° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Counter Charge (max 40); movement is 25% slower. Press Guard again after 0.5s to release early and gain 25% movement speed for 0.8s. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with 0.2s of invulnerability.",
-   a2n:"Counter Lunge", a2cd: BALANCE_PATCH.dentley.lungeCooldown,
-   ad:"Longsword: a 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units; the combo resets after 0.9 seconds without another hit.", a2d:"Armor only: make a physical lunge up to 100 units, dealing 10 damage plus stored Counter Charge (up to 40). Stun scales from 0.3 seconds at no charge to 1.5 seconds at full charge. All charge is spent on use, even if the lunge misses.",
-   melee: true, atkRange: 70, ab1Range: 130, ab2Range: 100,
-   passive:"Hollow Armor: his armor can break once per match. At 0 armor HP, Dentley becomes a 60 HP Squire; the armor bursts for 25 damage and knockback nearby enemies, while the Squire is knocked away from the dropped husk. Squire has 50% damage reduction for 1 second, moves faster, and attacks with an 8-damage dagger. Stand still within 50 units of the husk for 1.4 seconds to re-arm with 70 HP. The husk expires after 10 seconds or can be destroyed. After 4 seconds as Squire, Recall Armor can place the surviving husk in front of him once without refreshing its lifetime.",
-   d:"A duelist who turns defense into a counterattack. Armor form uses Shield Guard to face incoming threats, reduce damage, and store Counter Charge for a physical lunge; the longsword combo rewards staying on target. If the armor breaks, Dentley survives once as a faster Squire and can fight or risk returning to the dropped armor to re-arm."
- }
+
+   a1n:"Shield Guard",
+   a1cd: BALANCE_PATCH.dentley.guardCooldown,
+   a1cdSquire: 6.5,
+   a1d:"Armored — Shield Guard: Guard for 2.2 seconds in a 180° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage builds Counter Charge, up to 40. Movement is 25% slower while guarding, and attacks and other abilities are unavailable. Press this ability again after a minimum of 0.5 seconds to release the shield early and gain 25% movement speed for 0.8 seconds. Early release does not refund the cooldown. Squire — Dagger Feint: Sidestep up to 70 units with 0.2 seconds of invulnerability. Cooldown: 6.5 seconds.",
+
+   a2n:"Counter Lunge",
+   a2cd: BALANCE_PATCH.dentley.lungeCooldown,
+   a2d:"Armored — Counter Lunge: Lunge forward up to 100 units, dealing 10 damage plus stored Counter Charge, up to 50 total damage. Stun scales from 0.3 seconds at zero charge to 1.5 seconds at 40 charge. All charge is spent when used, even if the lunge misses. Squire — Recall Armor: Becomes available 4 seconds after turning into Squire. Press this ability to place the surviving armor husk directly in front of you. Usable once per armor break. Recall does not restore the husk's health, refresh its remaining lifetime, or immediately rearm you. Destroyed or expired armor cannot be recalled.",
+
+   ad:"Armored — Longsword: A 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units. The combo resets after 0.9 seconds without another hit. Squire — Dagger: Close-range attacks deal 8 damage.",
+
+   melee: true,
+   atkRange: 70,
+   ab1Range: 130,
+   ab2Range: 100,
+
+   passive: "Hollow Armor: Dentley's armor can break once per match. At 0 armor HP, he becomes a 60 HP Squire. The armor bursts for 25 damage and knocks back nearby enemies, while Squire is knocked away from the dropped husk. Squire moves faster and gains 50% damage reduction for 1 second after the armor breaks. The husk lasts 10 seconds and can be destroyed. Stand still within 50 units of it for 1.5 seconds to rearm with 70 HP. Taking damage interrupts the rearming channel.",
+
+   d: "A duelist who turns defense into a counterattack. In armor, Shield Guard builds Counter Charge to strengthen Counter Lunge, while early shield release creates a brief opportunity to reposition. If his armor breaks, Dentley survives once as a faster, vulnerable Squire. Use Dagger Feint to evade attacks and Recall Armor to reposition the surviving husk, then find an opening to stand still and rearm."
+}
 ];
 
 const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
