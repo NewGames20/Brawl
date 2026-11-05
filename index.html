@@ -7206,8 +7206,38 @@ requestAnimationFrame(loop);
     display: none !important;
   }
 
-  #menu-updates-panel .updates-content ul {
+    #menu-updates-panel .updates-content ul {
     margin-top: 8px;
+  }
+
+  /* Champion Balance colors */
+  #menu-updates-panel li.change-buff {
+    color: #79e8a6;
+  }
+
+  #menu-updates-panel li.change-nerf {
+    color: #ff9292;
+  }
+
+  #menu-updates-panel li.change-rework {
+    color: #ffe080;
+  }
+
+  #menu-updates-panel .change-label {
+    display: inline-block;
+    margin-right: 4px;
+    padding: 2px 5px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+  }
+
+  #menu-updates-panel .updates-content li {
+    line-height: 1.5;
+    margin-bottom: 6px;
   }
 </style>
 
@@ -7227,20 +7257,41 @@ requestAnimationFrame(loop);
       "Fixed daily challenge labels, challenge rotation, and the Squire cooldown display."
     ],
 
-    champions: [
-      "Sir Dentley — Shield Guard: 10s cooldown, 180° arc, and 25% slower movement while guarding.",
-      "Sir Dentley — Press Guard again after a 0.5s minimum commitment to release early and gain 25% movement speed for 0.8s.",
-      "Sir Dentley — Riposte is now Counter Charge. Counter Lunge has an 8.5s cooldown and deals 10 damage plus stored charge, up to 40 charge.",
-      "Sir Dentley — Counter Lunge stun scales from 0.3s at zero charge to 1.5s at maximum charge.",
-      "Squire — Gains 50% damage reduction for 1s after armor breaks.",
-      "Squire — Recall Armor becomes available after 4s and can reposition the surviving husk once without refreshing its health or lifetime.",
-      "Squire — Stand still within 50 units of the husk for 1.4s to rearm. The husk lasts 10s.",
-      "Bruno — Slam deals 15 damage and stuns for 1.1s. Charge deals 10 damage once per enemy per charge.",
-      "Quackbot — Barrage cooldown increased to 9s.",
-      "Chef Sizzle — Renamed from Sizzle. Marinara lasts 3s and has a 60-unit radius.",
-      "Mycelis — Spore Pod is planted 40 units ahead. Root Entangle bursts in a 50-unit radius for 10 additional damage and a 1.5s root.",
-      "Mango the Monkey — Cluster Bomb cooldown is 9.5s, and each banana from the bomb deals 9 damage.",
-      "Mango the Monkey — Peel Trap cooldown is 11s. The peel is placed 40 units ahead and deals 10 damage."
+       champions: [
+      {
+        type: "rework",
+        text: "Sir Dentley — Shield Guard: 10s cooldown, 180° arc, and 25% slower movement while guarding. After a 0.5s minimum guard, press Guard again to release early and gain 25% movement speed for 0.8s. Riposte is now Counter Charge. Counter Lunge: 8.5s cooldown, 10 damage plus stored charge (up to 40), and stun scaling from 0.3s to 1.5s."
+      },
+
+      {
+        type: "buff",
+        text: "Squire — Gains 50% damage reduction for 1s after armor breaks. Recall Armor unlocks after 4s and can reposition the surviving husk once without refreshing its health or lifetime. Rearm by standing still within 50 units for 1.4s. Husk lifetime increased to 10s. Overall, the new recovery options outweigh the protection and channel tradeoffs."
+      },
+
+      {
+        type: "rework",
+        text: "Bruno — Slam damage reduced from 16 to 15, but stun increased from 1s to 1.1s. Charge damage reduced from 14 to 10 and now hits each enemy only once per charge."
+      },
+
+      {
+        type: "nerf",
+        text: "Quackbot — Barrage cooldown increased from 8.5s to 9s."
+      },
+
+      {
+        type: "buff",
+        text: "Chef Sizzle — Renamed from Sizzle. Marinara duration increased from 2.8s to 3s, and its radius increased from 50 to 60 units."
+      },
+
+      {
+        type: "rework",
+        text: "Mycelis — Spore Pod placement reduced from 45 to 40 units ahead. Root Entangle burst radius increased from 45 to 50 units and root duration increased from 1.4s to 1.5s, but additional burst damage reduced from 12 to 10."
+      },
+
+      {
+        type: "nerf",
+        text: "Mango the Monkey — Cluster Bomb cooldown increased from 9s to 9.5s, and each bomb banana deals 9 damage instead of 10. Peel Trap cooldown increased from 10.5s to 11s, but placement increased from 38 to 40 units ahead and damage increased from 9 to 10. Overall, the nerfs outweigh the Peel improvements."
+      }
     ]
   };
   // =================== END EDIT SECTION ===================
@@ -7327,12 +7378,35 @@ requestAnimationFrame(loop);
   panel.querySelector("#patch-version").textContent =
     VERSION_UPDATES.version;
 
-  function fillNotes(selector, notes) {
+   function fillNotes(selector, notes) {
     const list = panel.querySelector(selector);
+    list.replaceChildren();
 
     for (const note of notes) {
       const item = document.createElement("li");
-      item.textContent = note;
+
+      // Normal Game Updates entries remain unchanged.
+      if (typeof note === "string") {
+        item.textContent = note;
+      } else {
+        const type = String(note.type || "").toLowerCase();
+
+        if (["buff", "nerf", "rework"].includes(type)) {
+          item.classList.add("change-" + type);
+
+          const label = document.createElement("span");
+          label.className = "change-label";
+          label.textContent = type.toUpperCase();
+
+          item.appendChild(label);
+          item.appendChild(
+            document.createTextNode(" " + note.text)
+          );
+        } else {
+          item.textContent = note.text || "";
+        }
+      }
+
       list.appendChild(item);
     }
   }
