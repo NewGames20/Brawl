@@ -728,10 +728,16 @@ const BALANCE_PATCH = {
  mango:{bombCooldown:9.5, peelCooldown:11, peelDistance:40, peelDamage:10, bananaDamage:9},
  sizzle:{sauceRadius:60,sauceDuration:3},
  quackbot:{barrageCooldown:9},
- mycelis:{podDistance:40,rootRadius:50,rootBurst:10,rootDuration:1.5}
+ mycelis:{
+  // Damage totals are per application, NOT damage per second.
+  podDistance:40, podCooldown:7, podWait:6,
+  podPoisonDamage:20, podPoisonDuration:5, podSlow:0.60,
+  rootRadius:50, rootDirectDamage:10,
+  rootDotDamage:10, rootDotDuration:3, rootDuration:1.8
+ }
 };
 const PATCH_UPDATES = {
- version:"BRAWLBOUND v1.2.0",
+ version:"BRAWLBOUND v1.1.2",
  announcement:"Dentley rework: Counter Charge, early shield release, and Squire armor recall.",
  notes:["Dentley: 10s Guard, 180-degree arc, early release after 0.5s grants +25% speed for 0.8s.",
  "Counter Lunge: 8.5s cooldown, 10 + Counter Charge damage, 0.3-1.5s stun.",
@@ -739,7 +745,7 @@ const PATCH_UPDATES = {
  "Bruno: Slam 15 damage / 1.1s stun; Charge 10 damage per enemy.",
  "Chef Sizzle: Marinara radius 60, duration 3s. Quackbot: Barrage 9s cooldown.",
  "Mango: Cluster Bomb 9.5s, bananas 9 damage; Peel 11s, 40-unit placement, 10 damage.",
- "Mycelis: Pod placement 40; Root burst radius 50, 10 damage, 1.5s root.",
+ "Mycelis: Root 10 direct + 10 over 3s, 1.8s root. Pod cooldown 7s, wait 6s, poison 20 over 5s and 60% slow. Skin renamed Astral Marcel.",
  "Daily login grants 50 Shinies. Click this header to collapse updates."]
 };
 // HEROES: hp=max health, sp=movement speed, cd=attack cooldown, a1cd/a2cd=ability cooldown.
@@ -795,10 +801,10 @@ const HEROES = [
    n:"Mycelis", e:"🍄", w:"🪄", wn:"Chitinous Spore Staff",
    role: "Tactician", roleCol: "#7d5ba6",
    hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
-   a1n:"Spore Pod", a1cd: 6.5, a1d:"Plant a hidden pod 40 units ahead. It waits for up to 7 seconds; an enemy who triggers it releases a spore cloud, becomes poisoned for 3 seconds, and is slowed. The poison deals 15 total damage.",
+   a1n:"Spore Pod", a1cd: BALANCE_PATCH.mycelis.podCooldown, a1d:"Plant a hidden pod 40 units ahead. It waits for up to 6 seconds. Triggering it releases a cloud that poisons affected enemies for 20 total damage over 5 seconds (4 per second) and slows movement by 60% while poisoned, leaving 40% normal movement speed. The 7-second cooldown begins when the pod triggers or expires.",
    a2n:"Root Entangle", a2cd: 9.0,
-   ad:"Cannot be reflected: these are shots of magical powers beyond reflection. Fire a spore bolt for 20 damage and knockback. A poisoned opponent can be slowed again by the lingering cloud from a triggered pod.", a2d:"Launch an overgrowth projectile for 18 direct damage. On impact it bursts in a 50-unit area, dealing 10 additional damage and rooting enemies for 1.5 seconds.",
-   melee: false, d:"A tactician who shapes the fight with concealed traps and precise root projectiles. Spore Pod punishes enemies who chase through a planted route, while Root Entangle can hold a target in place for follow-up attacks. Mycelis has balanced health but relies on preparation and accurate placement to get the most from her control tools."
+   ad:"Cannot be reflected: these are shots of magical powers beyond reflection. Fire a spore bolt for 20 damage and knockback. Spore Pod poison deals 20 total damage over 5 seconds and slows movement by 60%; Root Entangle uses a separate damage-over-time effect.", a2d:"Launch an overgrowth projectile for 10 direct damage. On impact, a burst in a 50-unit radius roots affected enemies for 1.8 seconds and deals 10 damage over 3 seconds, with no instant burst damage. A direct hit plus the full damage-over-time effect deals 20 total damage before damage reduction; enemies hit only by the burst take 10 over time.",
+   melee: false, d:"A tactician who shapes the fight with concealed traps and precise root projectiles. Spore Pod punishes enemies who chase through a planted route, while Root Entangle can hold a target in place for follow-up attacks. Spore Pod poisons enemies for 20 damage over 5 seconds and slows movement by 60%. Root Entangle deals 10 direct damage plus 10 over 3 seconds and roots for 1.8 seconds. Mycelis relies on preparation and accurate placement to control fights."
  },
  {
    n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
@@ -968,7 +974,7 @@ const SKIN_CATEGORIES = [
     { id: "mango-temple", hero: 2, name: "Temple Trickster", rarity: "Uncommon", base: "#81501f", accent: "#ffe282", glow: "#ffb21e" },
     { id: "sizzle-dragonchef", hero: 3, name: "Dragon Chef", rarity: "Legendary", base: "#781d22", accent: "#ffd36d", glow: "#ff482b" },
     { id: "quackbot-overdrive", hero: 4, name: "Neon Overdrive", rarity: "Epic", base: "#12465a", accent: "#87fff4", glow: "#16e5ff" },
-    { id: "mycelis-oracle", hero: 5, name: "Astral Oracle", rarity: "Rare", base: "#463064", accent: "#d9a5ff", glow: "#ad64ff" },
+    { id: "mycelis-oracle", hero: 5, name: "Astral Marcel", rarity: "Rare", base: "#463064", accent: "#d9a5ff", glow: "#ad64ff" },
     { id: "dentley-dawnknight", hero: 6, name: "Dawn Knight", rarity: "Uncommon", base: "#59617e", accent: "#ffe29b", glow: "#ffd05a" }
   ]}
 ];
@@ -3440,6 +3446,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tag
     activePod: null,
     sporePoison: 0,
     sporeAttacker: null,
+    rootDots: [],
     chain: null,                                   // Captain Oink's chain hook
     combatHistory: [], hitRewindMs: 0,
     form: 0, combo: 0, comboT: 0, guard: 0, riposte: 0, grace: 0, feintInvuln: 0, chan: 0, husk: null, armorBreakUsed: false, feintDir: -1,
@@ -3926,8 +3933,8 @@ function executeAbility1(e) {
       x: px,
       z: pz,
       r: 26,
-      life: 7.0,
-      maxLife: 7.0,
+      life: BALANCE_PATCH.mycelis.podWait,
+      maxLife: BALANCE_PATCH.mycelis.podWait,
       owner: e,
       mesh: trapGrp
     };
@@ -3944,6 +3951,38 @@ function ability1(e) {
   executeAbility1(e);
 }
 
+// Root Entangle damage-over-time is separate from Spore Pod poison.
+// Tick steps are capped to remaining duration, preventing extra damage on the last frame.
+function applyMycelisRootDot(target, attacker, angle) {
+  if(target.dead || (isMultiplayer && !isLobbyLeader)) return;
+  if(!target.rootDots) target.rootDots = [];
+  const cfg = BALANCE_PATCH.mycelis;
+  target.rootDots.push({remaining:cfg.rootDotDuration,
+    rate:cfg.rootDotDamage / cfg.rootDotDuration, attacker, angle});
+  // Preserve the former area burst's 20 knockback without adding instant damage.
+  target.kx=(target.kx||0)+Math.cos(angle)*20;
+  target.kz=(target.kz||0)+Math.sin(angle)*20;
+}
+function tickMycelisEffects(e, dt) {
+  const cfg = BALANCE_PATCH.mycelis;
+  if(e.sporePoison > 0) {
+    const step = Math.min(Math.max(0, dt), e.sporePoison);
+    e.sporePoison = Math.max(0, e.sporePoison - step);
+    hurt(e, cfg.podPoisonDamage / cfg.podPoisonDuration * step,
+      0, 0, e.sporeAttacker, "unblockable");
+  }
+  if(e.rootDots && (!isMultiplayer || isLobbyLeader)) {
+    for(let i=e.rootDots.length-1; i>=0; i--) {
+      if(e.dead) { e.rootDots.length=0; break; }
+      const effect=e.rootDots[i];
+      const step=Math.min(Math.max(0,dt),effect.remaining);
+      effect.remaining=Math.max(0,effect.remaining-step);
+      hurt(e,effect.rate*step,effect.angle,0,effect.attacker,"magic");
+      if(effect.remaining<=0.0000001) e.rootDots.splice(i,1);
+    }
+  }
+}
+
 function executeAbility2(e) {
   if(dentleyGuardActive(e)) return;
   if(e.ci===6 && e.form===1){ recallDentleyHusk(e); return; }
@@ -3952,7 +3991,7 @@ function executeAbility2(e) {
   e.c3 = c.a2cd;
   if(e.ci === 6) { dentleyLunge(e); return; }
   if(e.ci === 0) {
-    e.chargeT = 0.32; e.chargeHit=new Set();
+    e.chargeT = 0.32; 
     e.chargeVx = Math.cos(e.a) * 460;
     e.chargeVz = Math.sin(e.a) * 460;
     spawn3DRing(e.x, e.z, 32, 0x8c5835);
@@ -4008,15 +4047,15 @@ function executeAbility2(e) {
     }
   } else if(e.ci === 5) {
     shot(e, e.a, {
-      t: "vine", s: 420, d: 18, kb: 20, life: 0.85,
+      t: "vine", s: 420, d: BALANCE_PATCH.mycelis.rootDirectDamage, kb: 20, life: 0.85,
       onDeath: (vx, vz) => {
         spawn3DRing(vx, vz, BALANCE_PATCH.mycelis.rootRadius, 0x55bb33);
         if(!isMultiplayer || isLobbyLeader) {
           for(const t of E) {
             const targetPos = getCombatPosition(t, e);
             if(t !== e && !t.dead && Math.hypot(targetPos.x - vx, targetPos.z - vz) < BALANCE_PATCH.mycelis.rootRadius + t.r && areEnemies(e, t)) {
-              hurt(t, BALANCE_PATCH.mycelis.rootBurst, Math.atan2(targetPos.z - vz, targetPos.x - vx), 20, e);
-              t.stun = BALANCE_PATCH.mycelis.rootDuration;
+              applyMycelisRootDot(t, e, Math.atan2(targetPos.z - vz, targetPos.x - vx));
+              t.stun = Math.max(t.stun || 0, BALANCE_PATCH.mycelis.rootDuration);
               spawnDamageNumber(targetPos.x, targetPos.z, "ROOTED", "#55dd44");
             }
           }
@@ -6690,18 +6729,18 @@ function upd(dt) {
 
           Zones.push({ kind: "spore_cloud", x: z.x, z: z.z, r: 55, life: 3.0, owner: z.owner, mesh });
 
-          e.sporePoison = 3.0;
+          e.sporePoison = BALANCE_PATCH.mycelis.podPoisonDuration;
           e.sporeAttacker = z.owner;
           spawnDamageNumber(e.x, e.z, "BLIGHTED", "#a855f7");
 
           if(z.owner) {
-            z.owner.c2 = 6.0;
+            z.owner.c2 = BALANCE_PATCH.mycelis.podCooldown;
             z.owner.activePod = null;
           }
           z.life = 0;
         } else if(z.kind === "spore_cloud") {
           if(e.sporePoison < 0.5) {
-            e.sporePoison = 3.0;
+            e.sporePoison = BALANCE_PATCH.mycelis.podPoisonDuration;
             e.sporeAttacker = z.owner;
             spawnDamageNumber(e.x, e.z, "BLIGHTED", "#a855f7");
           }
@@ -6711,7 +6750,7 @@ function upd(dt) {
 
     if(z.kind === "spore_pod" && z.life <= 0) {
       if(z.owner && z.owner.activePod === z) {
-        z.owner.c2 = 6.0;
+        z.owner.c2 = BALANCE_PATCH.mycelis.podCooldown;
         z.owner.activePod = null;
       }
     }
@@ -6776,11 +6815,7 @@ function upd(dt) {
 
     if(e.chain) updateChain(e, dt);
 
-    if(e.sporePoison > 0) {
-      const tickDamage = (15 / 3.0) * dt;
-      e.sporePoison -= dt;
-      hurt(e, tickDamage, 0, 0, e.sporeAttacker, "unblockable");
-    }
+    tickMycelisEffects(e, dt);
 
     if(e.ci !== 5 || !e.activePod) {
       e.c2 -= dt;
@@ -6798,8 +6833,7 @@ function upd(dt) {
       moveChampion(e,e.chargeVx*dt,e.chargeVz*dt);
       pushCollisions(e);
       for(const t of E) {
-        if(t !== e && !t.dead && !(e.chargeHit&&e.chargeHit.has(t)) && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6 && areEnemies(e, t)) {
-          if(!e.chargeHit)e.chargeHit=new Set();e.chargeHit.add(t);
+      if(t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6 && areEnemies(e, t)) {
           hurt(t, BALANCE_PATCH.bruno.chargeDamage, Math.atan2(t.z-e.z, t.x-e.x), 420, e);
           t.stun = 0.8;
         }
@@ -6862,7 +6896,7 @@ function upd(dt) {
       ab2 = P1_ab2;
 
       const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
-      const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
+      const slowMod = (e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
@@ -6873,7 +6907,7 @@ function upd(dt) {
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
       const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
-      const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
+      const slowMod = (e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
@@ -7252,6 +7286,7 @@ requestAnimationFrame(loop);
       "The update panel starts collapsed. Click its heading to expand or hide it.",
       "Daily login grants 50 Shinies.",
       "Champion skins have champion-specific outfit geometry.",
+      "Mycelis champion skin renamed from Astral Oracle to Astral Marcel; existing unlocks are preserved.",
       "Bots use improved cover navigation and face their movement direction while searching.",
       "Core balance settings and update text are grouped for easier editing.",
       "Fixed daily challenge labels, challenge rotation, and the Squire cooldown display."
@@ -7260,7 +7295,7 @@ requestAnimationFrame(loop);
        champions: [
       {
         type: "rework",
-        text: "Sir Dentley — Shield Guard: 10s cooldown, 180° arc, and 25% slower movement while guarding. After a 0.5s minimum guard, press Guard again to release early and gain 25% movement speed for 0.8s. Riposte is now Counter Charge. Counter Lunge: 8.5s cooldown, 10 damage plus stored charge (up to 40), and stun scaling from 0.3s to 1.5s."
+        text: "Sir Dentley — Shield Guard cooldown increased from 9s to 10s. Shield arc widened from 150° to 180°, but the movement penalty increased from 20% to 25%. NEW: after guarding for at least 0.5s, press Guard again to release early and gain 25% movement speed for 0.8s. Riposte renamed to Counter Charge, and Riposte Lunge renamed to Counter Lunge. Lunge cooldown increased from 8s to 8.5s. Base damage reduced from 20 to 10; stored charge still adds up to 40 damage, reducing maximum damage from 60 to 50. Stun increased from 0–1.2s to 0.3–1.5s, depending on charge."
       },
 
       {
@@ -7270,7 +7305,7 @@ requestAnimationFrame(loop);
 
       {
         type: "rework",
-        text: "Bruno — Slam damage reduced from 16 to 15, but stun increased from 1s to 1.1s. Charge damage reduced from 14 to 10 and now hits each enemy only once per charge."
+        text: "Bruno — Slam damage reduced from 16 to 15, but stun increased from 1s to 1.1s. Charge damage reduced from 14 to 10. Charge retains its original hit behavior."
       },
 
       {
@@ -7285,7 +7320,7 @@ requestAnimationFrame(loop);
 
       {
         type: "rework",
-        text: "Mycelis — Spore Pod placement reduced from 45 to 40 units ahead. Root Entangle burst radius increased from 45 to 50 units and root duration increased from 1.4s to 1.5s, but additional burst damage reduced from 12 to 10."
+        text: "Mycelis — Root Entangle direct damage reduced from 18 to 10. The instant 10-damage burst is replaced by 10 damage over 3s: a direct hit plus the full effect now deals 20 instead of 28. Root duration increased from 1.5s to 1.8s; radius remains 50. Spore Pod declared cooldown increased from 6.5s to 7s (also replaces the old hard-coded 6s trigger/expiry cooldown); waiting lifetime reduced from 7s to 6s. Poison changed from 15 over 3s to 20 over 5s. Movement slow is now 60% (40% movement speed); the old 0.55 speed multiplier was actually a 45% slow. Placement remains 40 units. Astral Oracle skin renamed Astral Marcel."
       },
 
       {
