@@ -723,7 +723,7 @@ const BALANCE_PATCH = {
   guardHalfArc:Math.PI/2, lungeCooldown:8.5, lungeBaseDamage:10,
   maxCharge:40, minStun:0.3, maxStun:1.5,
   squireGrace:1, squireDamageMultiplier:0.5,
-  recallDelay:4, recallDistance:32, rearmRange:50, rearmTime:1.5, huskLife:10},
+  recallDelay:5, recallDistance:32, rearmRange:50, rearmTime:1.5, huskLife:10},
  bruno:{slamDamage:15, slamStun:1.1, chargeDamage:10},
  mango:{bombCooldown:9, peelCooldown:11, peelDistance:40, peelDamage:10, bananaDamage:9},
  sizzle:{sauceRadius:60,sauceDuration:3},
@@ -741,7 +741,7 @@ const PATCH_UPDATES = {
  announcement:"Dentley rework: Counter Charge, early shield release, and Squire armor recall.",
  notes:["Dentley: 10s Guard, 180-degree arc, early release after 0.5s grants +25% speed for 0.8s.",
  "Counter Lunge: 8.5s cooldown, 10 + Counter Charge damage, 0.3-1.5s stun.",
- "Squire: Recall Armor after 4s, 50% protection for 1s, rearm within 50 units for 1.4s; husk lasts 10s.",
+ "Squire: Recall Armor after 5s, 50% protection for 1s, rearm within 50 units for 1.5s; husk lasts 10s.",
  "Bruno: Slam 15 damage / 1.1s stun; Charge 10 damage per enemy.",
  "Chef Sizzle: Marinara radius 60, duration 3s. Quackbot: Barrage 9s cooldown.",
  "Mango: Cluster Bomb 9.5s, bananas 9 damage; Peel 11s, 40-unit placement, 10 damage.",
@@ -818,7 +818,7 @@ const HEROES = [
 
    a2n:"Counter Lunge",
    a2cd: BALANCE_PATCH.dentley.lungeCooldown,
-   a2d:"Armored — Counter Lunge: Lunge forward up to 100 units, dealing 10 damage plus stored Counter Charge, up to 50 total damage. Stun scales from 0.3 seconds at zero charge to 1.5 seconds at 40 charge. All charge is spent when used, even if the lunge misses. Squire — Recall Armor: Becomes available 4 seconds after turning into Squire. Press this ability to place the surviving armor husk directly in front of you. Usable once per armor break. Recall does not restore the husk's health, refresh its remaining lifetime, or immediately rearm you. Destroyed or expired armor cannot be recalled.",
+   a2d:"Armored — Counter Lunge: Lunge forward up to 100 units, dealing 10 damage plus stored Counter Charge, up to 50 total damage. Stun scales from 0.3 seconds at zero charge to 1.5 seconds at 40 charge. All charge is spent when used, even if the lunge misses. Squire — Recall Armor: Becomes available 5 seconds after turning into Squire. Press this ability to place the surviving armor husk directly in front of you. Usable once per armor break. Recall does not restore the husk's health, refresh its remaining lifetime, or immediately rearm you. Destroyed or expired armor cannot be recalled.",
 
    ad:"Armored — Longsword: A 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units. The combo resets after 0.9 seconds without another hit. Squire — Dagger: Close-range attacks deal 8 damage.",
 
@@ -7315,7 +7315,7 @@ requestAnimationFrame(loop);
 
       {
         type: "buff",
-        text: "Squire — Gains 50% damage reduction for 1s after armor breaks. Recall Armor unlocks after 4s and can reposition the surviving husk once without refreshing its health or lifetime. Rearm by standing still within 50 units for 1.4s. Husk lifetime increased to 10s. Overall, the new recovery options outweigh the protection and channel tradeoffs."
+        text: "Squire — Gains 50% damage reduction for 1s after armor breaks. Recall Armor unlocks after 5s and can reposition the surviving husk once without refreshing its health or lifetime. Rearm by standing still within 50 units for 1.5s. Husk lifetime increased from 8s to 10s. Overall, the new recovery options outweigh the protection and channel tradeoffs."
       },
 
       {
