@@ -7490,5 +7490,164 @@ requestAnimationFrame(loop);
   });
 })();
 </script>
+
+<!-- BRAWLBOUND_SKIN_INSPECTOR_V1_START -->
+<style>
+#bb-inspector{position:fixed;inset:0;z-index:110;display:none;align-items:center;justify-content:center;background:rgba(3,4,10,.94);padding:12px;color:#f5f4f8}
+#bb-inspector.open{display:flex}
+#bb-inspector .inspect-card{width:min(960px,100%);max-height:96vh;overflow:auto;border:1px solid #ffffff30;border-radius:18px;background:#11121c;padding:16px;box-shadow:0 20px 80px #0009}
+#bb-inspector .inspect-head{display:flex;gap:12px;align-items:center;justify-content:space-between}
+#bb-inspector h2{font:900 22px Outfit,system-ui;margin:0}
+#bb-inspector .inspect-meta,#bb-inspector .inspect-hint{color:#b9b7cc;font:600 12px Outfit,system-ui;margin:6px 0 10px}
+#bb-inspect-stage{position:relative;height:clamp(200px,55vh,540px);background:radial-gradient(ellipse at center,#27314c,#080a13 75%);border:1px solid #ffffff18;border-radius:12px;overflow:hidden}
+#bb-inspect-stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#bb-inspect-stage canvas:active{cursor:grabbing}
+#bb-inspector .inspect-controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+#bb-inspector button{border:1px solid #ffffff40;background:#282b40;color:#fff;padding:9px 13px;border-radius:8px;cursor:pointer;font:800 12px Outfit,system-ui}
+#bb-inspector button:focus-visible{outline:2px solid #ffd166;outline-offset:3px}
+#bb-inspector .inspect-controls label{display:flex;align-items:center;gap:8px;font:700 12px Outfit,system-ui}
+#bb-inspector input{accent-color:#ffd166;width:110px}
+#bb-inspector .inspect-error{padding:24px;color:#ffb6aa;font:700 14px Outfit,system-ui}
+</style>
+<script>
+(() => {
+ if(window.bbSkinInspectorInstalled)return;
+ window.bbSkinInspectorInstalled=true;
+ const overlay=document.createElement('div');
+ overlay.id='bb-inspector';overlay.setAttribute('role','dialog');
+ overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-labelledby','bb-inspect-title');
+ overlay.innerHTML=`<section class="inspect-card">
+ <div class="inspect-head"><h2 id="bb-inspect-title">Skin Inspector</h2><button type="button" data-close>Back to Shop</button></div>
+ <p class="inspect-meta"></p><div id="bb-inspect-stage"></div>
+ <p class="inspect-hint">Drag to rotate. Scroll or use the slider to zoom. Inspecting does not spend Shinies or change your equipped skin.</p>
+ <div class="inspect-controls"><button type="button" data-rotate>Pause Rotation</button><button type="button" data-reset>Reset View</button>
+ <label>Zoom <input type="range" min="0.7" max="1.8" step="0.05" value="1" aria-label="Preview zoom"></label></div></section>`;
+ document.body.appendChild(overlay);
+ const stage=overlay.querySelector('#bb-inspect-stage');
+ const closeButton=overlay.querySelector('[data-close]');
+ const rotateButton=overlay.querySelector('[data-rotate]');
+ const resetButton=overlay.querySelector('[data-reset]');
+ const zoomInput=overlay.querySelector('input');
+ let session=null,returnFocus=null;
+ function freeScene(root){
+  if(!root)return;const geometries=new Set(),materials=new Set(),textures=new Set();
+  root.traverse(node=>{if(node.geometry)geometries.add(node.geometry);
+   for(const mat of (Array.isArray(node.material)?node.material:node.material?[node.material]:[])){
+    materials.add(mat);for(const value of Object.values(mat))if(value&&value.isTexture)textures.add(value);
+   }});
+  textures.forEach(v=>v.dispose());materials.forEach(v=>v.dispose());geometries.forEach(v=>v.dispose());
+ }
+ function close(){
+  if(!overlay.classList.contains('open'))return;
+  if(session){cancelAnimationFrame(session.raf);session.resize.disconnect();
+   freeScene(session.scene);session.renderer.dispose();session.renderer.forceContextLoss();session=null;}
+  stage.replaceChildren();overlay.classList.remove('open');
+  if(returnFocus&&returnFocus.isConnected)returnFocus.focus();
+ }
+ function fitCamera(){
+  if(!session)return;const w=Math.max(1,stage.clientWidth),h=Math.max(1,stage.clientHeight);
+  const q=session;q.renderer.setSize(w,h,false);q.camera.aspect=w/h;
+  const halfV=Math.tan(q.camera.fov*Math.PI/360),halfH=halfV*q.camera.aspect;
+  const d=Math.max(32/halfV,40/halfH)+32;
+  q.camera.position.set(d*.38,d*.28,d);q.camera.lookAt(0,q.targetY,0);
+  q.camera.zoom=Number(zoomInput.value);q.camera.updateProjectionMatrix();
+ }
+ function inspect(categoryKey,itemId){
+  const profile=activeProfile();
+  const category=SKIN_CATEGORIES.find(c=>c.key===categoryKey);
+  const item=category&&category.items.find(i=>i.id===itemId);
+  if(!item||!profile||!profile.owned[categoryKey]?.includes(itemId)||activeCrateSpin)return;
+  const focus=document.activeElement;close();returnFocus=focus;
+  overlay.classList.add('open');closeButton.focus();
+  overlay.querySelector('h2').textContent=item.name;
+  overlay.querySelector('.inspect-meta').textContent=`${HEROES[item.hero].n} · ${categoryKey==='championSkins'?'Champion Skin':'Weapon Skin'} · ${item.rarity}`;
+  zoomInput.value='1';rotateButton.textContent='Pause Rotation';
+  let renderer=null,previewScene=null,model=null;
+  try{
+   renderer=new THREE.WebGLRenderer({antialias:false,alpha:true,powerPreference:'low-power'});
+   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+   renderer.outputEncoding=THREE.sRGBEncoding;
+   previewScene=new THREE.Scene();const camera=new THREE.PerspectiveCamera(36,1,.1,2000);
+   previewScene.add(new THREE.HemisphereLight(0xd8eaff,0x303044,1.25));
+   const key=new THREE.DirectionalLight(0xffffff,1.3);key.position.set(50,100,75);previewScene.add(key);
+   const rim=new THREE.DirectionalLight(0x87cfff,.9);rim.position.set(-60,40,-40);previewScene.add(rim);
+   const pivot=new THREE.Group();previewScene.add(pivot);
+   if(categoryKey==='championSkins'){
+    const skins=sanitizeSkinSelection(null);skins.championSkins[item.hero]=item.id;
+    model=createDetailedHeroModel(item.hero,false,true,null,null,skins);
+    if(model.parent)model.parent.remove(model);
+   }else{
+    model=createHighQualityWeapon(item.hero,false);applyWeaponSkin(model,item,item.hero);
+   }
+   model.updateMatrixWorld(true);
+   const box=new THREE.Box3().setFromObject(model),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+   const scale=48/Math.max(size.x,size.y,size.z,1);
+   const holder=new THREE.Group();holder.scale.setScalar(scale);
+   model.position.sub(center);holder.add(model);holder.position.y=5+size.y*scale/2;pivot.add(holder);
+   const stand=new THREE.Mesh(new THREE.CylinderGeometry(35,38,4,48),new THREE.MeshStandardMaterial({color:0x242a41,metalness:.6,roughness:.35}));
+   stand.position.y=1;pivot.add(stand);
+   const ring=new THREE.Mesh(new THREE.TorusGeometry(34,.7,6,48),new THREE.MeshBasicMaterial({color:item.accent}));
+   ring.rotation.x=Math.PI/2;ring.position.y=3.2;pivot.add(ring);
+   const marker=new THREE.Mesh(new THREE.BoxGeometry(3,.5,5),new THREE.MeshBasicMaterial({color:item.accent}));
+   marker.position.set(0,3.3,30);pivot.add(marker);
+   stage.replaceChildren(renderer.domElement);
+   session={scene:previewScene,renderer,camera,pivot,targetY:Math.max(12,holder.position.y*.85),auto:true,raf:0,resize:new ResizeObserver(fitCamera)};
+   session.resize.observe(stage);fitCamera();
+   let dragging=false,lastX=0,then=performance.now();
+   const canvas=renderer.domElement;
+   canvas.addEventListener('pointerdown',event=>{dragging=true;lastX=event.clientX;canvas.setPointerCapture(event.pointerId);});
+   canvas.addEventListener('pointermove',event=>{if(dragging&&session){session.pivot.rotation.y+=(event.clientX-lastX)*.012;lastX=event.clientX;}});
+   const end=()=>{dragging=false;};canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);canvas.addEventListener('lostpointercapture',end);
+   canvas.addEventListener('wheel',event=>{event.preventDefault();zoomInput.value=String(Math.min(1.8,Math.max(.7,Number(zoomInput.value)-event.deltaY*.001)));fitCamera();},{passive:false});
+   function frame(now){if(!session)return;const dt=Math.min(.05,(now-then)/1000);then=now;
+    if(!document.hidden){if(session.auto&&!dragging)session.pivot.rotation.y+=dt*.4;renderer.render(previewScene,camera);}
+    session.raf=requestAnimationFrame(frame);
+   }
+   session.raf=requestAnimationFrame(frame);
+  }catch(error){
+   console.error('Skin inspector:',error);
+   if(session){cancelAnimationFrame(session.raf);session.resize.disconnect();session=null;}
+   if(model&&!model.parent)freeScene(model);freeScene(previewScene);
+   if(renderer){renderer.dispose();renderer.forceContextLoss();}
+   const message=document.createElement('p');message.className='inspect-error';
+   message.textContent='The 3D preview could not start. Close this screen and try again.';stage.replaceChildren(message);
+  }
+ }
+ closeButton.onclick=close;
+ overlay.addEventListener('click',event=>{if(event.target===overlay)close();});
+ rotateButton.onclick=()=>{if(session){session.auto=!session.auto;rotateButton.textContent=session.auto?'Pause Rotation':'Resume Rotation';}};
+ resetButton.onclick=()=>{if(session){session.pivot.rotation.set(0,0,0);zoomInput.value='1';fitCamera();}};
+ zoomInput.oninput=fitCamera;
+ document.addEventListener('keydown',event=>{
+  if(!overlay.classList.contains('open'))return;
+  event.stopImmediatePropagation();
+  if(event.key==='Escape'){event.preventDefault();close();return;}
+  if(event.key==='Tab'){
+   const items=[...overlay.querySelectorAll('button,input')],first=items[0],last=items[items.length-1];
+   if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+  }
+ },true);
+ function addInspectButtons(){
+  const body=document.getElementById('economy-body'),profile=activeProfile();if(!body||!profile)return;
+  body.querySelectorAll('[data-equip-category]').forEach(button=>{
+   const key=button.dataset.equipCategory,id=button.dataset.equipItem;
+   if(!['championSkins','weaponSkins'].includes(key)||!profile.owned[key]?.includes(id))return;
+   const card=button.closest('.loot-card');if(!card||card.querySelector('[data-bb-inspect]'))return;
+   const inspectButton=document.createElement('button');inspectButton.type='button';
+   inspectButton.className='economy-action primary';inspectButton.dataset.bbInspect='true';
+   inspectButton.textContent='INSPECT';inspectButton.disabled=!!activeCrateSpin;
+   inspectButton.onclick=()=>inspect(key,id);
+   // Replace a disabled EQUIPPED action, but retain EQUIP if a reset skin is not currently equipped.
+   if(button.disabled&&button.textContent.trim()==='EQUIPPED')button.replaceWith(inspectButton);
+   else button.insertAdjacentElement('afterend',inspectButton);
+  });
+ }
+ const originalRender=renderShopModal;
+ renderShopModal=function(...args){const result=originalRender.apply(this,args);addInspectButtons();return result;};
+ addInspectButtons();
+})();
+</script>
+<!-- BRAWLBOUND_SKIN_INSPECTOR_V1_END -->
 </body>
 </html>
