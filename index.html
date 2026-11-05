@@ -7137,5 +7137,249 @@ document.addEventListener("visibilitychange", () => {
 });
 requestAnimationFrame(loop);
 </script>
+<style>
+  #menu-updates-panel {
+    pointer-events: auto;
+    max-height: 50vh;
+    overflow-y: auto;
+    text-align: left;
+  }
+
+  #menu-updates-panel summary {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+    list-style: none;
+    font: 900 12px 'Space Grotesk', sans-serif;
+  }
+
+  #menu-updates-panel summary::-webkit-details-marker {
+    display: none;
+  }
+
+  #menu-updates-panel .updates-heading::after {
+    content: " +";
+    color: #ffd166;
+  }
+
+  #menu-updates-panel[open] .updates-heading::after {
+    content: " −";
+  }
+
+  #menu-updates-panel summary:focus-visible,
+  #menu-updates-panel .updates-tab:focus-visible {
+    outline: 2px solid #ffd166;
+    outline-offset: 3px;
+  }
+
+  #menu-updates-panel .updates-tabs {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  #menu-updates-panel .updates-tab {
+    flex: 1;
+    padding: 7px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #c9c4d6;
+    font: 800 10px 'Outfit', sans-serif;
+    cursor: pointer;
+  }
+
+  #menu-updates-panel .updates-tab[aria-selected="true"] {
+    border-color: rgba(255, 209, 102, 0.7);
+    background: rgba(255, 209, 102, 0.14);
+    color: #ffe2a0;
+  }
+
+  #menu-updates-panel .updates-content {
+    padding-top: 2px;
+  }
+
+  #menu-updates-panel .updates-content[hidden] {
+    display: none !important;
+  }
+
+  #menu-updates-panel .updates-content ul {
+    margin-top: 8px;
+  }
+</style>
+
+<script>
+(() => {
+  // ============== EDIT YOUR UPDATE NOTES HERE ==============
+  const VERSION_UPDATES = {
+    version: "BRAWLBOUND v1.1.2",
+
+    game: [
+      "Versions & Updates now has separate Game Updates and Champion Balance tabs.",
+      "The update panel starts collapsed. Click its heading to expand or hide it.",
+      "Daily login grants 50 Shinies.",
+      "Champion skins have champion-specific outfit geometry.",
+      "Bots use improved cover navigation and face their movement direction while searching.",
+      "Core balance settings and update text are grouped for easier editing.",
+      "Fixed daily challenge labels, challenge rotation, and the Squire cooldown display."
+    ],
+
+    champions: [
+      "Sir Dentley — Shield Guard: 10s cooldown, 180° arc, and 25% slower movement while guarding.",
+      "Sir Dentley — Press Guard again after a 0.5s minimum commitment to release early and gain 25% movement speed for 0.8s.",
+      "Sir Dentley — Riposte is now Counter Charge. Counter Lunge has an 8.5s cooldown and deals 10 damage plus stored charge, up to 40 charge.",
+      "Sir Dentley — Counter Lunge stun scales from 0.3s at zero charge to 1.5s at maximum charge.",
+      "Squire — Gains 50% damage reduction for 1s after armor breaks.",
+      "Squire — Recall Armor becomes available after 4s and can reposition the surviving husk once without refreshing its health or lifetime.",
+      "Squire — Stand still within 50 units of the husk for 1.4s to rearm. The husk lasts 10s.",
+      "Bruno — Slam deals 15 damage and stuns for 1.1s. Charge deals 10 damage once per enemy per charge.",
+      "Quackbot — Barrage cooldown increased to 9s.",
+      "Chef Sizzle — Renamed from Sizzle. Marinara lasts 3s and has a 60-unit radius.",
+      "Mycelis — Spore Pod is planted 40 units ahead. Root Entangle bursts in a 50-unit radius for 10 additional damage and a 1.5s root.",
+      "Mango the Monkey — Cluster Bomb cooldown is 9.5s, and each banana from the bomb deals 9 damage.",
+      "Mango the Monkey — Peel Trap cooldown is 11s. The peel is placed 40 units ahead and deals 10 damage."
+    ]
+  };
+  // =================== END EDIT SECTION ===================
+
+  const oldPanel = document.getElementById("menu-updates-panel");
+  if (!oldPanel) {
+    console.warn("Versions & Updates panel was not found.");
+    return;
+  }
+
+  // Keep other update settings consistent, if present.
+  if (typeof PATCH_UPDATES !== "undefined") {
+    PATCH_UPDATES.version = VERSION_UPDATES.version;
+  }
+
+  if (typeof UPDATE_INFO !== "undefined") {
+    UPDATE_INFO.version = VERSION_UPDATES.version;
+  }
+
+  // Use native details/summary for click-to-expand behavior.
+  let panel = oldPanel;
+
+  if (panel.tagName !== "DETAILS") {
+    panel = document.createElement("details");
+
+    for (const attribute of oldPanel.attributes) {
+      panel.setAttribute(attribute.name, attribute.value);
+    }
+
+    oldPanel.replaceWith(panel);
+  }
+
+  panel.open = false;
+
+  panel.innerHTML = `
+    <summary>
+      <span class="updates-heading">VERSION &amp; UPDATES</span>
+      <span class="menu-version" id="patch-version"></span>
+    </summary>
+
+    <div class="updates-tabs"
+         role="tablist"
+         aria-label="Update categories">
+
+      <button type="button"
+              class="updates-tab"
+              id="updates-game-tab"
+              role="tab"
+              aria-selected="true"
+              aria-controls="updates-game-content"
+              tabindex="0">
+        Game Updates
+      </button>
+
+      <button type="button"
+              class="updates-tab"
+              id="updates-balance-tab"
+              role="tab"
+              aria-selected="false"
+              aria-controls="updates-balance-content"
+              tabindex="-1">
+        Champion Balance
+      </button>
+    </div>
+
+    <div class="updates-content"
+         id="updates-game-content"
+         role="tabpanel"
+         aria-labelledby="updates-game-tab"
+         tabindex="0">
+      <ul id="patch-update-list"></ul>
+    </div>
+
+    <div class="updates-content"
+         id="updates-balance-content"
+         role="tabpanel"
+         aria-labelledby="updates-balance-tab"
+         tabindex="0"
+         hidden>
+      <ul id="updates-balance-list"></ul>
+    </div>
+  `;
+
+  panel.querySelector("#patch-version").textContent =
+    VERSION_UPDATES.version;
+
+  function fillNotes(selector, notes) {
+    const list = panel.querySelector(selector);
+
+    for (const note of notes) {
+      const item = document.createElement("li");
+      item.textContent = note;
+      list.appendChild(item);
+    }
+  }
+
+  fillNotes("#patch-update-list", VERSION_UPDATES.game);
+  fillNotes("#updates-balance-list", VERSION_UPDATES.champions);
+
+  const tabs = [...panel.querySelectorAll('[role="tab"]')];
+  const contents = [...panel.querySelectorAll('[role="tabpanel"]')];
+
+  function selectTab(index, focus = false) {
+    tabs.forEach((tab, i) => {
+      const selected = i === index;
+      tab.setAttribute("aria-selected", String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      contents[i].hidden = !selected;
+    });
+
+    if (focus) tabs[index].focus();
+  }
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => selectTab(index));
+
+    tab.addEventListener("keydown", event => {
+      let next;
+
+      if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+        next = (index + 1) % tabs.length;
+      } else if (event.key === "Home") {
+        next = 0;
+      } else if (event.key === "End") {
+        next = tabs.length - 1;
+      } else {
+        return;
+      }
+
+      event.preventDefault();
+      selectTab(next, true);
+    });
+  });
+
+  // Each time the panel opens, start on Game Updates.
+  panel.addEventListener("toggle", () => {
+    if (panel.open) selectTab(0);
+  });
+})();
+</script>
 </body>
 </html>
