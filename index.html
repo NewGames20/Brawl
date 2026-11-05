@@ -637,6 +637,14 @@ html, body {
 <style id="round-flow-style">
 #round-panel{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,3vh,28px);width:100vw;height:100vh;height:100dvh;max-height:none;overflow:auto;padding:clamp(20px,5vw,64px);border:0;border-radius:0;background:radial-gradient(ellipse at 50% 20%,rgba(38,76,101,.97),rgba(6,10,19,.99) 72%);box-shadow:none;text-align:center}.round-title{font:1000 clamp(28px,6vw,58px) 'Space Grotesk',sans-serif;color:#fff;letter-spacing:.04em}.round-title span{display:block;font:800 clamp(18px,3.8vw,32px) Outfit,sans-serif;color:#ffcf82;margin:12px 0 0}.round-subtitle{color:#c9d8e6;font-size:clamp(14px,2vw,20px);font-weight:700}.round-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,80vw),1fr));gap:clamp(12px,2vw,22px);width:min(100%,850px)}.round-options label{font-size:12px;color:#d4dce9}.round-map-card{min-height:clamp(110px,20vh,190px);border:2px solid rgba(121,203,216,.55);border-radius:20px;background:linear-gradient(145deg,rgba(38,59,76,.96),rgba(14,20,34,.98));color:white;font:900 clamp(20px,3vw,30px) Outfit,sans-serif;cursor:pointer;box-shadow:0 12px 36px #0007;transition:transform .15s,border-color .15s,background .15s}.round-map-card:hover:not(:disabled){transform:translateY(-4px);border-color:#9af4ff;background:linear-gradient(145deg,rgba(49,92,112,.98),rgba(18,30,48,.99))}.round-map-card.selected{border-color:#ffcf82;box-shadow:0 0 28px #ffcf824d}.round-map-card:disabled{opacity:.55;cursor:default}.round-map-count{display:block;margin-top:12px;color:#ffcf82;font-size:14px}.round-status{max-width:900px;color:#c6d9e8;font-size:clamp(12px,1.7vw,16px);line-height:1.8}body.round-open #result-modal{display:none!important}.round-champion{display:flex;align-items:center;justify-content:center;gap:10px;color:#d4dce9;font-weight:700}.round-champion select{min-width:220px}@media(max-height:650px){#round-panel{gap:12px;padding:14px}.round-map-card{min-height:90px}}
 </style>
+<style>
+.menu-updates{pointer-events:auto;max-height:50vh;overflow:auto;}
+.menu-updates summary{cursor:pointer;list-style:none;display:flex;flex-direction:column;gap:3px;font:900 12px 'Space Grotesk',sans-serif;}
+.menu-updates summary::-webkit-details-marker{display:none;}
+.menu-updates summary>span:first-child::after{content:" +";color:#ffd166;}
+.menu-updates[open] summary>span:first-child::after{content:" −";}
+.menu-updates summary:focus-visible{outline:2px solid #ffd166;outline-offset:4px;}
+</style>
 </head>
 <body>
 <div id="wrap">
@@ -671,7 +679,7 @@ html, body {
       <div class="cd-bar"><div id="cd2-fill" class="cd-fill"></div><span id="cd2-label" class="cd-text">[Q] A2</span></div>
     </div>
     <div id="riposte-meter" aria-live="polite">
-      <span id="riposte-meter-label">RIPOSTE 0 / 40</span>
+      <span id="riposte-meter-label">COUNTER CHARGE 0 / 40</span>
       <div id="riposte-track"><div id="riposte-fill"></div></div>
     </div>
     <div id="center-msg">3</div>
@@ -687,17 +695,10 @@ html, body {
   </div>
 
   <div id="ov"></div>
-  <section class="menu-updates" id="menu-updates-panel" aria-label="Game version and update history" style="display:none">
-    <h2>VERSION &amp; UPDATES</h2>
-    <div class="menu-version">BRAWLBOUND v1.1.0</div>
-    <ul>
-      <li>Cosmetics rework: champion and weapon skins visibly change models.</li>
-      <li>Sir Dentley base health increased from 200 to 210.</li>
-      <li>Crates: Champion 500, Arsenal 400 Shinies.</li>
-      <li>Earn more: daily login 50, Quick Match elimination 15, win 75.</li>
-      <li>Daily challenges now pay 45–145 Shinies.</li>
-    </ul>
-  </section>
+  <details class="menu-updates" id="menu-updates-panel" aria-label="Game version and update history" style="display:none">
+    <summary><span>VERSION &amp; UPDATES</span><span class="menu-version" id="patch-version"></span></summary>
+    <ul id="patch-update-list"></ul>
+  </details>
   <div id="economy-modal" onclick="if(event.target===this) closeEconomyModal()">
     <div class="economy-card">
       <div class="economy-head">
@@ -713,6 +714,136 @@ html, body {
 </div>
 
 <script>
+// ================= BALANCE & UPDATE EDIT ZONE =================
+// Durations/cooldowns in seconds, distances in arena units, damage in HP.
+// Guard: press the ability key again after minGuard to release early.
+const BALANCE_PATCH = {
+ dentley: {guardCooldown:10, guardDuration:2.2, minGuard:0.5,
+  guardMove:0.75, releaseBoost:1.25, releaseBoostDuration:0.8,
+  guardHalfArc:Math.PI/2, lungeCooldown:8.5, lungeBaseDamage:10,
+  maxCharge:40, minStun:0.3, maxStun:1.5,
+  squireGrace:1, squireDamageMultiplier:0.5,
+  recallDelay:4, recallDistance:32, rearmRange:50, rearmTime:1.4, huskLife:10},
+ bruno:{slamDamage:15, slamStun:1.1, chargeDamage:10},
+ mango:{bombCooldown:9.5, peelCooldown:11, peelDistance:40, peelDamage:10, bananaDamage:9},
+ sizzle:{sauceRadius:60,sauceDuration:3},
+ quackbot:{barrageCooldown:9},
+ mycelis:{podDistance:40,rootRadius:50,rootBurst:10,rootDuration:1.5}
+};
+const PATCH_UPDATES = {
+ version:"BRAWLBOUND v1.2.0",
+ announcement:"Dentley rework: Counter Charge, early shield release, and Squire armor recall.",
+ notes:["Dentley: 10s Guard, 180-degree arc, early release after 0.5s grants +25% speed for 0.8s.",
+ "Counter Lunge: 8.5s cooldown, 10 + Counter Charge damage, 0.3-1.5s stun.",
+ "Squire: Recall Armor after 4s, 50% protection for 1s, rearm within 50 units for 1.4s; husk lasts 10s.",
+ "Bruno: Slam 15 damage / 1.1s stun; Charge 10 damage per enemy.",
+ "Chef Sizzle: Marinara radius 60, duration 3s. Quackbot: Barrage 9s cooldown.",
+ "Mango: Cluster Bomb 9.5s, bananas 9 damage; Peel 11s, 40-unit placement, 10 damage.",
+ "Mycelis: Pod placement 40; Root burst radius 50, 10 damage, 1.5s root.",
+ "Daily login grants 50 Shinies. Click this header to collapse updates."]
+};
+// HEROES: hp=max health, sp=movement speed, cd=attack cooldown, a1cd/a2cd=ability cooldown.
+// Update descriptions if you alter settings. Text is not regenerated automatically.
+// CHAIN=hook tuning; RADII=collision size in roster order; DAILY_POOL=targets/payouts.
+const HEROES = [
+ {
+   n:"Bruno", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
+   role: "Tank", roleCol: "#8c5835",
+   hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
+   a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 15 damage, heavy knockback, and a 1.1-second stun.",
+   a2n:"Charge", a2cd: 14.0,
+   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink’s bullets and cannonballs, Sizzle’s meatballs, and Quackbot’s bullets in front of Bruno. Bananas and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
+   melee: true, d:"A durable frontline tank who controls space with a wide, hard-hitting hammer. Slam interrupts nearby enemies, while Charge lets Bruno cross a short gap and scatter anyone in his path. Time his swings to turn away incoming shots and hold space around himself."
+ },
+ {
+   n:"Captain Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
+   role: "Bruiser", roleCol: "#d66b96",
+   hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
+   a1n:"Chain Hook", a1cd: 11.5, a1d:"Launch a hook up to 200 units ahead. Hitting an enemy pulls them toward Captain Oink and stuns them when they arrive; striking a wall pulls him to it. He is protected while the hook flies or reels in a target, but a miss leaves him rooted and vulnerable for a longer return.",
+   a2n:"Cannonball", a2cd: 9.5,
+   ad:"Fire five scrap pellets in a spread, each dealing 8.5 damage. It rewards close aim, where more pellets can connect.", a2d:"Fire a heavy cannonball for 27 direct damage and a blast that can hit enemies within 80 units for 15 damage, knockback, and a half-second stun.",
+   melee: false, d:"A sturdy close-range bruiser who can start fights with a hook, then punish clustered opponents with his scrap shotgun or explosive cannonball. Hooked foes are dragged into Captain Oink’s preferred range, while a wall hit gives him a quick route through the arena. A missed hook creates a brief opening, so choose the angle carefully."
+ },
+ {
+   n:"Mango the Monkey", e:"🐵", w:"🍌", wn:"Twin Crescent Boomerang",
+   role: "Skirmisher", roleCol: "#d6a71e",
+   hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
+   a1n:"Cluster Bomb", a1cd: BALANCE_PATCH.mango.bombCooldown, a1d:"Lob a fruit bomb ahead. When it bursts, six returning banana boomerangs fan out from the blast point, each dealing 9 damage and knockback on a hit.",
+   a2n:"Peel Trap", a2cd: BALANCE_PATCH.mango.peelCooldown,
+   ad:"Throw a crescent boomerang for 16 damage. Cannot be reflected: they are bananas, not bullets! It travels forward, then curves back toward Mango, giving him another chance to catch an opponent on its return path.", a2d:"Drop a peel 40 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 10 damage, is launched, and is stunned for 1.5 seconds.",
+   melee: false, d:"A fast skirmisher who keeps moving while boomerangs pressure opponents from different angles. Cluster Bomb scatters returning blades across a fight, and Peel Trap can punish a pursuer or guard a narrow route. Mango is less durable than the frontliners, so use speed and spacing to avoid being pinned down."
+ },
+ {
+   n:"Chef Sizzle", e:"🧑‍🍳", w:"🍝", wn:"Culinary Meatball Cannon",
+   role: "Sniper", roleCol: "#d44722",
+   hp: 130, sp: 155, col: 0xededed, cd: 1.1,
+   a1n:"Marinara", a1cd: 7.5, a1d:"Place a 60-unit sauce pool 80 units ahead for 3 seconds. Enemies standing in it are slowed and take continuous burn damage.",
+   a2n:"Backdraft", a2cd: 8.5,
+   ad:"Fire a long-range meatball projectile for 35 damage and knockback. Its travel time rewards aiming where an opponent is moving.", a2d:"Burst backward to make space and leave five patches of flame along the retreat path. Each patch burns and slows enemies who cross it for a short time.",
+   melee: false, d:"A fragile ranged specialist who controls lanes with heavy meatball shots and lingering fire. Marinara makes a section of the arena costly to hold, while Backdraft creates distance and leaves a dangerous trail behind. Sizzle performs best when she can see a route ahead and keep opponents outside close range."
+ },
+ {
+   n:"Quackbot", e:"🤖", w:"🦆", wn:"Cybernetic Plasma Blaster",
+   role: "Assassin", roleCol: "#2b9bc4",
+   hp: 110, sp: 185, col: 0x309bb0, cd: 0.25,
+   a1n:"Blink", a1cd: 6.0, a1d:"Dash instantly forward in up to sixteen short steps. Walls stop the movement, so Blink can slip around cover but cannot pass through it.",
+   a2n:"Barrage", a2cd: BALANCE_PATCH.quackbot.barrageCooldown,
+   ad:"Fire quick plasma darts for 8 damage each. Quackbot's short attack cooldown favors steady aim and repeated pressure over one large hit.", a2d:"Queue seven plasma darts in a rapid burst. Each dart deals 7.5 damage, letting the full stream punish a target who stays in the firing lane.",
+   melee: false, d:"A very fast but fragile assassin built around accurate, repeated shots. Blink changes position quickly, and Barrage adds a concentrated burst when an opponent is exposed. Quackbot relies on movement and timing to avoid trading hits with tougher champions."
+ },
+ {
+   n:"Mycelis", e:"🍄", w:"🪄", wn:"Chitinous Spore Staff",
+   role: "Tactician", roleCol: "#7d5ba6",
+   hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
+   a1n:"Spore Pod", a1cd: 6.5, a1d:"Plant a hidden pod 40 units ahead. It waits for up to 7 seconds; an enemy who triggers it releases a spore cloud, becomes poisoned for 3 seconds, and is slowed. The poison deals 15 total damage.",
+   a2n:"Root Entangle", a2cd: 9.0,
+   ad:"Cannot be reflected: these are shots of magical powers beyond reflection. Fire a spore bolt for 20 damage and knockback. A poisoned opponent can be slowed again by the lingering cloud from a triggered pod.", a2d:"Launch an overgrowth projectile for 18 direct damage. On impact it bursts in a 50-unit area, dealing 10 additional damage and rooting enemies for 1.5 seconds.",
+   melee: false, d:"A tactician who shapes the fight with concealed traps and precise root projectiles. Spore Pod punishes enemies who chase through a planted route, while Root Entangle can hold a target in place for follow-up attacks. Mycelis has balanced health but relies on preparation and accurate placement to get the most from her control tools."
+ },
+ {
+   n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
+   role: "Duelist", roleCol: "#9fb4d6",
+   hp: 210, sp: 125, col: 0x8d97a8, cd: 0.5,
+   a1n:"Shield Guard", a1cd: BALANCE_PATCH.dentley.guardCooldown, a1cdSquire: 6.5, a1d:"Armor only: guard for 2.2s in a 180° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Counter Charge (max 40); movement is 25% slower. Press Guard again after 0.5s to release early and gain 25% movement speed for 0.8s. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with 0.2s of invulnerability.",
+   a2n:"Counter Lunge", a2cd: BALANCE_PATCH.dentley.lungeCooldown,
+   ad:"Longsword: a 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units; the combo resets after 0.9 seconds without another hit.", a2d:"Armor only: make a physical lunge up to 100 units, dealing 10 damage plus stored Counter Charge (up to 40). Stun scales from 0.3 seconds at no charge to 1.5 seconds at full charge. All charge is spent on use, even if the lunge misses.",
+   melee: true, atkRange: 70, ab1Range: 130, ab2Range: 100,
+   passive:"Hollow Armor: his armor can break once per match. At 0 armor HP, Dentley becomes a 60 HP Squire; the armor bursts for 25 damage and knockback nearby enemies, while the Squire is knocked away from the dropped husk. Squire has 50% damage reduction for 1 second, moves faster, and attacks with an 8-damage dagger. Stand still within 50 units of the husk for 1.4 seconds to re-arm with 70 HP. The husk expires after 10 seconds or can be destroyed. After 4 seconds as Squire, Recall Armor can place the surviving husk in front of him once without refreshing its lifetime.",
+   d:"A duelist who turns defense into a counterattack. Armor form uses Shield Guard to face incoming threats, reduce damage, and store Counter Charge for a physical lunge; the longsword combo rewards staying on target. If the armor breaks, Dentley survives once as a faster Squire and can fight or risk returning to the dropped armor to re-arm."
+ }
+];
+
+const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
+
+const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5];
+
+const SHINY_REWARDS = { daily: 50, kill: 15, win: 75 };
+
+const DAILY_POOL=[
+ {id:"play1",event:"matches",target:1,reward:35,text:"Finish 1 Quick Match"},
+  {id:"play2",event:"matches",target:2,reward:65,text:"Finish 2 Quick Matches"},
+ {id:"play3",event:"matches",target:3,reward:100,text:"Finish 3 Quick Matches"},
+ {id:"kill4",event:"kills",target:4,reward:60,text:"Get 4 Quick Match eliminations"},
+ {id:"kill7",event:"kills",target:7,reward:100,text:"Get 7 Quick Match eliminations"},
+  {id:"win1",event:"wins",target:1,reward:75,text:"Win 1 Quick Match"},
+ {id:"win2",event:"wins",target:2,reward:100,text:"Win 2 Quick Matches"},
+ {id:"win3",event:"wins",target:3,reward:150,text:"Win 3 Quick Matches"}
+];
+
+const CRATE_RARITY_ODDS = [
+  { key: "Common", chance: 48 }, { key: "Uncommon", chance: 27 },
+  { key: "Rare", chance: 16 }, { key: "Epic", chance: 7 }, { key: "Legendary", chance: 2 }
+];
+const ATTACK_TUNING = {
+ bruno:{range:80,damage:30,knockback:360},
+ oink:{speed:410,damage:8.5,knockback:100,life:0.32,spread:0.14},
+ mango:{speed:380,damage:16,knockback:140,life:99},
+ sizzle:{speed:380,damage:35,knockback:95,life:1.6},
+ quackbot:{speed:540,damage:8,knockback:35,life:0.48,spread:0.14},
+ mycelis:{speed:410,damage:20,knockback:80,life:0.85}
+};
+// ================= END EDIT ZONE =================
+
 // --- ARENA CONSTANTS ---
 const BASE_W = 680, BASE_H = 460;
 const ARENA_SCALE = 1.25; // 25% wider and longer, about 56% more arena floor.
@@ -785,13 +916,10 @@ const Store = {
 };
 
 const ACCOUNT_STORAGE_KEY = "bb_account_single_v2";
-const SHINY_REWARDS = { daily: 100, kill: 15, win: 75 };
+
 const COSMETIC_HERO_COUNT = 7;
-const CRATE_RARITY_ODDS = [
-  { key: "Common", chance: 48 }, { key: "Uncommon", chance: 27 },
-  { key: "Rare", chance: 16 }, { key: "Epic", chance: 7 }, { key: "Legendary", chance: 2 }
-];
-const MENU_ANNOUNCEMENT = "Cosmetics rework: champions and weapons now have visibly redesigned skins.";
+
+const MENU_ANNOUNCEMENT = PATCH_UPDATES.announcement;
 const NAMEPLATE_CATEGORIES = [
   { key: "nameColors", label: "Nametag Colors", cratePrice: 250, crateName: "Prismatic Color Cache", crateIcon: "🌈", items: [
     { id: "ember-soul", name: "Ember Soul", rarity: "Common", color: { from: "#fff0a6", to: "#ff552e" } },
@@ -1436,16 +1564,7 @@ function resumePendingCrate(profile){
 }
 
 
-const DAILY_POOL=[
- {id:"play1",event:"matches",target:1,reward:35,text:"Finish 1 Quick Match"},
-  {id:"play2",event:"matches",target:2,reward:65,text:"Finish 3 Quick Matches"},
- {id:"play3",event:"matches",target:3,reward:100,text:"Finish 3 Quick Matches"},
- {id:"kill4",event:"kills",target:4,reward:60,text:"Get 4 Quick Match eliminations"},
- {id:"kill7",event:"kills",target:7,reward:100,text:"Get 6 Quick Match eliminations"},
-  {id:"win1",event:"wins",target:1,reward:75,text:"Win 1 Quick Match"},
- {id:"win2",event:"wins",target:2,reward:100,text:"Win 2 Quick Matches"},
- {id:"win3",event:"wins",target:3,reward:150,text:"Win 3 Quick Matches"}
-];
+
 function normalizeDailyChallenges(value){
  const result={date:value&&/^\d{4}-\d{2}-\d{2}$/.test(value.date)?value.date:"",progress:{},claimed:[]};
  for(const key of ["kills","matches","wins"])result.progress[key]=Math.max(0,Math.floor(Number(value?.progress?.[key])||0));
@@ -1458,7 +1577,7 @@ function dailyState(profile=activeProfile()){
 }
 function dailySelection(date=localDayKey()){
  const day=Math.floor(Date.parse(date+"T00:00:00Z")/86400000);
- return [DAILY_POOL[day%2],DAILY_POOL[2+Math.floor(day/2)%2],DAILY_POOL[4+Math.floor(day/4)%2]];
+ const groups=[DAILY_POOL.filter(c=>c.event==="matches"),DAILY_POOL.filter(c=>c.event==="kills"),DAILY_POOL.filter(c=>c.event==="wins")];return groups.map((g,i)=>g[Math.floor(day/(i+1))%g.length]);
 }
 function progressDaily(event){
  if(!matchIsQuickMatch||!pl||pl.netId!==myNetId||demoActive)return;
@@ -1760,79 +1879,13 @@ function disposeHierarchy(node) {
 }
 
 // --- HERO ATTRIBUTES ---
-const HEROES = [
- {
-   n:"Bruno", e:"🐻", w:"🔨", wn:"Grand Sledgehammer",
-   role: "Tank", roleCol: "#8c5835",
-   hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
-   a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 16 damage, heavy knockback, and a 1-second stun.",
-   a2n:"Charge", a2cd: 14.0,
-   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink’s bullets and cannonballs, Sizzle’s meatballs, and Quackbot’s bullets in front of Bruno. Bananas and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 14 damage, heavy knockback, and a brief stun.",
-   melee: true, d:"A durable frontline tank who controls space with a wide, hard-hitting hammer. Slam interrupts nearby enemies, while Charge lets Bruno cross a short gap and scatter anyone in his path. Time his swings to turn away incoming shots and hold space around himself."
- },
- {
-   n:"Captain Oink", e:"🐷", w:"⚓", wn:"Scrap Cannon",
-   role: "Bruiser", roleCol: "#d66b96",
-   hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
-   a1n:"Chain Hook", a1cd: 11.5, a1d:"Launch a hook up to 200 units ahead. Hitting an enemy pulls them toward Captain Oink and stuns them when they arrive; striking a wall pulls him to it. He is protected while the hook flies or reels in a target, but a miss leaves him rooted and vulnerable for a longer return.",
-   a2n:"Cannonball", a2cd: 9.5,
-   ad:"Fire five scrap pellets in a spread, each dealing 8.5 damage. It rewards close aim, where more pellets can connect.", a2d:"Fire a heavy cannonball for 27 direct damage and a blast that can hit enemies within 80 units for 15 damage, knockback, and a half-second stun.",
-   melee: false, d:"A sturdy close-range bruiser who can start fights with a hook, then punish clustered opponents with his scrap shotgun or explosive cannonball. Hooked foes are dragged into Captain Oink’s preferred range, while a wall hit gives him a quick route through the arena. A missed hook creates a brief opening, so choose the angle carefully."
- },
- {
-   n:"Mango the Monkey", e:"🐵", w:"🍌", wn:"Twin Crescent Boomerang",
-   role: "Skirmisher", roleCol: "#d6a71e",
-   hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
-   a1n:"Cluster Bomb", a1cd: 9.0, a1d:"Lob a fruit bomb ahead. When it bursts, six returning banana boomerangs fan out from the blast point, each dealing 10 damage and knockback on a hit.",
-   a2n:"Peel Trap", a2cd: 10.5,
-   ad:"Throw a crescent boomerang for 16 damage. Cannot be reflected: they are bananas, not bullets! It travels forward, then curves back toward Mango, giving him another chance to catch an opponent on its return path.", a2d:"Drop a peel 38 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 9 damage, is launched, and is stunned for 1.5 seconds.",
-   melee: false, d:"A fast skirmisher who keeps moving while boomerangs pressure opponents from different angles. Cluster Bomb scatters returning blades across a fight, and Peel Trap can punish a pursuer or guard a narrow route. Mango is less durable than the frontliners, so use speed and spacing to avoid being pinned down."
- },
- {
-   n:"Sizzle", e:"🧑‍🍳", w:"🍝", wn:"Culinary Meatball Cannon",
-   role: "Sniper", roleCol: "#d44722",
-   hp: 130, sp: 155, col: 0xededed, cd: 1.1,
-   a1n:"Marinara", a1cd: 7.5, a1d:"Place a 50-unit sauce pool 80 units ahead for 2.8 seconds. Enemies standing in it are slowed and take continuous burn damage.",
-   a2n:"Backdraft", a2cd: 8.5,
-   ad:"Fire a long-range meatball projectile for 35 damage and knockback. Its travel time rewards aiming where an opponent is moving.", a2d:"Burst backward to make space and leave five patches of flame along the retreat path. Each patch burns and slows enemies who cross it for a short time.",
-   melee: false, d:"A fragile ranged specialist who controls lanes with heavy meatball shots and lingering fire. Marinara makes a section of the arena costly to hold, while Backdraft creates distance and leaves a dangerous trail behind. Sizzle performs best when she can see a route ahead and keep opponents outside close range."
- },
- {
-   n:"Quackbot", e:"🤖", w:"🦆", wn:"Cybernetic Plasma Blaster",
-   role: "Assassin", roleCol: "#2b9bc4",
-   hp: 110, sp: 185, col: 0x309bb0, cd: 0.25,
-   a1n:"Blink", a1cd: 6.0, a1d:"Dash instantly forward in up to sixteen short steps. Walls stop the movement, so Blink can slip around cover but cannot pass through it.",
-   a2n:"Barrage", a2cd: 8.5,
-   ad:"Fire quick plasma darts for 8 damage each. Quackbot's short attack cooldown favors steady aim and repeated pressure over one large hit.", a2d:"Queue seven plasma darts in a rapid burst. Each dart deals 7.5 damage, letting the full stream punish a target who stays in the firing lane.",
-   melee: false, d:"A very fast but fragile assassin built around accurate, repeated shots. Blink changes position quickly, and Barrage adds a concentrated burst when an opponent is exposed. Quackbot relies on movement and timing to avoid trading hits with tougher champions."
- },
- {
-   n:"Mycelis", e:"🍄", w:"🪄", wn:"Chitinous Spore Staff",
-   role: "Tactician", roleCol: "#7d5ba6",
-   hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
-   a1n:"Spore Pod", a1cd: 6.5, a1d:"Plant a hidden pod 45 units ahead. It waits for up to 7 seconds; an enemy who triggers it releases a spore cloud, becomes poisoned for 3 seconds, and is slowed. The poison deals 15 total damage.",
-   a2n:"Root Entangle", a2cd: 9.0,
-   ad:"Cannot be reflected: these are shots of magical powers beyond reflection. Fire a spore bolt for 20 damage and knockback. A poisoned opponent can be slowed again by the lingering cloud from a triggered pod.", a2d:"Launch an overgrowth projectile for 18 direct damage. On impact it bursts in a 45-unit area, dealing 12 additional damage and rooting enemies for 1.4 seconds.",
-   melee: false, d:"A tactician who shapes the fight with concealed traps and precise root projectiles. Spore Pod punishes enemies who chase through a planted route, while Root Entangle can hold a target in place for follow-up attacks. Mycelis has balanced health but relies on preparation and accurate placement to get the most from her control tools."
- },
- {
-   n:"Sir Dentley", e:"🛡️", w:"⚔️", wn:"Longsword",
-   role: "Duelist", roleCol: "#9fb4d6",
-   hp: 210, sp: 125, col: 0x8d97a8, cd: 0.5,
-   a1n:"Shield Guard", a1cd: 9.0, a1cdSquire: 6.5, a1d:"Armor only: guard for 2.2s in a 150° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage fuels Riposte (max 40); movement is 20% slower. You cannot attack or use other abilities while guarding. Squire: Dagger Feint, a 70-unit sidestep with 0.2s of invulnerability.",
-   a2n:"Riposte Lunge", a2cd: 8.0,
-   ad:"Longsword: a 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units; the combo resets after 0.9 seconds without another hit.", a2d:"Armor only: make a physical lunge up to 100 units, dealing 20 damage plus stored Riposte (up to 40). At 0 charge it has no stun; at 40 charge it stuns for 1.2 seconds, scaling evenly between those values. All charge is spent on use, even if the lunge misses.",
-   melee: true, atkRange: 70, ab1Range: 130, ab2Range: 100,
-   passive:"Hollow Armor: his armor can break once per match. At 0 armor HP, Dentley becomes a 60 HP Squire; the armor bursts for 25 damage and knockback nearby enemies, while the Squire is knocked away from the dropped husk. Squire has 60% damage reduction for 0.8 seconds, moves faster, and attacks with an 8-damage dagger. Stand still within 40 units of the husk for 1.2 seconds to re-arm with 70 HP. The husk expires after 8 seconds or can be destroyed.",
-   d:"A duelist who turns defense into a counterattack. Armor form uses Shield Guard to face incoming threats, reduce damage, and store Riposte for a physical lunge; the longsword combo rewards staying on target. If the armor breaks, Dentley survives once as a faster Squire and can fight or risk returning to the dropped armor to re-arm."
- }
-];
+
 
 // Captain Oink's chain hook tuning
-const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
+
 
 // Champion body sizes: shared by movement, projectile/melee collision, and visible models.
-const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5];
+
 function championRadius(ci,form=0){return (CHAMPION_RADII[ci]||16)*(ci===6&&form===1?.82:1);}
 function applyChampionModelSize(model,ci,form=0){if(model)model.scale.setScalar(championRadius(ci,form)/16*(model.userData.bbPresentationScale||1));}
 function applyChampionBodySize(e){e.r=championRadius(e.ci,e.form||0);applyChampionModelSize(e.mesh,e.ci,e.form||0);}
@@ -2141,10 +2194,10 @@ addEventListener("keydown", e => {
   if(state !== "play" || isSpectating) return;
 
   if(controlScheme === "wasd") {
-    if(e.code === "KeyE") P1_ab1 = 1;
+    if(e.code === "KeyE" && !e.repeat) P1_ab1 = 1;
     if(e.code === "KeyQ") P1_ab2 = 1;
   } else {
-    if(e.code === "ShiftRight") P1_ab1 = 1;
+    if(e.code === "ShiftRight" && !e.repeat) P1_ab1 = 1;
     if(e.code === "Slash") P1_ab2 = 1;
   }
 });
@@ -2791,44 +2844,51 @@ function addHeroDetails(grp, headGrp, heroIndex) {
 }
 
 function applyChampionSkin(model, heroIndex, item) {
-  if(!model) return;
-  if(model.skinFx) { disposeHierarchy(model.skinFx); model.skinFx = null; }
-  if(model.skinOutfit) { disposeHierarchy(model.skinOutfit); model.skinOutfit = null; }
-  if(model.bodyMat) {
-    model.bodyMat.color.set(item ? item.base : HEROES[heroIndex].col);
-    model.bodyMat.emissive.set(item ? item.glow : 0x000000);
-    model.bodyMat.emissiveIntensity = item ? 0.24 : 0;
-    model.bodyMat.needsUpdate = true;
-  }
-  if(!item) return;
-  const outfit = new THREE.Group();
-  const armorMat = new THREE.MeshStandardMaterial({ color: item.base, metalness: 0.62, roughness: 0.32 });
-  const trimMat = new THREE.MeshStandardMaterial({ color: item.accent, emissive: item.glow, emissiveIntensity: 0.28, metalness: 0.48, roughness: 0.28 });
-  const cape = new THREE.Mesh(new THREE.BoxGeometry(18, 22, 1.2), armorMat);
-  cape.position.set(0, 17, -9);
-  const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(15, 11, 2.2), armorMat);
-  chestPlate.position.set(0, 16, 11.6);
-  const chestTrim = new THREE.Mesh(new THREE.BoxGeometry(11, 2, 2.6), trimMat);
-  chestTrim.position.set(0, 16, 12.9);
-  const shoulders = [-1, 1].map(side => {
-    const pad = new THREE.Mesh(new THREE.SphereGeometry(5.3, 10, 8), trimMat);
-    pad.scale.set(1.25, 0.78, 0.9);
-    pad.position.set(side * 12.2, 24, 0);
-    return pad;
-  });
-  const chestEmblem = new THREE.Mesh(new THREE.OctahedronGeometry(2.2, 0), trimMat);
-  chestEmblem.position.set(0, 22, 13.4);
-  outfit.add(cape, chestPlate, chestTrim, chestEmblem, ...shoulders);
-  outfit.traverse(node => { if(node.isMesh) node.castShadow = true; });
-  model.add(outfit);
-  model.skinOutfit = outfit;
-
-  const fx = new THREE.Group();
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(15.5, 0.85, 7, 32), new THREE.MeshBasicMaterial({ color: item.accent, transparent: true, opacity: 0.9 }));
-  ring.rotation.x = -Math.PI / 2; ring.position.y = 2.2; fx.add(ring);
-  const crest = new THREE.Mesh(new THREE.OctahedronGeometry(2.5, 0), new THREE.MeshStandardMaterial({ color: item.accent, emissive: item.glow, emissiveIntensity: 0.8, metalness: 0.4, roughness: 0.24 }));
-  crest.position.set(0, 48, 0); fx.add(crest);
-  model.add(fx); model.skinFx = fx;
+ if(!model)return;
+ for(const k of ["skinFx","skinOutfit"])if(model[k]){disposeHierarchy(model[k]);model[k]=null;}
+ if(model.bodyMat){model.bodyMat.color.set(item?item.base:HEROES[heroIndex].col);model.bodyMat.emissive.set(item?item.glow:0);model.bodyMat.emissiveIntensity=item?0.16:0;}
+ if(!item)return;
+ const g=new THREE.Group();model.add(g);model.skinOutfit=g;
+ const base=new THREE.MeshStandardMaterial({color:item.base,metalness:0.45,roughness:0.45});
+ const trim=new THREE.MeshStandardMaterial({color:item.accent,emissive:item.glow,emissiveIntensity:0.35});
+ function add(geo,x,y,z,mat=base,rx=0,rz=0){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,0,rz);m.castShadow=true;g.add(m);return m;}
+ const box=(w,h,d,x,y,z,mat=base)=>add(new THREE.BoxGeometry(w,h,d),x,y,z,mat);
+ const ball=(r,x,y,z,mat=trim)=>add(new THREE.SphereGeometry(r,10,8),x,y,z,mat);
+ const ring=(r,x,y,z,rx=0)=>add(new THREE.TorusGeometry(r,0.7,6,24),x,y,z,trim,rx);
+ switch(heroIndex){
+ case 0:
+ box(17,18,5,0,20,-10);box(13,12,3,0,19,11);
+ for(const side of [-1,1]){ball(6,side*13,25,0,base);add(new THREE.OctahedronGeometry(3),side*14,30,1,trim);box(3,12,4,side*7,17,-14,trim);}
+ ball(3.5,0,20,14);ring(5,0,20,14);break;
+ case 1:
+ box(24,3,12,0,41,0);add(new THREE.ConeGeometry(10,9,3),0,46,0,base);
+ for(const side of [-1,1]){box(9,3,10,side*12,25,0,trim);box(7,18,2,side*5,12,-10);for(let j=0;j<3;j++)ball(0.9,side*4,13+j*4,12);}
+ box(1.5,9,1,0,20,13,trim);ring(3,0,16,13);break;
+ case 2:
+ ring(10,0,39,0,Math.PI/2);add(new THREE.ConeGeometry(4,9,4),0,46,0,trim);
+ for(let i=0;i<7;i++){const a=i*Math.PI/6;ball(1.4,Math.cos(a)*10,24-Math.sin(a)*5,10);}
+ for(let i=-2;i<=2;i++)add(new THREE.ConeGeometry(3,14,3),i*4,28,-10,trim,0,i*0.25);
+ box(18,3,18,0,12,0,trim);break;
+ case 3:
+ box(16,20,3,0,15,12);for(let i=0;i<4;i++)box(13-i*2,1.4,1,0,10+i*4,14,trim);
+ for(const side of [-1,1])add(new THREE.ConeGeometry(3,13,8),side*9,43,0,trim,0,-side*0.4);
+ for(let i=0;i<4;i++)add(new THREE.ConeGeometry(3,7,4),0,12+i*6,-12,trim,-Math.PI/2);
+ add(new THREE.ConeGeometry(4,22,8),0,9,-18,base,-Math.PI/3);break;
+ case 4:
+ box(19,5,3,0,35,11,trim);box(15,16,6,0,19,-11);
+ for(const side of [-1,1]){add(new THREE.CylinderGeometry(3,4,12,8),side*8,18,-14);ball(2.3,side*8,11,-14);box(1,10,1,side*8,43,0,trim);ball(1.7,side*8,49,0);add(new THREE.ConeGeometry(5,15,3),side*15,21,-5,trim,0,side*0.4);}
+ break;
+ case 5:
+ add(new THREE.SphereGeometry(15,16,8,0,Math.PI*2,0,Math.PI/2),0,39,0);
+ ring(15,0,39,0,Math.PI/2);for(let i=0;i<5;i++){const a=i*Math.PI*2/5;ball(1.6,Math.cos(a)*11,44,Math.sin(a)*11);}
+ for(const side of [-1,1]){ball(3,side*18,28,0);box(7,20,2,side*8,17,-10);}
+ add(new THREE.OctahedronGeometry(3),0,22,13,trim);break;
+ case 6:
+ box(16,13,3,0,20,12);ring(4,0,22,14);
+ for(let i=0;i<8;i++){const a=i*Math.PI/4;add(new THREE.ConeGeometry(1,4,3),Math.cos(a)*6,22+Math.sin(a)*6,14,trim,0,a-Math.PI/2);}
+ for(const side of [-1,1]){box(6,18,2,side*4,8,11);for(let i=0;i<3;i++)add(new THREE.ConeGeometry(2.5,10-i*2,3),side*(12+i*3),27+i,0,trim,0,-side*0.7);}
+ add(new THREE.ConeGeometry(3,11,4),0,47,0,trim);break;
+ }
 }
 
 function applyWeaponSkin(weapon, item, heroIndex) {
@@ -3529,12 +3589,12 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
 
   if(t.ci === 6) { // Dentley: squire grace, Shield Guard
-    if(t.grace > 0) rawDmg *= 0.4;
+    if(t.grace > 0) rawDmg *= BALANCE_PATCH.dentley.squireDamageMultiplier;
     if(t.guard > 0 && damageType !== "unblockable" && (!attacker || attacker !== t) &&
-       Math.abs(Math.atan2(Math.sin(a + Math.PI - t.a), Math.cos(a + Math.PI - t.a))) <= 1.31) {
+       Math.abs(Math.atan2(Math.sin(a + Math.PI - t.a), Math.cos(a + Math.PI - t.a))) <= BALANCE_PATCH.dentley.guardHalfArc) {
       const soaked = rawDmg * (damageType === "projectile" ? 0.75 : 0.60);
       rawDmg -= soaked;
-      t.riposte = Math.min(40, t.riposte + soaked);
+      t.riposte = Math.min(BALANCE_PATCH.dentley.maxCharge, t.riposte + soaked);
       if(soaked >= 1) spawnSparks(t.x, t.z, 0x9fc5ff, 3);
     }
     t.chan = 0; // any damage interrupts re-armouring
@@ -3704,6 +3764,34 @@ function shot(e, a, o) {
   orientProjectile(projectile);P.push(projectile);
 }
 
+function canReleaseDentleyGuard(e) {
+ return dentleyGuardActive(e) && e.guard <= BALANCE_PATCH.dentley.guardDuration-BALANCE_PATCH.dentley.minGuard+0.0001;
+}
+function releaseDentleyGuard(e) {
+ if(!canReleaseDentleyGuard(e))return false;
+ e.guard=0;e.guardBoost=BALANCE_PATCH.dentley.releaseBoostDuration;
+ return true; // Original Guard cooldown continues; release never refunds it.
+}
+function canRecallDentleyHusk(e) {
+ return !!(e&&e.ci===6&&e.form===1&&!e.dead&&e.c3<=0&&!e.huskRecallUsed&&e.husk&&e.husk.hp>0&&e.husk.life>0);
+}
+function recallDentleyHusk(e) {
+ if(!canRecallDentleyHusk(e))return false;
+ if(isMultiplayer&&!isLobbyLeader)return false; // Host moves the husk; snapshots replicate it.
+ let found=null;
+ for(let d=BALANCE_PATCH.dentley.recallDistance;d>=12;d-=4){
+  const x=e.x+Math.cos(e.a)*d,z=e.z+Math.sin(e.a)*d;
+  if(blocked(x,z,13))continue;
+  let clear=true;for(let q=4;q<=d;q+=4)if(blocked(e.x+Math.cos(e.a)*q,e.z+Math.sin(e.a)*q,3)){clear=false;break;}
+  if(clear){found={x,z};break;}
+ }
+ if(!found)return false; // Blocked placement does not spend the one-use recall.
+ const h=e.husk;h.x=found.x;h.z=found.z;h.mesh.position.set(h.x,0,h.z);
+ e.huskRecallUsed=true;e.chan=0;
+ spawn3DRing(h.x,h.z,30,0x9fc5ff);Snd.play("pickup");
+ return true; // Existing HP/lifetime are preserved; expired armor cannot be revived.
+}
+
 function dentleyGuardActive(e) {
   return !!(e && e.ci === 6 && e.form === 0 && e.guard > 0);
 }
@@ -3716,19 +3804,19 @@ function executeAttack(e) {
   if(e.ci === 6) {
     dentleyAttack(e);
   } else if(c.melee) {
-    melee(e, 80, 30, 360);
+    melee(e, ATTACK_TUNING.bruno.range, ATTACK_TUNING.bruno.damage, ATTACK_TUNING.bruno.knockback);
   } else if(e.ci === 1) {
     for(let i = -2; i <= 2; i++) {
-      shot(e, e.a + i*0.14, {t:"s", s:410, d:8.5, kb:100, life:0.32});
+      shot(e, e.a + i*ATTACK_TUNING.oink.spread, {t:"s", s:ATTACK_TUNING.oink.speed, d:ATTACK_TUNING.oink.damage, kb:ATTACK_TUNING.oink.knockback, life:ATTACK_TUNING.oink.life});
     }
   } else if(e.ci === 2) {
-    shot(e, e.a, {t:"b", s:380, d:16, kb:140, life:99});
+    shot(e, e.a, {t:"b", s:ATTACK_TUNING.mango.speed, d:ATTACK_TUNING.mango.damage, kb:ATTACK_TUNING.mango.knockback, life:ATTACK_TUNING.mango.life});
   } else if(e.ci === 3) {
-    shot(e, e.a, {t:"meatball", s:380, d:35, kb:95, life:1.6});
+    shot(e, e.a, {t:"meatball", s:ATTACK_TUNING.sizzle.speed, d:ATTACK_TUNING.sizzle.damage, kb:ATTACK_TUNING.sizzle.knockback, life:ATTACK_TUNING.sizzle.life});
   } else if(e.ci === 4) {
-    shot(e, e.a + (Math.random()-0.5)*0.14, {t:"s", s:540, d:8, kb:35, life:0.48});
+    shot(e, e.a + (Math.random()-0.5)*ATTACK_TUNING.quackbot.spread, {t:"s", s:ATTACK_TUNING.quackbot.speed, d:ATTACK_TUNING.quackbot.damage, kb:ATTACK_TUNING.quackbot.knockback, life:ATTACK_TUNING.quackbot.life});
   } else if(e.ci === 5) {
-    shot(e, e.a, {t:"spore", s:410, d:20, kb:80, life:0.85});
+    shot(e, e.a, {t:"spore", s:ATTACK_TUNING.mycelis.speed, d:ATTACK_TUNING.mycelis.damage, kb:ATTACK_TUNING.mycelis.knockback, life:ATTACK_TUNING.mycelis.life});
   }
 }
 
@@ -3742,7 +3830,7 @@ function attack(e) {
 }
 
 function executeAbility1(e) {
-  if(dentleyGuardActive(e)) return;
+  if(dentleyGuardActive(e)) { releaseDentleyGuard(e); return; }
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 1);
   if(e.ci === 6) { dentleyGuard(e, c); return; }
@@ -3755,8 +3843,8 @@ function executeAbility1(e) {
         const targetPos = getCombatPosition(t, e);
         if(t !== e && !t.dead && Math.hypot(targetPos.x-e.x, targetPos.z-e.z) < 110 + t.r && areEnemies(e, t)) {
           if(hasLOS(e.x, e.z, targetPos.x, targetPos.z)) {
-            hurt(t, 16, Math.atan2(targetPos.z-e.z, targetPos.x-e.x), 280, e);
-            t.stun = 1.0;
+            hurt(t, BALANCE_PATCH.bruno.slamDamage, Math.atan2(targetPos.z-e.z, targetPos.x-e.x), 280, e);
+            t.stun = BALANCE_PATCH.bruno.slamStun;
           }
         }
       }
@@ -3775,7 +3863,7 @@ function executeAbility1(e) {
         for(let i = 0; i < 6; i++) {
           const ang = (Math.PI * 2 / 6) * i + (Math.random() - 0.5) * 0.2;
           shot(e, ang, {
-            t: "b", s: 330, d: 10, kb: 110, life: 99,
+            t: "b", s: 330, d: BALANCE_PATCH.mango.bananaDamage, kb: 110, life: 99,
             x: bx, z: bz
           });
         }
@@ -3785,13 +3873,13 @@ function executeAbility1(e) {
     e.c2 = c.a1cd;
     const placeX = e.x + Math.cos(e.a) * 80;
     const placeZ = e.z + Math.sin(e.a) * 80;
-    const geo = new THREE.CylinderGeometry(50, 50, 1.5, 20);
+    const geo = new THREE.CylinderGeometry(BALANCE_PATCH.sizzle.sauceRadius, BALANCE_PATCH.sizzle.sauceRadius, 1.5, 20);
     const mat = new THREE.MeshBasicMaterial({ color: 0xd9381e, transparent: true, opacity: 0.45 });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.set(placeX, 1, placeZ);
     scene.add(mesh);
 
-    Zones.push({ kind: "marinara", x: placeX, z: placeZ, r: 50, life: 2.8, owner: e, mesh });
+    Zones.push({ kind: "marinara", x: placeX, z: placeZ, r: BALANCE_PATCH.sizzle.sauceRadius, life: BALANCE_PATCH.sizzle.sauceDuration, owner: e, mesh });
   } else if(e.ci === 4) {
     e.c2 = c.a1cd;
     spawn3DRing(e.x, e.z, 28, 0x36c0eb);
@@ -3805,8 +3893,8 @@ function executeAbility1(e) {
     if(e.activePod) return;
     e.c2 = 999;
 
-    const px = e.x + Math.cos(e.a) * 45;
-    const pz = e.z + Math.sin(e.a) * 45;
+    const px = e.x + Math.cos(e.a) * BALANCE_PATCH.mycelis.podDistance;
+    const pz = e.z + Math.sin(e.a) * BALANCE_PATCH.mycelis.podDistance;
     const trapGrp = new THREE.Group();
 
     if(e === pl) {
@@ -3851,19 +3939,20 @@ function executeAbility1(e) {
 
 function ability1(e) {
   if(hostVisibilityPaused && isMultiplayer) return;
-  if(dentleyGuardActive(e)) return;
+  if(dentleyGuardActive(e) && !canReleaseDentleyGuard(e)) return;
   if(isMultiplayer) sendActionIntent("AB1", e.a, e.x, e.z);
   executeAbility1(e);
 }
 
 function executeAbility2(e) {
   if(dentleyGuardActive(e)) return;
+  if(e.ci===6 && e.form===1){ recallDentleyHusk(e); return; }
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 2);
   e.c3 = c.a2cd;
   if(e.ci === 6) { dentleyLunge(e); return; }
   if(e.ci === 0) {
-    e.chargeT = 0.32;
+    e.chargeT = 0.32; e.chargeHit=new Set();
     e.chargeVx = Math.cos(e.a) * 460;
     e.chargeVz = Math.sin(e.a) * 460;
     spawn3DRing(e.x, e.z, 32, 0x8c5835);
@@ -3885,8 +3974,8 @@ function executeAbility2(e) {
       }
     });
   } else if(e.ci === 2) {
-    const peelX = e.x + Math.cos(e.a) * 38;
-    const peelZ = e.z + Math.sin(e.a) * 38;
+    const peelX = e.x + Math.cos(e.a) * BALANCE_PATCH.mango.peelDistance;
+    const peelZ = e.z + Math.sin(e.a) * BALANCE_PATCH.mango.peelDistance;
     const geo = new THREE.TorusGeometry(8, 2.5, 6, 14, Math.PI);
     geo.rotateX(-Math.PI / 2);
     const mat = new THREE.MeshStandardMaterial({ color: 0xffd000, roughness: 0.3 });
@@ -3921,13 +4010,13 @@ function executeAbility2(e) {
     shot(e, e.a, {
       t: "vine", s: 420, d: 18, kb: 20, life: 0.85,
       onDeath: (vx, vz) => {
-        spawn3DRing(vx, vz, 45, 0x55bb33);
+        spawn3DRing(vx, vz, BALANCE_PATCH.mycelis.rootRadius, 0x55bb33);
         if(!isMultiplayer || isLobbyLeader) {
           for(const t of E) {
             const targetPos = getCombatPosition(t, e);
-            if(t !== e && !t.dead && Math.hypot(targetPos.x - vx, targetPos.z - vz) < 45 + t.r && areEnemies(e, t)) {
-              hurt(t, 12, Math.atan2(targetPos.z - vz, targetPos.x - vx), 20, e);
-              t.stun = 1.4;
+            if(t !== e && !t.dead && Math.hypot(targetPos.x - vx, targetPos.z - vz) < BALANCE_PATCH.mycelis.rootRadius + t.r && areEnemies(e, t)) {
+              hurt(t, BALANCE_PATCH.mycelis.rootBurst, Math.atan2(targetPos.z - vz, targetPos.x - vx), 20, e);
+              t.stun = BALANCE_PATCH.mycelis.rootDuration;
               spawnDamageNumber(targetPos.x, targetPos.z, "ROOTED", "#55dd44");
             }
           }
@@ -3940,7 +4029,7 @@ function executeAbility2(e) {
 function ability2(e) {
   if(hostVisibilityPaused && isMultiplayer) return;
   if(dentleyGuardActive(e)) return;
-  if(e.ci === 6 && e.form === 1) return; // the Squire has no Riposte Lunge
+  if(e.ci === 6 && e.form === 1 && !canRecallDentleyHusk(e)) return;
   if(isMultiplayer) sendActionIntent("AB2", e.a, e.x, e.z);
   executeAbility2(e);
 }
@@ -4080,7 +4169,29 @@ function inVisionCone(observer, tx, tz, maxFov = 1.67) {
   return Math.abs(diff) <= (maxFov / 2);
 }
 
+function botWaypoint(e,gx,gz) {
+ const ai=e.ai,cell=28;
+ if(ai.pathTimer>0&&ai.path&&ai.path.length){while(ai.path.length>1&&Math.hypot(ai.path[0][0]-e.x,ai.path[0][1]-e.z)<cell*0.7)ai.path.shift();return ai.path[0];}
+ ai.pathTimer=0.9+Math.random()*0.35;
+ const sx=Math.round(e.x/cell),sz=Math.round(e.z/cell),tx=Math.round(gx/cell),tz=Math.round(gz/cell);
+ const key=(x,z)=>x+","+z,open=[{x:sx,z:sz,g:0,f:0,p:null}],seen=new Map();let best=open[0],count=0;
+ seen.set(key(sx,sz),0);
+ while(open.length&&count++<1400){open.sort((a,b)=>b.f-a.f);const n=open.pop();
+ if(Math.hypot(n.x-tx,n.z-tz)<Math.hypot(best.x-tx,best.z-tz))best=n;
+ if(n.x===tx&&n.z===tz){best=n;break;}
+ for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){
+ const x=n.x+dx,z=n.z+dz,wx=x*cell,wz=z*cell;
+ if(wx<e.r||wz<e.r||wx>W-e.r||wz>H-e.r||blocked(wx,wz,e.r)||blocked((n.x+x)*cell/2,(n.z+z)*cell/2,e.r))continue;
+ if(dx&&dz&&(blocked((n.x+dx)*cell,n.z*cell,e.r)||blocked(n.x*cell,(n.z+dz)*cell,e.r)))continue;
+ const cost=n.g+Math.hypot(dx,dz),k=key(x,z);if(seen.has(k)&&seen.get(k)<=cost)continue;
+ seen.set(k,cost);open.push({x,z,g:cost,f:cost+Math.hypot(x-tx,z-tz),p:n});
+ }}
+ const path=[];while(best&&best.p){path.unshift([best.x*cell,best.z*cell]);best=best.p;}
+ ai.path=path;return path[0]||[e.x,e.z];
+}
+
 function updateAI(e, dt) {
+ e.ai.pathTimer=(e.ai.pathTimer||0)-dt;
   e.ai.timer -= dt;
   e.ai.strafeTimer -= dt;
   if(e.ai.alertTimer > 0) e.ai.alertTimer -= dt;
@@ -4114,6 +4225,10 @@ function updateAI(e, dt) {
 
   if(e.ai.timer > 0) return [e.ai.mx, e.ai.mz, e.ai.at, e.ai.ab1, e.ai.ab2];
   e.ai.timer = e.ai.react;
+  if(canRecallDentleyHusk(e))recallDentleyHusk(e);
+  if(e.ci===6&&e.form===1&&e.husk&&Math.hypot(e.x-e.husk.x,e.z-e.husk.z)<BALANCE_PATCH.dentley.rearmRange-8){
+   e.ai.mx=0;e.ai.mz=0;e.ai.at=0;e.ai.ab1=0;e.ai.ab2=0;return [0,0,0,0,0];
+  }
 
   const isLowHP = (e.hp / e.mhp) < 0.32;
   let nearestPickup = null, bestPickDist = 1e9;
@@ -4145,11 +4260,13 @@ function updateAI(e, dt) {
     moveAng = Math.atan2(nearestPickup.z - e.z, nearestPickup.x - e.x);
     targetAng = moveAng;
   } else if(e.ai.state === "WANDER") {
-    if(Math.random() < 0.15) {
-      e.a += (Math.random() - 0.5) * 1.2;
+    if(!e.ai.roam || Math.hypot(e.ai.roam[0]-e.x,e.ai.roam[1]-e.z)<45 || (e.ai.roamT||0)<=0){
+      for(let i=0;i<20;i++){const x=40+Math.random()*(W-80),z=40+Math.random()*(H-80);if(!blocked(x,z,e.r)){e.ai.roam=[x,z];break;}}
+      e.ai.roamT=5+Math.random()*4;e.ai.pathTimer=0;
     }
-    moveAng = e.a;
-    targetAng = e.a;
+    e.ai.roamT-=e.ai.react;
+    const roam=e.ai.roam||[W/2,H/2];
+    moveAng=Math.atan2(roam[1]-e.z,roam[0]-e.x);targetAng=moveAng;
   } else if(e.ai.currentTarget) {
     const t = e.ai.currentTarget;
     const targetDist = Math.hypot(t.x - e.x, t.z - e.z);
@@ -4171,16 +4288,27 @@ function updateAI(e, dt) {
     if(bombDist < 160) moveAng = Math.atan2(e.z - worldCrate.z, e.x - worldCrate.x);
   }
 
-  let da = targetAng - e.a;
-  da = Math.atan2(Math.sin(da), Math.cos(da));
-  e.a += da * 0.45;
-
-  if(blocked(e.x + Math.cos(moveAng)*38, e.z + Math.sin(moveAng)*38, e.r)) {
-    moveAng += Math.PI/2 * e.ai.strafeDir;
+  let goal=null;
+  if(e.ai.state==="WANDER")goal=e.ai.roam;
+  else if(e.ai.state==="RUN_CENTER")goal=[W/2,H/2];
+  else if(e.ai.state==="SEEK_HEAL"&&nearestPickup)goal=[nearestPickup.x,nearestPickup.z];
+  else if(e.ai.currentTarget&&!hasLOS(e.x,e.z,e.ai.currentTarget.x,e.ai.currentTarget.z))goal=[e.ai.currentTarget.x,e.ai.currentTarget.z];
+  if(goal){const waypoint=botWaypoint(e,...goal);moveAng=Math.atan2(waypoint[1]-e.z,waypoint[0]-e.x);}
+  let bestAngle=moveAng,bestScore=-Infinity;
+  for(let i=0;i<16;i++){
+    const a=moveAng+i*Math.PI/8;
+    if(blocked(e.x+Math.cos(a)*18,e.z+Math.sin(a)*18,e.r))continue;
+    let clear=0;for(let d=18;d<=78;d+=12){if(blocked(e.x+Math.cos(a)*d,e.z+Math.sin(a)*d,e.r))break;clear=d;}
+    const score=Math.cos(a-moveAng)*2+clear/40+Math.cos(a-(e.ai.lastMoveAng??moveAng))*0.3;
+    if(score>bestScore){bestScore=score;bestAngle=a;}
   }
+  moveAng=bestAngle;e.ai.lastMoveAng=moveAng;
+  if(!e.ai.currentTarget||!hasLOS(e.x,e.z,e.ai.currentTarget.x,e.ai.currentTarget.z))targetAng=moveAng+Math.sin(matchTime*1.7+e.bobPhase)*0.25;
+  const da=Math.atan2(Math.sin(targetAng-e.a),Math.cos(targetAng-e.a));e.a+=da*0.65;
+  if(bestScore===-Infinity){e.ai.mx=0;e.ai.mz=0;e.ai.pathTimer=0;}
 
-  const targetVx = Math.cos(moveAng);
-  const targetVz = Math.sin(moveAng);
+  const targetVx = bestScore===-Infinity ? 0 : Math.cos(moveAng);
+  const targetVz = bestScore===-Infinity ? 0 : Math.sin(moveAng);
   e.ai.mx += (targetVx - e.ai.mx) * 0.35;
   e.ai.mz += (targetVz - e.ai.mz) * 0.35;
 
@@ -4214,7 +4342,7 @@ function syncHUD() {
   if(hasRiposte) {
     const charge = Math.max(0, Math.min(40, targetEnt.riposte || 0));
     document.getElementById("riposte-meter-label").innerText =
-      `RIPOSTE ${Math.round(charge)} / 40${targetEnt.guard > 0 ? " · GUARD UP" : (sq ? " · SQUIRE" : "")}`;
+      `COUNTER CHARGE ${Math.round(charge)} / 40${targetEnt.guard > 0 ? " · GUARD UP" : (sq ? " · SQUIRE" : "")}`;
     document.getElementById("riposte-fill").style.width = (charge / 40 * 100) + "%";
   }
   const ab1LabelKey = controlScheme === "wasd" ? "[E]" : "[R-SHIFT]";
@@ -4231,14 +4359,14 @@ function syncHUD() {
     document.getElementById("cd1-fill").style.width = (remainRatio * 100) + "%";
     document.getElementById("cd1-label").innerText = `${ab1LabelKey} POD ACTIVE`;
   } else {
-    const cd1Prog = targetEnt.c2 <= 0 ? 1 : Math.max(0, (1 - targetEnt.c2 / (sq ? 7 : c.a1cd)));
+    const cd1Prog = targetEnt.c2 <= 0 ? 1 : Math.max(0, (1 - targetEnt.c2 / (sq ? c.a1cdSquire : c.a1cd)));
     document.getElementById("cd1-fill").style.width = (cd1Prog * 100) + "%";
-    document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${sq ? "Dagger Feint" : c.a1n}`;
+    document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${sq ? "Dagger Feint" : targetEnt.guard>0 ? (canReleaseDentleyGuard(targetEnt)?"Release Shield":"GUARD LOCKED") : c.a1n}`;
   }
 
-  const cd2Prog = sq ? 0 : targetEnt.c3 <= 0 ? 1 : (1 - targetEnt.c3 / c.a2cd);
+  const cd2Prog = sq ? (targetEnt.huskRecallUsed||!targetEnt.husk ? 0 : Math.max(0,Math.min(1,1-targetEnt.c3/BALANCE_PATCH.dentley.recallDelay))) : targetEnt.c3 <= 0 ? 1 : Math.max(0,Math.min(1,1 - targetEnt.c3 / c.a2cd));
   document.getElementById("cd2-fill").style.width = (cd2Prog * 100) + "%";
-  document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${sq ? "No Armor" : c.a2n}`;
+  document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${sq ? (!targetEnt.husk?"ARMOR LOST":targetEnt.huskRecallUsed?"RECALL USED":targetEnt.c3>0?"Recall Armor "+Math.ceil(targetEnt.c3)+"s":"Recall Armor") : c.a2n}`;
 
   stormTimerDisp.innerText = `STORM: ${Math.round(stormRadius)}m`;
 }
@@ -4819,7 +4947,7 @@ function handleIncomingData(conn, data) {
           if(item.hp < pl.hp && !pl.dead) applyLocalHitFeedback(pl.hp - item.hp);
           pl.hp = item.hp;
           pl.mhp=item.mh||pl.mhp;pl.form=item.fm||0;applyChampionBodySize(pl);
-          pl.guard = item.gd || 0; pl.riposte = item.rp || 0;
+          pl.guard = item.gd || 0; pl.riposte = item.rp || 0; pl.guardBoost=item.gb||0; if(pl.ci===6){if(Number.isFinite(item.dc3))pl.c3=item.dc3;pl.huskRecallUsed=!!item.hr;}
           // Replicate host-applied status effects so stuns/slows/poison actually stop a client
           pl.stun = Math.max(pl.stun, item.st || 0);
           pl.slow = Math.max(pl.slow, item.sl || 0);
@@ -4862,7 +4990,7 @@ function handleIncomingData(conn, data) {
         ent.targetP = item.p || 0;
         ent.hp = item.hp;
         ent.mhp=item.mh||ent.mhp;ent.form=item.fm||0;applyChampionBodySize(ent);
-        ent.guard = item.gd || 0; ent.riposte = item.rp || 0;
+        ent.guard = item.gd || 0; ent.riposte = item.rp || 0; ent.guardBoost=item.gb||0; if(ent.ci===6){if(Number.isFinite(item.dc3))ent.c3=item.dc3;ent.huskRecallUsed=!!item.hr;}
         ent.dead = item.dead;
         ent.stun = item.st || 0;
         ent.slow = item.sl || 0;
@@ -4917,7 +5045,7 @@ function handleIncomingData(conn, data) {
         if(!pose) return;
         const slack = actionCooldownSlack(conn);
         if(data.act === "ATTACK" && ent.c1 <= slack) accepted = true;
-        else if(data.act === "AB1" && ent.c2 <= slack) accepted = true;
+        else if(data.act === "AB1" && (ent.c2 <= slack || canReleaseDentleyGuard(ent))) accepted = true;
         else if(data.act === "AB2" && ent.c3 <= slack) accepted = true;
         if(accepted) {
           ent.hitRewindMs = actionHitRewind(conn);
@@ -4967,7 +5095,7 @@ setInterval(() => {
       kx: Math.round(e.kx),
       kz: Math.round(e.kz),
       kl: e.killedBy,
-      fm: e.form, mh: e.mhp, gd: e.guard > 0 ? e.guard : 0, rp: e.riposte,
+      fm: e.form, mh: e.mhp, gd: e.guard > 0 ? e.guard : 0, rp: e.riposte, gb:e.guardBoost||0, dc3:e.c3, hr:!!e.huskRecallUsed,
       un: e.username, tc: e.tagCosmetics,
       cs: e.skins && e.skins.championSkins ? e.skins.championSkins[e.ci] : "default",
       ws: e.skins && e.skins.weaponSkins ? e.skins.weaponSkins[e.ci] : "default"
@@ -4977,7 +5105,7 @@ setInterval(() => {
       seq: outgoingSeq,
       entities: snapEntities,
       pickups: Pickups.map(pk => ({ id: pk.uid, k: pk.kind, x: pk.x, z: pk.z })),
-      husks: Husks.map(h => ({ id: h.id, x: h.x, z: h.z, hp: h.hp, l: h.life })),
+      husks: Husks.map(h => ({ id: h.id, x: h.x, z: h.z, hp: h.hp, l: h.life, ownerId:h.owner?h.owner.netId:null })),
       crate: worldCrate ? { id:worldCrate.id, x:worldCrate.x, z:worldCrate.z, y:worldCrate.y||0, hp:worldCrate.hp, bombT:worldCrate.bombT, exploded:!!worldCrate.exploded } : null,
       arenaTime:matchTime,
       storm: Math.round(stormRadius)
@@ -5666,11 +5794,11 @@ function dentleyAttack(e) {
 
 function dentleyGuard(e, c) {
   if(e.form === 0) { // Shield Guard
-    e.c2 = c.a1cd; e.guard = 2.2;
+    e.c2 = c.a1cd; e.guard = BALANCE_PATCH.dentley.guardDuration; e.guardBoost=0;
     spawn3DRing(e.x, e.z, 26, 0x9fc5ff);
     return;
   }
-  e.c2 = 7; e.feintDir = -e.feintDir; // Squire: Dagger Feint sidestep
+  e.c2 = c.a1cdSquire; e.feintDir = -e.feintDir; // Squire: Dagger Feint sidestep
   e.feintInvuln = 0.2;
   const sa = e.a + Math.PI / 2 * e.feintDir;
   for(let i = 0; i < 7; i++) {
@@ -5684,9 +5812,9 @@ function dentleyGuard(e, c) {
 
 function dentleyLunge(e) {
   if(e.form === 1) { e.c3 = 0; return; } // the Squire has no armor to lunge with
-  const charge = e.riposte;
-  const dmg = 20 + charge;
-  const stun = charge > 0 ? Math.min(1.2, charge / 40 * 1.2) : 0;
+  const charge = Math.max(0,Math.min(BALANCE_PATCH.dentley.maxCharge,e.riposte||0));
+  const dmg = BALANCE_PATCH.dentley.lungeBaseDamage + charge;
+  const stun = BALANCE_PATCH.dentley.minStun + charge / BALANCE_PATCH.dentley.maxCharge * (BALANCE_PATCH.dentley.maxStun-BALANCE_PATCH.dentley.minStun);
   e.riposte = 0; // charge is spent even if the lunge misses
   beginDentleyLunge(e, 100, 0.24, dmg, 220, false, stun);
 }
@@ -5708,9 +5836,9 @@ function makeHuskMesh() {
 function breakArmor(t, a) {
   t.armorBreakUsed = true;
   t.form=1;t.hp=60;t.mhp=60;applyChampionBodySize(t);
-  t.guard = 0; t.grace = 0.8; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
+  t.guard = 0; t.guardBoost=0; t.grace = BALANCE_PATCH.dentley.squireGrace; t.c3=BALANCE_PATCH.dentley.recallDelay; t.huskRecallUsed=false; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
   t.kx = Math.cos(a) * 520; t.kz = Math.sin(a) * 520; // send the Squire farther from the armor husk
-  const h = { id: "hk_" + Math.random().toString(36).slice(2, 8), x: t.x, z: t.z, hp: 100, life: 8, owner: t, mesh: makeHuskMesh() };
+  const h = { id: "hk_" + Math.random().toString(36).slice(2, 8), x: t.x, z: t.z, hp: 100, life: BALANCE_PATCH.dentley.huskLife, owner: t, mesh: makeHuskMesh() };
   h.mesh.position.set(t.x, 0, t.z);
   scene.add(h.mesh);
   Husks.push(h); t.husk = h;
@@ -5728,7 +5856,7 @@ function breakArmor(t, a) {
 
 function rearm(e) {
   const h = e.husk;
-  e.form=0;applyChampionBodySize(e);e.mhp=HEROES[6].hp;e.hp=70; e.chan = 0; e.c2 = 0; e.husk = null;
+  e.form=0;applyChampionBodySize(e);e.mhp=HEROES[6].hp;e.hp=70; e.chan = 0; e.c2 = 0; e.c3=HEROES[6].a2cd; e.husk = null;
   if(h) { disposeHierarchy(h.mesh); const i = Husks.indexOf(h); if(i >= 0) Husks.splice(i, 1); }
   spawn3DRing(e.x, e.z, 40, 0x9fc5ff);
   spawnDamageNumber(e.x, e.z, "RE-ARMORED", "#9fc5ff");
@@ -5750,9 +5878,9 @@ function updateHusks(dt) {
   }
   for(const e of E) { // re-armour channel: stand still within 40 units for 1.2s
     if(e.ci !== 6 || e.form !== 1 || e.dead || !e.husk) { e.chan = 0; continue; }
-    if(Math.hypot(e.x - e.husk.x, e.z - e.husk.z) <= 40 && e.moveSpd < 14 && e.stun <= 0) {
+    if(Math.hypot(e.x - e.husk.x, e.z - e.husk.z) <= BALANCE_PATCH.dentley.rearmRange && e.moveSpd < 14 && e.stun <= 0) {
       e.chan += dt;
-      if(e.chan >= 1.2) rearm(e);
+      if(e.chan >= BALANCE_PATCH.dentley.rearmTime) rearm(e);
     } else e.chan = 0;
   }
 }
@@ -5768,10 +5896,11 @@ function syncRemoteHusks(list) {
       scene.add(h.mesh);
       Husks.push(h);
     }
-    h.hp = s.hp; h.life = s.l;
+    h.hp = s.hp; h.life = s.l; h.x=s.x;h.z=s.z;h.mesh.position.set(h.x,0,h.z);
+    h.owner=E.find(e=>e.netId===s.ownerId)||null;if(h.owner)h.owner.husk=h;
   }
   for(let i = Husks.length - 1; i >= 0; i--) {
-    if(!seen.has(Husks[i].id)) { disposeHierarchy(Husks[i].mesh); Husks.splice(i, 1); }
+    if(!seen.has(Husks[i].id)) { const h=Husks[i];if(h.owner&&h.owner.husk===h)h.owner.husk=null;disposeHierarchy(h.mesh); Husks.splice(i, 1); }
   }
 }
 
@@ -6548,7 +6677,7 @@ function upd(dt) {
           hurt(e, 19 * dt, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 25, z.owner);
         } else if(z.kind === "peel") {
           e.stun = 1.5;
-          hurt(e, 9, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 150, z.owner);
+          hurt(e, BALANCE_PATCH.mango.peelDamage, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 150, z.owner);
           spawn3DRing(z.x, z.z, 34, 0xffe853);
           z.life = 0;
         } else if(z.kind === "spore_pod") {
@@ -6631,7 +6760,7 @@ function upd(dt) {
       }
     }
 
-    e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt; e.guard -= dt; e.comboT -= dt; e.grace -= dt; e.feintInvuln = Math.max(0, e.feintInvuln - dt);
+    e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt; e.guard -= dt; e.guardBoost=Math.max(0,(e.guardBoost||0)-dt); e.comboT -= dt; e.grace -= dt; e.feintInvuln = Math.max(0, e.feintInvuln - dt);
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
     e.emoteCooldown = Math.max(0, e.emoteCooldown - dt);
     if(e.emoteT > 0) {
@@ -6669,8 +6798,9 @@ function upd(dt) {
       moveChampion(e,e.chargeVx*dt,e.chargeVz*dt);
       pushCollisions(e);
       for(const t of E) {
-        if(t !== e && !t.dead && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6 && areEnemies(e, t)) {
-          hurt(t, 14, Math.atan2(t.z-e.z, t.x-e.x), 420, e);
+        if(t !== e && !t.dead && !(e.chargeHit&&e.chargeHit.has(t)) && Math.hypot(t.x-e.x, t.z-e.z) < e.r + t.r + 6 && areEnemies(e, t)) {
+          if(!e.chargeHit)e.chargeHit=new Set();e.chargeHit.add(t);
+          hurt(t, BALANCE_PATCH.bruno.chargeDamage, Math.atan2(t.z-e.z, t.x-e.x), 420, e);
           t.stun = 0.8;
         }
       }
@@ -6714,7 +6844,7 @@ function upd(dt) {
     } else if(e.chain) {
       // Oink is committed to his chain: no moving or attacking until it finishes
     } else if(lunging) {
-      // Dentley's combo finisher and Riposte Lunge carry him forward until the charge ends
+      // Dentley's combo finisher and Counter Lunge carry him forward until the charge ends
     } else if(e === pl) {
       const forwardKey = controlScheme === "wasd" ? K.KeyW : K.ArrowUp;
       const backKey = controlScheme === "wasd" ? K.KeyS : K.ArrowDown;
@@ -6733,23 +6863,23 @@ function upd(dt) {
 
       const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
-      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? 0.8 : 1.0);
+      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
 
       if(at && e.c1 <= 0) attack(e);
-      if(ab1 && e.c2 <= 0) ability1(e);
+      if(ab1 && (e.c2 <= 0 || canReleaseDentleyGuard(e))) ability1(e);
       if(ab2 && e.c3 <= 0) ability2(e);
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
       const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
       const slowMod = (e.sporePoison > 0) ? 0.55 : (e.slow > 0 ? 0.6 : 1.0);
-      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? 0.8 : 1.0);
+      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
 
       if(at && e.c1 <= 0) attack(e);
-      if(ab1 && e.c2 <= 0) ability1(e);
+      if(ab1 && (e.c2 <= 0 || canReleaseDentleyGuard(e))) ability1(e);
       if(ab2 && e.c3 <= 0) ability2(e);
     }
 
@@ -6975,6 +7105,8 @@ window.addEventListener("storage",event=>{
  if(document.getElementById("economy-modal").classList.contains("show"))renderEconomyModal();
 });
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{uiNametagCache.clear();updateEconomyDisplays();});
+document.getElementById("patch-version").textContent=PATCH_UPDATES.version;
+document.getElementById("patch-update-list").innerHTML=PATCH_UPDATES.notes.map(n=>`<li>${escapeHtml(n)}</li>`).join("");
 // Initial launch
 currentRects = MAPS[0].rects;
 build3DMap(MAPS[0]);
@@ -7007,9 +7139,3 @@ requestAnimationFrame(loop);
 </script>
 </body>
 </html>
-
-    --- NEXT MAJOR UPDATE ---
-
-
-- Make Bullets go in any direction of the mouse (vertical also).
-- Add Auras
