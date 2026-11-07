@@ -657,7 +657,8 @@ html, body {
 .projectile-hit-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 11px;border:1px solid #72e3b34d;border-left:3px solid #72e3b3;border-radius:7px;background:rgba(9,19,22,.92);font:700 11px Outfit,system-ui,sans-serif;color:#eaf6f2}
 .projectile-hit-target{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.projectile-hit-amount{flex-shrink:0;color:#9ff0c8;font-weight:900}
 .hc-rarity,.cd-rarity{display:inline-block;border:1px solid #d59bff88;background:#b75dff1c;border-radius:5px;padding:2px 7px;font:900 9px Outfit,sans-serif;letter-spacing:1px;color:#d59bff}.cd-rarity{margin-top:4px}
-.hero-card[data-rarity="NEW!"]{border-color:#bd78f37a}
+.hc-rarity.hc-new,.cd-rarity.cd-new{color:#382700;background:#ffdb63;border-color:#ffeaa1;box-shadow:0 0 12px #ffd75c33;text-shadow:none;font-weight:900}
+.hero-card[data-new="true"]{border-color:#ffd75c77}
 </style>
 </head>
 <body>
@@ -755,9 +756,9 @@ const BALANCE_PATCH = {
  }
 };
 const PATCH_UPDATES = {
- version:"BRAWLBOUND v1.2.3 — Bumper bounce",
+ version:"BRAWLBOUND v1.2.4 — Rico polish",
  announcement:"Rico refresh: Epic rarity, redesigned default look, bumper bounce, and 25% kill healing!",
- notes:["All champions now heal 25% of max HP on a credited elimination, capped at max HP.","Rico default model redesigned: violet waistcoat, cream rolled sleeves, dark trousers and swept-back hair.","Projectile hit notices retained for every champion, showing target username and actual host-confirmed damage.","Rico is an Epic ranged Skirmisher: 170 HP, 150 speed. Weapon: Cue Stick.","Bright white cue balls lowered to 14 units above the floor, green stripes and a short tracer make banks readable. Bank Shot glows gold as it banks.","Bumper: 44-unit diameter, 9-unit height, 7s lifetime; contact gently repels champions and stuns for 0.3s. Emerald Hustler and Gilded Break are Epic.","Bank Shot starts at 20 damage and compounds 20% per bounce: 20 / 24 / 29 / 35 / 41 / 50. All previous v1.2.0 updates retained.","8 collectible nametag fonts. Crate odds: Common 52%, Uncommon 29%, Rare 15%, Epic 3.5%, Legendary 0.5%.","Bruno cosmetics are Uncommon; Quackbot cosmetics are Rare. All seven weapon skins have new structural details.","Upgraded Starwarden Bruno, Admiral Abyss, and Astral Marcel outfits. Audio now has OFF-by-default Master, SFX, and Music switches.","New map-voting cards with arena diagrams and vote shares. BBQ vents randomize with a 0.8s warning. Kitchen prep islands randomize away from spawns.","Easy, Normal (original behavior), and Hard AI available in settings.","Dentley: 10s Guard, 180-degree arc; release between 0.5s and 1.8s to earn +25% speed for 0.8s. Later release grants no boost.",
+ notes:["Rico now displays a yellow NEW! badge; his underlying Epic rarity and Epic cosmetic tiers are unchanged.","Bumpers no longer knock back or stun their owner. Other champions are still bumped and stunned for 0.3s.","All champions now heal 25% of max HP on a credited elimination, capped at max HP.","Rico default model redesigned: violet waistcoat, cream rolled sleeves, dark trousers and swept-back hair.","Projectile hit notices retained for every champion, showing target username and actual host-confirmed damage.","Rico is an Epic ranged Skirmisher: 170 HP, 150 speed. Weapon: Cue Stick.","Bright white cue balls lowered to 14 units above the floor, green stripes and a short tracer make banks readable. Bank Shot glows gold as it banks.","Bumper: 44-unit diameter, 9-unit height, 7s lifetime; contact gently repels other champions and stuns for 0.3s; its owner is immune. Emerald Hustler and Gilded Break are Epic.","Bank Shot starts at 20 damage and compounds 20% per bounce: 20 / 24 / 29 / 35 / 41 / 50. All previous v1.2.0 updates retained.","8 collectible nametag fonts. Crate odds: Common 52%, Uncommon 29%, Rare 15%, Epic 3.5%, Legendary 0.5%.","Bruno cosmetics are Uncommon; Quackbot cosmetics are Rare. All seven weapon skins have new structural details.","Upgraded Starwarden Bruno, Admiral Abyss, and Astral Marcel outfits. Audio now has OFF-by-default Master, SFX, and Music switches.","New map-voting cards with arena diagrams and vote shares. BBQ vents randomize with a 0.8s warning. Kitchen prep islands randomize away from spawns.","Easy, Normal (original behavior), and Hard AI available in settings.","Dentley: 10s Guard, 180-degree arc; release between 0.5s and 1.8s to earn +25% speed for 0.8s. Later release grants no boost.",
  "Counter Lunge: 8.5s cooldown, 10 + Counter Charge damage, 0.3-1.5s stun.",
  "Squire: Recall Armor waiting period increased from 5s to 6s. Dagger Feint cooldown increased from 6.5s to 7s; crossing enemies deals 10 damage and stuns for 0.4s. Rearm within 50 units for 1.5s; husk lasts 10s.",
  "Bruno: Slam 15 damage / 1.1s stun; Charge 10 damage per enemy.",
@@ -852,10 +853,10 @@ const HEROES = [
 ];
 
 
-HEROES.push({n:"Rico",e:"🎱",w:"🎱",wn:"Cue Stick",role:"Skirmisher",rarity:"Epic",roleCol:"#56dfbb",hp:170,sp:150,col:0x45345f,cd:1,
+HEROES.push({n:"Rico",e:"🎱",w:"🎱",wn:"Cue Stick",role:"Skirmisher",rarity:"Epic",isNew:true,roleCol:"#56dfbb",hp:170,sp:150,col:0x45345f,cd:1,
  a1n:"Bumper",a1cd:11,a2n:"Bank Shot",a2cd:9,melee:false,atkRange:600,ab1Range:300,ab2Range:600,
  ad:"Strike a visible cue ball for 15 damage every second. Cue balls ricochet up to twice off walls, cover, and bumpers, and disappear on their first enemy hit. Basic banks do not increase damage.",
- a1d:"Place a short, circular green bumper 60 units ahead for 7s. It blocks movement, sight and projectiles. Cue balls bounce off it; other shots stop. Indestructible. Running into it gently pushes any champion away and stuns for 0.3s; it deals no damage. One per Rico; replacing it removes the previous one. Invalid placement costs no cooldown. Cooldown: 11s from placement.",
+ a1d:"Place a short, circular green bumper 60 units ahead for 7s. It blocks movement, sight and projectiles. Cue balls bounce off it; other shots stop. Indestructible. Running into it gently pushes other champions away and stuns for 0.3s; its owner is immune to this effect. It deals no damage. One per Rico; replacing it removes the previous one. Invalid placement costs no cooldown. Cooldown: 11s from placement.",
  a2d:"Empower your next cue ball for five ricochets. Starts at 20 damage; each bank compounds damage by 20%: 20 / 24 / 29 / 35 / 41 / 50, rounded only at the resulting damage. Consumed when fired, even on a miss; stays armed until fired. Cooldown: 9s from activation.",
  d:"A ranged skirmisher who turns positioning and bank shots into precise pressure. Set up a Bumper, arm Bank Shot, and strike a cue ball around cover. Longer banks hit harder. Normal cue balls deal 15 damage; Bank Shot starts at 20 damage."
 });
@@ -1957,6 +1958,7 @@ function ricoBumperRunIn(e,dx,dz){
  if(!e||e.dead||(!dx&&!dz)||(isMultiplayer&&!isLobbyLeader))return false;
  const motion=dx*dx+dz*dz;
  for(const b of RicoBumpers){
+  if(b.ownerId!=null&&e.netId!=null&&b.ownerId===e.netId)continue;
   const ox=e.x-b.x,oz=e.z-b.z,d=Math.hypot(ox,oz),radius=e.r+b.r;
   if(dx*ox+dz*oz>=0)continue;
   const t=Math.max(0,Math.min(1,-(ox*dx+oz*dz)/motion));
@@ -6410,6 +6412,12 @@ function controlsHTML() {
   return parts.join(" · ");
 }
 
+function championBadgeHTML(champion,detail=false){
+ const base=detail?"cd-rarity":"hc-rarity";
+ if(champion.isNew)return `<span class="${base} ${detail?"cd-new":"hc-new"}">NEW!</span>`;
+ return champion.rarity?`<span class="${base}">${escapeHtml(champion.rarity)}${detail?" CHAMPION":""}</span>`:"";
+}
+
 function champDetailHTML(ci) {
   if(ci === RANDOM_HERO) return `
     <div class="cd-hero">
@@ -6426,7 +6434,7 @@ function champDetailHTML(ci) {
       <span class="cd-emoji">${c.e}</span>
       <div>
         <div class="cd-name">${c.n}</div>
-        ${c.rarity?`<span class="cd-rarity">${escapeHtml(c.rarity)} CHAMPION</span>`:""}
+        ${championBadgeHTML(c,true)}
         <div class="cd-role" style="color:${c.roleCol};">${c.role} · ${c.rangeLabel || (c.melee ? "Melee" : "Ranged")}</div>
       </div>
       <div class="cd-tag">YOUR CHAMPION</div>
@@ -6499,11 +6507,11 @@ function menu(msg) {
         <div class="section-label">CHOOSE YOUR CHAMPION</div>
         <div class="hero-grid">
           ${HEROES.map((c, i) => `
-            <div class="hero-card ${i === p1HeroChoice ? 'chosen' : ''}" data-i="${i}" data-rarity="${c.rarity||''}" style="--rc:${c.roleCol};">
+            <div class="hero-card ${i === p1HeroChoice ? 'chosen' : ''}" data-i="${i}" data-rarity="${c.rarity||''}" data-new="${c.isNew?'true':'false'}" style="--rc:${c.roleCol};">
               <div class="hc-check">${i === p1HeroChoice ? '✓' : ''}</div>
               <div class="hc-emoji">${c.e}</div>
               <div class="hc-name">${c.n}</div>
-              ${c.rarity?`<span class="hc-rarity">${escapeHtml(c.rarity)}</span>`:""}
+              ${championBadgeHTML(c)}
               <div class="hc-role" style="color:${c.roleCol};">${c.role}</div>
               <div class="hc-stats"><span>❤ ${c.hp}</span><span>⚡ ${c.sp}</span></div>
             </div>
