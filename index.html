@@ -652,6 +652,14 @@ html, body {
 @media(max-width:680px){#round-panel{justify-content:flex-start;padding:22px 15px}.round-options{grid-template-columns:1fr;gap:12px}.round-map-card{min-height:210px}.vote-arena-art,.vote-random-art{height:90px}.vote-random-art{font-size:58px}.round-title span{font-size:20px;min-width:52px}.round-champion{flex-wrap:wrap}}
 </style>
 <style>#rico-status{margin-top:7px;color:#8bf4c8;font:800 10px Outfit,sans-serif;letter-spacing:.4px}</style>
+
+<style id="projectile-hit-notices-style">
+#projectile-hit-notices{position:absolute;right:24px;bottom:25%;display:flex;flex-direction:column;gap:6px;width:min(310px,42vw);pointer-events:none;z-index:9}
+.projectile-hit-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 11px;border:1px solid #72e3b34d;border-left:3px solid #72e3b3;border-radius:7px;background:rgba(9,19,22,.92);box-shadow:0 3px 13px #0006;font:700 11px Outfit,system-ui,sans-serif;color:#eaf6f2;animation:projectileHitPop .14s ease-out}
+.projectile-hit-target{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.projectile-hit-amount{flex-shrink:0;color:#9ff0c8;font-weight:900}
+@keyframes projectileHitPop{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+@media(max-width:600px){#projectile-hit-notices{right:10px;bottom:24%;width:min(290px,70vw)}.projectile-hit-notice{font-size:10px;padding:7px 9px}}
+</style>
 </head>
 <body>
 <div id="wrap">
@@ -748,9 +756,9 @@ const BALANCE_PATCH = {
  }
 };
 const PATCH_UPDATES = {
- version:"BRAWLBOUND v1.2.1 — Rico",
- announcement:"Rico: Cue Stick, visible cue balls, round green bumpers, and two new skins!",
- notes:["Rico joins the roster as a ranged Duelist: 170 HP, 150 speed. Weapon: Cue Stick.","Bright white cue balls at crosshair height, green stripes and a short tracer make banks readable. Bank Shot glows gold as it banks.","Bumper is now a low circular green rubber pad. Added Rare Emerald Hustler champion skin and Rare Gilded Break cue skin.","Bank Shot compounds 20% per bounce: 15 / 18 / 22 / 26 / 31 / 37. All previous v1.2.0 updates retained.","8 collectible nametag fonts. Crate odds: Common 52%, Uncommon 29%, Rare 15%, Epic 3.5%, Legendary 0.5%.","Bruno cosmetics are Uncommon; Quackbot cosmetics are Rare. All seven weapon skins have new structural details.","Upgraded Starwarden Bruno, Admiral Abyss, and Astral Marcel outfits. Audio now has OFF-by-default Master, SFX, and Music switches.","New map-voting cards with arena diagrams and vote shares. BBQ vents randomize with a 0.8s warning. Kitchen prep islands randomize away from spawns.","Easy, Normal (original behavior), and Hard AI available in settings.","Dentley: 10s Guard, 180-degree arc; release between 0.5s and 1.8s to earn +25% speed for 0.8s. Later release grants no boost.",
+ version:"BRAWLBOUND v1.2.2 — Rico tuning",
+ announcement:"Rico tuning: lower cue balls, larger 7s bumpers, 20-damage Bank Shot, and projectile hit notices!",
+ notes:["New projectile hit notifications for every champion: target username and actual damage, confirmed by the host in multiplayer.","Rico is now a ranged Skirmisher: 170 HP, 150 speed. Weapon: Cue Stick.","Bright white cue balls lowered to 14 units above the floor, green stripes and a short tracer make banks readable. Bank Shot glows gold as it banks.","Bumper is a wider circular green rubber pad: 44-unit diameter, 9-unit body height, 7s lifetime. Added Rare Emerald Hustler champion skin and Rare Gilded Break cue skin.","Bank Shot starts at 20 damage and compounds 20% per bounce: 20 / 24 / 29 / 35 / 41 / 50. All previous v1.2.0 updates retained.","8 collectible nametag fonts. Crate odds: Common 52%, Uncommon 29%, Rare 15%, Epic 3.5%, Legendary 0.5%.","Bruno cosmetics are Uncommon; Quackbot cosmetics are Rare. All seven weapon skins have new structural details.","Upgraded Starwarden Bruno, Admiral Abyss, and Astral Marcel outfits. Audio now has OFF-by-default Master, SFX, and Music switches.","New map-voting cards with arena diagrams and vote shares. BBQ vents randomize with a 0.8s warning. Kitchen prep islands randomize away from spawns.","Easy, Normal (original behavior), and Hard AI available in settings.","Dentley: 10s Guard, 180-degree arc; release between 0.5s and 1.8s to earn +25% speed for 0.8s. Later release grants no boost.",
  "Counter Lunge: 8.5s cooldown, 10 + Counter Charge damage, 0.3-1.5s stun.",
  "Squire: Recall Armor waiting period increased from 5s to 6s. Dagger Feint cooldown increased from 6.5s to 7s; crossing enemies deals 10 damage and stuns for 0.4s. Rearm within 50 units for 1.5s; husk lasts 10s.",
  "Bruno: Slam 15 damage / 1.1s stun; Charge 10 damage per enemy.",
@@ -845,14 +853,14 @@ const HEROES = [
 ];
 
 
-HEROES.push({n:"Rico",e:"🎱",w:"🎱",wn:"Cue Stick",role:"Duelist",roleCol:"#56dfbb",hp:170,sp:150,col:0x18634e,cd:1,
+HEROES.push({n:"Rico",e:"🎱",w:"🎱",wn:"Cue Stick",role:"Skirmisher",roleCol:"#56dfbb",hp:170,sp:150,col:0x18634e,cd:1,
  a1n:"Bumper",a1cd:11,a2n:"Bank Shot",a2cd:9,melee:false,atkRange:600,ab1Range:300,ab2Range:600,
  ad:"Strike a visible cue ball for 15 damage every second. Cue balls ricochet up to twice off walls, cover, and bumpers, and disappear on their first enemy hit. Basic banks do not increase damage.",
- a1d:"Place a short, circular green bumper 60 units ahead for 5s. It blocks movement, sight and projectiles. Cue balls bounce off it; other shots stop. Indestructible. One per Rico; replacing it removes the previous one. Invalid placement costs no cooldown. Cooldown: 11s from placement.",
- a2d:"Empower your next cue ball for five ricochets. Each bank compounds damage by 20%: 15 / 18 / 22 / 26 / 31 / 37, rounded only at the resulting damage. Consumed when fired, even on a miss; stays armed until fired. Cooldown: 9s from activation.",
- d:"A ranged duelist who turns positioning and bank shots into precise pressure. Set up a Bumper, arm Bank Shot, and strike a cue ball around cover. Longer banks hit harder; a direct hit remains 15 damage."
+ a1d:"Place a short, circular green bumper 60 units ahead for 7s. It blocks movement, sight and projectiles. Cue balls bounce off it; other shots stop. Indestructible. One per Rico; replacing it removes the previous one. Invalid placement costs no cooldown. Cooldown: 11s from placement.",
+ a2d:"Empower your next cue ball for five ricochets. Starts at 20 damage; each bank compounds damage by 20%: 20 / 24 / 29 / 35 / 41 / 50, rounded only at the resulting damage. Consumed when fired, even on a miss; stays armed until fired. Cooldown: 9s from activation.",
+ d:"A ranged skirmisher who turns positioning and bank shots into precise pressure. Set up a Bumper, arm Bank Shot, and strike a cue ball around cover. Longer banks hit harder. Normal cue balls deal 15 damage; Bank Shot starts at 20 damage."
 });
-const RICO={hero:7,speed:420,life:4,ballRadius:5,damage:15,bumperRadius:18,bumperLife:5,placement:60};
+const RICO={hero:7,speed:420,life:4,ballRadius:5,damage:15,bankDamage:20,ballHeight:14,bumperRadius:22,bumperLife:7,placement:60};
 
 const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
 
@@ -3703,32 +3711,32 @@ function getCombatPosition(target, attacker = null, projectileTravelMs = 0) {
 
 
 let RicoBumpers=[],ricoBumperSerial=0;
-function ricoDamage(bounces,bank=true){return bank?Math.round(15*Math.pow(1.2,bounces)):15;}
+function ricoDamage(bounces,bank=true){return bank?Math.round(RICO.bankDamage*Math.pow(1.2,bounces)):RICO.damage;}
 function ricoBumperMesh(){
  const g=new THREE.Group();
  const rubber=new THREE.MeshStandardMaterial({color:0x179344,roughness:.8});
  const top=new THREE.MeshStandardMaterial({color:0x38d965,emissive:0x095b22,emissiveIntensity:.3,roughness:.6});
- const disc=new THREE.Mesh(new THREE.CylinderGeometry(18,18,7,32),rubber);disc.position.y=3.5;disc.castShadow=true;disc.receiveShadow=true;g.add(disc);
- const cap=new THREE.Mesh(new THREE.CylinderGeometry(16.5,16.5,1,32),top);cap.position.y=7;cap.receiveShadow=true;g.add(cap);
- const rim=new THREE.Mesh(new THREE.TorusGeometry(17.2,.7,8,32),top);rim.rotation.x=Math.PI/2;rim.position.y=7.2;g.add(rim);
+ const disc=new THREE.Mesh(new THREE.CylinderGeometry(RICO.bumperRadius,RICO.bumperRadius,9,32),rubber);disc.position.y=4.5;disc.castShadow=true;disc.receiveShadow=true;g.add(disc);
+ const cap=new THREE.Mesh(new THREE.CylinderGeometry(RICO.bumperRadius-1.5,RICO.bumperRadius-1.5,1,32),top);cap.position.y=9;cap.receiveShadow=true;g.add(cap);
+ const rim=new THREE.Mesh(new THREE.TorusGeometry(RICO.bumperRadius-.8,.7,8,32),top);rim.rotation.x=Math.PI/2;rim.position.y=9.2;g.add(rim);
  return g;
 }
 function clearRicoBumpers(){for(const b of RicoBumpers)disposeHierarchy(b.mesh);RicoBumpers=[];}
 function placeRicoBumper(e){
- const x=e.x+Math.cos(e.a)*60,z=e.z+Math.sin(e.a)*60,r=18;
+ const x=e.x+Math.cos(e.a)*60,z=e.z+Math.sin(e.a)*60,r=RICO.bumperRadius;
  if(blocked(x,z,r+3)||!hasLOS(e.x,e.z,x,z)||E.some(t=>!t.dead&&Math.hypot(t.x-x,t.z-z)<t.r+r+5)){
   if(e===pl)showAnnouncer("BUMPER PLACEMENT BLOCKED");return false;
  }
  for(let i=RicoBumpers.length-1;i>=0;i--)if(RicoBumpers[i].ownerId===e.netId){disposeHierarchy(RicoBumpers[i].mesh);RicoBumpers.splice(i,1);}
  const mesh=ricoBumperMesh();mesh.position.set(x,0,z);scene.add(mesh);
- RicoBumpers.push({id:"bumper_"+(++ricoBumperSerial),ownerId:e.netId,x,z,r,life:5,mesh});spawn3DRing(x,z,25,0x38d965);return true;
+ RicoBumpers.push({id:"bumper_"+(++ricoBumperSerial),ownerId:e.netId,x,z,r,life:RICO.bumperLife,mesh});spawn3DRing(x,z,r+7,0x38d965);return true;
 }
 function syncRicoBumpers(list){
  const seen=new Set();
  for(const data of list){
   if(!data||typeof data.id!=="string"||!Number.isFinite(data.x)||!Number.isFinite(data.z))continue;
   seen.add(data.id);let b=RicoBumpers.find(b=>b.id===data.id);
-  if(!b){const mesh=ricoBumperMesh();scene.add(mesh);b={id:data.id,mesh,r:18};RicoBumpers.push(b);}
+  if(!b){const mesh=ricoBumperMesh();scene.add(mesh);b={id:data.id,mesh,r:RICO.bumperRadius};RicoBumpers.push(b);}
   Object.assign(b,{x:data.x,z:data.z,ownerId:data.ownerId,life:Math.max(0,data.life||0)});b.mesh.position.set(b.x,0,b.z);
  }
  for(let i=RicoBumpers.length-1;i>=0;i--)if(!seen.has(RicoBumpers[i].id)){disposeHierarchy(RicoBumpers[i].mesh);RicoBumpers.splice(i,1);}
@@ -3773,7 +3781,7 @@ function updateRicoBall(p,dt){
    if(Math.hypot(pos.x-p.x,pos.z-p.z)<t.r+5){hurt(t,p.d,Math.atan2(p.vz,p.vx),p.kb,p.o,"projectile");return false;}
   }
  }
- p.rot+=dt*11;p.mesh.position.set(p.x,22,p.z);orientProjectile(p);return true;
+ p.rot+=dt*11;p.mesh.position.set(p.x,RICO.ballHeight,p.z);orientProjectile(p);return true;
 }
 
 function blocked(x, z, r) {
@@ -3847,6 +3855,26 @@ function damageSourceColor(attacker, target) {
   return (HEROES[attacker.ci] && HEROES[attacker.ci].roleCol) || "#ff5544";
 }
 
+
+function clearProjectileHitNotices(){
+ const box=document.getElementById("projectile-hit-notices");
+ if(box){for(const row of box.children)if(row.bbTimer)clearTimeout(row.bbTimer);box.replaceChildren();}
+}
+function showProjectileHit(username,damage){
+ if(demoActive||state!=="play"||!Number.isFinite(damage)||damage<=0)return;
+ let box=document.getElementById("projectile-hit-notices");
+ if(!box){
+  box=document.createElement("div");box.id="projectile-hit-notices";box.setAttribute("role","status");box.setAttribute("aria-live","polite");
+  document.getElementById("hud").appendChild(box);
+ }
+ const row=document.createElement("div");row.className="projectile-hit-notice";
+ const target=document.createElement("span");target.className="projectile-hit-target";target.textContent='Hit "'+String(username||"Player")+'"';
+ const amount=document.createElement("span");amount.className="projectile-hit-amount";amount.textContent=String(Number(damage.toFixed(2)))+" damage";
+ row.appendChild(target);row.appendChild(amount);box.appendChild(row);
+ row.bbTimer=setTimeout(()=>row.remove(),2000);
+ while(box.children.length>4){const oldest=box.firstElementChild;clearTimeout(oldest.bbTimer);oldest.remove();}
+}
+
 function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
   if(t.dead || t.feintInvuln > 0) return;
   if(isMultiplayer && !isLobbyLeader) return;
@@ -3865,6 +3893,9 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
     t.chan = 0; // any damage interrupts re-armouring
   }
   t.hp -= rawDmg;
+  if(damageType==="projectile"&&attacker&&attacker!==t&&attacker===pl&&rawDmg>0){
+    showProjectileHit(t.username||(HEROES[t.ci]&&HEROES[t.ci].n)||"Player",rawDmg);
+  }
   if(attacker && attacker !== t && rawDmg > 0) attacker.dmg += rawDmg;
   t.fl = 0.12;
   t.kx += Math.cos(a) * kb;
@@ -3885,7 +3916,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
     spawnDamageNumber(t.x, t.z, text, color);
     if(isMultiplayer && isLobbyLeader) {
       outgoingSeq++;
-      broadcastToPeers({ type: "DAMAGE_EVENT", id: myNetId, seq: outgoingSeq, x: t.x, z: t.z, text, color, attackerId: attacker ? attacker.netId : null });
+      broadcastToPeers({ type: "DAMAGE_EVENT", id: myNetId, seq: outgoingSeq, x: t.x, z: t.z, text, color, attackerId: attacker ? attacker.netId : null, projectileHit:damageType==="projectile", victimName:t.username||(HEROES[t.ci]&&HEROES[t.ci].n)||"Player", hitDamage:rawDmg });
     }
   }
   if(rawDmg >= 5) spawnSparks(t.x, t.z, 0xffaa55, 6);
@@ -4007,7 +4038,7 @@ function shot(e, a, o) {
   const startZ = o.z !== undefined ? o.z : (e.z + Math.sin(a)*18);
 
   const mesh = spawnProjectileMesh(o.t);
-  mesh.position.set(startX, o.t==="cue"?22:14, startZ);
+  mesh.position.set(startX, o.t==="cue"?RICO.ballHeight:14, startZ);
   if(GFX[gfxLevel].glow && GLOW_COLORS[o.t]) {
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({
       map: glowTexture(), color: GLOW_COLORS[o.t], transparent: true, opacity: 0.85,
@@ -4081,7 +4112,7 @@ function executeAttack(e) {
   Snd.play(c.melee ? "melee" : "shoot");
   if(e.ci===7){
     const bank=!!e.ricoBank;e.ricoBank=false;
-    shot(e,e.a,{t:"cue",s:RICO.speed,d:15,kb:65,life:RICO.life,x:e.x+Math.cos(e.a)*10,z:e.z+Math.sin(e.a)*10,bank,bounces:0,maxBounces:bank?5:2});return;
+    shot(e,e.a,{t:"cue",s:RICO.speed,d:ricoDamage(0,bank),kb:65,life:RICO.life,x:e.x+Math.cos(e.a)*10,z:e.z+Math.sin(e.a)*10,bank,bounces:0,maxBounces:bank?5:2});return;
   }
   if(e.ci === 6) {
     dentleyAttack(e);
@@ -4668,7 +4699,7 @@ function updateAI(e, dt) {
   if(e.ci===7){
     if(ricoBankAngle!==null){e.ai.at=1;e.ai.ab2=!e.ricoBank&&e.c3<=0?1:0;}
     if(e.ricoBank)e.ai.ab2=0;
-    if(blocked(e.x+Math.cos(e.a)*60,e.z+Math.sin(e.a)*60,21))e.ai.ab1=0;
+    if(blocked(e.x+Math.cos(e.a)*60,e.z+Math.sin(e.a)*60,RICO.bumperRadius+3))e.ai.ab1=0;
   }
 
   return [e.ai.mx, e.ai.mz, e.ai.at, e.ai.ab1, e.ai.ab2];
@@ -4724,6 +4755,7 @@ function syncHUD() {
 }
 
 function showResultScreen(isVictory, winnerId = null, stats = []) {
+ clearProjectileHitNotices();
  if(state==="result")return;
  progressDaily("matches");if(isVictory)progressDaily("wins");
   const winShinies = isVictory && pl && matchIsQuickMatch ? awardShinies(SHINY_REWARDS.win, "Quick Match victory", false) : 0;
@@ -5378,6 +5410,7 @@ function handleIncomingData(conn, data) {
     if(!isLobbyLeader) {
       spawnDamageNumber(data.x, data.z, String(data.text || "-1"), data.color || "#ff5544");
       if(data.attackerId === myNetId) {
+        if(data.projectileHit&&Number.isFinite(data.hitDamage))showProjectileHit(data.victimName,data.hitDamage);
         screenShake = Math.min(13, screenShake + 2.2);
         localHitStopFrames = Math.max(localHitStopFrames, 2);
         playHitConfirm();
@@ -6374,6 +6407,7 @@ function champDetailHTML(ci) {
 }
 
 function menu(msg) {
+  clearProjectileHitNotices();
   closeEmoteWheel(false);
   if(introCard) introCard.style.display = "none";
   if(announcer) announcer.classList.remove("show");
@@ -6539,6 +6573,7 @@ window.cancelLobby = function() {
 };
 
 function clearSceneEntities() {
+  clearProjectileHitNotices();
   clearRicoBumpers();
   for(const e of E) { disposeEntityExtras(e); disposeHierarchy(e.mesh); }
   for(const p of P) { disposeHierarchy(p.mesh); }
