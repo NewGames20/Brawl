@@ -756,9 +756,9 @@ const BALANCE_PATCH = {
  }
 };
 const PATCH_UPDATES = {
- version:"BRAWLBOUND v1.2.6 — Rico follow-up",
- announcement:"Rico follow-up: dependable Bumper placement, clearer healing, and cue-ball reflection rules!",
- notes:["Rico's Cue Stick now deals 18 damage per hit instead of 15, with its 1-second attack cooldown unchanged.","Bank Shot now starts at 22 damage and compounds 20% per bounce: 22 / 26 / 32 / 38 / 46 / 55.","Bumper recoil-dashes Rico backward up to 70 units and attempts to place a barrier 60 units ahead for 7s. Overlapping champions are pushed clear so the bumper still places. Blocked placement does not consume the 11s cooldown.","Rico now displays a yellow NEW! badge; his underlying Epic rarity and Epic cosmetic tiers are unchanged.","Bumpers no longer knock back or stun their owner. Other champions are still bumped and stunned for 0.3s.","All champions heal 25% of max HP on a credited elimination, capped at max HP.","Rico default model redesigned: violet waistcoat, cream rolled sleeves, dark trousers and swept-back hair.","Projectile hit notices retained for every champion, showing target username and actual host-confirmed damage.","Rico is an Epic ranged Skirmisher: 170 HP, 150 speed. Weapon: Cue Stick.","Bright white cue balls lowered to 14 units above the floor, green stripes and a short tracer make banks readable. Bank Shot glows gold as it banks.","Bumper: 44-unit diameter, 9-unit height, 7s lifetime; contact gently repels other champions and stuns for 0.3s; its owner is immune. Emerald Hustler and Gilded Break are Epic.","8 collectible nametag fonts. Crate odds: Common 52%, Uncommon 29%, Rare 15%, Epic 3.5%, Legendary 0.5%.","Bruno cosmetics are Uncommon; Quackbot cosmetics are Rare. All seven weapon skins have new structural details.","Upgraded Starwarden Bruno, Admiral Abyss, and Astral Marcel outfits. Audio now has OFF-by-default Master, SFX, and Music switches.","New map-voting cards with arena diagrams and vote shares. BBQ vents randomize with a 0.8s warning. Kitchen prep islands randomize away from spawns.","Easy, Normal (original behavior), and Hard AI available in settings.","Dentley: 10s Guard, 180-degree arc; release between 0.5s and 1.8s to earn +25% speed for 0.8s. Later release grants no boost.",
+ version:"BRAWLBOUND v1.2.7 — Rico Bank Shot",
+ announcement:"Rico Bank Shot is now a larger, faster red cue ball!",
+ notes:["Rico's empowered Bank Shot cue ball is red, 1.35× larger, 10% faster, and has a larger hit radius.","Rico's Cue Stick deals 18 damage per hit; Bank Shot starts at 22 and compounds 20% per bounce: 22 / 26 / 32 / 38 / 46 / 55.","Bumper recoil-dashes Rico backward up to 70 units and attempts to place a barrier 60 units ahead for 7s. Overlapping champions are pushed clear so the bumper still places. Blocked placement does not consume the 11s cooldown.","Rico now displays a yellow NEW! badge; his underlying Epic rarity and Epic cosmetic tiers are unchanged.","Bumpers no longer knock back or stun their owner. Other champions are still bumped and stunned for 0.3s.","All champions heal 25% of max HP on a credited elimination, capped at max HP.","Rico default model redesigned: violet waistcoat, cream rolled sleeves, dark trousers and swept-back hair.","Projectile hit notices retained for every champion, showing target username and actual host-confirmed damage.","Rico is an Epic ranged Skirmisher: 170 HP, 150 speed. Weapon: Cue Stick.","Bright white cue balls lowered to 14 units above the floor, green stripes and a short tracer make banks readable. Bank Shot glows red.","Bumper: 44-unit diameter, 9-unit height, 7s lifetime; contact gently repels other champions and stuns for 0.3s; its owner is immune. Emerald Hustler and Gilded Break are Epic.","8 collectible nametag fonts. Crate odds: Common 52%, Uncommon 29%, Rare 15%, Epic 3.5%, Legendary 0.5%.","Bruno cosmetics are Uncommon; Quackbot cosmetics are Rare. All seven weapon skins have new structural details.","Upgraded Starwarden Bruno, Admiral Abyss, and Astral Marcel outfits. Audio now has OFF-by-default Master, SFX, and Music switches.","New map-voting cards with arena diagrams and vote shares. BBQ vents randomize with a 0.8s warning. Kitchen prep islands randomize away from spawns.","Easy, Normal (original behavior) and Hard AI available in settings.","Dentley: 10s Guard, 180-degree arc; release between 0.5s and 1.8s to earn +25% speed for 0.8s. Later release grants no boost.",
  "Counter Lunge: 8.5s cooldown, 10 + Counter Charge damage, 0.3-1.5s stun.",
  "Squire: Recall Armor waiting period increased from 5s to 6s. Dagger Feint cooldown increased from 6.5s to 7s; crossing enemies deals 10 damage and stuns for 0.4s. Rearm within 50 units for 1.5s; husk lasts 10s.",
  "Bruno: Slam 15 damage / 1.1s stun; Charge 10 damage per enemy.",
@@ -857,10 +857,10 @@ HEROES.push({n:"Rico",e:"🎱",w:"🎱",wn:"Cue Stick",role:"Skirmisher",rarity:
  a1n:"Bumper",a1cd:11,a2n:"Bank Shot",a2cd:9,melee:false,atkRange:600,ab1Range:300,ab2Range:600,
  ad:"Strike a visible cue ball for 18 damage every second. Cue balls ricochet up to twice off walls, cover, and bumpers, and disappear on their first enemy hit. Bruno cannot reflect cue balls. Basic banks do not increase damage.",
  a1d:"Recoil-dash backward up to 70 units and place a short, circular green bumper 60 units ahead for 7 seconds. If another champion overlaps its placement spot, they are pushed clear and the bumper is still placed. A blocked placement does not dash or consume cooldown. The bumper blocks movement, sight and projectiles; cue balls bounce off it while other shots stop. Indestructible. Other champions who run into it are gently pushed away and stunned for 0.3 seconds; its owner is immune. One per Rico; replacing it removes the previous one. Cooldown: 11 seconds from a successful placement.",
- a2d:"Empower your next cue ball for five ricochets. Starts at 22 damage; each bank compounds damage by 20%: 22 / 26 / 32 / 38 / 46 / 55, rounded only at the resulting damage. Consumed when fired, even on a miss; stays armed until fired. Cooldown: 9s from activation.",
+ a2d:"Empower your next cue ball for five ricochets. The Bank Shot is red, 1.35× larger, and 10% faster, with a larger hit radius. It starts at 22 damage; each bank compounds damage by 20%: 22 / 26 / 32 / 38 / 46 / 55, rounded only at the resulting damage. Consumed when fired, even on a miss; stays armed until fired. Cooldown: 9s from activation.",
  d:"A ranged skirmisher who turns positioning and bank shots into precise pressure. Bumper's recoil dash creates space while its barrier shapes the fight. Arm Bank Shot and strike a cue ball around cover; longer banks hit harder. Normal cue balls deal 18 damage, and Bank Shot starts at 22."
 });
-const RICO={hero:7,speed:420,life:4,ballRadius:5,damage:18,bankDamage:22,ballHeight:14,bumperRadius:22,bumperLife:7,bumperStun:.3,bumperPush:90,placement:60,recoilImpulse:560};
+const RICO={hero:7,speed:420,bankSpeed:462,life:4,ballRadius:5,bankBallRadius:7.5,bankVisualScale:1.35,damage:18,bankDamage:22,ballHeight:14,bumperRadius:22,bumperLife:7,bumperStun:.3,bumperPush:90,placement:60,recoilImpulse:560};
 
 const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
 
@@ -3332,13 +3332,13 @@ function syncDentleyViewmodel(entity) {
   if(viewmodelHolder.shield) viewmodelHolder.shield.visible = guarding;
 }
 
-function spawnProjectileMesh(type) {
+function spawnProjectileMesh(type, opts = {}) {
   let mesh;
   if(type==="cue"){
-    const root=new THREE.Group();
-    const ball=new THREE.Mesh(new THREE.SphereGeometry(7.5,20,14),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xc7ffe2,emissiveIntensity:.65,metalness:.08,roughness:.2}));root.add(ball);root.userData.cueBall=ball;
-    const stripe=new THREE.Mesh(new THREE.TorusGeometry(7.1,1.1,8,24),new THREE.MeshBasicMaterial({color:0x087849}));ball.add(stripe);
-    const trail=new THREE.Mesh(new THREE.ConeGeometry(3.2,24,10),new THREE.MeshBasicMaterial({color:0xb1ffcc,transparent:true,opacity:.6,depthWrite:false}));trail.rotation.x=Math.PI/2;trail.position.z=15;root.add(trail);root.userData.cueTrail=trail;
+    const root=new THREE.Group(),bank=!!opts.bank,scale=bank?RICO.bankVisualScale:1;
+    const ball=new THREE.Mesh(new THREE.SphereGeometry(7.5*scale,20,14),new THREE.MeshStandardMaterial({color:bank?0xff3030:0xffffff,emissive:bank?0x9b0808:0xc7ffe2,emissiveIntensity:bank?.9:.65,metalness:.08,roughness:.2}));root.add(ball);root.userData.cueBall=ball;root.userData.bankShot=bank;
+    const stripe=new THREE.Mesh(new THREE.TorusGeometry(7.1*scale,1.1*scale,8,24),new THREE.MeshBasicMaterial({color:bank?0x710909:0x087849}));ball.add(stripe);
+    const trail=new THREE.Mesh(new THREE.ConeGeometry(3.2*scale,24*scale,10),new THREE.MeshBasicMaterial({color:bank?0xff4242:0xb1ffcc,transparent:true,opacity:.6,depthWrite:false}));trail.rotation.x=Math.PI/2;trail.position.z=15*scale;root.add(trail);root.userData.cueTrail=trail;
     scene.add(root);return root;
   }
   if(type === "cannonball" || type === "bomb") {
@@ -3753,6 +3753,7 @@ function getCombatPosition(target, attacker = null, projectileTravelMs = 0) {
 
 let RicoBumpers=[],ricoBumperSerial=0;
 function ricoDamage(bounces,bank=true){return bank?Math.round(RICO.bankDamage*Math.pow(1.2,bounces)):RICO.damage;}
+function ricoBallRadius(p){return p.bank?RICO.bankBallRadius:RICO.ballRadius;}
 function ricoBumperMesh(){
  const g=new THREE.Group();
  const rubber=new THREE.MeshStandardMaterial({color:0x179344,roughness:.8});
@@ -3839,20 +3840,21 @@ function ricoBounce(p,n){
 }
 function updateRicoBall(p,dt){
  p.age+=dt;p.life-=dt;if(p.life<=0)return false;
+ const radius=ricoBallRadius(p);
  const steps=Math.max(1,Math.ceil(Math.hypot(p.vx,p.vz)*dt/3)),step=dt/steps;
  for(let i=0;i<steps;i++){
-  const nx=p.x+p.vx*step,nz=p.z+p.vz*step,n=ricoSurface(nx,nz,5);
+  const nx=p.x+p.vx*step,nz=p.z+p.vz*step,n=ricoSurface(nx,nz,radius);
   if(n){
    if(!ricoBounce(p,n))return false;
-   spawnSparks(p.x,p.z,p.bank?0xffd56b:0x8fffd2,3);
+   spawnSparks(p.x,p.z,p.bank?0xff4242:0x8fffd2,3);
    const ball=p.mesh.userData.cueBall;
-   if(p.bank&&ball){ball.material.emissive.setHex(0xffd360);ball.material.emissiveIntensity=.7+p.bounces*.15;}
+   if(p.bank&&ball){ball.material.emissive.setHex(0xff2020);ball.material.emissiveIntensity=.9+p.bounces*.15;}
   }else{p.x=nx;p.z=nz;}
-  for(const h of Husks)if(h.owner!==p.o&&Math.hypot(h.x-p.x,h.z-p.z)<19){if(!isMultiplayer||isLobbyLeader)h.hp-=p.d;return false;}
-  if(worldCrate&&!(worldCrate.y>0)&&worldCrate.bombT===null&&Math.hypot(worldCrate.x-p.x,worldCrate.z-p.z)<worldCrate.r+5){if(!isMultiplayer||isLobbyLeader)damageWorldCrate(p.d,p.o);return false;}
+  for(const h of Husks)if(h.owner!==p.o&&Math.hypot(h.x-p.x,h.z-p.z)<14+radius){if(!isMultiplayer||isLobbyLeader)h.hp-=p.d;return false;}
+  if(worldCrate&&!(worldCrate.y>0)&&worldCrate.bombT===null&&Math.hypot(worldCrate.x-p.x,worldCrate.z-p.z)<worldCrate.r+radius){if(!isMultiplayer||isLobbyLeader)damageWorldCrate(p.d,p.o);return false;}
   for(const t of E){if(t===p.o||t.dead||!areEnemies(p.o,t))continue;
    const pos=getCombatPosition(t,p.o,p.age*1000);
-   if(Math.hypot(pos.x-p.x,pos.z-p.z)<t.r+5){hurt(t,p.d,Math.atan2(p.vz,p.vx),p.kb,p.o,"projectile");return false;}
+   if(Math.hypot(pos.x-p.x,pos.z-p.z)<t.r+radius){hurt(t,p.d,Math.atan2(p.vz,p.vx),p.kb,p.o,"projectile");return false;}
   }
  }
  p.rot+=dt*11;p.mesh.position.set(p.x,RICO.ballHeight,p.z);orientProjectile(p);return true;
@@ -4106,14 +4108,16 @@ function shot(e, a, o) {
   const startX = o.x !== undefined ? o.x : (e.x + Math.cos(a)*18);
   const startZ = o.z !== undefined ? o.z : (e.z + Math.sin(a)*18);
 
-  const mesh = spawnProjectileMesh(o.t);
+  const mesh = spawnProjectileMesh(o.t,o);
   mesh.position.set(startX, o.t==="cue"?RICO.ballHeight:14, startZ);
-  if(GFX[gfxLevel].glow && GLOW_COLORS[o.t]) {
+  const glowColor=o.t==="cue"&&o.bank?0xff2929:GLOW_COLORS[o.t];
+  if(GFX[gfxLevel].glow && glowColor) {
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: glowTexture(), color: GLOW_COLORS[o.t], transparent: true, opacity: 0.85,
+      map: glowTexture(), color: glowColor, transparent: true, opacity: 0.85,
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
-    glow.scale.set(17, 17, 1);
+    const glowSize=o.t==="cue"&&o.bank?23:17;
+    glow.scale.set(glowSize,glowSize,1);
     mesh.add(glow);
   }
 
@@ -4181,7 +4185,7 @@ function executeAttack(e) {
   Snd.play(c.melee ? "melee" : "shoot");
   if(e.ci===7){
     const bank=!!e.ricoBank;e.ricoBank=false;
-    shot(e,e.a,{t:"cue",s:RICO.speed,d:ricoDamage(0,bank),kb:65,life:RICO.life,x:e.x+Math.cos(e.a)*10,z:e.z+Math.sin(e.a)*10,bank,bounces:0,maxBounces:bank?5:2});return;
+    shot(e,e.a,{t:"cue",s:bank?RICO.bankSpeed:RICO.speed,d:ricoDamage(0,bank),kb:65,life:RICO.life,x:e.x+Math.cos(e.a)*10,z:e.z+Math.sin(e.a)*10,bank,bounces:0,maxBounces:bank?5:2});return;
   }
   if(e.ci === 6) {
     dentleyAttack(e);
@@ -7770,7 +7774,7 @@ requestAnimationFrame(loop);
 (() => {
   // ============== EDIT YOUR UPDATE NOTES HERE ==============
   const VERSION_UPDATES = {
-    version: "BRAWLBOUND v1.2.6 — Rico follow-up",
+    version: "BRAWLBOUND v1.2.7 — Rico Bank Shot",
 
     game: [
       "HUGE CHAMPION BALANCE CHANGES!",
@@ -7823,7 +7827,7 @@ requestAnimationFrame(loop);
 
       {
         type: "buff",
-        text: "Rico — Cue Stick damage increased from 15 to 18 per hit (1s cooldown unchanged). Bank Shot starts at 22 damage instead of 20 and still compounds by 20% per bank: 22 / 26 / 32 / 38 / 46 / 55 through five banks. Bumper recoil-dashes Rico backward up to 70 units while placing its barrier 60 units ahead for 7s. Overlapping champions are pushed clear so placement succeeds; blocked placements do not dash or consume the 11s cooldown. Bruno cannot reflect Rico's cue balls."
+        text: "Rico — Cue Stick damage increased from 15 to 18 per hit (1s cooldown unchanged). Bank Shot starts at 22 damage instead of 20 and still compounds by 20% per bank: 22 / 26 / 32 / 38 / 46 / 55 through five banks. Its empowered ball is red, 1.35× larger, and 10% faster, with a larger hit radius. Bumper recoil-dashes Rico backward up to 70 units while placing its barrier 60 units ahead for 7s. Overlapping champions are pushed clear so placement succeeds; blocked placements do not dash or consume the 11s cooldown. Bruno cannot reflect Rico's cue balls."
       }
     ]
   };
