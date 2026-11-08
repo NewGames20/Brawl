@@ -3106,17 +3106,12 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
   }
 
   else if(heroIndex === 3) {
-    const copper=new THREE.MeshStandardMaterial({color:0xc8643c,metalness:.8,roughness:.3});
-    const steel=new THREE.MeshStandardMaterial({color:0x8994a3,metalness:.88,roughness:.25});
-    const dark=new THREE.MeshStandardMaterial({color:0x18202a,metalness:.45,roughness:.45});
-    const stock=new THREE.MeshStandardMaterial({color:0x493127,roughness:.55});
-    const lens=new THREE.MeshStandardMaterial({color:0x9ee9f1,metalness:.5,roughness:.2});
+    const copper=new THREE.MeshStandardMaterial({color:0xc8643c,metalness:.8,roughness:.3}),steel=new THREE.MeshStandardMaterial({color:0x8994a3,metalness:.88,roughness:.25}),dark=new THREE.MeshStandardMaterial({color:0x18202a,metalness:.45,roughness:.45}),stock=new THREE.MeshStandardMaterial({color:0x493127,roughness:.55}),lens=new THREE.MeshStandardMaterial({color:0x9ee9f1,metalness:.5,roughness:.2});
     const box=(w,h,d,mat,x,y,z,name)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.name=name;root.add(m);return m;};
     const tube=(r,len,mat,x,y,z,name)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,14),mat);m.rotation.x=Math.PI/2;m.position.set(x,y,z);m.name=name;root.add(m);return m;};
     box(4.1,4,13,copper,0,0,-1,'rifle-receiver');tube(1,27,steel,0,.4,-19,'rifle-barrel');tube(1.25,.8,dark,0,.4,-32.7,'rifle-muzzle');
     box(3.2,3.3,10,stock,0,-.4,10,'rifle-stock');box(4,4.2,1.1,dark,0,-.4,15.5,'stock-pad');box(2,5,3.2,stock,0,-4,3,'rifle-grip');box(2,4,4,dark,0,-3,-3,'rifle-magazine');
     box(1,1.2,9,dark,0,2.8,-3,'scope-mount');tube(1.45,11,dark,0,4,-4,'rifle-scope');tube(1.55,.35,lens,0,4,-9.7,'scope-front-lens');tube(1.55,.35,lens,0,4,1.7,'scope-rear-lens');
-    root.userData.bbMuzzleZ=-33.1;
   }
   else if(heroIndex === 4) {
     const techMat = new THREE.MeshStandardMaterial({ color: 0x18202a, metalness: 0.92 });
@@ -3412,26 +3407,15 @@ function applyWeaponSkin(weapon, item, heroIndex) {
       box(2,2,7,4,0,-1,dark);add(new THREE.OctahedronGeometry(2.3),4,1,1,light);break;
 
     case 3:
-      // Decorated sniper variant: long barrel, stock, scope, slim rails and muzzle crown.
-      box(4.4,3.5,12,0,0,-1,steel);
-      box(3.6,3.5,8,0,-.4,10,steel);
-      box(3.9,.7,8,0,1.6,10,trim);
-      for(const side of [-1,1]){
-        box(.55,.7,17,side*2.4,.7,-5,trim);
-        box(.35,.6,9,side*2.3,-.8,0,light);
-        add(new THREE.ConeGeometry(.65,3,4),side*1.6,.5,-31,trim,-Math.PI/2);
-      }
+      box(4.4,3.5,12,0,0,-1,steel);box(3.6,3.5,8,0,-.4,10,steel);box(3.9,.7,8,0,1.6,10,trim);
+      for(const side of [-1,1]){box(.55,.7,17,side*2.4,.7,-5,trim);box(.35,.6,9,side*2.3,-.8,0,light);add(new THREE.ConeGeometry(.65,3,4),side*1.6,.5,-31,trim,-Math.PI/2);}
       add(new THREE.CylinderGeometry(1.15,1.15,24,12),0,.4,-18,steel,Math.PI/2);
-      ring(1.4,.25,0,.4,-30.5,0,trim);
-      ring(1.35,.22,0,.4,-33,0,light);
-      box(.8,1.1,8,0,2.7,-3,dark);
-      add(new THREE.CylinderGeometry(1.7,1.7,11.8,16),0,4,-4,dark,Math.PI/2);
+      ring(1.4,.25,0,.4,-30.5,0,trim);ring(1.35,.22,0,.4,-33,0,light);
+      box(.8,1.1,8,0,2.7,-3,dark);add(new THREE.CylinderGeometry(1.7,1.7,11.8,16),0,4,-4,dark,Math.PI/2);
       for(const z of [-10,2])ring(1.8,.3,0,4,z,0,trim);
       add(new THREE.CylinderGeometry(1.42,1.42,.3,16),0,4,-10.35,light,Math.PI/2);
-      box(1.2,.6,2,0,6,-3,trim);
-      add(new THREE.OctahedronGeometry(.8),0,6.8,-3,light);
-      for(const z of [-24,-20,-16])ring(1.35,.2,0,.4,z,0,trim);
-      break;
+      box(1.2,.6,2,0,6,-3,trim);add(new THREE.OctahedronGeometry(.8),0,6.8,-3,light);
+      for(const z of [-24,-20,-16])ring(1.35,.2,0,.4,z,0,trim);break;
     case 4:
       box(7,4,12,0,0,-2);box(2,6,4,0,-5,4,dark);
       for(const side of [-1,1]){box(1,2,21,side*3,2,-3,light);box(2,4,10,side*4,-1,0,steel);
@@ -3529,10 +3513,10 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
     }
   }
 
-  const wep = createHighQualityWeapon(heroIndex, false);
+  const wep = buildEquippedWeapon(heroIndex,skins,false);
   wep.position.set(12, 16, 8);
 
-  // Ranged muzzles face local -Z; bodies face +Z. Both base and skin parts turn together.
+  // All ranged weapon muzzles point -Z locally; champion models face +Z.
   if([1,3,4,7].includes(heroIndex))wep.rotation.y=Math.PI;
 
   grp.add(wep);
@@ -3540,7 +3524,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   grp.bodyMat = bodyMat;
   const skinSelection = sanitizeSkinSelection(skins);
   applyChampionSkin(grp, heroIndex, skinItemFor("championSkins", heroIndex, { equipped: skinSelection }));
-  applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, { equipped: skinSelection }), heroIndex);
+  // Weapon appearance was applied by buildEquippedWeapon above.
 
   addChampionAura(grp,skinItemFor("auras",heroIndex,{equipped:skinSelection}));
   applyChampionModelSize(grp,heroIndex);
@@ -3549,18 +3533,22 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
 }
 
 
-function fitWeaponViewmodel(weapon){
- const parent=weapon.parent;if(parent)parent.remove(weapon);
- weapon.scale.setScalar(1);weapon.position.set(0,0,0);weapon.updateMatrixWorld(true);
- const box=new THREE.Box3().setFromObject(weapon),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
- const scale=Math.min(.26,2.0/Math.max(size.x,.01),3.1/Math.max(size.y,.01),6.2/Math.max(size.z,.01));
- weapon.scale.setScalar(scale);weapon.position.set(-center.x*scale,1.0-box.max.y*scale,-box.max.z*scale);
- weapon.userData.bbViewScale=scale;
- if(parent)parent.add(weapon);
+function buildEquippedWeapon(heroIndex,selection,isViewmodel=false){
+ const selected=sanitizeSkinSelection(selection);
+ const weapon=createHighQualityWeapon(heroIndex,isViewmodel);
+ applyWeaponSkin(weapon,skinItemFor('weaponSkins',heroIndex,{equipped:selected}),heroIndex);
+ weapon.userData.bbWeaponHero=heroIndex;
+ weapon.userData.bbWeaponSkinId=selected.weaponSkins[heroIndex]||'default';
+ return weapon;
 }
-function weaponViewmodelAnchor(){const depth=6,aspect=Math.max(.3,camera.aspect||1),tan=Math.tan(camera.fov*Math.PI/360);return {x:Math.max(1.25,Math.min(2.8,depth*tan*aspect*.44)),y:-2.55,z:-depth};}
+function viewmodelSourceFor(heroIndex,sourceEntity=null){
+ if(sourceEntity&&sourceEntity.ci===heroIndex)return sourceEntity;
+ if(isSpectating&&spectateTarget&&spectateTarget.ci===heroIndex)return spectateTarget;
+ if(pl&&pl.ci===heroIndex)return pl;
+ return null;
+}
 
-function setupViewmodel(heroIndex) {
+function setupViewmodel(heroIndex,sourceEntity=null) {
   while(viewmodelHolder.children.length > 0) {
     disposeHierarchy(viewmodelHolder.children[0]);
   }
@@ -3568,12 +3556,13 @@ function setupViewmodel(heroIndex) {
   viewmodelHolder.shield = null;
   viewmodelCi = heroIndex;
   if(heroIndex === null) return;
-  const wep = createHighQualityWeapon(heroIndex, true);
-
-  const profile = activeProfile();
-  applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, profile), heroIndex);
-  fitWeaponViewmodel(wep);
-  const anchor=weaponViewmodelAnchor();viewmodelHolder.position.set(anchor.x,anchor.y,anchor.z);viewmodelHolder.rotation.set(0,0,0);
+  const source=viewmodelSourceFor(heroIndex,sourceEntity);
+  const selected=source&&source.skins?sanitizeSkinSelection(source.skins):getSkinSelection();
+  const wep=buildEquippedWeapon(heroIndex,selected,true);
+  // Original first-person sizes restored; no automatic shrinking or recentering.
+  const viewmodelScale=heroIndex===JACKPOT.hero?0.22:0.48;
+  wep.scale.setScalar(viewmodelScale);
+  viewmodelHolder.bbWeaponSkinId=wep.userData.bbWeaponSkinId;
   viewmodelHolder.add(wep);
   viewmodelHolder.wep = wep;
   if(heroIndex === 6) {
@@ -3628,7 +3617,7 @@ function createDentleyShieldViewmodel() {
   root.add(crest, bar);
 
   root.position.set(-5.2, -0.9, -1.4);
-  root.scale.setScalar(0.24);
+  root.scale.setScalar(0.30);
   return root;
 }
 
@@ -4046,9 +4035,10 @@ function setEntitySkins(entity, skins) {
   entity.skins = next;
   if(!entity.mesh) return;
   addChampionAura(entity.mesh,skinItemFor("auras",entity.ci,{equipped:next}));
-  if(entity.mesh.userData.isLocalPlayer) return;
   applyChampionSkin(entity.mesh, entity.ci, skinItemFor("championSkins", entity.ci, { equipped: next }));
   applyWeaponSkin(entity.mesh.weapon, skinItemFor("weaponSkins", entity.ci, { equipped: next }), entity.ci);
+  if(entity.mesh.weapon)entity.mesh.weapon.userData.bbWeaponSkinId=next.weaponSkins[entity.ci]||'default';
+  if(isSpectating&&entity===spectateTarget&&viewmodelCi===entity.ci)setupViewmodel(entity.ci,entity);
 }
 
 // Keep recent host-side fighter positions so client-fired attacks can be checked
@@ -5438,7 +5428,7 @@ window.returnToMenu = function(message = "Select a champion to battle in the are
 let roundVote=null,roundVoteSerial=0,pendingRoundReady=false,lastRoundStatePacket=null,lastRoundStartPacket=null,pendingStartGamePacket=null,lastStartedRoundId=null;
 const REMATCH_COUNTDOWN_MS=10000,MAP_VOTE_DURATION_MS=7000;
 const HOST_AWAY_TIMEOUT_MS=20000;
-const ARENA_PROTOCOL_VERSION="19:"+Object.values(COMBAT_SETTINGS).join(":");
+const ARENA_PROTOCOL_VERSION="21:"+Object.values(COMBAT_SETTINGS).join(":");
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,m)=>total+(votes[m.id]===i?1:0),0)),max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===MAPS.length?Math.floor(random()*MAPS.length):winner;
 }
@@ -5839,6 +5829,10 @@ function handleIncomingData(conn, data) {
       r.tagCosmetics = tagCosmetics;
       r.skins = skins;
     }
+    // Apply live cosmetic changes to the actual actor as well as the lobby roster.
+    // Otherwise host snapshots keep sending the previous weapon skin to other players.
+    const cosmeticActor=getRemoteActorByNetId(data.id);
+    if(cosmeticActor){setEntityIdentity(cosmeticActor,username,tagCosmetics);setEntitySkins(cosmeticActor,skins);}
     if(isLobbyLeader) {
       outgoingSeq++;
       broadcastToPeers({ type: "ROSTER_SYNC", roster, leaderId, quickMatch: !!(quickMatchHosted || lobbyIsQuickMatch || matchIsQuickMatch), seq: outgoingSeq });
@@ -7550,6 +7544,10 @@ function upd(dt) {
   }
 
   const vmEnt = isSpectating ? spectateTarget : pl;
+  if(vmEnt){
+    const selectedSkin=sanitizeSkinSelection(vmEnt.skins).weaponSkins[vmEnt.ci]||'default';
+    if(viewmodelCi!==vmEnt.ci||viewmodelHolder.bbWeaponSkinId!==selectedSkin)setupViewmodel(vmEnt.ci,vmEnt);
+  }
   if(viewmodelHolder.wep && vmEnt) {
     const isAttacking = vmEnt.swing > 0 || vmEnt.fire > 0;
     const forwardKey = controlScheme === "wasd" ? K.KeyW : K.ArrowUp;
@@ -7561,18 +7559,17 @@ function upd(dt) {
     const bob = isMoving ? Math.sin(matchTime * 9) * 0.1 : Math.sin(matchTime * 2.5) * 0.03;
     const sideBob = isMoving ? Math.cos(matchTime * 4.5) * 0.06 : 0;
 
-    const anchor=weaponViewmodelAnchor();
-    const targetX=anchor.x+sideBob*.4-Math.min(.15,Math.max(-.15,curSwayX*.025));
-    const targetY=anchor.y+bob*.45+Math.min(.12,Math.max(-.12,curSwayY*.02));
-    const targetZ=anchor.z+(isAttacking?.18:0);
+    const targetX = 3.2 + sideBob - Math.min(0.5, Math.max(-0.5, curSwayX * 0.07));
+    const targetY = -3.2 + bob + Math.min(0.35, Math.max(-0.35, curSwayY * 0.05));
+    const targetZ = isAttacking ? -4.7 : -5.5;
 
     viewmodelHolder.position.x += (targetX - viewmodelHolder.position.x) * 0.18;
     viewmodelHolder.position.y += (targetY - viewmodelHolder.position.y) * 0.18;
     viewmodelHolder.position.z += (targetZ - viewmodelHolder.position.z) * 0.18;
 
-    const targetRotX = isAttacking ? -0.10 : Math.max(-.035,Math.min(.035,-curSwayY*.006));
-    const targetRotY = Math.max(-.04,Math.min(.04,curSwayX*.007));
-    const targetRotZ = isAttacking ? -0.06 : 0;
+    const targetRotX = isAttacking ? -0.28 : (-curSwayY * 0.018);
+    const targetRotY = curSwayX * 0.02;
+    const targetRotZ = isAttacking ? -0.15 : 0;
 
     viewmodelHolder.rotation.x += (targetRotX - viewmodelHolder.rotation.x) * 0.18;
     viewmodelHolder.rotation.y += (targetRotY - viewmodelHolder.rotation.y) * 0.18;
@@ -8576,7 +8573,7 @@ const VERSION_UPDATES = {
     model=createDetailedHeroModel(item.hero,false,true,null,null,skins);
     if(model.parent)model.parent.remove(model);
    }else{
-    model=createHighQualityWeapon(item.hero,false);applyWeaponSkin(model,item,item.hero);
+    const previewSkins=sanitizeSkinSelection(null);previewSkins.weaponSkins[item.hero]=item.id;model=buildEquippedWeapon(item.hero,previewSkins,false);
    }
    model.updateMatrixWorld(true);
    const box=new THREE.Box3().setFromObject(model),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
