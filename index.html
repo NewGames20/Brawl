@@ -39,6 +39,18 @@ html, body {
   opacity: 0;
   transition: opacity 0.12s ease-out;
 }
+#jackpot-vignette {
+  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 56%, rgba(178, 15, 24, 0.28) 76%, rgba(115, 0, 10, 0.78) 100%),
+    linear-gradient(90deg, rgba(160,0,10,.18), transparent 22%, transparent 78%, rgba(160,0,10,.18));
+  transition: opacity .16s ease-out;
+}
+#jackpot-vignette.active { animation: jackpot-wager-pulse .9s ease-in-out infinite alternate; }
+@keyframes jackpot-wager-pulse {
+  from { opacity: .48; }
+  to { opacity: .88; }
+}
 
 #match-intro {
   position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
@@ -653,8 +665,20 @@ html, body {
 #round-panel{background:radial-gradient(ellipse at 15% 0%,#354158aa,transparent 52%),radial-gradient(ellipse at 95% 70%,#693d1e55,transparent 50%),#080d17;gap:20px}.round-title{font-size:clamp(25px,4.3vw,48px);letter-spacing:.07em}.round-title span{display:inline-grid;place-items:center;margin:0 0 0 18px;min-width:75px;padding:10px 14px;border:1px solid #ffcf8266;border-radius:14px;background:#ffcf8211;color:#ffdc9e;font-size:30px;font-variant-numeric:tabular-nums}.round-subtitle{max-width:750px;font-size:14px;color:#a9b8ce}.round-options{width:min(1120px,100%);grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.round-map-card{text-align:left;padding:16px;border:1px solid #8397b844;border-radius:18px;background:linear-gradient(155deg,#243044,#101722);display:flex;flex-direction:column;min-height:310px;position:relative;overflow:hidden}.round-map-card:nth-child(1){--vote-accent:#ffa34e}.round-map-card:nth-child(2){--vote-accent:#48e4e3}.round-map-card:nth-child(3){--vote-accent:#b598ff}.round-map-card:hover:not(:disabled){border-color:var(--vote-accent);transform:translateY(-5px)}.round-map-card.selected{border:2px solid var(--vote-accent);background:linear-gradient(155deg,#354459,#121d30);box-shadow:0 0 25px #7fbaff22}.vote-card-top{display:flex;justify-content:space-between;font-size:9px;letter-spacing:1px;color:#a4b4cb;font-weight:800}.vote-card-top span:last-child{color:var(--vote-accent)}.vote-arena-art{width:100%;height:140px;margin:14px 0;filter:drop-shadow(0 7px 7px #0008)}.round-map-card strong{font:900 clamp(18px,2vw,25px) Outfit,sans-serif;color:white}.round-map-card small{font-size:11px;font-weight:600;color:#aab9ce;margin:8px 0 18px;line-height:1.5}.vote-meter{height:5px;border-radius:8px;background:#ffffff15;overflow:hidden;margin-top:auto}.vote-meter i{display:block;height:100%;background:var(--vote-accent);transition:width .3s}.round-map-count{display:flex;justify-content:space-between;font-size:12px;color:#e4eafa;margin-top:10px}.round-map-count em{font-style:normal;color:var(--vote-accent)}.vote-random-art{height:140px;margin:14px 0;text-align:center;font:900 90px 'Space Grotesk',sans-serif;color:#b598ff;text-shadow:0 0 35px #925fff66}.vote-random-art span{display:block;font:800 9px Outfit,sans-serif;letter-spacing:3px;color:#cab8ff}.round-status{background:#ffffff06;border:1px solid #ffffff12;border-radius:14px;padding:12px 20px;font-size:12px}.round-status span{display:inline-block;margin:0 8px}.round-champion{padding:10px 16px;background:#ffffff07;border-radius:12px;font-size:13px}
 @media(max-width:680px){#round-panel{justify-content:flex-start;padding:22px 15px}.round-options{grid-template-columns:1fr;gap:12px}.round-map-card{min-height:210px}.vote-arena-art,.vote-random-art{height:90px}.vote-random-art{font-size:58px}.round-title span{font-size:20px;min-width:52px}.round-champion{flex-wrap:wrap}}
 </style>
-<style>#ref-status{margin-top:7px;color:#ffe27a;font:800 10px Outfit,sans-serif;letter-spacing:.4px}</style>
-<style id="ref-status-style">
+<style id="game-status-style">
+#ability-status{margin-top:7px;color:#ffe27a;font:800 10px Outfit,sans-serif;letter-spacing:.4px}
+.jackpot-status-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;margin-top:8px;width:100%;max-width:none}
+.jackpot-hud{width:290px}
+.jackpot-status-card{min-width:0;padding:6px 8px;border:1px solid #f2c14e55;border-radius:8px;background:linear-gradient(135deg,#3b281bd9,#17131be8);box-shadow:inset 0 1px #ffffff12}
+.jackpot-status-card strong{display:block;color:#ffdc78;font:900 9px 'Space Grotesk',sans-serif;letter-spacing:.8px}
+.jackpot-status-card span{display:block;margin-top:2px;color:#fff4d4;font-size:10px;font-weight:800;line-height:1.2}
+#jackpot-allin-banner{position:absolute;z-index:8;top:8%;left:50%;transform:translateX(-50%);display:none;width:min(330px,82vw);padding:10px 16px 12px;border:1px solid #ffd166aa;border-radius:12px;background:linear-gradient(110deg,#551c20f2,#9a301df2,#4a1521f2);box-shadow:0 0 26px #ff3b294d,inset 0 1px #fff5;pointer-events:none;text-align:center}
+#jackpot-allin-banner.active{display:block;animation:allin-banner-pulse .48s ease-in-out infinite alternate}
+#jackpot-allin-title{font:1000 22px 'Space Grotesk',sans-serif;letter-spacing:3px;color:#fff3c1;text-shadow:0 0 16px #ffbe46}
+#jackpot-allin-detail{margin-top:2px;color:#ffe1b5;font-size:11px;font-weight:900;letter-spacing:1px}
+#jackpot-allin-track{height:5px;margin-top:8px;border-radius:5px;background:#1a0809;overflow:hidden}
+#jackpot-allin-fill{height:100%;width:100%;background:linear-gradient(90deg,#ff9b37,#ffdf68);box-shadow:0 0 10px #ffc14d;transition:width .1s linear}
+@keyframes allin-banner-pulse{to{filter:brightness(1.3);box-shadow:0 0 36px #ff3b2988,inset 0 1px #fff8}}
 #projectile-hit-notices{position:absolute;right:24px;bottom:25%;display:flex;flex-direction:column;gap:6px;width:min(310px,65vw);pointer-events:none;z-index:9}
 .projectile-hit-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 11px;border:1px solid #72e3b34d;border-left:3px solid #72e3b3;border-radius:7px;background:rgba(9,19,22,.92);font:700 11px Outfit,system-ui,sans-serif;color:#eaf6f2}
 .projectile-hit-target{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.projectile-hit-amount{flex-shrink:0;color:#9ff0c8;font-weight:900}
@@ -667,6 +691,12 @@ html, body {
 <div id="wrap">
   <canvas id="c3d"></canvas>
   <div id="damage-overlay"></div>
+  <div id="jackpot-vignette" aria-hidden="true"></div>
+  <div id="jackpot-allin-banner" role="status" aria-live="polite">
+    <div id="jackpot-allin-title">ALL IN</div>
+    <div id="jackpot-allin-detail"></div>
+    <div id="jackpot-allin-track"><div id="jackpot-allin-fill"></div></div>
+  </div>
   <div id="crosshair"></div>
   <div id="lock-prompt">Click arena to capture mouse</div>
   <div id="hud">
@@ -759,9 +789,9 @@ const BALANCE_PATCH = {
  }
 };
 const PATCH_UPDATES = {
- version:"BRAWLBOUND v1.2.7 — Rico Bank Shot",
- announcement:"Rico Bank Shot is now a larger, faster red cue ball!",
- notes:["Rico's empowered Bank Shot cue ball is red, 1.35× larger, 10% faster, and has a larger hit radius.","Rico's Cue Stick deals 18 damage per hit; Bank Shot starts at 22 and compounds 20% per bounce: 22 / 26 / 32 / 38 / 46 / 55.","Bumper recoil-dashes Rico backward up to 70 units and attempts to place a barrier 60 units ahead for 7s. Overlapping champions are pushed clear so the bumper still places. Blocked placement does not consume the 11s cooldown.","Rico now displays a yellow NEW! badge; his underlying Epic rarity and Epic cosmetic tiers are unchanged.","Bumpers no longer knock back or stun their owner. Other champions are still bumped and stunned for 0.3s.","All champions heal 25% of max HP on a credited elimination, capped at max HP.","Rico default model redesigned: violet waistcoat, cream rolled sleeves, dark trousers and swept-back hair.","Projectile hit notices retained for every champion, showing target username and actual host-confirmed damage.","Rico is an Epic ranged Skirmisher: 170 HP, 150 speed. Weapon: Cue Stick.","Bright white cue balls lowered to 14 units above the floor, green stripes and a short tracer make banks readable. Bank Shot glows red.","Bumper: 44-unit diameter, 9-unit height, 7s lifetime; contact gently repels other champions and stuns for 0.3s; its owner is immune. Emerald Hustler and Gilded Break are Epic.","8 collectible nametag fonts. Crate odds: Common 52%, Uncommon 29%, Rare 15%, Epic 3.5%, Legendary 0.5%.","Bruno cosmetics are Uncommon; Quackbot cosmetics are Rare. All seven weapon skins have new structural details.","Upgraded Starwarden Bruno, Admiral Abyss, and Astral Marcel outfits. Audio now has OFF-by-default Master, SFX, and Music switches.","New map-voting cards with arena diagrams and vote shares. BBQ vents randomize with a 0.8s warning. Kitchen prep islands randomize away from spawns.","Easy, Normal (original behavior) and Hard AI available in settings.","Dentley: 10s Guard, 180-degree arc; release between 0.5s and 1.8s to earn +25% speed for 0.8s. Later release grants no boost.",
+ version:"BRAWLBOUND v1.2.7",
+ announcement:"Champion balance changes are now live!",
+ notes:["Bumpers no longer knock back or stun their owner. Other champions are still bumped and stunned for 0.3s.","All champions heal 25% of max HP on a credited elimination, capped at max HP.","Projectile hit notices retained for every champion, showing target username and actual host-confirmed damage.","8 collectible nametag fonts. Crate odds: Common 52%, Uncommon 29%, Rare 15%, Epic 3.5%, Legendary 0.5%.","Bruno cosmetics are Uncommon; Quackbot cosmetics are Rare. All seven weapon skins have new structural details.","Upgraded Starwarden Bruno, Admiral Abyss, and Astral Marcel outfits. Audio now has OFF-by-default Master, SFX, and Music switches.","New map-voting cards with arena diagrams and vote shares. BBQ vents randomize with a 0.8s warning. Kitchen prep islands randomize away from spawns.","Easy, Normal (original behavior) and Hard AI available in settings.","Dentley: 10s Guard, 180-degree arc; release between 0.5s and 1.8s to earn +25% speed for 0.8s. Later release grants no boost.",
  "Counter Lunge: 8.5s cooldown, 10 + Counter Charge damage, 0.3-1.5s stun.",
  "Squire: Recall Armor waiting period increased from 5s to 6s. Dagger Feint cooldown increased from 6.5s to 7s; crossing enemies deals 10 damage and stuns for 0.4s. Rearm within 50 units for 1.5s; husk lasts 10s.",
  "Bruno: Slam 15 damage / 1.1s stun; Charge 10 damage per enemy.",
@@ -857,15 +887,6 @@ const HEROES = [
 ];
 
 
-HEROES.push({n:"Ref",e:"📣",w:"📣",wn:"Whistle Dart",role:"Ranged",roleCol:"#e2c34e",hp:170,sp:150,col:0x2f3a52,cd:0.65,
- a1n:"Red Card",a1cd:10,a2n:"Blow the Whistle",a2cd:16,melee:false,atkRange:520,ab1Range:300,ab2Range:180,
- ad:"Fire a Whistle Dart for 13 damage every 0.65 seconds.",
- a1d:"Throw a red card. Hitting one player marks them for 4 seconds; Ref's next hit on that target deals 50% bonus damage and consumes the mark.",
- a2d:"After a visible 1-second wind-up, freeze enemy basic attacks within 250 units for 2.5 seconds. Ref pulls out and blows his whistle; he can still move, attack, and use abilities.",
- passiveName:"Chalk Line",
- passive:"Chalk Line: when Red Card marks a player, a visible line connects Ref and the target for 3 seconds. Enemies crossing the line are slowed by 25% for 1 second.",
- d:"A ranged control specialist. Red Card marks one target for Ref's next Whistle Dart, while the chalk line punishes enemies who cross between them. Blow the Whistle briefly silences nearby basic attacks without stopping movement or abilities."
-});
 HEROES.push({n:"Jackpot",e:"🎰",w:"🪙",wn:"Lucky Revolver",role:"Ranged",roleCol:"#f2c14e",hp:160,sp:150,col:0x8c3d39,cd:0.6,
  a1n:"Roll the Dice",a1cd:9,a2n:"All In",a2cd:17,a3n:"Coin Toss",a3cd:1,melee:false,atkRange:500,
  ad:"Fire for 6 damage every 0.6 seconds. A loaded Heads coin makes the next shot deal 20 damage; Tails deals 6.",
@@ -874,22 +895,11 @@ HEROES.push({n:"Jackpot",e:"🎰",w:"🪙",wn:"Lucky Revolver",role:"Ranged",rol
  a3d:"Flip and load one coin. It takes 0.5 seconds to land: Heads deals 20 damage on your next shot, Tails deals 6. A Tail guarantees Heads on your next flip. Fire to clear the chamber before flipping again.",
  d:"A high-variance gunslinger who can flip for a stronger shot, gamble on a die, or wager health for a short all-in burst."
 });
-HEROES.push({n:"Cosmo",e:"🌙",w:"🌙",wn:"Moon Launcher",role:"Ranged",roleCol:"#aeb8ff",hp:170,sp:145,col:0x555da8,cd:0.7,
- a1n:"Moon Tag",a1cd:0.5,a2n:"Gravity Well",a2cd:13,melee:false,atkRange:520,ab1Range:520,ab2Range:190,
- ad:"Launch a ready orbiting moon for 24 damage. It pierces and flies for 0.9 seconds; each launched moon returns after 3.5 seconds.",
- a1d:"Send one ready moon to the enemy in your crosshair. Click again to drop it for 24 damage and a 1.1-second stun. A tagged moon cannot be broken; if its target dies, it returns without hitting. The moon takes 5 seconds to recover after returning.",
- a2d:"After a visible 0.5-second wind-up, create a gravity well for 5 seconds. Enemies within 190 units are pulled toward its center and slowed by 25%.",
- passiveName:"Orbiting Moons",
- passive:"Three moons orbit 28 units away. Each blocks one incoming projectile, then recovers for 5 seconds. Enemies touching a moon take 6 damage and a small shove every 0.6 seconds.",
- d:"Three orbiting moons trade personal defense for ranged pressure and team control. Send one to tag a target, then pull opponents together with Gravity Well."
-});
-const REF={hero:7,damage:13,cardSpeed:460,cardDamageBonus:0.5,markDuration:4,lineDuration:3,lineSlowDuration:1,lineSlowMultiplier:0.75,whistleWindup:1,whistleRadius:250,whistleDuration:2.5};
-const JACKPOT={hero:8,baseDamage:6,headsDamage:20,allInDamage:25,flipDuration:0.5,allInDuration:7,wagerFraction:0.2};
-const COSMO={hero:9,moonCount:3,moonOrbitRadius:28,moonDamage:24,moonRecovery:3.5,moonTagRecovery:5,moonTagStun:1.1,moonTouchDamage:6,moonTouchInterval:0.6,moonGuardRecovery:5,wellRadius:190,wellDuration:5,wellWindup:0.5,wellSlow:0.25};
+const JACKPOT={hero:7,baseDamage:6,headsDamage:20,allInDamage:25,flipDuration:0.5,allInDuration:7,wagerFraction:0.2};
 
 const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
 
-const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5,16,16,16];
+const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5,16];
 
 const SHINY_REWARDS = { daily: 50, kill: 15, win: 75 };
 
@@ -1001,7 +1011,7 @@ window.setAIDifficulty=function(value){if(!AI_DIFFICULTIES[value])return;aiDiffi
 
 const ACCOUNT_STORAGE_KEY = "bb_account_single_v2";
 
-const COSMETIC_HERO_COUNT = HEROES.length;
+const COSMETIC_HERO_COUNT = 7;
 
 const MENU_ANNOUNCEMENT = PATCH_UPDATES.announcement;
 const NAMEPLATE_CATEGORIES = [
@@ -2823,40 +2833,44 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
   }
 
   if(heroIndex===7){
-    const metal = new THREE.MeshStandardMaterial({ color: 0xd3c69b, roughness: 0.45, metalness: 0.66 });
-    const grip = new THREE.MeshStandardMaterial({ color: 0x2a2d36, roughness: 0.72 });
-    const body = new THREE.Mesh(new THREE.BoxGeometry(6.5, 5, 13), grip);
-    body.position.set(0, -1, 3); root.add(body);
-    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.5, 20, 12), metal);
-    barrel.rotation.x = -Math.PI / 2; barrel.position.set(0, 0, -9); root.add(barrel);
-    const handle = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 5), grip);
-    handle.position.set(0, -5.7, 7); root.add(handle);
-    const whistle = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 3, 10), new THREE.MeshStandardMaterial({ color: 0xf0c65d, roughness: 0.3, metalness: 0.6 }));
-    whistle.rotation.x = Math.PI / 2; whistle.position.set(0, 3, 5); root.add(whistle);
-    const prop=new THREE.Group();
-    const whistleBody=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.5,8,10),new THREE.MeshStandardMaterial({color:0xf0c65d,roughness:.3,metalness:.65}));
-    whistleBody.rotation.x=Math.PI/2;prop.add(whistleBody);
-    const mouth=new THREE.Mesh(new THREE.CylinderGeometry(.65,.65,2.4,8),new THREE.MeshStandardMaterial({color:0x2a2d36,metalness:.5,roughness:.35}));
-    mouth.rotation.x=Math.PI/2;mouth.position.z=4.5;prop.add(mouth);
-    prop.visible=false;prop.position.set(0,-5,7);root.add(prop);root.userData.blowWhistle=prop;
+    const gold=new THREE.MeshStandardMaterial({color:0xf2c14e,metalness:.88,roughness:.2});
+    const steel=new THREE.MeshStandardMaterial({color:0x403943,metalness:.86,roughness:.23});
+    const darkSteel=new THREE.MeshStandardMaterial({color:0x171820,metalness:.78,roughness:.28});
+    const wood=new THREE.MeshStandardMaterial({color:0x512b24,roughness:.38});
+    const inlay=new THREE.MeshStandardMaterial({color:0xc9573f,metalness:.38,roughness:.32});
+    const add=(geometry,material,x,y,z,rx=0,ry=0,rz=0)=>{
+      const mesh=new THREE.Mesh(geometry,material);
+      mesh.position.set(x,y,z);mesh.rotation.set(rx,ry,rz);mesh.castShadow=true;mesh.receiveShadow=true;root.add(mesh);return mesh;
+    };
+    const box=(w,h,d,material,x,y,z,rz=0)=>add(new THREE.BoxGeometry(w,h,d),material,x,y,z,0,0,rz);
+    add(new THREE.BoxGeometry(9,5,12),steel,0,0,1);
+    add(new THREE.BoxGeometry(10,1.5,12),gold,0,3.2,0);
+    add(new THREE.BoxGeometry(4.4,2.2,11),darkSteel,0,0.2,-8.7);
+    add(new THREE.CylinderGeometry(2.7,3.1,19,16),steel,0,0,-15,Math.PI/2);
+    add(new THREE.CylinderGeometry(3.2,3.2,1.4,20),gold,0,0,-24,Math.PI/2);
+    add(new THREE.CylinderGeometry(2.1,2.1,1.5,16),darkSteel,0,0,-24.6,Math.PI/2);
+    add(new THREE.CylinderGeometry(5.2,5.2,7,16),steel,0,0,-2.5,Math.PI/2);
+    add(new THREE.CylinderGeometry(5.6,5.6,1.2,20),gold,0,0,-6.5,Math.PI/2);
+    add(new THREE.CylinderGeometry(5.6,5.6,1.2,20),gold,0,0,1.5,Math.PI/2);
+    add(new THREE.TorusGeometry(4.1,.55,8,24),darkSteel,0,0,-7.2);
+    for(let i=0;i<6;i++){
+      const angle=i*Math.PI/3,x=Math.cos(angle)*3.35,y=Math.sin(angle)*3.35;
+      add(new THREE.CylinderGeometry(.85,.85,.7,10),darkSteel,x,y,-7.25,Math.PI/2);
+      add(new THREE.SphereGeometry(.42,8,6),gold,x,y,-7.7);
+      add(new THREE.CylinderGeometry(.85,.85,.7,10),darkSteel,x,y,2.2,Math.PI/2);
+      add(new THREE.SphereGeometry(.38,8,6),gold,x,y,2.6);
+    }
+    box(2.5,1.5,5,gold,0,4.5,-11);
+    box(1.7,1.2,2,darkSteel,0,5.8,-12);
+    box(2.4,1.1,2,gold,0,3.8,-22);
+    box(5.4,12,6,wood,0,-7,4,.2);
+    box(5.9,1,6,gold,0,-2.2,4,.2);
+    box(5.2,1.1,4,inlay,0,-7,4.1,.2);
+    add(new THREE.TorusGeometry(4.4,.65,8,20),gold,0,-3.3,1.4);
+    add(new THREE.SphereGeometry(1.8,12,8),gold,5.2,-.4,-1);
+    add(new THREE.OctahedronGeometry(1.4),inlay,5.5,-.4,-1);
+    for(const side of [-1,1])box(1.1,2.2,8,gold,side*5,0,-1);
     return root;
-  }
-  if(heroIndex===8){
-    const steel=new THREE.MeshStandardMaterial({color:0xc9a45b,metalness:.8,roughness:.25});
-    const grip=new THREE.MeshStandardMaterial({color:0x382a27,roughness:.6});
-    const barrel=new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.4,12,12),steel);
-    barrel.rotation.x=-Math.PI/2;barrel.position.z=-8;
-    const cylinder=new THREE.Mesh(new THREE.CylinderGeometry(4.2,4.2,3,12),steel);
-    cylinder.rotation.x=Math.PI/2;cylinder.position.z=1;
-    const handle=new THREE.Mesh(new THREE.BoxGeometry(5,9,5),grip);handle.position.set(0,-5,6);
-    const gripRing=new THREE.Mesh(new THREE.TorusGeometry(3.2,.7,6,16),steel);
-    gripRing.position.z=1;root.add(barrel,cylinder,handle,gripRing);return root;
-  }
-  if(heroIndex===9){
-    const metal=new THREE.MeshStandardMaterial({color:0x9ca9ed,metalness:.7,roughness:.28});
-    const core=new THREE.Mesh(new THREE.SphereGeometry(5,12,10),metal);
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(7,1.3,8,20),new THREE.MeshStandardMaterial({color:0x7fe6ff,emissive:0x255e83,emissiveIntensity:.7}));
-    ring.rotation.x=Math.PI/2;root.add(core,ring);return root;
   }
   if(heroIndex === 0) {
     const handleMat = new THREE.MeshStandardMaterial({ color: 0x3d2516, roughness: 0.65 });
@@ -2912,28 +2926,12 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
 function addHeroDetails(grp, headGrp, heroIndex) {
   const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.55 }, o || {}));
   if(heroIndex===7){
-    const sash = M(0x3d4f73);
-    const trim = M(0xc9d4ef);
-    const badge = new THREE.Mesh(new THREE.CylinderGeometry(4.8, 4.8, 1.5, 18), trim);
-    badge.position.set(0, 1.2, 5.8); badge.rotation.x = Math.PI / 2; headGrp.add(badge);
-    const chest = new THREE.Mesh(new THREE.BoxGeometry(14, 15, 8), sash); chest.position.set(0, 11, 0); grp.add(chest);
-    const stripe = new THREE.Mesh(new THREE.BoxGeometry(16, 2.5, 2), trim); stripe.position.set(0, 18, 6); grp.add(stripe);
-    const armband = new THREE.Mesh(new THREE.BoxGeometry(3.5, 10, 2.8), trim); armband.position.set(8.5, 14, 0); grp.add(armband);
-    const other = armband.clone(); other.position.x = -8.5; grp.add(other);
-    return;
-  }
-  if(heroIndex===8){
     const hat=new THREE.Mesh(new THREE.CylinderGeometry(7.5,8,3,12),M(0x392c2b));
     hat.position.y=8;headGrp.add(hat);
     const brim=new THREE.Mesh(new THREE.CylinderGeometry(10,10,.8,14),M(0x8c3d39));
     brim.position.y=6.2;headGrp.add(brim);
     const star=new THREE.Mesh(new THREE.OctahedronGeometry(2.2),M(0xf2c14e,{emissive:0x694500,emissiveIntensity:.45}));
     star.position.set(0,8,7.7);headGrp.add(star);
-  } else if(heroIndex===9){
-    const halo=new THREE.Mesh(new THREE.TorusGeometry(8.7,.85,8,24),M(0x93d9ff,{emissive:0x356a9a,emissiveIntensity:.65}));
-    halo.position.y=4;halo.rotation.x=Math.PI/2;headGrp.add(halo);
-    const star=new THREE.Mesh(new THREE.OctahedronGeometry(2.4),M(0xc3b7ff,{emissive:0x5d55a0,emissiveIntensity:.6}));
-    star.position.set(0,0,8.5);headGrp.add(star);
   }
   if(heroIndex === 0) { // Bruno: round ears + muzzle
     const earMat = M(0x4a2c14);
@@ -3033,7 +3031,6 @@ function applyChampionSkin(model, heroIndex, item) {
  if(!model)return;
  for(const k of ["skinFx","skinOutfit"])if(model[k]){disposeHierarchy(model[k]);model[k]=null;}
  if(model.bodyMat){model.bodyMat.color.set(item?item.base:HEROES[heroIndex].col);model.bodyMat.emissive.set(item?item.glow:0);model.bodyMat.emissiveIntensity=item?0.16:0;}
- if(heroIndex===7 && model.bodyMat){ model.bodyMat.color.set(item ? (item.base || HEROES[heroIndex].col) : HEROES[heroIndex].col); }
  if(!item)return;
  const g=new THREE.Group();model.add(g);model.skinOutfit=g;
  const base=new THREE.MeshStandardMaterial({color:item.base,metalness:0.45,roughness:0.45});
@@ -3225,7 +3222,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   headGrp.position.y = 28;
   grp.add(headGrp);
 
-  const head=new THREE.Mesh(new THREE.SphereGeometry(8.5,20,16),heroIndex===7?new THREE.MeshStandardMaterial({color:0xc99472,roughness:.65}):bodyMat);head.castShadow=true;head.receiveShadow=true;
+  const head=new THREE.Mesh(new THREE.SphereGeometry(8.5,20,16),bodyMat);head.castShadow=true;head.receiveShadow=true;
   headGrp.add(head);
 
   addHeroDetails(grp, headGrp, heroIndex);
@@ -3293,7 +3290,8 @@ function setupViewmodel(heroIndex) {
   viewmodelCi = heroIndex;
   if(heroIndex === null) return;
   const wep = createHighQualityWeapon(heroIndex, true);
-  wep.scale.set(0.48, 0.48, 0.48);
+  const viewmodelScale=heroIndex===JACKPOT.hero?0.22:0.48;
+  wep.scale.setScalar(viewmodelScale);
   const profile = activeProfile();
   applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, profile), heroIndex);
   viewmodelHolder.add(wep);
@@ -3363,28 +3361,10 @@ function syncDentleyViewmodel(entity) {
 
 function spawnProjectileMesh(type, opts = {}) {
   let mesh;
-  if(type === "ref_card") {
-    mesh = new THREE.Mesh(new THREE.BoxGeometry(10, 1.5, 14), new THREE.MeshStandardMaterial({
-      color: 0xe94b52, emissive: 0x60151b, emissiveIntensity: 0.45, roughness: 0.35,
-      side: THREE.DoubleSide
-    }));
-  } else if(type === "ref_dart") {
-    mesh = new THREE.Group();
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 12, 8), new THREE.MeshStandardMaterial({color:0xf2da83,metalness:0.35,roughness:0.3}));
-    shaft.rotation.x = Math.PI / 2;
-    const tip = new THREE.Mesh(new THREE.ConeGeometry(2, 5, 8), new THREE.MeshStandardMaterial({color:0xe94b52,roughness:0.3}));
-    tip.rotation.x = Math.PI / 2;
-    tip.position.z = 8;
-    mesh.add(shaft, tip);
-  } else if(type === "jackpot_bullet") {
+  if(type === "jackpot_bullet") {
     mesh=new THREE.Group();
     const slug=new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.4,9,10),new THREE.MeshStandardMaterial({color:0xf6d76b,emissive:0x73501a,emissiveIntensity:.7,metalness:.65,roughness:.22}));
     slug.rotation.x=Math.PI/2;mesh.add(slug);
-  } else if(type === "cosmo_moon") {
-    mesh=new THREE.Group();
-    const moon=new THREE.Mesh(new THREE.SphereGeometry(6.5,14,10),new THREE.MeshStandardMaterial({color:0xbac7ff,emissive:0x535da7,emissiveIntensity:.9,metalness:.25,roughness:.3}));
-    const halo=new THREE.Mesh(new THREE.TorusGeometry(8,1,6,18),new THREE.MeshBasicMaterial({color:0x80eaff}));
-    halo.rotation.x=Math.PI/2;mesh.add(moon,halo);
   } else if(type === "cannonball" || type === "bomb") {
     mesh = new THREE.Mesh(new THREE.SphereGeometry(6.5, 16, 16), new THREE.MeshStandardMaterial({
       color: type === "bomb" ? 0xcca010 : 0x1b1c22, metalness: 0.85, roughness: 0.25
@@ -3496,7 +3476,7 @@ function glowTexture() {
   _glowTex = new THREE.CanvasTexture(can);
   return _glowTex;
 }
-const GLOW_COLORS = { s: 0x36e0ff, b: 0xffd000, meatball: 0xff7733, spore: 0x9955ff, vine: 0x55dd44, cannonball: 0xff8833, bomb: 0xffd000, jackpot_bullet: 0xf6d76b, cosmo_moon: 0x80eaff };
+const GLOW_COLORS = { s: 0x36e0ff, b: 0xffd000, meatball: 0xff7733, spore: 0x9955ff, vine: 0x55dd44, cannonball: 0xff8833, bomb: 0xffd000, jackpot_bullet: 0xf6d76b };
 
 function spawnPickup() {
   const types = [
@@ -3647,13 +3627,11 @@ function endChain(e) {
 }
 function disposeEntityExtras(e) {
   endChain(e);
-  clearRefLine(e);
-  if(e.refWhistleMesh) { disposeHierarchy(e.refWhistleMesh); e.refWhistleMesh = null; }
+  if(e.jackpotAllInMesh) { disposeHierarchy(e.jackpotAllInMesh); e.jackpotAllInMesh = null; }
   if(e.jackpotDiceMesh) { disposeHierarchy(e.jackpotDiceMesh); e.jackpotDiceMesh = null; }
-  for(const moon of e.cosmoMoonMeshes||[])if(moon)disposeHierarchy(moon);
-  e.cosmoMoonMeshes=[];
-  if(e.cosmoTagMesh){disposeHierarchy(e.cosmoTagMesh);e.cosmoTagMesh=null;}
-  if(e.cosmoWindupMesh){disposeHierarchy(e.cosmoWindupMesh);e.cosmoWindupMesh=null;}
+  if(e.jackpotDiceLabel) { disposeHierarchy(e.jackpotDiceLabel); e.jackpotDiceLabel = null; }
+  if(e.jackpotCoinMesh) { disposeHierarchy(e.jackpotCoinMesh); e.jackpotCoinMesh = null; }
+  if(e.jackpotCoinLabel) { disposeHierarchy(e.jackpotCoinLabel); e.jackpotCoinLabel = null; }
   if(e.emoteSprite) { disposeHierarchy(e.emoteSprite); e.emoteSprite = null; }
 }
 
@@ -3667,39 +3645,26 @@ function removePeerEntity(peerId) {
   }
 }
 
-function applyRefSnapshotState(entity, item) {
-  entity.refMarkT = Math.max(0, Number(item.rmt) || 0);
-  entity.refMarkOwnerId = item.rmo != null ? item.rmo : null;
-  entity.refMarkOwner = null;
-  entity.refLineT = Math.max(0, Number(item.rlt) || 0);
-  entity.refLineTargetId = item.rti != null ? item.rti : null;
-  entity.refLineTarget = null;
-  entity.refSlowT = Math.max(0, Number(item.rsl) || 0);
-  entity.refWhistleWindup = Math.max(0, Number(item.rww) || 0);
-  entity.refWhistleActive = Math.max(0, Number(item.rwa) || 0);
+function applyAbilitySnapshotState(entity, item) {
   entity.jackpotFlipT=Math.max(0,Number(item.jft)||0);
   entity.jackpotFlipPending=!!item.jfp;
   entity.jackpotLoaded=item.jhl==="heads"||item.jhl==="tails"?item.jhl:null;
+  entity.jackpotPendingHeads=!!item.jhb;
   entity.jackpotPityHead=!!item.jph;
+  entity.jackpotCoinT=Math.max(0,Number(item.jct)||0);
   entity.jackpotAutoHeads=Math.max(0,Number(item.jah)||0);
   entity.jackpotAllInT=Math.max(0,Number(item.jat)||0);
   entity.jackpotWager=Math.max(0,Number(item.jw)||0);
   entity.jackpotAllInPaid=!!item.jap;
   entity.jackpotShield=Math.max(0,Number(item.jsh)||0);
-  entity.jackpotDice=Math.max(0,Number(item.jd)||0);
-  entity.jackpotDiceT=Math.max(0,Number(item.jdt)||0);
+  entity.jackpotDice=Number.isInteger(item.jd)&&item.jd>=1&&item.jd<=6?item.jd:0;
+  entity.jackpotDiceT=entity.jackpotDice?Math.max(0,Number(item.jdt)||0):0;
+  entity.jackpotDiceRollT=Math.max(0,Number(item.jdr)||0);
+  entity.jackpotDicePending=!!item.jdp;
+  entity.jackpotEffectX=Number.isFinite(item.jex)?item.jex:entity.x;
+  entity.jackpotEffectZ=Number.isFinite(item.jez)?item.jez:entity.z;
+  entity.jackpotEffectA=Number.isFinite(item.jea)?item.jea:entity.a;
   entity.jackpotSlowT=Math.max(0,Number(item.jst)||0);
-  entity.cosmoMoonRecovery=Array.isArray(item.cmr)?item.cmr.map(value=>Math.max(0,Number(value)||0)):[0,0,0];
-  entity.cosmoWellWindup=Math.max(0,Number(item.cww)||0);
-  entity.cosmoWellPending=!!item.cwp;
-  entity.cosmoWellSlowT=Math.max(0,Number(item.cws)||0);
-  entity.cosmoTouchT=Math.max(0,Number(item.ctt)||0);
-  const tagTarget=item.cti==null?null:E.find(actor=>actor.netId===item.cti)||null;
-  entity.cosmoMoonTag=tagTarget&&Number.isInteger(item.cmi)?{
-    moonIndex:item.cmi,target:tagTarget,targetId:item.cti,
-    launchX:Number(item.clx)||entity.x,launchZ:Number(item.clz)||entity.z,
-    travelT:Math.max(0,Number(item.clt)||0)
-  }:null;
 }
 
 const BOT_PERSONALITIES = [
@@ -3756,14 +3721,12 @@ function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tag
     emote: -1, emoteT: 0, emoteCooldown: 0, emoteSprite: null,
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
-    refMarkT: 0, refMarkOwnerId: null, refMarkOwner: null,
-    refLineT: 0, refLineTargetId: null, refLineTarget: null, refLineMesh: null,
-    refSlowT: 0, refWhistleWindup: 0, refWhistleActive: 0, refWhistleMesh: null,
-    jackpotFlipT: 0, jackpotLoaded: null, jackpotPityHead: false, jackpotAutoHeads: 0,
+    jackpotFlipT: 0, jackpotLoaded: null, jackpotPendingHeads: false, jackpotPityHead: false,
+    jackpotCoinT: 0, jackpotCoinMesh: null, jackpotCoinLabel: null, jackpotAutoHeads: 0,
     jackpotAllInT: 0, jackpotWager: 0, jackpotAllInPaid: false, jackpotShield: 0,
-    jackpotDice: 0, jackpotDiceT: 0, jackpotDiceMesh: null,
-    cosmoMoonRecovery: [0,0,0], cosmoMoonMeshes: [], cosmoMoonTag: null, cosmoTagMesh: null,
-    cosmoWellWindup: 0, cosmoWellPending: false, cosmoWindupMesh: null, cosmoTouchT: 0,
+    jackpotDice: 0, jackpotDiceT: 0, jackpotDiceRollT: 0, jackpotDicePending: false,
+    jackpotDiceMesh: null, jackpotDiceLabel: null, jackpotEffectX: x, jackpotEffectZ: z, jackpotEffectA: 0,
+    jackpotAllInMesh: null,
     chargeVx: 0, chargeVz: 0, chargeT: 0,
     lungeVx: 0, lungeVz: 0, lungeA: 0, lungeT: 0, lungeDamage: 0, lungeKb: 0, lungeStun: 0, lungeFinisher: false, lungeHit: new Set(),
     activePod: null,
@@ -3843,282 +3806,157 @@ function getCombatPosition(target, attacker = null, projectileTravelMs = 0) {
   return target;
 }
 
-function refLineTargetFor(owner) {
-  if(owner.refLineTarget && E.includes(owner.refLineTarget)) return owner.refLineTarget;
-  return owner.refLineTargetId != null ? getRemoteActorByNetId(owner.refLineTargetId) : null;
-}
-
-function clearRefLine(owner) {
-  if(owner.refLineMesh) {
-    disposeHierarchy(owner.refLineMesh);
-    owner.refLineMesh = null;
-  }
-  owner.refLineTarget = null;
-  owner.refLineTargetId = null;
-  owner.refLineT = 0;
-}
-
-function updateRefTimers(entity, dt) {
-  entity.refMarkT = Math.max(0, (entity.refMarkT || 0) - dt);
-  if(entity.refMarkT <= 0) {
-    entity.refMarkOwnerId = null;
-    entity.refMarkOwner = null;
-  }
-  entity.refSlowT = Math.max(0, (entity.refSlowT || 0) - dt);
-  entity.refLineT = Math.max(0, (entity.refLineT || 0) - dt);
-  if(entity.refLineT <= 0) clearRefLine(entity);
-  entity.refWhistleActive = Math.max(0, (entity.refWhistleActive || 0) - dt);
-  if(entity.refWhistleWindup > 0) {
-    entity.refWhistleWindup = Math.max(0, entity.refWhistleWindup - dt);
-    if(entity.refWhistleWindup <= 0 && !entity.dead && (!isMultiplayer || isLobbyLeader)) {
-      entity.refWhistleActive = REF.whistleDuration;
-      spawn3DRing(entity.x, entity.z, REF.whistleRadius, 0xffe27a);
-    }
-  }
+function updateAbilityTimers(entity, dt) {
   entity.jackpotFlipT = Math.max(0, (entity.jackpotFlipT || 0) - dt);
   if(entity.jackpotFlipT <= 0 && entity.jackpotFlipPending) {
     entity.jackpotFlipPending = false;
-    entity.jackpotLoaded = entity.jackpotPityHead || Math.random() < 0.5 ? "heads" : "tails";
+    entity.jackpotLoaded = entity.jackpotPendingHeads ? "heads" : "tails";
     entity.jackpotPityHead = entity.jackpotLoaded === "tails";
+    if(!isMultiplayer||isLobbyLeader)spawn3DRing(entity.jackpotEffectX,entity.jackpotEffectZ,19,entity.jackpotLoaded==="heads"?0xffd166:0x91a5ff);
     Snd.play("pickup");
   }
+  entity.jackpotCoinT=Math.max(0,(entity.jackpotCoinT||0)-dt);
+  entity.jackpotDiceRollT=Math.max(0,(entity.jackpotDiceRollT||0)-dt);
   entity.jackpotAllInT = Math.max(0, (entity.jackpotAllInT || 0) - dt);
   if(entity.jackpotAllInT <= 0) entity.jackpotWager = 0;
   entity.jackpotDiceT = Math.max(0, (entity.jackpotDiceT || 0) - dt);
-  entity.cosmoWellWindup = Math.max(0, (entity.cosmoWellWindup || 0) - dt);
-  if(entity.cosmoWellWindup <= 0 && entity.cosmoWellPending) {
-    entity.cosmoWellPending = false;
-    createCosmoGravityWell(entity);
+  if(entity.jackpotDicePending&&entity.jackpotDiceRollT<=0) {
+    entity.jackpotDicePending=false;
+    if(!isMultiplayer||isLobbyLeader)applyJackpotDieResult(entity,entity.jackpotDice);
+    if(!isMultiplayer||isLobbyLeader)spawn3DRing(entity.jackpotEffectX,entity.jackpotEffectZ,30,entity.jackpotDice===6?0xffd166:0xfff0a8);
+    Snd.play("pickup");
   }
-  entity.cosmoTouchT = Math.max(0, (entity.cosmoTouchT || 0) - dt);
-  entity.cosmoWellSlowT = Math.max(0, (entity.cosmoWellSlowT || 0) - dt);
-  if(entity.ci === COSMO.hero) {
-    for(let i=0;i<COSMO.moonCount;i++) entity.cosmoMoonRecovery[i]=Math.max(0,(entity.cosmoMoonRecovery[i]||0)-dt);
-    const tag=entity.cosmoMoonTag;
-    if(tag)tag.travelT=Math.max(0,(tag.travelT||0)-dt);
-    if(tag && (!tag.target || tag.target.dead || !E.includes(tag.target))) returnCosmoTag(entity);
-  }
-}
-
-function createCosmoGravityWell(owner) {
-  const geometry=new THREE.CylinderGeometry(COSMO.wellRadius,COSMO.wellRadius,1.5,40);
-  const material=new THREE.MeshBasicMaterial({color:0x7794ff,transparent:true,opacity:.2,depthWrite:false});
-  const mesh=new THREE.Mesh(geometry,material);mesh.position.set(owner.x,.8,owner.z);scene.add(mesh);
-  const ringGeo=new THREE.TorusGeometry(COSMO.wellRadius*.72,2.5,8,48);
-  const ring=new THREE.Mesh(ringGeo,new THREE.MeshBasicMaterial({color:0xb8a5ff,transparent:true,opacity:.85}));
-  ring.rotation.x=Math.PI/2;ring.position.set(0,1.2,0);mesh.add(ring);
-  Zones.push({kind:"cosmo_well",x:owner.x,z:owner.z,r:COSMO.wellRadius,life:COSMO.wellDuration,owner,mesh});
-}
-
-function returnCosmoTag(owner) {
-  const tag=owner.cosmoMoonTag;
-  if(!tag) return;
-  owner.cosmoMoonRecovery[tag.moonIndex]=COSMO.moonTagRecovery;
-  owner.cosmoMoonTag=null;
-  if(owner.cosmoTagMesh){disposeHierarchy(owner.cosmoTagMesh);owner.cosmoTagMesh=null;}
 }
 
 function createJackpotDice(value) {
   const group=new THREE.Group();
   const cube=new THREE.Mesh(new THREE.BoxGeometry(15,15,15),new THREE.MeshStandardMaterial({color:0xf3c95d,roughness:.36,metalness:.18}));
   group.add(cube);
-  const pipMat=new THREE.MeshBasicMaterial({color:0x482d34});
+  const edges=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(15.15,15.15,15.15)),new THREE.LineBasicMaterial({color:0xfff0a8,transparent:true,opacity:.9}));
+  group.add(edges);
+  const pipMat=new THREE.MeshStandardMaterial({color:0x482d34,roughness:.32,metalness:.2});
   const patterns={1:[[0,0]],2:[[-1,-1],[1,1]],3:[[-1,-1],[0,0],[1,1]],4:[[-1,-1],[-1,1],[1,-1],[1,1]],5:[[-1,-1],[-1,1],[0,0],[1,-1],[1,1]],6:[[-1,-1],[-1,0],[-1,1],[1,-1],[1,0],[1,1]]};
-  for(const [x,z] of patterns[value]){const pip=new THREE.Mesh(new THREE.SphereGeometry(1.25,8,6),pipMat);pip.position.set(x*4.2,8,z*4.2);group.add(pip);}
+  const faces=[
+    {axis:1,sign:1,value}, {axis:1,sign:-1,value:6},
+    {axis:2,sign:1,value:2}, {axis:2,sign:-1,value:5},
+    {axis:0,sign:1,value:3}, {axis:0,sign:-1,value:4}
+  ];
+  for(const face of faces)for(const [u,v] of patterns[face.value]){
+    const pip=new THREE.Mesh(new THREE.SphereGeometry(1.15,8,6),pipMat),offset=face.sign*7.7;
+    if(face.axis===1)pip.position.set(u*4.1,offset,v*4.1);
+    else if(face.axis===2)pip.position.set(u*4.1,v*4.1,offset);
+    else pip.position.set(offset,v*4.1,u*4.1);
+    group.add(pip);
+  }
   return group;
 }
 
-function updateJackpotCosmoVisuals() {
+function jackpotDieResultText(value) {
+  return ["","15 DAMAGE","50% SLOW","HEAL +25","SPEED +35%","SHIELD 40","JACKPOT · +40 / 3 HEADS"][value]||"";
+}
+
+function applyJackpotDieResult(entity,value) {
+  if(value===1)hurt(entity,15,0,0,null);
+  else if(value===2)entity.jackpotSlowT=2;
+  else if(value===3){entity.hp=Math.min(entity.mhp,entity.hp+25);spawnDamageNumber(entity.x,entity.z,"+25 HP","#45d988");}
+  else if(value===4)entity.speedBoost=Math.max(entity.speedBoost||0,3);
+  else if(value===5)entity.jackpotShield=Math.min(40,(entity.jackpotShield||0)+40);
+  else if(value===6) {
+    entity.hp=Math.min(entity.mhp,entity.hp+40);
+    entity.speedBoost=Math.max(entity.speedBoost||0,3);
+    entity.jackpotAutoHeads=3;entity.jackpotLoaded=null;
+    entity.jackpotFlipT=0;entity.jackpotFlipPending=false;
+    spawnDamageNumber(entity.x,entity.z,"JACKPOT · +40","#f2c14e");
+  }
+}
+
+function jackpotCoinFaceTexture(letter,color) {
+  const canvas=document.createElement("canvas");canvas.width=128;canvas.height=128;
+  const ctx=canvas.getContext("2d");ctx.clearRect(0,0,128,128);
+  ctx.beginPath();ctx.arc(64,64,59,0,Math.PI*2);ctx.strokeStyle="#fff0a8";ctx.lineWidth=7;ctx.stroke();
+  ctx.fillStyle=color;ctx.font="900 74px 'Space Grotesk',sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(letter,64,67);
+  const texture=new THREE.CanvasTexture(canvas);texture.needsUpdate=true;return texture;
+}
+
+function createJackpotCoin() {
+  const group=new THREE.Group();
+  const edge=new THREE.MeshStandardMaterial({color:0xb77d23,metalness:.9,roughness:.2});
+  const heads=new THREE.MeshStandardMaterial({map:jackpotCoinFaceTexture("H","#fff2b0"),color:0xf2c14e,metalness:.68,roughness:.22});
+  const tails=new THREE.MeshStandardMaterial({map:jackpotCoinFaceTexture("T","#fff2b0"),color:0x7d8ce0,metalness:.68,roughness:.22});
+  const coin=new THREE.Mesh(new THREE.CylinderGeometry(8,8,1.8,32),[edge,heads,tails]);
+  group.add(coin);
+  for(const y of [-.95,.95]) {
+    const rim=new THREE.Mesh(new THREE.TorusGeometry(7.2,.36,8,32),new THREE.MeshStandardMaterial({color:0xffe28a,metalness:.88,roughness:.18}));
+    rim.rotation.x=Math.PI/2;rim.position.y=y;group.add(rim);
+  }
+  return group;
+}
+
+function createJackpotAllInVisual() {
+  const group=new THREE.Group();
+  const red=new THREE.MeshBasicMaterial({color:0xff3d35,transparent:true,opacity:.8});
+  const gold=new THREE.MeshBasicMaterial({color:0xffd166,transparent:true,opacity:.95});
+  const outer=new THREE.Mesh(new THREE.TorusGeometry(27,1.15,8,48),red);
+  outer.rotation.x=Math.PI/2;group.add(outer);
+  const inner=new THREE.Mesh(new THREE.TorusGeometry(21,.65,8,40),gold);
+  inner.rotation.x=Math.PI/2;inner.position.y=.4;group.add(inner);
+  const aura=new THREE.Mesh(new THREE.CylinderGeometry(27,23,42,32,1,true),new THREE.MeshBasicMaterial({color:0xd92e35,transparent:true,opacity:.1,side:THREE.DoubleSide,depthWrite:false}));
+  aura.position.y=22;group.add(aura);
+  const label=makeTextSprite("ALL IN","#fff0a8",34);
+  label.position.y=61;label.scale.set(72,20,1);group.add(label);
+  return group;
+}
+
+function updateJackpotVisuals() {
+  const vignette=document.getElementById("jackpot-vignette");
+  const viewedEntity=isSpectating?spectateTarget:pl;
+  const allInVisible=!!(viewedEntity&&!viewedEntity.dead&&viewedEntity.ci===JACKPOT.hero&&viewedEntity.jackpotAllInT>0);
+  if(vignette){vignette.classList.toggle("active",allInVisible);vignette.style.opacity=allInVisible?"1":"0";}
   for(const entity of E) {
-    if(entity.ci===JACKPOT.hero && !entity.dead && entity.jackpotDiceT>0) {
-      if(!entity.jackpotDiceMesh){entity.jackpotDiceMesh=createJackpotDice(entity.jackpotDice);scene.add(entity.jackpotDiceMesh);}
-      entity.jackpotDiceMesh.position.set(entity.x,58+Math.sin(matchTime*5)*3,entity.z);
-      entity.jackpotDiceMesh.rotation.y+=0.025;
-    } else if(entity.jackpotDiceMesh) {
-      disposeHierarchy(entity.jackpotDiceMesh);entity.jackpotDiceMesh=null;
+    if(entity.ci===JACKPOT.hero && !entity.dead && entity.jackpotAllInT>0) {
+      if(!entity.jackpotAllInMesh){entity.jackpotAllInMesh=createJackpotAllInVisual();scene.add(entity.jackpotAllInMesh);}
+      entity.jackpotAllInMesh.position.set(entity.x,0,entity.z);
+      const pulse=.96+Math.sin(matchTime*12)*.06;
+      entity.jackpotAllInMesh.scale.setScalar(pulse);
+    } else if(entity.jackpotAllInMesh) {
+      disposeHierarchy(entity.jackpotAllInMesh);entity.jackpotAllInMesh=null;
     }
-
-    if(entity.ci!==COSMO.hero || entity.dead) {
-      for(const moon of entity.cosmoMoonMeshes||[]) if(moon) disposeHierarchy(moon);
-      entity.cosmoMoonMeshes=[];
-      if(entity.cosmoTagMesh){disposeHierarchy(entity.cosmoTagMesh);entity.cosmoTagMesh=null;}
-      if(entity.cosmoWindupMesh){disposeHierarchy(entity.cosmoWindupMesh);entity.cosmoWindupMesh=null;}
-      continue;
-    }
-    if(entity.cosmoWellWindup>0) {
-      if(!entity.cosmoWindupMesh) {
-        const geo=new THREE.RingGeometry(COSMO.wellRadius-2,COSMO.wellRadius,48);geo.rotateX(-Math.PI/2);
-        entity.cosmoWindupMesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xb8a5ff,transparent:true,opacity:.65,side:THREE.DoubleSide,depthWrite:false}));
-        scene.add(entity.cosmoWindupMesh);
-      }
-      entity.cosmoWindupMesh.position.set(entity.x,1.4,entity.z);
-    } else if(entity.cosmoWindupMesh) {
-      disposeHierarchy(entity.cosmoWindupMesh);entity.cosmoWindupMesh=null;
-    }
-    if(!entity.cosmoMoonMeshes || entity.cosmoMoonMeshes.length!==COSMO.moonCount) {
-      for(const moon of entity.cosmoMoonMeshes||[])if(moon)disposeHierarchy(moon);
-      entity.cosmoMoonMeshes=[];
-      for(let i=0;i<COSMO.moonCount;i++){
-        const group=new THREE.Group();
-        const moon=new THREE.Mesh(new THREE.SphereGeometry(5.5,12,10),new THREE.MeshStandardMaterial({color:0xb9c7ff,emissive:0x4654a0,emissiveIntensity:.8,metalness:.28,roughness:.32}));
-        const halo=new THREE.Mesh(new THREE.TorusGeometry(6.5,.65,6,16),new THREE.MeshBasicMaterial({color:0x80eaff}));
-        halo.rotation.x=Math.PI/2;group.add(moon,halo);scene.add(group);entity.cosmoMoonMeshes.push(group);
-      }
-    }
-    for(let i=0;i<COSMO.moonCount;i++){
-      const mesh=entity.cosmoMoonMeshes[i],available=(entity.cosmoMoonRecovery[i]||0)<=0&&(!entity.cosmoMoonTag||entity.cosmoMoonTag.moonIndex!==i);
-      mesh.visible=available;
-      if(available){const angle=matchTime*2.2+i*Math.PI*2/COSMO.moonCount;mesh.position.set(entity.x+Math.cos(angle)*COSMO.moonOrbitRadius,22+Math.sin(angle*1.6+i)*3,entity.z+Math.sin(angle)*COSMO.moonOrbitRadius);}
-    }
-    if(entity.cosmoMoonTag && entity.cosmoMoonTag.target && !entity.cosmoMoonTag.target.dead) {
-      if(!entity.cosmoTagMesh){
-        const group=new THREE.Group();
-        group.add(new THREE.Mesh(new THREE.SphereGeometry(6,12,10),new THREE.MeshStandardMaterial({color:0xb9c7ff,emissive:0x637cff,emissiveIntensity:1})));
-        const halo=new THREE.Mesh(new THREE.TorusGeometry(8,.8,6,20),new THREE.MeshBasicMaterial({color:0x80eaff}));
-        halo.rotation.x=Math.PI/2;group.add(halo);scene.add(group);entity.cosmoTagMesh=group;
-      }
-      const tag=entity.cosmoMoonTag,target=tag.target;
-      const progress=1-Math.max(0,Math.min(1,(tag.travelT||0)/.35));
-      entity.cosmoTagMesh.position.set(tag.launchX+(target.x-tag.launchX)*progress,55+Math.sin(matchTime*4)*2,tag.launchZ+(target.z-tag.launchZ)*progress);
-    } else if(entity.cosmoTagMesh) {
-      disposeHierarchy(entity.cosmoTagMesh);entity.cosmoTagMesh=null;
-    }
-  }
-}
-
-function setRefMark(owner, target) {
-  target.refMarkT = REF.markDuration;
-  target.refMarkOwnerId = owner.netId;
-  target.refMarkOwner = owner;
-  owner.refLineTarget = target;
-  owner.refLineTargetId = target.netId;
-  owner.refLineT = REF.lineDuration;
-  spawn3DRing(target.x, target.z, 28, 0xff5d67);
-}
-
-function refPointSegmentDistance(px, pz, ax, az, bx, bz) {
-  const dx = bx - ax, dz = bz - az, length2 = dx * dx + dz * dz;
-  if(length2 < 0.0001) return Math.hypot(px - ax, pz - az);
-  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / length2));
-  return Math.hypot(px - (ax + dx * t), pz - (az + dz * t));
-}
-
-function refSegmentsIntersect(ax, az, bx, bz, cx, cz, dx, dz) {
-  const cross = (x1, z1, x2, z2, x3, z3) => (x2 - x1) * (z3 - z1) - (z2 - z1) * (x3 - x1);
-  const abC = cross(ax, az, bx, bz, cx, cz), abD = cross(ax, az, bx, bz, dx, dz);
-  const cdA = cross(cx, cz, dx, dz, ax, az), cdB = cross(cx, cz, dx, dz, bx, bz);
-  const eps = 0.0001;
-  const onSegment = (x1, z1, x2, z2, x, z) =>
-    x >= Math.min(x1, x2) - eps && x <= Math.max(x1, x2) + eps &&
-    z >= Math.min(z1, z2) - eps && z <= Math.max(z1, z2) + eps;
-  if(Math.abs(abC) < eps && onSegment(ax, az, bx, bz, cx, cz)) return true;
-  if(Math.abs(abD) < eps && onSegment(ax, az, bx, bz, dx, dz)) return true;
-  if(Math.abs(cdA) < eps && onSegment(cx, cz, dx, dz, ax, az)) return true;
-  if(Math.abs(cdB) < eps && onSegment(cx, cz, dx, dz, bx, bz)) return true;
-  return abC * abD < 0 && cdA * cdB < 0;
-}
-
-function createRefLine(owner) {
-  const geometry = new THREE.CylinderGeometry(1.8, 1.8, 1, 8);
-  const material = new THREE.MeshBasicMaterial({ color: 0xffe27a, transparent: true, opacity: 0.9, depthWrite: false });
-  owner.refLineMesh = new THREE.Mesh(geometry, material);
-  owner.refLineMesh.frustumCulled = false;
-  scene.add(owner.refLineMesh);
-}
-
-function updateRefVisuals() {
-  for(const owner of E) {
-    if(owner.ci !== REF.hero || owner.dead) {
-      if(owner.refLineMesh) clearRefLine(owner);
-      if(owner.refWhistleMesh) {
-        disposeHierarchy(owner.refWhistleMesh);
-        owner.refWhistleMesh = null;
-      }
-      if(owner.mesh&&owner.mesh.weapon&&owner.mesh.weapon.userData.blowWhistle)owner.mesh.weapon.userData.blowWhistle.visible=false;
-      if((owner.dead||viewmodelCi!==REF.hero)&&viewmodelHolder.wep&&viewmodelHolder.wep.userData.blowWhistle)viewmodelHolder.wep.userData.blowWhistle.visible=false;
-      continue;
-    }
-
-    const target = owner.refLineT > 0 ? refLineTargetFor(owner) : null;
-    if(target && !target.dead) {
-      if(!owner.refLineMesh) createRefLine(owner);
-      const dx = target.x - owner.x, dz = target.z - owner.z, length = Math.hypot(dx, dz);
-      owner.refLineMesh.position.set((owner.x + target.x) / 2, 4, (owner.z + target.z) / 2);
-      owner.refLineMesh.scale.y = length;
-      if(length > 0.001) owner.refLineMesh.quaternion.setFromUnitVectors(
-        new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx / length, 0, dz / length)
-      );
+    if(entity.ci===JACKPOT.hero && !entity.dead && entity.jackpotCoinT>0) {
+      if(!entity.jackpotCoinMesh){entity.jackpotCoinMesh=createJackpotCoin();scene.add(entity.jackpotCoinMesh);}
+      const progress=1-Math.max(0,Math.min(1,(entity.jackpotFlipT||0)/JACKPOT.flipDuration));
+      const distance=28+progress*20,angle=entity.jackpotEffectA||entity.a;
+      entity.jackpotCoinMesh.position.set(entity.jackpotEffectX+Math.cos(angle)*distance,2+Math.sin(progress*Math.PI)*24,entity.jackpotEffectZ+Math.sin(angle)*distance);
+      entity.jackpotCoinMesh.rotation.set(progress*Math.PI*8+(entity.jackpotLoaded==="tails"?Math.PI:0),0,(1-progress)*.7);
+      if(entity.jackpotLoaded) {
+        if(!entity.jackpotCoinLabel){entity.jackpotCoinLabel=makeTextSprite(entity.jackpotLoaded.toUpperCase(),"#ffe27a",30);scene.add(entity.jackpotCoinLabel);}
+        entity.jackpotCoinLabel.position.set(entity.jackpotCoinMesh.position.x,13,entity.jackpotCoinMesh.position.z);
+      } else if(entity.jackpotCoinLabel){disposeHierarchy(entity.jackpotCoinLabel);entity.jackpotCoinLabel=null;}
     } else {
-      if(owner.refLineMesh) {
-        disposeHierarchy(owner.refLineMesh);
-        owner.refLineMesh = null;
-      }
-      if(target && target.dead) clearRefLine(owner);
+      if(entity.jackpotCoinMesh){disposeHierarchy(entity.jackpotCoinMesh);entity.jackpotCoinMesh=null;}
+      if(entity.jackpotCoinLabel){disposeHierarchy(entity.jackpotCoinLabel);entity.jackpotCoinLabel=null;}
     }
 
-    const showWhistle = owner.refWhistleWindup > 0 || owner.refWhistleActive > 0;
-    const progress=owner.refWhistleWindup>0?1-owner.refWhistleWindup/REF.whistleWindup:1;
-    const prop=owner.mesh&&owner.mesh.weapon&&owner.mesh.weapon.userData.blowWhistle;
-    if(prop) {
-      prop.visible=showWhistle;
-      prop.position.set(0,-5+progress*13,7-progress*3);
-      prop.rotation.set(Math.PI/2+progress*.25,0,progress*.18);
-    }
-    if(viewmodelHolder.wep&&viewmodelCi===REF.hero&&viewmodelHolder.wep.userData.blowWhistle) {
-      const viewProp=viewmodelHolder.wep.userData.blowWhistle;
-      viewProp.visible=showWhistle;
-      viewProp.position.set(0,-5+progress*13,7-progress*3);
-      viewProp.rotation.set(Math.PI/2+progress*.25,0,progress*.18);
-    }
-    if(showWhistle && !owner.refWhistleMesh) {
-      const geometry = new THREE.RingGeometry(REF.whistleRadius - 1.5, REF.whistleRadius, 64);
-      geometry.rotateX(-Math.PI / 2);
-      const material = new THREE.MeshBasicMaterial({
-        color: 0xffe27a, transparent: true, opacity: 0.42, side: THREE.DoubleSide, depthWrite: false
-      });
-      owner.refWhistleMesh = new THREE.Mesh(geometry, material);
-      owner.refWhistleMesh.position.y = 1.5;
-      scene.add(owner.refWhistleMesh);
-    }
-    if(owner.refWhistleMesh) {
-      if(!showWhistle) {
-        disposeHierarchy(owner.refWhistleMesh);
-        owner.refWhistleMesh = null;
-      } else {
-        owner.refWhistleMesh.position.x = owner.x;
-        owner.refWhistleMesh.position.z = owner.z;
-        owner.refWhistleMesh.material.opacity = owner.refWhistleWindup > 0 ? 0.25 : 0.5;
+    if(entity.ci===JACKPOT.hero && !entity.dead && entity.jackpotDice>=1 && entity.jackpotDice<=6 && entity.jackpotDiceT>0) {
+      if(!entity.jackpotDiceMesh||entity.jackpotDiceMeshValue!==entity.jackpotDice){
+        if(entity.jackpotDiceMesh)disposeHierarchy(entity.jackpotDiceMesh);
+        entity.jackpotDiceMesh=createJackpotDice(entity.jackpotDice);entity.jackpotDiceMeshValue=entity.jackpotDice;
+        scene.add(entity.jackpotDiceMesh);
       }
+      const progress=1-Math.max(0,Math.min(1,(entity.jackpotDiceRollT||0)/1));
+      const distance=28+progress*30,angle=entity.jackpotEffectA||entity.a;
+      entity.jackpotDiceMesh.position.set(entity.jackpotEffectX+Math.cos(angle)*distance,8+Math.max(0,1-progress)*26,entity.jackpotEffectZ+Math.sin(angle)*distance);
+      entity.jackpotDiceMesh.rotation.set((1-progress)*Math.PI*10,progress*Math.PI*9,(1-progress)*Math.PI*8);
+      if(entity.jackpotDiceRollT<=0) {
+        entity.jackpotDiceMesh.rotation.set(0,0,0);
+        if(!entity.jackpotDiceLabel){entity.jackpotDiceLabel=makeTextSprite(jackpotDieResultText(entity.jackpotDice),entity.jackpotDice===6?"#ffe27a":"#ffffff",26);scene.add(entity.jackpotDiceLabel);}
+        entity.jackpotDiceLabel.position.set(entity.jackpotDiceMesh.position.x,25,entity.jackpotDiceMesh.position.z);
+      } else if(entity.jackpotDiceLabel){disposeHierarchy(entity.jackpotDiceLabel);entity.jackpotDiceLabel=null;}
+    } else {
+      if(entity.jackpotDiceMesh){disposeHierarchy(entity.jackpotDiceMesh);entity.jackpotDiceMesh=null;entity.jackpotDiceMeshValue=null;}
+      if(entity.jackpotDiceLabel){disposeHierarchy(entity.jackpotDiceLabel);entity.jackpotDiceLabel=null;}
     }
+
   }
-}
-
-function updateRefLineCrossings() {
-  if(isMultiplayer && !isLobbyLeader) return;
-  for(const owner of E) {
-    if(owner.ci !== REF.hero || owner.dead || owner.refLineT <= 0) continue;
-    const target = refLineTargetFor(owner);
-    if(!target || target.dead) continue;
-    for(const enemy of E) {
-      if(enemy === owner || enemy === target || enemy.dead || !areEnemies(owner, enemy)) continue;
-      const ax = owner.x, az = owner.z, bx = target.x, bz = target.z;
-      const px = Number.isFinite(enemy.refPrevX) ? enemy.refPrevX : enemy.x;
-      const pz = Number.isFinite(enemy.refPrevZ) ? enemy.refPrevZ : enemy.z;
-      const pad = enemy.r + 2;
-      const oldDistance = refPointSegmentDistance(px, pz, ax, az, bx, bz);
-      const newDistance = refPointSegmentDistance(enemy.x, enemy.z, ax, az, bx, bz);
-      if(refSegmentsIntersect(px, pz, enemy.x, enemy.z, ax, az, bx, bz) ||
-         (oldDistance > pad && newDistance <= pad)) {
-        enemy.refSlowT = Math.max(enemy.refSlowT || 0, REF.lineSlowDuration);
-      }
-    }
-  }
-}
-
-function isRefWhistleSuppressing(entity) {
-  return E.some(owner => owner.ci === REF.hero && !owner.dead && owner.refWhistleActive > 0 &&
-    entity !== owner && areEnemies(owner, entity) &&
-    Math.hypot(owner.x - entity.x, owner.z - entity.z) <= REF.whistleRadius);
 }
 
 function blocked(x, z, r) {
@@ -4211,13 +4049,6 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
   if(isMultiplayer && !isLobbyLeader) return;
   if(t.chain && t.chain.inv) return; // Captain Oink is invulnerable while his chain is out / hooking
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
-  if(attacker && attacker.ci === REF.hero && t.refMarkT > 0 &&
-     ((t.refMarkOwnerId != null && t.refMarkOwnerId === attacker.netId) || t.refMarkOwner === attacker)) {
-    rawDmg *= 1 + REF.cardDamageBonus;
-    t.refMarkT = 0;
-    t.refMarkOwnerId = null;
-    t.refMarkOwner = null;
-  }
   if(t.jackpotShield > 0 && rawDmg > 0) {
     const absorbed=Math.min(t.jackpotShield,rawDmg);
     t.jackpotShield-=absorbed;rawDmg-=absorbed;
@@ -4373,7 +4204,7 @@ function reflect(e,r){
  }
 }
 function orientProjectile(p){
- if(p.t==="ref_dart"||p.t==="ref_card"||p.t==="jackpot_bullet"||p.t==="cosmo_moon"){
+ if(p.t==="jackpot_bullet"){
   p.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),new THREE.Vector3(p.vx,0,p.vz).normalize());
  }else if(p.t==="s"){
   p.mesh.rotation.set(0,0,0);
@@ -4453,62 +4284,16 @@ function recallDentleyHusk(e) {
 
 function jackpotRollDie(e) {
   const roll=1+Math.floor(Math.random()*6);
-  e.jackpotDice=roll;e.jackpotDiceT=1.35;
-  spawn3DRing(e.x,e.z,34,0xf2c14e);
-  if(roll===1)hurt(e,15,0,0,null);
-  else if(roll===2)e.jackpotSlowT=2;
-  else if(roll===3){e.hp=Math.min(e.mhp,e.hp+25);spawnDamageNumber(e.x,e.z,"+25","#45d988");}
-  else if(roll===4)e.speedBoost=Math.max(e.speedBoost||0,3);
-  else if(roll===5)e.jackpotShield=Math.min(40,(e.jackpotShield||0)+40);
-  else {
-    e.hp=Math.min(e.mhp,e.hp+40);e.speedBoost=Math.max(e.speedBoost||0,3);e.jackpotAutoHeads=3;
-    e.jackpotLoaded=null;e.jackpotFlipT=0;e.jackpotFlipPending=false;
-    spawnDamageNumber(e.x,e.z,"JACKPOT · +40","#f2c14e");
-  }
-}
-
-function findCosmoCrosshairTarget(e) {
-  let best=null,bestScore=Infinity;
-  for(const target of E) {
-    if(target===e||target.dead||!areEnemies(e,target))continue;
-    const pos=getCombatPosition(target,e),dx=pos.x-e.x,dz=pos.z-e.z,dist=Math.hypot(dx,dz);
-    if(dist>HEROES[COSMO.hero].ab1Range)continue;
-    const angle=Math.atan2(dz,dx),delta=Math.atan2(Math.sin(angle-e.a),Math.cos(angle-e.a));
-    if(Math.abs(delta)>0.2||!hasLOS(e.x,e.z,pos.x,pos.z))continue;
-    const score=dist+Math.abs(delta)*220;
-    if(score<bestScore){best=target;bestScore=score;}
-  }
-  return best;
-}
-
-function beginCosmoMoonTag(e) {
-  const moonIndex=e.cosmoMoonRecovery.findIndex((time,index)=>time<=0&&(!e.cosmoMoonTag||e.cosmoMoonTag.moonIndex!==index));
-  const target=findCosmoCrosshairTarget(e);
-  if(moonIndex<0||!target)return false;
-  e.cosmoMoonTag={moonIndex,target,targetId:target.netId,launchX:e.x,launchZ:e.z,travelT:.35};
-  spawn3DRing(target.x,target.z,20,0x80eaff);
-  return true;
-}
-
-function dropCosmoMoonTag(e) {
-  const tag=e.cosmoMoonTag;
-  if(!tag)return false;
-  const target=tag.target||E.find(entity=>entity.netId===tag.targetId);
-  if(target&&!target.dead) {
-    if(!isMultiplayer||isLobbyLeader) {
-      hurt(target,COSMO.moonDamage,Math.atan2(target.z-e.z,target.x-e.x),100,e,"projectile");
-      target.stun=Math.max(target.stun||0,COSMO.moonTagStun);
-    }
-    spawn3DRing(target.x,target.z,34,0x80eaff);
-  }
-  returnCosmoTag(e);
-  return true;
+  e.jackpotDice=roll;e.jackpotDiceT=3.2;e.jackpotDiceRollT=1;e.jackpotDicePending=true;
+  e.jackpotEffectX=e.x;e.jackpotEffectZ=e.z;e.jackpotEffectA=e.a;
 }
 
 function executeAbility3(e) {
   if(e.ci!==JACKPOT.hero||e.jackpotFlipT>0||e.jackpotLoaded||e.jackpotFlipPending||
      e.jackpotAutoHeads>0||e.jackpotAllInT>0)return;
   e.c4=HEROES[e.ci].a3cd;e.jackpotFlipPending=true;e.jackpotFlipT=JACKPOT.flipDuration;
+  e.jackpotPendingHeads=e.jackpotPityHead||Math.random()<0.5;
+  e.jackpotCoinT=2.8;e.jackpotEffectX=e.x;e.jackpotEffectZ=e.z;e.jackpotEffectA=e.a;
   Snd.abilityCue(e.ci,3);
 }
 
@@ -4517,30 +4302,20 @@ function dentleyGuardActive(e) {
 }
 
 function executeAttack(e) {
-  if(dentleyGuardActive(e) || isRefWhistleSuppressing(e)) return;
+  if(dentleyGuardActive(e)) return;
   const c = HEROES[e.ci];
   e.c1 = c.cd;
   Snd.play(c.melee ? "melee" : "shoot");
-  if(e.ci===7){
-    shot(e, e.a, {t:"ref_dart",s:500,d:REF.damage,kb:35,life:1.15});
-    return;
-  }
   if(e.ci===JACKPOT.hero) {
     const loaded=e.jackpotLoaded,hasAutoHead=e.jackpotAutoHeads>0;
     e.jackpotLoaded=null;
+    e.jackpotCoinT=0;
     if(hasAutoHead)e.jackpotAutoHeads--;
     let damage=JACKPOT.baseDamage;
     if(e.jackpotAllInT>0) damage=JACKPOT.allInDamage;
     else if(hasAutoHead) damage=JACKPOT.headsDamage;
     else if(loaded) damage=loaded==="heads"?JACKPOT.headsDamage:JACKPOT.baseDamage;
     shot(e,e.a,{t:"jackpot_bullet",s:660,d:damage,kb:35,life:0.78});
-    return;
-  }
-  if(e.ci===COSMO.hero) {
-    const moonIndex=e.cosmoMoonRecovery.findIndex((time,index)=>time<=0&&(!e.cosmoMoonTag||e.cosmoMoonTag.moonIndex!==index));
-    if(moonIndex<0)return;
-    e.cosmoMoonRecovery[moonIndex]=COSMO.moonRecovery;
-    shot(e,e.a,{t:"cosmo_moon",s:520,d:COSMO.moonDamage,kb:45,life:0.9,moonIndex});
     return;
   }
   if(e.ci === 6) {
@@ -4564,7 +4339,7 @@ function executeAttack(e) {
 
 function attack(e) {
   if(hostVisibilityPaused && isMultiplayer) return;
-  if(dentleyGuardActive(e) || isRefWhistleSuppressing(e)) return;
+  if(dentleyGuardActive(e)) return;
   // Send the intent BEFORE executing locally so movement abilities (Blink, Backdraft)
   // aren't applied twice on remote machines from the post-move position.
   if(isMultiplayer) sendActionIntent("ATTACK", e.a, e.x, e.z);
@@ -4575,20 +4350,9 @@ function executeAbility1(e) {
   if(dentleyGuardActive(e)) { releaseDentleyGuard(e); return; }
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 1);
-  if(e.ci===7){
-    e.c2 = c.a1cd;
-    shot(e, e.a, {t:"ref_card",s:REF.cardSpeed,d:0,kb:0,life:1.25});
-    return;
-  }
   if(e.ci===JACKPOT.hero) {
     e.c2=c.a1cd;
     jackpotRollDie(e);
-    return;
-  }
-  if(e.ci===COSMO.hero) {
-    if(e.cosmoMoonTag) {
-      if(dropCosmoMoonTag(e))e.c2=c.a1cd;
-    } else beginCosmoMoonTag(e);
     return;
   }
   if(e.ci === 6) { dentleyGuard(e, c); return; }
@@ -4739,11 +4503,6 @@ function executeAbility2(e) {
   if(e.ci===6 && e.form===1){ recallDentleyHusk(e); return; }
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 2);
-  if(e.ci===7){
-    e.c3 = c.a2cd;
-    e.refWhistleWindup = REF.whistleWindup;
-    return;
-  }
   e.c3 = c.a2cd;
   if(e.ci===JACKPOT.hero) {
     const wager=Math.max(1,e.hp*JACKPOT.wagerFraction);
@@ -4751,10 +4510,6 @@ function executeAbility2(e) {
     e.jackpotWager=wager;e.jackpotAllInT=JACKPOT.allInDuration;e.jackpotAllInPaid=false;
     spawnDamageNumber(e.x,e.z,"-"+Math.round(wager)+" WAGER","#ff8b79");
     spawn3DRing(e.x,e.z,34,0xf2c14e);
-    return;
-  }
-  if(e.ci===COSMO.hero) {
-    e.cosmoWellWindup=COSMO.wellWindup;e.cosmoWellPending=true;
     return;
   }
   if(e.ci === 6) { dentleyLunge(e); return; }
@@ -5148,18 +4903,20 @@ function syncHUD() {
     document.getElementById("riposte-meter").classList.remove("visible");
     const coinAbility=document.getElementById("cd3-bar");
     if(coinAbility)coinAbility.style.display="none";
-    const refStatus=document.getElementById("ref-status");
-    if(refStatus) refStatus.style.display="none";
+    const abilityStatus=document.getElementById("ability-status");
+    if(abilityStatus) abilityStatus.style.display="none";
+    document.getElementById("jackpot-allin-banner").classList.remove("active");
     return;
   }
   const c = HEROES[targetEnt.ci];
-  let refStatus=document.getElementById("ref-status");
-  if(!refStatus) {
-    refStatus=document.createElement("div");
-    refStatus.id="ref-status";
-    document.getElementById("hud-player").appendChild(refStatus);
+  document.getElementById("hud-player").classList.toggle("jackpot-hud",targetEnt.ci===JACKPOT.hero);
+  let abilityStatus=document.getElementById("ability-status");
+  if(!abilityStatus) {
+    abilityStatus=document.createElement("div");
+    abilityStatus.id="ability-status";
+    document.getElementById("hud-player").appendChild(abilityStatus);
   }
-  refStatus.style.display = "none";
+  abilityStatus.style.display = "none";
   const sq = targetEnt.ci === 6 && targetEnt.form === 1;
   syncDentleyViewmodel(targetEnt);
   const riposteMeter = document.getElementById("riposte-meter");
@@ -5209,35 +4966,31 @@ function syncHUD() {
       const loaded=targetEnt.jackpotLoaded||targetEnt.jackpotFlipPending||targetEnt.jackpotAutoHeads>0||targetEnt.jackpotAllInT>0;
       const cd3Prog=targetEnt.c4<=0&&!loaded?1:Math.max(0,Math.min(1,1-targetEnt.c4/c.a3cd));
       document.getElementById("cd3-fill").style.width=(cd3Prog*100)+"%";
-      document.getElementById("cd3-label").innerText=`${ab3LabelKey} ${targetEnt.jackpotFlipPending?"Flipping…":targetEnt.jackpotLoaded?`Loaded ${targetEnt.jackpotLoaded.toUpperCase()}`:targetEnt.jackpotAutoHeads>0?`Auto HEADS ×${targetEnt.jackpotAutoHeads}`:targetEnt.jackpotAllInT>0?"AUTO HEADS":c.a3n}`;
+      document.getElementById("cd3-label").innerText=`${ab3LabelKey} ${targetEnt.jackpotFlipPending?"COIN FLIPPING":targetEnt.jackpotLoaded?`${targetEnt.jackpotLoaded.toUpperCase()} · READY`:targetEnt.jackpotAutoHeads>0?`AUTO HEADS ×${targetEnt.jackpotAutoHeads}`:targetEnt.jackpotAllInT>0?"AUTO HEADS":c.a3n}`;
     }
   }
 
-  const refStatusParts=[];
-  if(targetEnt.ci===REF.hero) {
-    const marked=E.find(enemy=>!enemy.dead&&enemy.refMarkT>0&&
-      ((enemy.refMarkOwnerId!=null&&enemy.refMarkOwnerId===targetEnt.netId)||enemy.refMarkOwner===targetEnt));
-    if(marked) refStatusParts.push(`BONUS READY · ${marked.username||HEROES[marked.ci].n} ${marked.refMarkT.toFixed(1)}s`);
-    if(targetEnt.refLineT>0) refStatusParts.push(`CHALK LINE ${targetEnt.refLineT.toFixed(1)}s`);
-    if(targetEnt.refWhistleWindup>0) refStatusParts.push(`WHISTLE ${targetEnt.refWhistleWindup.toFixed(1)}s`);
-    else if(targetEnt.refWhistleActive>0) refStatusParts.push(`ATTACKS FROZEN ${targetEnt.refWhistleActive.toFixed(1)}s`);
-  } else if(targetEnt.ci===JACKPOT.hero) {
-    if(targetEnt.jackpotFlipPending)refStatusParts.push(`COIN IN THE AIR ${targetEnt.jackpotFlipT.toFixed(1)}s`);
-    else if(targetEnt.jackpotLoaded)refStatusParts.push(`LOADED ${targetEnt.jackpotLoaded.toUpperCase()}`);
-    else if(targetEnt.jackpotAutoHeads>0)refStatusParts.push(`GUARANTEED HEADS ×${targetEnt.jackpotAutoHeads}`);
-    if(targetEnt.jackpotAllInT>0)refStatusParts.push(`ALL IN ${targetEnt.jackpotAllInT.toFixed(1)}s · WAGER ${Math.ceil(targetEnt.jackpotWager)}`);
-    if(targetEnt.jackpotShield>0)refStatusParts.push(`ABSORB ${Math.ceil(targetEnt.jackpotShield)}`);
-    if(targetEnt.jackpotDiceT>0)refStatusParts.push(`DICE ${targetEnt.jackpotDice}`);
-  } else if(targetEnt.ci===COSMO.hero) {
-    const ready=targetEnt.cosmoMoonRecovery.filter(time=>time<=0).length-(targetEnt.cosmoMoonTag?1:0);
-    refStatusParts.push(`MOONS ${Math.max(0,ready)} / 3 READY`);
-    if(targetEnt.cosmoMoonTag)refStatusParts.push(`MOON TAG · CLICK A1 TO DROP`);
-    if(targetEnt.cosmoWellWindup>0)refStatusParts.push(`GRAVITY WELL ${targetEnt.cosmoWellWindup.toFixed(1)}s`);
-  } else if(isRefWhistleSuppressing(targetEnt)) {
-    refStatusParts.push("BASIC ATTACKS FROZEN");
+  const abilityStatusParts=[];
+  if(targetEnt.ci===JACKPOT.hero) {
+    if(targetEnt.jackpotFlipPending)abilityStatusParts.push(["COIN TOSS",`FLIPPING · ${targetEnt.jackpotFlipT.toFixed(1)}s`]);
+    else if(targetEnt.jackpotLoaded)abilityStatusParts.push(["CHAMBER LOADED",`${targetEnt.jackpotLoaded.toUpperCase()} · NEXT SHOT ${targetEnt.jackpotLoaded==="heads"?JACKPOT.headsDamage:JACKPOT.baseDamage} DAMAGE`]);
+    else if(targetEnt.jackpotAutoHeads>0)abilityStatusParts.push(["JACKPOT BONUS",`GUARANTEED HEADS ×${targetEnt.jackpotAutoHeads}`]);
+    if(targetEnt.jackpotPityHead&&targetEnt.jackpotLoaded==="tails")abilityStatusParts.push(["PITY FLIP","NEXT COIN IS GUARANTEED HEADS"]);
+    if(targetEnt.jackpotAllInT>0)abilityStatusParts.push(["ALL IN",`${targetEnt.jackpotAllInT.toFixed(1)}s · ${Math.ceil(targetEnt.jackpotWager)} HP WAGERED · 25 DMG/SHOT`]);
+    if(targetEnt.jackpotShield>0)abilityStatusParts.push(["DICE SHIELD",`${Math.ceil(targetEnt.jackpotShield)} DAMAGE ABSORPTION`]);
+    if(targetEnt.jackpotDicePending)abilityStatusParts.push(["ROLL THE DICE",`ROLLING · ${targetEnt.jackpotDiceRollT.toFixed(1)}s`]);
+    else if(targetEnt.jackpotDiceT>0)abilityStatusParts.push([`DICE RESULT · ${targetEnt.jackpotDice}`,jackpotDieResultText(targetEnt.jackpotDice)]);
   }
-  refStatus.textContent=refStatusParts.join(" · ");
-  refStatus.style.display=refStatusParts.length?"block":"none";
+  abilityStatus.innerHTML=abilityStatusParts.map(([label,value])=>`<div class="jackpot-status-card"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(value)}</span></div>`).join("");
+  abilityStatus.classList.toggle("jackpot-status-grid",targetEnt.ci===JACKPOT.hero);
+  abilityStatus.style.display=abilityStatusParts.length?"grid":"none";
+  const allInBanner=document.getElementById("jackpot-allin-banner");
+  const allInActive=targetEnt.ci===JACKPOT.hero&&targetEnt.jackpotAllInT>0&&!targetEnt.dead;
+  allInBanner.classList.toggle("active",allInActive);
+  if(allInActive) {
+    document.getElementById("jackpot-allin-detail").innerText=`${Math.ceil(targetEnt.jackpotWager)} HP WAGER · ${targetEnt.jackpotAllInT.toFixed(1)}s · EVERY SHOT 25 DMG`;
+    document.getElementById("jackpot-allin-fill").style.width=`${Math.max(0,Math.min(100,targetEnt.jackpotAllInT/JACKPOT.allInDuration*100))}%`;
+  }
 
   stormTimerDisp.innerText = `STORM: ${Math.round(stormRadius)}m`;
 }
@@ -5351,7 +5104,7 @@ window.returnToMenu = function(message = "Select a champion to battle in the are
 let roundVote=null,roundVoteSerial=0,pendingRoundReady=false,lastRoundStatePacket=null,lastRoundStartPacket=null,pendingStartGamePacket=null,lastStartedRoundId=null;
 const REMATCH_COUNTDOWN_MS=10000,MAP_VOTE_DURATION_MS=7000;
 const HOST_AWAY_TIMEOUT_MS=20000;
-const ARENA_PROTOCOL_VERSION=9;
+const ARENA_PROTOCOL_VERSION=12;
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,m)=>total+(votes[m.id]===i?1:0),0)),max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===MAPS.length?Math.floor(random()*MAPS.length):winner;
 }
@@ -5837,7 +5590,7 @@ function handleIncomingData(conn, data) {
           if(item.hp < pl.hp && !pl.dead) applyLocalHitFeedback(pl.hp - item.hp);
           pl.hp = item.hp;
           pl.mhp=item.mh||pl.mhp;pl.form=item.fm||0;applyChampionBodySize(pl);
-          applyRefSnapshotState(pl,item);
+          applyAbilitySnapshotState(pl,item);
           if(Number.isFinite(item.c2)) pl.c2 = item.c2;
           if(Number.isFinite(item.c3)) pl.c3 = item.c3;
           if(Number.isFinite(item.c4)) pl.c4 = item.c4;
@@ -5884,7 +5637,7 @@ function handleIncomingData(conn, data) {
         ent.targetP = item.p || 0;
         ent.hp = item.hp;
         ent.mhp=item.mh||ent.mhp;ent.form=item.fm||0;applyChampionBodySize(ent);
-        applyRefSnapshotState(ent,item);
+        applyAbilitySnapshotState(ent,item);
         if(Number.isFinite(item.c2)) ent.c2 = item.c2;
         if(Number.isFinite(item.c3)) ent.c3 = item.c3;
         if(Number.isFinite(item.c4)) ent.c4 = item.c4;
@@ -5998,16 +5751,11 @@ setInterval(() => {
       kl: e.killedBy,
       fm: e.form, mh: e.mhp, gd: e.guard > 0 ? e.guard : 0, rp: e.riposte, gb:e.guardBoost||0, dc3:e.c3, hr:!!e.huskRecallUsed,
       c2: e.c2, c3: e.c3, c4:e.c4,
-      rmt:e.refMarkT||0,rmo:e.refMarkOwnerId,
-      rlt:e.refLineT||0,rti:e.refLineTargetId,
-      rsl:e.refSlowT||0,rww:e.refWhistleWindup||0,rwa:e.refWhistleActive||0,
-      jft:e.jackpotFlipT||0,jfp:!!e.jackpotFlipPending,jhl:e.jackpotLoaded||null,jph:!!e.jackpotPityHead,
-      jah:e.jackpotAutoHeads||0,jat:e.jackpotAllInT||0,jw:e.jackpotWager||0,jap:!!e.jackpotAllInPaid,
-      jsh:e.jackpotShield||0,jd:e.jackpotDice||0,jdt:e.jackpotDiceT||0,jst:e.jackpotSlowT||0,
-      cmr:e.cosmoMoonRecovery||[0,0,0],cww:e.cosmoWellWindup||0,cwp:!!e.cosmoWellPending,
-      cws:e.cosmoWellSlowT||0,ctt:e.cosmoTouchT||0,cti:e.cosmoMoonTag?e.cosmoMoonTag.targetId:null,
-      cmi:e.cosmoMoonTag?e.cosmoMoonTag.moonIndex:null,clx:e.cosmoMoonTag?e.cosmoMoonTag.launchX:null,
-      clz:e.cosmoMoonTag?e.cosmoMoonTag.launchZ:null,clt:e.cosmoMoonTag?e.cosmoMoonTag.travelT:null,
+      jft:e.jackpotFlipT||0,jfp:!!e.jackpotFlipPending,jhl:e.jackpotLoaded||null,jhb:!!e.jackpotPendingHeads,
+      jph:!!e.jackpotPityHead,jct:e.jackpotCoinT||0,jah:e.jackpotAutoHeads||0,
+      jat:e.jackpotAllInT||0,jw:e.jackpotWager||0,jap:!!e.jackpotAllInPaid,
+      jsh:e.jackpotShield||0,jd:e.jackpotDice||0,jdt:e.jackpotDiceT||0,jdr:e.jackpotDiceRollT||0,
+      jdp:!!e.jackpotDicePending,jst:e.jackpotSlowT||0,jex:e.jackpotEffectX,jez:e.jackpotEffectZ,jea:e.jackpotEffectA,
       un: e.username, tc: e.tagCosmetics,
       cs: e.skins && e.skins.championSkins ? e.skins.championSkins[e.ci] : "default",
       ws: e.skins && e.skins.weaponSkins ? e.skins.weaponSkins[e.ci] : "default"    }));
@@ -6910,7 +6658,7 @@ function champDetailHTML(ci) {
       <div class="statbar"><span>HP</span><div class="sb-track"><div class="sb-fill" style="width:${hpPct}%"></div></div><b>${c.hp}</b></div>
       <div class="statbar"><span>SPD</span><div class="sb-track"><div class="sb-fill spd" style="width:${spPct}%"></div></div><b>${c.sp}</b></div>
     </div>
-    <div class="cd-summary">Body size: ${["Largest","Large","Small","Medium","Smallest","Medium","Medium-large","Medium","Medium","Medium"][ci]} · ${ci===0?"Too large for the narrow shortcuts.":ci===1?"Fits Kitchen service passages, but not BBQ squeeze gaps.":"Fits BBQ squeeze gaps and Kitchen service passages."}</div>
+    <div class="cd-summary">Body size: ${["Largest","Large","Small","Medium","Smallest","Medium","Medium-large","Small","Medium","Medium"][ci]} · ${ci===0?"Too large for the narrow shortcuts.":ci===1?"Fits Kitchen service passages, but not BBQ squeeze gaps.":"Fits BBQ squeeze gaps and Kitchen service passages."}</div>
     <div class="cd-weapon">${c.w} <b>${c.wn}</b> — ${c.ad}</div>
     <div class="cd-summary">${c.d}</div>
     ${c.passive ? `<div class="cd-ability"><span class="cd-passive-label">P</span><div class="cd-ab-body"><b>Passive · ${c.passiveName || "Passive"}</b><br>${c.passive}</div></div>` : ""}
@@ -7524,15 +7272,15 @@ function upd(dt) {
 
     const targetX = 3.2 + sideBob - Math.min(0.5, Math.max(-0.5, curSwayX * 0.07));
     const targetY = -3.2 + bob + Math.min(0.35, Math.max(-0.35, curSwayY * 0.05));
-    const targetZ = vmEnt.ci===7 ? (isAttacking ? -6.7 : -5.5) : (isAttacking ? -4.7 : -5.5);
+    const targetZ = isAttacking ? -4.7 : -5.5;
 
     viewmodelHolder.position.x += (targetX - viewmodelHolder.position.x) * 0.18;
     viewmodelHolder.position.y += (targetY - viewmodelHolder.position.y) * 0.18;
     viewmodelHolder.position.z += (targetZ - viewmodelHolder.position.z) * 0.18;
 
-    const targetRotX = vmEnt.ci===7 ? (-curSwayY*.012) : isAttacking ? -0.28 : (-curSwayY * 0.018);
+    const targetRotX = isAttacking ? -0.28 : (-curSwayY * 0.018);
     const targetRotY = curSwayX * 0.02;
-    const targetRotZ = vmEnt.ci===7 ? 0 : isAttacking ? -0.15 : 0;
+    const targetRotZ = isAttacking ? -0.15 : 0;
 
     viewmodelHolder.rotation.x += (targetRotX - viewmodelHolder.rotation.x) * 0.18;
     viewmodelHolder.rotation.y += (targetRotY - viewmodelHolder.rotation.y) * 0.18;
@@ -7665,10 +7413,6 @@ function upd(dt) {
             e.sporeAttacker = z.owner;
             spawnDamageNumber(e.x, e.z, "BLIGHTED", "#a855f7");
           }
-        } else if(z.kind === "cosmo_well" && (!isMultiplayer||isLobbyLeader)) {
-          const dx=z.x-targetPos.x,dz=z.z-targetPos.z,dist=Math.hypot(dx,dz)||1;
-          e.kx+=dx/dist*150*dt;e.kz+=dz/dist*150*dt;
-          e.cosmoWellSlowT=Math.max(e.cosmoWellSlowT||0,.18);
         }
       }
     }
@@ -7689,7 +7433,6 @@ function upd(dt) {
   updateHusks(dt);
 
   // ENTITIES
-  for(const e of E) { e.refPrevX = e.x; e.refPrevZ = e.z; }
   for(const e of E) {
     applyChampionBodySize(e);
     if(e.dead) {
@@ -7727,7 +7470,7 @@ function upd(dt) {
 
     e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt; e.c4 -= dt; e.guard -= dt; e.guardBoost=Math.max(0,(e.guardBoost||0)-dt); e.comboT -= dt; e.grace -= dt; e.feintInvuln = Math.max(0, e.feintInvuln - dt);
     e.jackpotSlowT=Math.max(0,(e.jackpotSlowT||0)-dt);
-    updateRefTimers(e,dt);
+    updateAbilityTimers(e,dt);
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
     e.emoteCooldown = Math.max(0, e.emoteCooldown - dt);
     if(e.emoteT > 0) {
@@ -7824,7 +7567,7 @@ function upd(dt) {
       ab2 = P1_ab2;
 
       const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
-      const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.refSlowT > 0 ? REF.lineSlowMultiplier : 1) * (e.jackpotSlowT>0?0.5:1) * (e.cosmoWellSlowT>0?1-COSMO.wellSlow:1);
+      const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.5:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
@@ -7836,7 +7579,7 @@ function upd(dt) {
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
       const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
-      const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.refSlowT > 0 ? REF.lineSlowMultiplier : 1) * (e.jackpotSlowT>0?0.5:1) * (e.cosmoWellSlowT>0?1-COSMO.wellSlow:1);
+      const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.5:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
@@ -7857,20 +7600,6 @@ function upd(dt) {
         const dx = e.x - o.x, dz = e.z - o.z, d = Math.hypot(dx, dz), m = e.r + o.r;
         if(d > 0 && d < m) {
           moveChampion(e,(dx/d)*(m-d)*.5,(dz/d)*(m-d)*.5);
-        }
-      }
-      if(e.ci===COSMO.hero&&e.cosmoTouchT<=0&&(!isMultiplayer||isLobbyLeader)) {
-        let touched=null;
-        for(let i=0;i<COSMO.moonCount&&!touched;i++) {
-          if(e.cosmoMoonRecovery[i]>0||(e.cosmoMoonTag&&e.cosmoMoonTag.moonIndex===i))continue;
-          const angle=matchTime*2.2+i*Math.PI*2/COSMO.moonCount;
-          const mx=e.x+Math.cos(angle)*COSMO.moonOrbitRadius,mz=e.z+Math.sin(angle)*COSMO.moonOrbitRadius;
-          touched=E.find(target=>target!==e&&!target.dead&&areEnemies(e,target)&&Math.hypot(target.x-mx,target.z-mz)<target.r+7)||null;
-        }
-        if(touched) {
-          e.cosmoTouchT=COSMO.moonTouchInterval;
-          const angle=Math.atan2(touched.z-e.z,touched.x-e.x);
-          hurt(touched,COSMO.moonTouchDamage,angle,60,e);
         }
       }
     }
@@ -7922,9 +7651,7 @@ function upd(dt) {
     }
   }
 
-  updateRefLineCrossings();
-  updateRefVisuals();
-  updateJackpotCosmoVisuals();
+  updateJackpotVisuals();
 
   // Projectiles — all termination paths funnel through one finalize step so
   // onDeath fires exactly once (lifetime, wall, or player hit) and no further
@@ -7961,7 +7688,7 @@ function upd(dt) {
     if(!finalize && p.out && (!isMultiplayer || isLobbyLeader)) {
       for(const h of Husks) {
         if(h.owner !== p.o && Math.hypot(h.x - p.x, h.z - p.z) < 19) {
-          if(p.t !== "ref_card") { h.hp -= p.d || 8; spawnSparks(h.x, h.z, 0xaab2c0, 3); }
+          h.hp -= p.d || 8; spawnSparks(h.x, h.z, 0xaab2c0, 3);
           finalize = true; break;
         }
       }
@@ -7979,24 +7706,8 @@ function upd(dt) {
 
     if(!finalize && p.out && worldCrate&&!(worldCrate.y>0)&&worldCrate.bombT===null&&(!isMultiplayer||isLobbyLeader)
        && Math.hypot(worldCrate.x - p.x, worldCrate.z - p.z) < worldCrate.r + 8) {
-      if(p.t !== "ref_card") damageWorldCrate(p.d || 8, p.o);
+      damageWorldCrate(p.d || 8, p.o);
       finalize = true;
-    }
-
-    if(!finalize&&p.out&&p.t!=="cosmo_moon"&&(!isMultiplayer||isLobbyLeader)) {
-      for(const cosmo of E) {
-        if(cosmo.ci!==COSMO.hero||cosmo.dead||!areEnemies(p.o,cosmo))continue;
-        for(let mi=0;mi<COSMO.moonCount;mi++) {
-          if(cosmo.cosmoMoonRecovery[mi]>0||(cosmo.cosmoMoonTag&&cosmo.cosmoMoonTag.moonIndex===mi))continue;
-          const orbit=matchTime*2.2+mi*Math.PI*2/COSMO.moonCount;
-          const moonX=cosmo.x+Math.cos(orbit)*COSMO.moonOrbitRadius,moonZ=cosmo.z+Math.sin(orbit)*COSMO.moonOrbitRadius;
-          if(refPointSegmentDistance(moonX,moonZ,p.x-p.vx*dt,p.z-p.vz*dt,p.x,p.z)<8) {
-            cosmo.cosmoMoonRecovery[mi]=COSMO.moonGuardRecovery;
-            spawnSparks(moonX,moonZ,0x80eaff,7);finalize=true;break;
-          }
-        }
-        if(finalize)break;
-      }
     }
 
     if(!finalize) {
@@ -8006,12 +7717,8 @@ function upd(dt) {
            && areEnemies(p.o, t)
            && Math.hypot(targetPos.x - p.x, targetPos.z - p.z) < t.r + 9) {
           p.hit.add(t);
-          if(p.t === "ref_card") {
-            if(!isMultiplayer || isLobbyLeader) setRefMark(p.o,t);
-          } else {
-            hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o, "projectile");
-          }
-          if(p.t !== "b"&&p.t!=="cosmo_moon") {
+          hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o, "projectile");
+          if(p.t !== "b") {
             finalize = true;
             break; // a terminating hit stops further collisions this frame
           }
@@ -8247,7 +7954,7 @@ requestAnimationFrame(loop);
 (() => {
   // ============== EDIT YOUR UPDATE NOTES HERE ==============
   const VERSION_UPDATES = {
-    version: "BRAWLBOUND v1.2.7 — Rico Bank Shot",
+    version: "BRAWLBOUND v1.2.7",
 
     game: [
       "HUGE CHAMPION BALANCE CHANGES!",
@@ -8298,10 +8005,6 @@ requestAnimationFrame(loop);
         text: "Mango the Monkey — Each Cluster Bomb banana deals 9 damage instead of 10. Peel Trap cooldown increased from 10.5s to 11s, but placement increased from 38 to 40 units ahead, and damage increased from 9 to 10. Overall, the nerfs outweigh the Peel improvements."
       },
 
-      {
-        type: "buff",
-        text: "Rico — Cue Stick damage increased from 15 to 18 per hit (1s cooldown unchanged). Bank Shot starts at 22 damage instead of 20 and still compounds by 20% per bank: 22 / 26 / 32 / 38 / 46 / 55 through five banks. Its empowered ball is red, 1.35× larger, and 10% faster, with a larger hit radius. Bumper recoil-dashes Rico backward up to 70 units while placing its barrier 60 units ahead for 7s. Overlapping champions are pushed clear so placement succeeds; blocked placements do not dash or consume the 11s cooldown. Bruno cannot reflect Rico's cue balls."
-      }
     ]
   };
   // =================== END EDIT SECTION ===================
