@@ -3327,6 +3327,12 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
 
   const wep = createHighQualityWeapon(heroIndex, false);
   wep.position.set(12, 16, 8);
+
+  // Turn Jackpot's third-person revolver to face forward.
+  if (heroIndex === 7) {
+    wep.rotation.y = Math.PI;
+  }
+
   grp.add(wep);
   grp.weapon = wep;
   grp.bodyMat = bodyMat;
