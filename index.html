@@ -693,15 +693,13 @@ html, body {
 .hero-card[data-i="7"][data-new="true"]{border:1px solid #ffd75c;box-shadow:0 0 8px #ffd75c22}.hero-card[data-i="7"] .hc-new{background:#ffdb63;color:#382700;border-color:#ffeaa1}
 .jackpot-unlock-price{font-size:10px;font-weight:900;color:#ff6262;margin-top:5px}.bb-text-nametag{color:#fff;font-weight:800}@media(max-width:860px){.detail-col{width:100%}}
 </style>
-<style id="bb-inventory-mastery-style">
-.bb-progress{height:10px;background:#ffffff12;border:1px solid #ffffff20;border-radius:20px;overflow:hidden;margin:10px 0}.bb-progress i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#3db8f5,#8d7eff,#ffd166);box-shadow:0 0 12px #8d7eff55;transition:width .5s ease}
-.bb-mastery-head{padding:16px;border:1px solid #b398ff44;background:linear-gradient(135deg,#30244377,#12253288);border-radius:14px;margin:10px 0 16px;text-align:left}.bb-mastery-head h2{font:900 24px Outfit,system-ui;margin-bottom:8px}.bb-mastery-head p{font-size:12px;line-height:1.6}.bb-reward{color:#ffe19b;font-size:12px;font-weight:800}.loot-card p{font-size:12px;line-height:1.5}.bb-aura-preview{height:90px;position:relative;display:grid;place-items:center;background:radial-gradient(ellipse at center,#29304477,#080a12);border-radius:12px;overflow:hidden}.bb-aura-preview span{font-size:30px;z-index:1}.bb-aura-ring{position:absolute;width:74px;height:30px;border:2px solid var(--aura);border-radius:50%;bottom:12px;box-shadow:0 0 18px var(--aura),inset 0 0 12px var(--aura);animation:bb-aura-breathe 2s ease-in-out infinite alternate}
-@keyframes bb-aura-breathe{to{transform:scale(1.12);opacity:.6}}
-.crate-reel-card{position:relative;overflow:hidden;background:radial-gradient(ellipse at top,#ffffff16,transparent 65%),#131321}.crate-reel-card::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#ffffff14 50%,transparent 65%);pointer-events:none}.crate-reel-card.rarity-legendary{background:radial-gradient(ellipse at top,#b8862855,transparent 80%),#221a16}.crate-reel-card.rarity-epic{background:radial-gradient(ellipse at top,#8b4bb055,transparent 80%),#1e1629}.crate-reel-shell{border-color:#9e8aff88;box-shadow:0 0 35px #7967e522,inset 0 0 30px #7967e511}.crate-reel-window{height:124px}.crate-reel-card{height:98px}.crate-reel-marker.bb-tick{animation:bb-marker-tick .13s ease-out}.crate-reveal{position:relative;overflow:hidden;min-height:100px;animation:bb-reward-arrive .55s ease-out}.bb-reveal-legendary{border-color:#ffe28c;box-shadow:0 0 42px #ffd16644,inset 0 0 30px #ffd16614}.bb-reveal-epic{box-shadow:0 0 30px #bc7fff33}.crate-reveal .reveal-spark{font-size:42px;animation:bb-spark-arrive .65s ease-out}
-@keyframes bb-marker-tick{from{filter:brightness(2.3);transform:translateX(-50%) scaleX(2)}to{filter:brightness(1);transform:translateX(-50%) scaleX(1)}}
-@keyframes bb-reward-arrive{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}
-@keyframes bb-spark-arrive{from{transform:rotate(-100deg) scale(.3)}to{transform:none}}
-@media(prefers-reduced-motion:reduce){.bb-aura-ring,.crate-reveal,.crate-reveal .reveal-spark,.crate-reel-marker.bb-tick{animation:none!important}.bb-progress i,.crate-reel-track{transition:none!important}}
+<style id="bb-mastery-inventory-style">
+.bb-card-challenges{position:relative;z-index:2;width:100%;margin:7px 0 3px;border:1px solid #ffd16666;border-radius:7px;background:#ffd16612;color:#ffe3a0;font:800 10px Outfit,system-ui;padding:6px 3px;cursor:pointer}.bb-card-challenges:hover{background:#ffd16630;border-color:#ffd166}.bb-card-challenges:focus-visible{outline:2px solid white;outline-offset:2px}
+.bb-progress{height:10px;background:#ffffff12;border:1px solid #ffffff20;border-radius:20px;overflow:hidden;margin:10px 0}.bb-progress i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#3db8f5,#8d7eff,#ffd166);transition:width .5s ease}.bb-mastery-head{padding:16px;border:1px solid #b398ff44;background:linear-gradient(135deg,#30244377,#12253288);border-radius:14px;margin:10px 0 16px;text-align:left}.bb-mastery-head h2{font:900 24px Outfit,system-ui;margin-bottom:8px}.bb-mastery-head p,.loot-card p{font-size:12px;line-height:1.6}.bb-challenge-list{display:grid;gap:12px}.bb-active-challenge{border-color:#ffd16699;background:linear-gradient(130deg,#ffd16612,#8d7eff12)}.bb-secret{display:flex;gap:14px;align-items:center;padding:18px;border:1px dashed #ffffff20;border-radius:12px;background:#ffffff03;color:#88869b}.bb-secret-number{display:grid;place-items:center;border:1px solid #ffffff20;border-radius:50%;width:36px;height:36px;font:900 16px Outfit,system-ui}.bb-secret b{font-size:11px;letter-spacing:1px}.bb-secret p{font-size:11px;margin-top:5px}.bb-reward{color:#ffe19b;font-size:12px;font-weight:800}
+.bb-aura-preview{height:95px;position:relative;display:grid;place-items:center;background:radial-gradient(ellipse at center,#29304477,#080a12);border-radius:12px;overflow:hidden}.bb-aura-preview span{font-size:30px;z-index:1}.bb-aura-ring{position:absolute;width:74px;height:30px;border:2px solid var(--aura);border-radius:50%;bottom:12px;box-shadow:0 0 18px var(--aura),inset 0 0 12px var(--aura);animation:bb-aura-breathe 2s ease-in-out infinite alternate}.bb-aura-preview.full:before{content:'';position:absolute;width:62px;height:75px;border:1px solid var(--aura);border-radius:45%;box-shadow:0 0 16px var(--aura),inset 0 0 16px var(--aura);opacity:.25;animation:bb-aura-breathe 2s infinite alternate}.bb-aura-preview.legendary:before{opacity:.65;width:76px;box-shadow:0 0 24px var(--aura),inset 0 0 22px var(--aura)}
+.crate-reel-window{height:124px}.crate-reel-card{height:98px;background:radial-gradient(ellipse at top,#ffffff16,transparent 65%),#131321}.crate-reel-card.rarity-legendary{background:radial-gradient(ellipse at top,#b8862855,transparent 80%),#221a16}.crate-reel-card.rarity-epic{background:radial-gradient(ellipse at top,#8b4bb055,transparent 80%),#1e1629}.crate-reel-shell{box-shadow:0 0 35px #7967e522,inset 0 0 30px #7967e511}.crate-reel-marker.bb-tick{animation:bb-marker-tick .13s ease-out}.crate-reveal{min-height:100px;animation:bb-reward-arrive .55s ease-out}.bb-reveal-legendary{border-color:#ffe28c;box-shadow:0 0 42px #ffd16644,inset 0 0 30px #ffd16614}.bb-reveal-epic{box-shadow:0 0 30px #bc7fff33}
+@keyframes bb-aura-breathe{to{transform:scale(1.08);filter:brightness(1.15)}}@keyframes bb-marker-tick{from{filter:brightness(2.3);transform:translateX(-50%) scaleX(2)}to{filter:brightness(1);transform:translateX(-50%) scaleX(1)}}@keyframes bb-reward-arrive{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.bb-aura-ring,.bb-aura-preview:before,.crate-reveal,.crate-reel-marker.bb-tick{animation:none!important}.bb-progress i,.crate-reel-track{transition:none!important}}
 </style>
 </head>
 <body>
@@ -952,63 +950,65 @@ const ATTACK_TUNING = {
 
 let inventoryCategory='championSkins',inventoryHero='all',masteryHero=0;
 function openInventory(){if(activeCrateSpin)return;if(!activeProfile()){openAccountModal(true);return;}economyModalView='inventory';renderEconomyModal();}
-function openMastery(){if(activeCrateSpin)return;if(!activeProfile()){openAccountModal(true);return;}masteryHero=p1HeroChoice>=0?p1HeroChoice:0;economyModalView='mastery';renderEconomyModal();}
-function inventoryPreview(category,item,profile){
- if(category.key==='auras')return `<div class="bb-aura-preview" style="--aura:${item.accent}"><div class="bb-aura-ring"></div><span>${HEROES[item.hero].e}</span></div>`;
- return `<div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key,item)}">${escapeHtml(item.hero!=null?HEROES[item.hero].n:profile.username)}</div>`;
-}
+function openMastery(hero){if(state!=='menu'||activeCrateSpin)return;if(!activeProfile()){openAccountModal(true);return;}masteryHero=Number.isInteger(hero)&&HEROES[hero]?hero:Math.max(0,p1HeroChoice);economyModalView='mastery';renderEconomyModal();}
+function inventoryPreview(category,item,p){if(category.key==='auras')return `<div class="bb-aura-preview ${item.rarity==='Legendary'?'full legendary':item.rarity==='Epic'?'full epic':''}" style="--aura:${item.accent}"><div class="bb-aura-ring"></div><span>${HEROES[item.hero].e}</span></div>`;return `<div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key,item)}">${escapeHtml(item.hero!=null?HEROES[item.hero].n:p.username)}</div>`;}
 function renderInventory(){
  const p=activeProfile(),body=document.getElementById('economy-body');document.getElementById('economy-title').textContent='Inventory';if(!p)return;
  const category=shopCategory(inventoryCategory),items=category.items.filter(i=>p.owned[category.key]?.includes(i.id)&&(inventoryHero==='all'||i.hero==null||i.hero===Number(inventoryHero)));
- body.innerHTML=`<p class="economy-note">Your collection. Inspect and equip here. Challenge rewards never appear in the shop. New drops are not automatically equipped.</p><div class="economy-tabs">${SHOP_CATEGORIES.map(c=>`<button class="economy-tab ${c.key===category.key?'selected':''}" data-inv-category="${c.key}">${c.label}</button>`).join('')}</div><label>Champion <select id="bb-inv-hero" class="economy-action"><option value="all">All champions</option>${HEROES.map((h,i)=>`<option value="${i}" ${String(i)===inventoryHero?'selected':''}>${escapeHtml(h.n)}</option>`).join('')}</select></label><button class="economy-action" id="bb-inv-reset">Reset all equips in this category</button><div class="loot-grid" style="margin-top:14px">${items.map(item=>{const eq=cosmeticIsEquipped(p,category,item);return `<article class="loot-card unlocked ${eq?'equipped':''}"><div class="loot-card-top"><b>${escapeHtml(item.name)}</b><span class="rarity-${item.rarity.toLowerCase()}">${item.rarity}</span></div><small>${item.masteryOnly?'CHAMPION MASTERY EXCLUSIVE':escapeHtml(cratePreviewText(category,item))}</small>${inventoryPreview(category,item,p)}<button class="economy-action ${eq?'':'primary'}" data-equip-category="${category.key}" data-equip-item="${item.id}" ${eq?'disabled':''}>${eq?'EQUIPPED':'EQUIP'}</button></article>`;}).join('')||'<p class="economy-note">No items here yet. Complete champion challenges or open a cache in the shop.</p>'}</div>`;
- body.querySelectorAll('[data-inv-category]').forEach(b=>b.onclick=()=>{inventoryCategory=b.dataset.invCategory;renderInventory();});
- body.querySelectorAll('[data-equip-category]').forEach(b=>b.onclick=()=>equipCosmetic(b.dataset.equipCategory,b.dataset.equipItem));
- document.getElementById('bb-inv-hero').onchange=e=>{inventoryHero=e.target.value;renderInventory();};
- document.getElementById('bb-inv-reset').onclick=()=>resetCosmeticCategory(category.key);
+ body.innerHTML=`<p class="economy-note">Inspect and equip your collection here. Challenge-exclusive skins cannot drop from crates. New drops do not replace your equipped items.</p><div class="economy-tabs">${SHOP_CATEGORIES.map(c=>`<button class="economy-tab ${c.key===category.key?'selected':''}" data-inv-category="${c.key}">${c.label}</button>`).join('')}</div><label>Champion <select id="bb-inv-hero" class="economy-action"><option value="all">All champions</option>${HEROES.map((h,i)=>`<option value="${i}" ${String(i)===inventoryHero?'selected':''}>${escapeHtml(h.n)}</option>`).join('')}</select></label><button class="economy-action" id="bb-inv-reset">Reset all equips in category</button><div class="loot-grid" style="margin-top:14px">${items.map(item=>{const eq=cosmeticIsEquipped(p,category,item);return `<article class="loot-card unlocked ${eq?'equipped':''}"><div class="loot-card-top"><b>${escapeHtml(item.name)}</b><span class="rarity-${item.rarity.toLowerCase()}">${item.rarity}</span></div><small>${item.masteryOnly?'CHAMPION MASTERY EXCLUSIVE':escapeHtml(cratePreviewText(category,item))}</small>${inventoryPreview(category,item,p)}<button class="economy-action ${eq?'':'primary'}" data-equip-category="${category.key}" data-equip-item="${item.id}" ${eq?'disabled':''}>${eq?'EQUIPPED':'EQUIP'}</button></article>`;}).join('')||'<p class="economy-note">No items here yet. Complete champion challenges or open a cache.</p>'}</div>`;
+ body.querySelectorAll('[data-inv-category]').forEach(b=>b.onclick=()=>{inventoryCategory=b.dataset.invCategory;renderInventory();});body.querySelectorAll('[data-equip-category]').forEach(b=>b.onclick=()=>equipCosmetic(b.dataset.equipCategory,b.dataset.equipItem));document.getElementById('bb-inv-hero').onchange=e=>{inventoryHero=e.target.value;renderInventory();};document.getElementById('bb-inv-reset').onclick=()=>resetCosmeticCategory(category.key);
 }
-function masteryTasks(hero){const n=HEROES[hero].n;return [
- {key:'matches',target:3,title:`First steps: ${n}`,text:'Finish 3 Quick Matches',shinies:75},
- {key:'damage',target:1500,title:'Make your mark',text:'Deal 1,500 total damage in Quick Matches',shinies:100},
- {key:'kills',target:10,title:'Signature weapon',text:'Earn 10 total Quick Match eliminations',shinies:150,category:'weaponSkins'},
- {key:'seconds',target:600,title:'Battle tested',text:'Survive for 600 total seconds in Quick Matches',shinies:150},
- {key:'matches',target:15,title:'Champion mastery',text:'Finish 15 Quick Matches and complete the other four challenges',shinies:250,category:'championSkins'}
+function masteryTasks(hero){return [
+ {key:'matches',target:2,title:'Enter the arena',text:'Finish 2 Quick Matches',shinies:50},
+ {key:'damage',target:600,title:'Find your rhythm',text:'Deal 600 total damage in Quick Matches',shinies:75},
+ {key:'kills',target:5,title:'Make your mark',text:'Earn 5 Quick Match eliminations',shinies:100},
+ {key:'seconds',target:300,title:'Battle tested',text:'Survive for 300 total seconds in Quick Matches',shinies:125,category:'weaponSkins'},
+ {key:'damage',target:1500,title:'Signature pressure',text:'Deal 1,500 total damage in Quick Matches',shinies:150},
+ {key:'kills',target:10,title:'Arena veteran',text:'Earn 10 Quick Match eliminations',shinies:175},
+ {key:'matches',target:8,title:'Champion mastery',text:'Finish 8 Quick Matches',shinies:250,category:'championSkins'}
  ];}
-function masteryData(p,hero){if(!p.mastery)p.mastery=normalizeMastery(null);if(!p.mastery[hero])p.mastery[hero]=normalizeMastery(null)[hero];return p.mastery[hero];}
-function masteryFraction(p,hero){const d=masteryData(p,hero);return masteryTasks(hero).reduce((a,t)=>a+Math.min(1,d[t.key]/t.target),0)/5;}
-function completeMasteryMatch(stats){
+function masteryData(p,hero){if(!p.mastery||p.mastery[hero]?.version!==2)p.mastery=normalizeMastery(p.mastery);return p.mastery[hero];}
+function masteryFraction(p,hero){const d=masteryData(p,hero);return d.stage>=7?1:(d.stage+Math.min(1,d.progress/masteryTasks(hero)[d.stage].target))/7;}
+function completeMasteryMatch(stats,isVictory){
  const p=activeProfile();if(!p||!pl||pl.netId!==myNetId||demoActive||!matchIsQuickMatch)return null;
  const st=stats.find(x=>x.id===myNetId);if(!st)return null;
- const hero=pl.ci,d=masteryData(p,hero),before=masteryFraction(p,hero),rewards=[];
- d.matches++;d.damage+=Math.max(0,Math.round(Number(st.d)||0));d.kills+=Math.max(0,Math.round(Number(st.k)||0));d.seconds+=Math.max(0,Math.round(Number(st.t)||0));
- masteryTasks(hero).forEach((t,i)=>{if(d.claimed.includes(i)||d[t.key]<t.target||(i===4&&![0,1,2,3].every(x=>d.claimed.includes(x))))return;
- d.claimed.push(i);p.shinies+=t.shinies;let label=`+${t.shinies} Shinies`;
- if(t.category){const id=`mastery-${t.category}-${hero}`;if(!p.owned[t.category].includes(id))p.owned[t.category].push(id);label+=' + '+MASTERY_NAMES[hero][t.category==='weaponSkins'?0:1];}rewards.push(label);});
- saveAccountBook();updateEconomyDisplays();return {hero,before,after:masteryFraction(p,hero),rewards};
+ const hero=pl.ci,d=masteryData(p,hero);if(d.stage>=7)return null;
+ const before=masteryFraction(p,hero),stage=d.stage,t=masteryTasks(hero)[stage];
+ const values={matches:1,damage:Math.max(0,Math.round(Number(st.d)||0)),kills:Math.max(0,Math.round(Number(st.k)||0)),seconds:Math.max(0,Math.round(Number(st.t)||0))};
+ d.progress=Math.min(t.target,d.progress+values[t.key]);const rewards=[];
+ if(d.progress>=t.target){p.shinies+=t.shinies;let label=`+${t.shinies} Shinies`;if(t.category){const id=`mastery-${t.category}-${hero}`;if(!p.owned[t.category].includes(id))p.owned[t.category].push(id);label+=' + '+MASTERY_NAMES[hero][t.category==='weaponSkins'?0:1];}rewards.push(label);d.stage++;d.progress=0;}
+ // Deliberately do not loop: the next stage starts on the NEXT match. No backfill or spillover.
+ saveAccountBook();updateEconomyDisplays();return {hero,before,after:masteryFraction(p,hero),rewards,next:d.stage};
 }
 function progressBar(f,label){return `<div class="bb-progress" role="progressbar" aria-label="${escapeHtml(label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(f*100)}"><i style="width:${Math.min(100,Math.max(0,f*100))}%"></i></div>`;}
 function renderMastery(){
  const p=activeProfile();if(!p)return;const h=masteryHero,d=masteryData(p,h),tasks=masteryTasks(h),fraction=masteryFraction(p,h);
- document.getElementById('economy-title').textContent='Champion Challenges';
- document.getElementById('economy-body').innerHTML=`<div class="economy-tabs">${HEROES.map((c,i)=>`<button class="economy-tab ${i===h?'selected':''}" data-mastery-hero="${i}">${escapeHtml(c.n)}</button>`).join('')}</div><section class="bb-mastery-head"><h2>${escapeHtml(HEROES[h].n)}</h2><p>Mastery path · ${Math.round(fraction*100)}% · ${d.claimed.length}/5 rewards earned</p>${progressBar(fraction,'Champion mastery')}<p class="economy-note">Permanent, separate progress for each champion. Quick Matches only. All goals track together from now on. Rewards are granted automatically after a completed match. No time limit or stat boosts.</p></section><div class="shop-grid">${tasks.map((t,i)=>{const done=d.claimed.includes(i),value=Math.min(d[t.key],t.target);return `<article class="loot-card ${done?'equipped':''}"><div class="loot-card-top"><b>${i+1}. ${escapeHtml(t.title)}</b><span>${done?'COMPLETE':'IN PROGRESS'}</span></div><p>${t.text}</p><small>${value.toLocaleString()} / ${t.target.toLocaleString()}${i===4?' · Other four challenges also required':''}</small>${progressBar(value/t.target,t.title)}<p class="bb-reward">${t.shinies} Shinies${t.category?` + ${escapeHtml(MASTERY_NAMES[h][t.category==='weaponSkins'?0:1])} ${t.category==='weaponSkins'?'weapon skin':'champion skin'}`:''}</p></article>`;}).join('')}</div><button class="economy-action primary" onclick="openInventory()" style="margin-top:16px">Open Inventory</button>`;
- document.querySelectorAll('[data-mastery-hero]').forEach(b=>b.onclick=()=>{masteryHero=Number(b.dataset.masteryHero);renderMastery();});
+ document.getElementById('economy-title').textContent=HEROES[h].n+' · Challenges';
+ document.getElementById('economy-body').innerHTML=`<section class="bb-mastery-head"><h2>${escapeHtml(HEROES[h].n)}</h2><p>${d.stage}/7 completed · ${Math.round(fraction*100)}% mastery</p>${progressBar(fraction,'Champion mastery')}<p class="economy-note">Finish the active challenge to reveal the next one. Only the unlocked challenge tracks progress, starting with your next Quick Match. Future objectives and rewards stay hidden. No time limit. Rewards are automatic and cosmetic only.</p></section><div class="bb-challenge-list">${tasks.map((t,i)=>{
+ if(i>d.stage)return `<article class="bb-secret" aria-label="Challenge ${i+1}, locked"><span class="bb-secret-number">${i+1}</span><div><b>LOCKED CHALLENGE</b><p>Complete challenge ${i} to reveal.</p></div></article>`;
+ const done=i<d.stage,value=done?t.target:d.progress;
+ return `<article class="loot-card ${done?'equipped':'bb-active-challenge'}"><div class="loot-card-top"><b>${i+1}. ${escapeHtml(t.title)}</b><span>${done?'COMPLETED':'ACTIVE'}</span></div><p>${t.text}</p><small>${value.toLocaleString()} / ${t.target.toLocaleString()}</small>${progressBar(value/t.target,t.title)}<p class="bb-reward">${t.shinies} Shinies${t.category?` + ${escapeHtml(MASTERY_NAMES[h][t.category==='weaponSkins'?0:1])} ${t.category==='weaponSkins'?'weapon skin':'champion skin'}`:''}</p></article>`;
+ }).join('')}</div><button class="economy-action primary" onclick="openInventory()" style="margin-top:16px">Open Inventory</button>`;
 }
-function showMasteryResult(summary){
- document.getElementById('bb-mastery-result')?.remove();if(!summary)return;
- const el=document.createElement('div');el.id='bb-mastery-result';el.className='bb-mastery-head';
- el.innerHTML=`<b>${escapeHtml(HEROES[summary.hero].n)} mastery · ${Math.round(summary.before*100)}% → ${Math.round(summary.after*100)}%</b>${progressBar(summary.after,'Champion mastery')}<small>${summary.rewards.length?summary.rewards.map(escapeHtml).join('<br>'):'Progress saved. Keep working toward your next reward.'}</small>`;
- document.getElementById('result-stats').insertAdjacentElement('afterend',el);
-}
+function showMasteryResult(summary){document.getElementById('bb-mastery-result')?.remove();if(!summary)return;const el=document.createElement('div');el.id='bb-mastery-result';el.className='bb-mastery-head';el.innerHTML=`<b>${escapeHtml(HEROES[summary.hero].n)} mastery · ${Math.round(summary.after*100)}%</b>${progressBar(summary.after,'Champion mastery')}<small>${summary.rewards.length?summary.rewards.map(escapeHtml).join('<br>'):'Active challenge progress saved.'}${summary.rewards.length?`<br>${summary.next<7?'Next challenge unlocked. View it on your champion menu card.':'All seven challenges complete!'}`:''}</small>`;document.getElementById('result-stats').insertAdjacentElement('afterend',el);}
 function addChampionAura(model,item){
- const old=model.getObjectByName('bb-champion-aura');if(old){old.traverse(n=>{n.geometry?.dispose();if(n.material)n.material.dispose();});model.remove(old);}if(!item)return;
- const group=new THREE.Group();group.name='bb-champion-aura';group.userData.bbAura=true;
- const color=new THREE.Color(item.accent);
- const ring=new THREE.Mesh(new THREE.TorusGeometry(23,.65,5,48),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.65,depthWrite:false}));ring.rotation.x=Math.PI/2;ring.position.y=1;group.add(ring);
- const ranks={Common:3,Uncommon:4,Rare:5,Epic:6,Legendary:8},count=ranks[item.rarity]||3;
- for(let i=0;i<count;i++){const mote=new THREE.Mesh(new THREE.OctahedronGeometry(item.rarity==='Legendary'?1.5:1,0),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.65,depthWrite:false}));mote.userData.phase=i/count*Math.PI*2;group.add(mote);}
+ const old=model.getObjectByName('bb-champion-aura');if(old){old.traverse(n=>{n.geometry?.dispose();n.material?.dispose();});model.remove(old);}if(!item)return;
+ const group=new THREE.Group();group.name='bb-champion-aura';group.userData.bbAura=true;group.userData.full=item.rarity==='Epic'||item.rarity==='Legendary';group.userData.legendary=item.rarity==='Legendary';
+ const color=new THREE.Color(item.accent),full=group.userData.full,legendary=group.userData.legendary;
+ const material=(opacity)=>new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending});
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(23,.6,5,48),material(.55));ring.rotation.x=Math.PI/2;ring.position.y=1;group.add(ring);
+ const count=legendary?18:full?10:4;
+ for(let i=0;i<count;i++){const mote=new THREE.Mesh(new THREE.OctahedronGeometry(legendary?1.1:.7,0),material(legendary?.7:full?.4:.55));mote.userData.phase=i/count*Math.PI*2;mote.userData.kind='mote';mote.userData.index=i;group.add(mote);}
+ if(full){
+  // Transparent shell spans head to toe; no lights, no opaque silhouette, no weapon recoloring.
+  const shell=new THREE.Mesh(new THREE.CylinderGeometry(17,22,43,24,1,true),material(legendary?.075:.035));shell.position.y=22;shell.userData.kind='shell';group.add(shell);
+  for(let i=0;i<(legendary?3:2);i++){const band=new THREE.Mesh(new THREE.TorusGeometry(legendary?21:19,legendary?.55:.35,5,48),material(legendary?.36:.17));band.userData.kind='band';band.userData.phase=i*Math.PI*.7;band.rotation.x=Math.PI/2;group.add(band);}
+  if(legendary){const halo=new THREE.Mesh(new THREE.TorusGeometry(13,.7,5,40),material(.6));halo.rotation.x=Math.PI/2;halo.position.y=45;halo.userData.kind='halo';group.add(halo);}
+ }
  model.add(group);animateOneAura(group,0);
 }
-function animateOneAura(group,t){for(let i=1;i<group.children.length;i++){const m=group.children[i],a=m.userData.phase+t*.7;m.position.set(Math.cos(a)*23,4+Math.sin(a*2+t)*2,Math.sin(a)*23);m.rotation.y=t;}}
-function animateChampionAuras(now){for(const e of E){const a=e.mesh?.getObjectByName('bb-champion-aura');if(a)animateOneAura(a,now/1000);}}
+function animateOneAura(group,t){const full=group.userData.full,legendary=group.userData.legendary;for(let i=1;i<group.children.length;i++){const m=group.children[i],phase=m.userData.phase||0,a=phase+t*(legendary?.9:.6);switch(m.userData.kind){case 'mote':{const y=full?3+((m.userData.index*5.3+t*(legendary?8:5))%42):4+Math.sin(a*2+t)*2;m.position.set(Math.cos(a)*(full?19:23),y,Math.sin(a)*(full?19:23));m.rotation.set(t,a,t*.5);break;}case 'band':m.position.y=6+((phase*10+t*8)%34);m.rotation.z=Math.sin(t+phase)*.12;break;case 'shell':m.material.opacity=(legendary?.075:.035)*(1+Math.sin(t*2)*.2);break;case 'halo':m.rotation.z=Math.sin(t)*.08;break;}}}
+function animateChampionAuras(now){const t=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:now/1000;for(const e of E){const a=e.mesh?.getObjectByName('bb-champion-aura');if(a)animateOneAura(a,t);}}
 function crateTone(freq,duration=.04){try{Snd.ensure();if(!Snd.ctx||!Snd.sfxGain)return;const ctx=Snd.ctx,o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.035,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+duration);o.connect(g);g.connect(Snd.sfxGain);o.start();o.stop(ctx.currentTime+duration);o.onended=()=>{o.disconnect();g.disconnect();};}catch(e){}}
 
 // --- ARENA CONSTANTS ---
@@ -1166,21 +1166,21 @@ HEROES[7].rarity="Epic";HEROES[7].isNew=true;
 SKIN_CATEGORIES.find(c=>c.key==="weaponSkins").items.push({id:"jackpot-house-edge",hero:7,name:"House Edge",rarity:"Epic",base:"#211630",accent:"#ffd166",glow:"#a855f7"});
 SKIN_CATEGORIES.find(c=>c.key==="championSkins").items.push({id:"jackpot-high-roller",hero:7,name:"High Roller Jackpot",rarity:"Epic",base:"#29133f",accent:"#ffdc83",glow:"#a855f7"});
 
-// Inventory & Champion Mastery update. Cosmetics only; combat balance is unchanged.
-PATCH_UPDATES.version='BRAWLBOUND v1.3.0';
-PATCH_UPDATES.announcement='Inventory, champion mastery challenges, exclusive skins, and Aura Caches!';
-PATCH_UPDATES.notes.unshift('NEW Inventory: inspect and equip owned cosmetics separately from the shop.','NEW Champion Challenges: five permanent goals per champion; earn 725 Shinies, a weapon skin, and a champion skin. Quick Matches only.','NEW Aura Caches: five aura styles with champion-specific equips.','Improved crate sounds and reveals, skip animation, and reduced-motion support. Drops go to Inventory without auto-equipping.');
+// v1.3.1: Inventory, sequential champion challenges and full-body prestige auras.
 const MASTERY_NAMES=[['Titanfall','Arena Colossus'],['Royal Broadside','Dread Admiral'],['Solar Crescent','Sun Temple Mango'],['Starlight Supper','Celestial Chef'],['Ion Needle','Quantum Quackbot'],['Eclipse Scepter','Eclipse Mycelis'],['Kingsguard Edge','Sovereign Dentley'],['Royal Flush','Casino Sovereign']];
 for(let hero=0;hero<HEROES.length;hero++){
  const colors=[['#30221a','#ffe08a','#ff9d38'],['#122c48','#99edff','#46bfff'],['#3d2037','#ffdc7a','#ff963a'],['#291838','#e8baff','#bd78ff'],['#122c36','#8effdf','#30eacd'],['#291b40','#e9aaff','#b47aff'],['#273248','#fff0ba','#ffd16b'],['#35172e','#ffe09b','#ff68b5']][hero];
  for(const [key,index] of [['weaponSkins',0],['championSkins',1]])SKIN_CATEGORIES.find(c=>c.key===key).items.push({id:`mastery-${key}-${hero}`,hero,name:MASTERY_NAMES[hero][index],rarity:'Legendary',base:colors[0],accent:colors[1],glow:colors[2],masteryOnly:true});
 }
-SKIN_CATEGORIES.push({key:'auras',label:'Champion Auras',cratePrice:300,crateName:'Aura Cache',crateIcon:'✧',items:HEROES.flatMap((h,hero)=>[
+SKIN_CATEGORIES.find(c=>c.key==='weaponSkins').cratePrice=500;
+SKIN_CATEGORIES.find(c=>c.key==='championSkins').cratePrice=600;
+SKIN_CATEGORIES.push({key:'auras',label:'Champion Auras',cratePrice:400,crateName:'Aura Cache',crateIcon:'✧',items:HEROES.flatMap((h,hero)=>[
  ['ember','Ember Halo','Common','#ff834f'],['frost','Frost Orbit','Uncommon','#77dfff'],['jade','Jade Circuit','Rare','#5effb6'],['void','Void Crown','Epic','#c78aff'],['solar','Solar Sovereign','Legendary','#ffe489']
 ].map(([id,name,rarity,color])=>({id:`aura-${id}-${hero}`,hero,name:`${name} — ${h.n}`,rarity,base:'#111522',accent:color,glow:color}))) });
-function normalizeMastery(value){
- const result={};for(let i=0;i<HEROES.length;i++){const v=value?.[i]||{};result[i]={};for(const key of ['matches','damage','kills','seconds'])result[i][key]=Math.max(0,Math.min(1e9,Math.floor(Number(v[key])||0)));result[i].claimed=Array.isArray(v.claimed)?[...new Set(v.claimed.filter(x=>Number.isInteger(x)&&x>=0&&x<5))]:[];}return result;
-}
+PATCH_UPDATES.version='BRAWLBOUND v1.3.1';
+PATCH_UPDATES.announcement='Seven secret champion challenges, Inventory, and full-body Epic & Legendary auras!';
+PATCH_UPDATES.notes.unshift('Champion menu cards now open their own challenge tracks.','Seven sequential challenges per champion. Future objectives stay secret; only the active challenge earns progress.','Epic auras have subtle full-body energy; Legendary auras have stronger full-body effects.','Weapon / Champion / Aura Caches now cost 500 / 600 / 400 Shinies.','Inventory handles inspecting and equipping. Mastery rewards are excluded from crates.');
+function normalizeMastery(value){const r={};for(let i=0;i<HEROES.length;i++){const v=value?.[i];r[i]={version:2,stage:v?.version===2?Math.max(0,Math.min(7,Math.floor(Number(v.stage)||0))):0,progress:v?.version===2?Math.max(0,Math.min(1e9,Math.floor(Number(v.progress)||0))):0};}return r;}
 
 const SHOP_CATEGORIES = [...NAMEPLATE_CATEGORIES, ...SKIN_CATEGORIES];
 const USERNAME_FILTER_TERMS = ["fuck", "shit", "bitch", "bastard", "asshole", "cunt", "dick", "whore", "slut", "faggot", "nigger", "nazi", "retard", "kike", "spic"];
@@ -1405,7 +1405,7 @@ function claimDailyShinies() {
 function accountToolbarHTML() {
   const profile = activeProfile();
   const summary = profile ? `\ud83d\udc64 ${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))} \u00b7 <span class="wallet">\u2728 ${profile.shinies} Shinies</span>` : "Create an account to save your Shinies";
-  return `<div class="account-toolbar"><span id="account-summary">${summary}</span><button class="lobby-btn" onclick="openAccountModal()">Account</button><button class="lobby-btn" onclick="openDailyChallenges()">\ud83d\udcc5 Daily Challenges</button><button class="lobby-btn" onclick="openInventory()">Inventory</button><button class="lobby-btn" onclick="openMastery()">Champion Challenges</button><button class="lobby-btn action-accent" onclick="openShop()">\u2728 Shinies Shop</button></div>`;
+  return `<div class="account-toolbar"><span id="account-summary">${summary}</span><button class="lobby-btn" onclick="openAccountModal()">Account</button><button class="lobby-btn" onclick="openDailyChallenges()">\ud83d\udcc5 Daily Challenges</button><button class="lobby-btn" onclick="openInventory()">Inventory</button><button class="lobby-btn action-accent" onclick="openShop()">\u2728 Shinies Shop</button></div>`;
 }
 
 function renderAccountModal(){
@@ -1529,8 +1529,7 @@ function finishCosmeticCrateSpin(spinId){
  }
  profile.pendingCrate=null;saveAccountBook();activeCrateSpin=null;
  lastCrateReveal={categoryKey:spin.categoryKey,item:spin.item,duplicate,refund};
- if(!duplicate){[523,659,784].forEach((f,i)=>setTimeout(()=>crateTone(f,.15),i*90));}
-
+ if(!duplicate)[523,659,784].forEach((f,i)=>setTimeout(()=>crateTone(f,.15),i*90));
  if(activeProfile()?.id===profile.id){if(duplicate)updateEconomyDisplays();else syncProfileIdentity();}
  Snd.play("pickup");showEconomyToast(duplicate?`Duplicate: ${spin.item.name} \u00b7 +${refund} Shinies refunded`:`${spin.item.rarity} drop: ${spin.item.name}`);
  const modal=document.getElementById("economy-modal");
@@ -1555,15 +1554,9 @@ function startCosmeticCrateSpin(spin) {
 
   if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){finishCosmeticCrateSpin(spin.id);return;}
   let lastCard=-1;
-  function tick(){
-    if(activeCrateSpin!==spin)return;
-    const x=new DOMMatrixReadOnly(getComputedStyle(track).transform).m41;
-    const index=Math.max(0,Math.round((viewport.clientWidth/2-x-56)/120));
-    if(index!==lastCard){lastCard=index;crateTone(470+Math.min(index,40)*5);const marker=viewport.querySelector('.crate-reel-marker');if(marker){marker.classList.remove('bb-tick');void marker.offsetWidth;marker.classList.add('bb-tick');}}
-    spin.tickRaf=requestAnimationFrame(tick);
-  }
+  function tick(){if(activeCrateSpin!==spin)return;const x=new DOMMatrixReadOnly(getComputedStyle(track).transform).m41,index=Math.max(0,Math.round((viewport.clientWidth/2-x-56)/120));if(index!==lastCard){lastCard=index;crateTone(470+Math.min(index,40)*5);const marker=viewport.querySelector('.crate-reel-marker');if(marker){marker.classList.remove('bb-tick');void marker.offsetWidth;marker.classList.add('bb-tick');}}spin.tickRaf=requestAnimationFrame(tick);}
   spin.tickRaf=requestAnimationFrame(tick);
-  spin.timer = setTimeout(() => finishCosmeticCrateSpin(spin.id), 6200);
+  spin.timer=setTimeout(()=>finishCosmeticCrateSpin(spin.id),6200);
 }
 
 function renderShopModal() {
@@ -1582,7 +1575,7 @@ function renderShopModal() {
   const empty = odds.length === 0;
   const oddsHtml = odds.map(tier => `<span class="crate-odds rarity-${tier.key.toLowerCase()}">${tier.key} ${tier.chance.toFixed(tier.chance % 1 ? 1 : 0)}%</span>`).join("");
   const reveal = lastCrateReveal && lastCrateReveal.categoryKey === category.key
-    ? `<div class="crate-reveal bb-reveal-${lastCrateReveal.item.rarity.toLowerCase()}"><div class="reveal-spark">\u2726</div><div><b>${lastCrateReveal.duplicate ? "DUPLICATE" : "NEW UNLOCK"} · ${escapeHtml(lastCrateReveal.item.name)}</b><span class="rarity-${lastCrateReveal.item.rarity.toLowerCase()}">${lastCrateReveal.item.rarity}</span><small>${escapeHtml(cratePreviewText(category, lastCrateReveal.item))}</small></div><div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key, lastCrateReveal.item)}">${escapeHtml(crateRewardPreview(category, profile, lastCrateReveal.item))}</div></div>` : "";
+    ? `<div class="crate-reveal bb-reveal-${lastCrateReveal.item.rarity.toLowerCase()}"><div class="reveal-spark">\u2726</div><div><b>${lastCrateReveal.duplicate?"DUPLICATE":"NEW UNLOCK"} · ${escapeHtml(lastCrateReveal.item.name)}</b><span class="rarity-${lastCrateReveal.item.rarity.toLowerCase()}">${lastCrateReveal.item.rarity}</span><small>${escapeHtml(cratePreviewText(category, lastCrateReveal.item))}</small></div><div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key, lastCrateReveal.item)}">${escapeHtml(crateRewardPreview(category, profile, lastCrateReveal.item))}</div></div>` : "";
   const reel = crateSpinHTML(category, spin);
   const loot = category.items.filter(item=>!item.masteryOnly).map(item => {
     const owned = profile.owned[category.key].includes(item.id);
@@ -3434,7 +3427,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   applyChampionSkin(grp, heroIndex, skinItemFor("championSkins", heroIndex, { equipped: skinSelection }));
   applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, { equipped: skinSelection }), heroIndex);
 
-  addChampionAura(grp, skinItemFor("auras",heroIndex,{equipped:skinSelection}));
+  addChampionAura(grp,skinItemFor("auras",heroIndex,{equipped:skinSelection}));
   applyChampionModelSize(grp,heroIndex);
   scene.add(grp);
   return grp;
@@ -5190,7 +5183,7 @@ function showResultScreen(isVictory, winnerId = null, stats = []) {
  clearProjectileHitNotices();
  if(state==="result")return;
  progressDaily("matches");if(isVictory)progressDaily("wins");
- const masterySummary=completeMasteryMatch(stats);
+ const masterySummary=completeMasteryMatch(stats,isVictory);
   const winShinies = isVictory && pl && matchIsQuickMatch ? awardShinies(SHINY_REWARDS.win, "Quick Match victory", false) : 0;
   state = "result";
   matchOver = true;
@@ -5247,7 +5240,7 @@ function showResultScreen(isVictory, winnerId = null, stats = []) {
         }).join("") + `</div>`
       : "";
   }
-  showMasteryResult(masterySummary);
+ showMasteryResult(masterySummary);
 
 }
 
@@ -5298,7 +5291,7 @@ window.returnToMenu = function(message = "Select a champion to battle in the are
 let roundVote=null,roundVoteSerial=0,pendingRoundReady=false,lastRoundStatePacket=null,lastRoundStartPacket=null,pendingStartGamePacket=null,lastStartedRoundId=null;
 const REMATCH_COUNTDOWN_MS=10000,MAP_VOTE_DURATION_MS=7000;
 const HOST_AWAY_TIMEOUT_MS=20000;
-const ARENA_PROTOCOL_VERSION=13;
+const ARENA_PROTOCOL_VERSION=14;
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,m)=>total+(votes[m.id]===i?1:0),0)),max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===MAPS.length?Math.floor(random()*MAPS.length):winner;
 }
@@ -6858,6 +6851,7 @@ function menu(msg) {
               <div class="hc-check">${i === p1HeroChoice ? '\u2713' : ''}</div>
               <div class="hc-emoji">${c.e}</div>
               <div class="hc-name">${c.n}</div>
+              <button type="button" class="bb-card-challenges" onclick="event.preventDefault();event.stopPropagation();openMastery(${i})">Champion Challenges</button>
               ${championBadgeHTML(c)}
               ${i===7&&!ownsChampion(7)?`<div class="jackpot-unlock-price" style="color:${(activeProfile()?.shinies||0)>=1000?'#45d988':'#ff6262'}">LOCKED - 1,000 Shinies</div>`:""}
               <div class="hc-role" style="color:${c.roleCol};">${c.role}</div>
