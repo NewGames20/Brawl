@@ -2067,7 +2067,7 @@ function setArenaLayout(seed){
    }
   }else{
    const cover=[];
-   for(let tries=0;tries<3000&&cover.length<6;tries++){
+   for(let tries=0;tries<3000&&cover.length<7;tries++){
     const wide=random()>.5,w=wide?84:52,d=wide?44:76;
     const r=[45+random()*(W-90-w),45+random()*(H-90-d),w,d];
     if(!valid(r,cover,66)||def.belts.some(b=>overlap(r,b,18)))continue;
@@ -7980,6 +7980,10 @@ const VERSION_UPDATES = {
 
   game: [
     "NEW CHAMPION: Jackpot! Permanently unlock him for 1,000 Shinies.",
+
+    "BBQ MAP UPDATE: Trap placements are now randomized, making each match less predictable.",
+
+    "KITCHEN MAP UPDATE: Countertop layouts are now randomized, creating different routes and cover each match.",
 
     "NEW JACKPOT SKINS: House Edge weapon skin and High Roller Jackpot outfit.",
 
