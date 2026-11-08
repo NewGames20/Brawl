@@ -695,6 +695,9 @@ html, body {
 #champ-detail .cd-ab-body { flex:1 1 0; min-width:0; }
 #champ-detail .cd-ab-body,#champ-detail .cd-weapon,#champ-detail .cd-summary { white-space:normal; overflow-wrap:anywhere; }
 #champ-detail .key-badge { flex-shrink:0; } #champ-detail .cd-hero { flex-wrap:wrap; }
+.hero-card[data-i="7"] .hc-new { background:#ffdb63; color:#382700; border-color:#ffeaa1; }
+.jackpot-unlock-price { font-size:10px;font-weight:900;color:#ffdb63;margin-top:5px; }
+.bb-text-nametag { color:#fff;font-weight:800; }
 @media(max-width:860px) { .detail-col { width:100%; } }
 </style></head>
 <body>
@@ -973,7 +976,7 @@ const emoteWheel = document.getElementById("emote-wheel");
 
 let p1HeroChoice = 0;
 const RANDOM_HERO = -1; // "Random" pick: resolved only when the match starts
-function resolveHero(c) { return c === RANDOM_HERO ? Math.floor(Math.random() * HEROES.length) : c; }
+function resolveHero(c) { if(c!==RANDOM_HERO)return c;const pool=HEROES.map((_,i)=>i).filter(i=>ownsChampion(i));return pool[Math.floor(Math.random()*pool.length)]; }
 let controlScheme = "wasd"; // 'wasd' or 'arrows'
 let screenShake = 0;
 let damageVignetteT = 0;
@@ -1021,7 +1024,7 @@ window.setAIDifficulty=function(value){if(!AI_DIFFICULTIES[value])return;aiDiffi
 
 const ACCOUNT_STORAGE_KEY = "bb_account_single_v2";
 
-const COSMETIC_HERO_COUNT = 7;
+const COSMETIC_HERO_COUNT = HEROES.length;
 
 const MENU_ANNOUNCEMENT = PATCH_UPDATES.announcement;
 const NAMEPLATE_CATEGORIES = [
@@ -1089,6 +1092,9 @@ NAMEPLATE_CATEGORIES.push({key:"nameFonts",label:"Nametag Fonts",cratePrice:120,
  {id:"font-copperplate",name:"Imperial Inscription",rarity:"Legendary",family:"'Cinzel',Copperplate,Palatino,serif",weight:700}
 ]});
 
+HEROES[7].rarity="Epic"; HEROES[7].isNew=true;
+SKIN_CATEGORIES.find(c=>c.key==="weaponSkins").items.push({id:"jackpot-house-edge",hero:7,name:"House Edge",rarity:"Epic",base:"#211630",accent:"#ffd166",glow:"#a855f7"});
+SKIN_CATEGORIES.find(c=>c.key==="championSkins").items.push({id:"jackpot-high-roller",hero:7,name:"High Roller Jackpot",rarity:"Epic",base:"#29133f",accent:"#ffdc83",glow:"#a855f7"});
 const SHOP_CATEGORIES = [...NAMEPLATE_CATEGORIES, ...SKIN_CATEGORIES];
 const USERNAME_FILTER_TERMS = ["fuck", "shit", "bitch", "bastard", "asshole", "cunt", "dick", "whore", "slut", "faggot", "nigger", "nazi", "retard", "kike", "spic"];
 const DEFAULT_COSMETIC_SELECTION = { nameColors: "default", borderColors: "default", backgrounds: "default", nameFonts: "default" };
@@ -1167,7 +1173,7 @@ function normalizeStoredProfile(profile) {
   for(const category of NAMEPLATE_CATEGORIES) if(!owned[category.key].includes(equipped[category.key])) equipped[category.key] = "default";
   const balance = Math.max(0, Math.floor(Number(profile && profile.shinies) || 0));
   return {
-    id, username, shinies: balance, owned, equipped,
+    id, username, shinies: balance, owned, equipped, unlockedChampions: Array.isArray(profile?.unlockedChampions)?profile.unlockedChampions.filter(ci=>ci===7):[],
     pendingCrate: normalizePendingCrate(profile&&profile.pendingCrate),
     dailyChallenges: normalizeDailyChallenges(profile&&profile.dailyChallenges),
     lastDailyDate: /^\d{4}-\d{2}-\d{2}$/.test(profile && profile.lastDailyDate || "") ? profile.lastDailyDate : ""
@@ -1192,8 +1198,8 @@ function loadAccountBook() {
 // One-time migration: retire the old multi-profile account book.
 const SINGLE_RESET_KEY="bb_single_account_reset_20261031_v1";
 if(Store.get(SINGLE_RESET_KEY,"")!=="done"){
- Store.set("bb_accounts_v1",JSON.stringify({activeId:null,profiles:[]}));
- Store.set(ACCOUNT_STORAGE_KEY,JSON.stringify({activeId:null,profiles:[]}));
+
+ if(!Store.get(ACCOUNT_STORAGE_KEY,"")) Store.set(ACCOUNT_STORAGE_KEY,Store.get("bb_accounts_v1",JSON.stringify({activeId:null,profiles:[]})));
  Store.set(SINGLE_RESET_KEY,"done");
 }
 let accountBook = loadAccountBook();
@@ -1202,7 +1208,7 @@ const uiNametagCache=new Map();
 function usernameTagHTML(username,selection){
  const name=String(username||"Player"),ids=sanitizeCosmeticSelection(selection),key=JSON.stringify([name,ids]);
  let image=uiNametagCache.get(key);
- if(!image){image=drawNameplateCanvas(name,getNameplateStyle(ids)).toDataURL("image/png");if(uiNametagCache.size>=160)uiNametagCache.delete(uiNametagCache.keys().next().value);uiNametagCache.set(key,image);}
+ if(!image){try{image=drawNameplateCanvas(name,getNameplateStyle(ids)).toDataURL("image/png");}catch(error){console.warn("Nametag fallback",error);return `<span class="bb-text-nametag">${escapeHtml(name)}</span>`;}if(uiNametagCache.size>=160)uiNametagCache.delete(uiNametagCache.keys().next().value);uiNametagCache.set(key,image);}
  return `<img class="bb-ui-nametag" src="${image}" alt="${escapeHtml(name)}" title="${escapeHtml(name)}">`;
 }
 function entityUsernameTag(entity){
@@ -1334,22 +1340,20 @@ function showAccountError(message) {
 }
 
 function activateAccount(profile) {
+ if(!profile)return false;
  if(accountBook.profiles.length&&accountBook.profiles[0].id!==profile.id)return false;
-  if(sameLobbyName(profile.username, myNetId)) { showAccountError("That name is already used by someone in this lobby."); return false; }
-  accountBook.activeId = profile.id;
-  lastCrateReveal = null;
-  saveAccountBook();
-  economyModalRequired = false;
-  claimDailyShinies();
-  syncProfileIdentity();
-  closeEconomyModal(true);
-  updateEconomyDisplays();
-  if(document.getElementById("economy-modal").classList.contains("show") && economyModalView === "account") renderAccountModal();
-  return true;
+ if(sameLobbyName(profile.username,myNetId)){showAccountError("That name is already used in this lobby.");return false;}
+ accountBook.activeId=profile.id;lastCrateReveal=null;saveAccountBook();economyModalRequired=false;
+ closeEconomyModal(true);
+ for(const update of [claimDailyShinies,syncProfileIdentity,updateEconomyDisplays]){
+  try{update();}catch(error){console.error("Account display update failed",error);}
+ }
+ try{if(state==="menu")menu("Account ready. Choose your champion!");}catch(error){console.error(error);}
+ return true;
 }
 
 function createOrSwitchAccount() {
- const saved=loadAccountBook();if(saved.profiles.length){accountBook=saved;renderAccountModal();showAccountError("Only one account is allowed. Rename your current account instead.");return;}
+ const saved=loadAccountBook();if(saved.profiles.length){accountBook=saved;activateAccount(accountBook.profiles[0]);return;}
   const input = document.getElementById("account-username-input");
   const result = validateUsername(input ? input.value : "");
   if(!result.ok) { showAccountError(result.error); return; }
@@ -1359,7 +1363,7 @@ function createOrSwitchAccount() {
   const owned = {};
   for(const category of SHOP_CATEGORIES) owned[category.key] = ["default"];
   const id = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : ("acct_" + Math.random().toString(36).slice(2, 12));
-  const profile = { id, username: result.value, shinies: 0, owned, equipped: { ...DEFAULT_COSMETIC_SELECTION, weaponSkins: {}, championSkins: {} }, lastDailyDate: "" };
+  const profile = normalizeStoredProfile({ id, username: result.value, shinies: 0, owned, equipped: { ...DEFAULT_COSMETIC_SELECTION, weaponSkins: {}, championSkins: {} }, lastDailyDate: "", unlockedChampions:[] });
   accountBook.profiles.push(profile);
   activateAccount(profile);
 }
@@ -1550,8 +1554,18 @@ function openShop() {
   renderEconomyModal();
 }
 
+function ownsChampion(ci,profile=activeProfile()){return ci!==7||!!profile?.unlockedChampions?.includes(7);}
+function unlockJackpot(){
+ const profile=activeProfile();if(!profile){openAccountModal(true);return false;}
+ if(ownsChampion(7,profile))return true;
+ if(profile.shinies<1000){showEconomyToast(`Jackpot costs 1,000 Shinies. You need ${1000-profile.shinies} more.`);return false;}
+ if(!window.confirm("Permanently unlock Jackpot for 1,000 Shinies?"))return false;
+ if(ownsChampion(7,profile)||profile.shinies<1000)return ownsChampion(7,profile);
+ profile.shinies-=1000;profile.unlockedChampions=[7];saveAccountBook();updateEconomyDisplays();showEconomyToast("Jackpot permanently unlocked!");return true;
+}
+window.unlockJackpot=unlockJackpot;
 function requireLocalAccount() {
-  if(activeProfile()) return true;
+  if(activeProfile()) { if(p1HeroChoice===7&&!ownsChampion(7)){showEconomyToast("Unlock Jackpot for 1,000 Shinies first.");return false;} return true; }
   openAccountModal(true);
   return false;
 }
@@ -2315,6 +2329,7 @@ window.addEventListener("mousemove", e => {
 });
 
 addEventListener("keydown", e => {
+  if(e.target && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(e.target.tagName))) return;
   K[e.code] = 1;
   if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Slash"].includes(e.code)) e.preventDefault();
 
@@ -5149,6 +5164,7 @@ function acceptRoundChoice(id,data){
  renderRoundVote();broadcastRoundVote();return true;
 }
 function sendRoundChoice(action,value){
+ if(action==="hero"&&Number(value)===7&&!ownsChampion(7)&&!unlockJackpot())return;
  if(!roundVote){
   if(action!=="rematch")return;
   if(isMultiplayer&&!isLobbyLeader){pendingRoundReady=true;const button=document.getElementById("rematch-button");if(button){button.disabled=true;button.textContent="\u2713 REMATCH READY";}const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;c.send({type:"ROUND_CHOICE",id:myNetId,seq:outgoingSeq,action:"request",rematch:true});}}
@@ -5876,7 +5892,7 @@ function wireHostPeer() {
         } catch(e) {}
         setTimeout(() => { try { conn.close(); } catch(e) {} }, 300);
       });
-      setTimeout(() => { try { conn.close(); } catch(e) {} }, 2500);
+      setTimeout(() => { try { conn.close(); } catch(e) {} }, 5000);
       return;
     }
     if(roster.length >= 6) {
@@ -6038,7 +6054,7 @@ function queryRoomStatus(roomId) {
     let conn = null;
     try { conn = peer.connect(roomId, { reliable: true, metadata: { qmQuery: true } }); } catch(e) {}
     if(!conn) { finish(null); return; }
-    const timer = setTimeout(() => { try { conn.close(); } catch(e) {} finish(null); }, 2200);
+    const timer = setTimeout(() => { try { conn.close(); } catch(e) {} finish(null); }, 3500);
     conn.on("open", () => { try { conn.send({ type: "ROOM_QUERY" }); } catch(e) {} });
     conn.on("data", d => {
       if(d && d.type === "ROOM_INFO") {
@@ -6089,7 +6105,7 @@ function handleQuickMatchPeerError(err) {
 // The broker's listing server-error DISCONNECTS our peer, and a disconnected peer's
 // connect() returns undefined \u2014 so rebuild a fresh peer before joining through it
 function ensureLivePeer(then) {
-  if(peer && !peer.destroyed && !peer.disconnected) { then(); return; }
+  if(peer && peer.open && !peer.destroyed && !peer.disconnected) { then(); return; }
   try { if(peer) peer.destroy(); } catch(e) {}
   myNetId = "brawlbound-client-" + Math.random().toString(36).substring(2, 8);
   const p = new Peer(myNetId); // captured identity: callbacks only ever touch this peer
@@ -6165,74 +6181,46 @@ window.quickMatch = function() {
   peer.on("error", err => { if(peer === searchPeer && searchGen === qmGen) handleQuickMatchPeerError(err); });
 
   peer.on("open", () => {
-    if(searchGen !== qmGen || peer !== searchPeer) return; // stale \u2014 invalidated while opening
-    const gen = searchGen;
-    // 1) Try listing rooms through the broker (works when the broker allows it)
-    try {
-      peer.listAllPeers(async allPeers => {
-        if(gen !== qmGen) return; // search was invalidated (restart / recovery)
-        const rooms = (allPeers || []).filter(id => typeof id === "string" && id.startsWith("brawlbound-room-"));
-        if(rooms.length > 0) {
-          // Ask every room how full it is, then join the one with the most open seats.
-          // A lobby that's mid-match still counts \u2014 the newcomer spectates until it ends.
-          qmQuerying = true;
-          const statuses = await Promise.all(rooms.map(async roomId => {
-            const info = await queryRoomStatus(roomId);
-            return info ? { roomId, players: info.players, capacity: info.capacity || 6, quickMatch: info.quickMatch === true } : null;
-          }));
-          qmQuerying = false;
-          if(gen !== qmGen) return; // search was invalidated while probing
-          const openRooms = statuses
-            .filter(s => s && s.quickMatch && s.players < s.capacity)
-            .sort((a, b) => b.players - a.players);
-          if(openRooms.length > 0) {
-            quickMatchRooms = openRooms.map(s => s.roomId);
-            tryNextQuickMatchRoom();
-          } else {
-            // No discoverable Quick Match room is open \u2014 use rendezvous codes
-            startQuickMatchRendezvous();
-          }
-        } else {
-          // No rooms listed (or listing unsupported) \u2014 use quick-match rendezvous codes
-          startQuickMatchRendezvous();
-        }
-      });
-    } catch(e) {
-      startQuickMatchRendezvous();
-    }
+    if(searchGen!==qmGen||peer!==searchPeer)return;
+    startQuickMatchRendezvous();
   });
 };
 
-function startQuickMatchRendezvous() {
-  if(qmRendezvousStarted) return;
-  qmRendezvousStarted = true;
-  // Probe the rendezvous codes first: if a host is already waiting on one, join the
-  // fullest non-full room. Only when no open room answers do we claim a code and host.
-  const gen = qmGen; // captured BEFORE waiting \u2014 a recovery/restart must not be adopted
-  ensureLivePeer(() => {
-    if(gen !== qmGen) return; // invalidated while waiting for a live peer
-    qmQuerying = true;
-    Promise.all(QM_CODES.map(async code => {
-      const info = await queryRoomStatus("brawlbound-room-" + code);
-      return info ? { code, players: info.players, capacity: info.capacity || 6, quickMatch: info.quickMatch === true } : null;
-    })).then(statuses => {
-      if(gen !== qmGen) return; // search was invalidated while probing
-      qmQuerying = false;
-      const open = statuses
-        .filter(s => s && s.quickMatch && s.players < s.capacity)
-        .sort((a, b) => b.players - a.players);
-      if(open.length > 0) {
-        quickMatchRooms = open.map(s => "brawlbound-room-" + s.code);
-        tryNextQuickMatchRoom();
-      } else {
-        // No reachable open rendezvous room \u2014 claim a code and become the host
-        quickMatchRendezvous(QM_CODES.slice());
-      }
-    }).catch(() => {
-      qmQuerying = false;
-      quickMatchRendezvous(QM_CODES.slice());
-    });
-  });
+function rankQuickRooms(statuses){
+ return statuses.filter(info=>info&&info.quickMatch===true&&Number.isFinite(info.players)&&info.players>=1&&info.players<(info.capacity||6))
+ .sort((a,b)=>(b.players-a.players)||((a.phase==="waiting"?0:1)-(b.phase==="waiting"?0:1))||a.code.localeCompare(b.code));
+}
+async function scanQuickRooms(gen){
+ const latest=new Map();
+ for(let pass=0;pass<2;pass++){
+  const results=await Promise.all(QM_CODES.map(async code=>{
+   const info=await queryRoomStatus("brawlbound-room-"+code);
+   return info?{...info,code}:null;
+  }));
+  if(gen!==qmGen)return [];
+  for(const info of results)if(info)latest.set(info.code,info);
+  if(pass===0)await new Promise(resolve=>setTimeout(resolve,200));
+ }
+ return rankQuickRooms([...latest.values()]);
+}
+function startQuickMatchRendezvous(){
+ if(qmRendezvousStarted)return;
+ qmRendezvousStarted=true;
+ const gen=qmGen;
+ ensureLivePeer(async()=>{
+  if(gen!==qmGen)return;
+  qmQuerying=true;
+  try{
+   const open=await scanQuickRooms(gen);
+   if(gen!==qmGen)return;
+   qmQuerying=false;
+   if(open.length){quickMatchRooms=open.map(info=>"brawlbound-room-"+info.code);tryNextQuickMatchRoom();}
+   else quickMatchRendezvous(QM_CODES.slice());
+  }catch(error){
+   if(gen!==qmGen)return;
+   qmQuerying=false;quickMatchRendezvous(QM_CODES.slice());
+  }
+ });
 }
 
 // 2) Rendezvous: try to CLAIM a quick-match room code. A taken code means a host is
@@ -6291,12 +6279,18 @@ function quickMatchRendezvous(codes) {
     try { claim.destroy(); } catch(e) {}
     if(gen !== qmGen) return; // search was invalidated \u2014 do not cascade
     if(err && err.type === "unavailable-id") {
-      queryRoomStatus(roomId).then(info => {
-        if(gen !== qmGen) return;
-        if(info && info.quickMatch === true && info.players < (info.capacity || 6)) joinQuickRoom(roomId, codes);
-        else quickMatchRendezvous(codes);
-      }).catch(() => {
-        if(gen === qmGen) quickMatchRendezvous(codes);
+      qmQuerying=true;
+      ensureLivePeer(async()=>{
+        try{
+          const open=await scanQuickRooms(gen);
+          if(gen!==qmGen)return;
+          qmQuerying=false;
+          const candidates=open.filter(info=>!qmTriedRooms.has("brawlbound-room-"+info.code)||info.code===code);
+          if(candidates.length){
+            for(const info of candidates)qmTriedRooms.delete("brawlbound-room-"+info.code);
+            quickMatchRooms=candidates.map(info=>"brawlbound-room-"+info.code);tryNextQuickMatchRoom();
+          }else quickMatchRendezvous(codes);
+        }catch(error){if(gen===qmGen){qmQuerying=false;quickMatchRendezvous(codes);}}
       });
     } else {
       // Broker hiccup on this code \u2014 try the next one
@@ -6400,7 +6394,9 @@ setInterval(() => {
     if(remaining !== qmLastShown) {
       qmLastShown = remaining;
       qmClientCountdown = remaining;
-      refreshLobbyMenu();
+      const countdown=ov.querySelector("#qm-live-countdown");
+      if(countdown)countdown.textContent=`Match starts in ${remaining}s`;
+      else refreshLobbyMenu();
     }
     outgoingSeq++;
     broadcastToPeers({ type: "QM_COUNTDOWN", remaining, seq: outgoingSeq });
@@ -6413,7 +6409,7 @@ setInterval(() => {
 
 function refreshLobbyMenu() {
   const qmLine = qmClientCountdown !== null
-    ? ` <span style="color:#ffd000;">\u23f3 Match starts in ${qmClientCountdown}s</span>`
+    ? ` <span id="qm-live-countdown" style="color:#ffd000;">Match starts in ${qmClientCountdown}s</span>`
     : "";
   menu(`Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode || "..."}</span> ] - (${roster.length}/6 Players) ${isLobbyLeader ? '\ud83d\udc51 (Host)' : ''}${qmLine}`);
 }
@@ -6639,7 +6635,7 @@ function controlsHTML() {
 
 function championBadgeHTML(champion,detail=false){
  const base=detail?"cd-rarity":"hc-rarity";
- if(champion.isNew)return `<span class="${base} ${detail?"cd-new":"hc-new"}">NEW!</span>`;
+ if(champion.isNew)return `<span class="${base} ${detail?"cd-new":"hc-new"}">NEW!</span>${champion.rarity?` <span class="${base}">${escapeHtml(champion.rarity)}</span>`:""}`;
  return champion.rarity?`<span class="${base}">${escapeHtml(champion.rarity)}${detail?" CHAMPION":""}</span>`:"";
 }
 
@@ -6738,6 +6734,7 @@ function menu(msg) {
               <div class="hc-emoji">${c.e}</div>
               <div class="hc-name">${c.n}</div>
               ${championBadgeHTML(c)}
+              ${i===7&&!ownsChampion(7)?`<div class="jackpot-unlock-price">LOCKED \u00b7 1,000 Shinies</div>`:""}
               <div class="hc-role" style="color:${c.roleCol};">${c.role}</div>
               <div class="hc-stats"><span>\u2764 ${c.hp}</span><span>\u26a1 ${c.sp}</span></div>
             </div>
@@ -6784,6 +6781,7 @@ function menu(msg) {
   }
   ov.querySelectorAll(".hero-card").forEach(b => {
     b.onclick = () => {
+      if(+b.dataset.i===7&&!ownsChampion(7)&&!unlockJackpot())return;
       p1HeroChoice=+b.dataset.i;
       if(roundVote)sendRoundChoice("hero",p1HeroChoice);
       ov.querySelectorAll(".hero-card").forEach(card => {
