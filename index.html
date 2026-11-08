@@ -687,18 +687,18 @@ html, body {
 .hero-card[data-new="true"]{border-color:#ffd75c77}
 </style>
 <style id="jackpot-menu-layout-fix">
-#ov { overflow-x:hidden; } #ov > * { flex-shrink:0; }
-.menu-cols,.detail-col,.champ-detail { min-width:0; }
-.detail-col { width:316px; max-width:100%; }
-#champ-detail { display:flex; flex-flow:column nowrap; width:100%; }
-#champ-detail > * { min-width:0; max-width:100%; flex-shrink:0; }
-#champ-detail .cd-ab-body { flex:1 1 0; min-width:0; }
-#champ-detail .cd-ab-body,#champ-detail .cd-weapon,#champ-detail .cd-summary { white-space:normal; overflow-wrap:anywhere; }
-#champ-detail .key-badge { flex-shrink:0; } #champ-detail .cd-hero { flex-wrap:wrap; }
-.hero-card[data-i="7"] .hc-new { background:#ffdb63; color:#382700; border-color:#ffeaa1; }
-.jackpot-unlock-price { font-size:10px;font-weight:900;color:#ffdb63;margin-top:5px; }
-.bb-text-nametag { color:#fff;font-weight:800; }
-@media(max-width:860px) { .detail-col { width:100%; } }
+#ov{overflow-x:hidden}#ov>*{flex-shrink:0}
+.menu-cols,.detail-col,.champ-detail{min-width:0}.detail-col{width:316px;max-width:100%}
+#champ-detail{display:flex;flex-flow:column nowrap;width:100%}#champ-detail>*{min-width:0;max-width:100%;flex-shrink:0}
+#champ-detail .cd-ab-body{flex:1 1 0;min-width:0}
+#champ-detail .cd-ab-body,#champ-detail .cd-weapon,#champ-detail .cd-summary{white-space:normal;overflow-wrap:anywhere}
+#champ-detail .key-badge{flex-shrink:0}#champ-detail .cd-hero{flex-wrap:wrap}
+.hero-card[data-i="7"][data-new="true"]{border:1px solid #ffd75c;box-shadow:0 0 8px #ffd75c22}
+.hero-card[data-i="7"] .hc-new{background:#ffdb63;color:#382700;border-color:#ffeaa1}
+.jackpot-unlock-price{font-size:10px;font-weight:900;color:#ff6262;margin-top:5px}
+.jackpot-unlock-price.affordable{color:#45d988}.jackpot-unlock-price.unaffordable{color:#ff6262}
+.bb-text-nametag{color:#fff;font-weight:800}
+@media(max-width:860px){.detail-col{width:100%}}
 </style></head>
 <body>
 <div id="wrap">
@@ -1092,7 +1092,7 @@ NAMEPLATE_CATEGORIES.push({key:"nameFonts",label:"Nametag Fonts",cratePrice:120,
  {id:"font-copperplate",name:"Imperial Inscription",rarity:"Legendary",family:"'Cinzel',Copperplate,Palatino,serif",weight:700}
 ]});
 
-HEROES[7].rarity="Epic"; HEROES[7].isNew=true;
+HEROES[7].rarity="Epic";HEROES[7].isNew=true;
 SKIN_CATEGORIES.find(c=>c.key==="weaponSkins").items.push({id:"jackpot-house-edge",hero:7,name:"House Edge",rarity:"Epic",base:"#211630",accent:"#ffd166",glow:"#a855f7"});
 SKIN_CATEGORIES.find(c=>c.key==="championSkins").items.push({id:"jackpot-high-roller",hero:7,name:"High Roller Jackpot",rarity:"Epic",base:"#29133f",accent:"#ffdc83",glow:"#a855f7"});
 const SHOP_CATEGORIES = [...NAMEPLATE_CATEGORIES, ...SKIN_CATEGORIES];
@@ -1281,6 +1281,7 @@ function showEconomyToast(message) {
 }
 
 function updateEconomyDisplays() {
+  refreshJackpotUnlockLabel();
   const profile = activeProfile();
   const summary = document.getElementById("account-summary");
   if(summary)setNametagContent(summary,profile?`${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))} \u00b7 \u2728 ${profile.shinies} Shinies`:"Create a local account to save Shinies and cosmetics");
@@ -1339,15 +1340,12 @@ function showAccountError(message) {
   if(el) el.textContent = message || "";
 }
 
-function activateAccount(profile) {
+function activateAccount(profile){
  if(!profile)return false;
  if(accountBook.profiles.length&&accountBook.profiles[0].id!==profile.id)return false;
  if(sameLobbyName(profile.username,myNetId)){showAccountError("That name is already used in this lobby.");return false;}
- accountBook.activeId=profile.id;lastCrateReveal=null;saveAccountBook();economyModalRequired=false;
- closeEconomyModal(true);
- for(const update of [claimDailyShinies,syncProfileIdentity,updateEconomyDisplays]){
-  try{update();}catch(error){console.error("Account display update failed",error);}
- }
+ accountBook.activeId=profile.id;lastCrateReveal=null;saveAccountBook();economyModalRequired=false;closeEconomyModal(true);
+ for(const update of [claimDailyShinies,syncProfileIdentity,updateEconomyDisplays]){try{update();}catch(error){console.error("Account display update failed",error);}}
  try{if(state==="menu")menu("Account ready. Choose your champion!");}catch(error){console.error(error);}
  return true;
 }
@@ -1564,6 +1562,15 @@ function unlockJackpot(){
  profile.shinies-=1000;profile.unlockedChampions=[7];saveAccountBook();updateEconomyDisplays();showEconomyToast("Jackpot permanently unlocked!");return true;
 }
 window.unlockJackpot=unlockJackpot;
+function refreshJackpotUnlockLabel(){
+ const canAfford=!!activeProfile()&&activeProfile().shinies>=1000;
+ document.querySelectorAll('.jackpot-unlock-price').forEach(label=>{
+  label.style.color=canAfford?'#45d988':'#ff6262';
+  label.classList.toggle('affordable',canAfford);
+  label.classList.toggle('unaffordable',!canAfford);
+  label.hidden=ownsChampion(7);
+ });
+}
 function requireLocalAccount() {
   if(activeProfile()) { if(p1HeroChoice===7&&!ownsChampion(7)){showEconomyToast("Unlock Jackpot for 1,000 Shinies first.");return false;} return true; }
   openAccountModal(true);
@@ -6180,23 +6187,14 @@ window.quickMatch = function() {
   peer.on("connection", conn => setupConnectionEvents(conn));
   peer.on("error", err => { if(peer === searchPeer && searchGen === qmGen) handleQuickMatchPeerError(err); });
 
-  peer.on("open", () => {
-    if(searchGen!==qmGen||peer!==searchPeer)return;
-    startQuickMatchRendezvous();
-  });
+  peer.on("open",()=>{if(searchGen!==qmGen||peer!==searchPeer)return;startQuickMatchRendezvous();});
 };
 
-function rankQuickRooms(statuses){
- return statuses.filter(info=>info&&info.quickMatch===true&&Number.isFinite(info.players)&&info.players>=1&&info.players<(info.capacity||6))
- .sort((a,b)=>(b.players-a.players)||((a.phase==="waiting"?0:1)-(b.phase==="waiting"?0:1))||a.code.localeCompare(b.code));
-}
+function rankQuickRooms(statuses){return statuses.filter(info=>info&&info.quickMatch===true&&Number.isFinite(info.players)&&info.players>=1&&info.players<(info.capacity||6)).sort((a,b)=>(b.players-a.players)||((a.phase==="waiting"?0:1)-(b.phase==="waiting"?0:1))||a.code.localeCompare(b.code));}
 async function scanQuickRooms(gen){
  const latest=new Map();
  for(let pass=0;pass<2;pass++){
-  const results=await Promise.all(QM_CODES.map(async code=>{
-   const info=await queryRoomStatus("brawlbound-room-"+code);
-   return info?{...info,code}:null;
-  }));
+  const results=await Promise.all(QM_CODES.map(async code=>{const info=await queryRoomStatus("brawlbound-room-"+code);return info?{...info,code}:null;}));
   if(gen!==qmGen)return [];
   for(const info of results)if(info)latest.set(info.code,info);
   if(pass===0)await new Promise(resolve=>setTimeout(resolve,200));
@@ -6204,22 +6202,12 @@ async function scanQuickRooms(gen){
  return rankQuickRooms([...latest.values()]);
 }
 function startQuickMatchRendezvous(){
- if(qmRendezvousStarted)return;
- qmRendezvousStarted=true;
- const gen=qmGen;
+ if(qmRendezvousStarted)return;qmRendezvousStarted=true;const gen=qmGen;
  ensureLivePeer(async()=>{
-  if(gen!==qmGen)return;
-  qmQuerying=true;
-  try{
-   const open=await scanQuickRooms(gen);
-   if(gen!==qmGen)return;
-   qmQuerying=false;
-   if(open.length){quickMatchRooms=open.map(info=>"brawlbound-room-"+info.code);tryNextQuickMatchRoom();}
-   else quickMatchRendezvous(QM_CODES.slice());
-  }catch(error){
-   if(gen!==qmGen)return;
-   qmQuerying=false;quickMatchRendezvous(QM_CODES.slice());
-  }
+  if(gen!==qmGen)return;qmQuerying=true;
+  try{const open=await scanQuickRooms(gen);if(gen!==qmGen)return;qmQuerying=false;
+   if(open.length){quickMatchRooms=open.map(info=>"brawlbound-room-"+info.code);tryNextQuickMatchRoom();}else quickMatchRendezvous(QM_CODES.slice());
+  }catch(error){if(gen!==qmGen)return;qmQuerying=false;quickMatchRendezvous(QM_CODES.slice());}
  });
 }
 
@@ -6281,16 +6269,10 @@ function quickMatchRendezvous(codes) {
     if(err && err.type === "unavailable-id") {
       qmQuerying=true;
       ensureLivePeer(async()=>{
-        try{
-          const open=await scanQuickRooms(gen);
-          if(gen!==qmGen)return;
-          qmQuerying=false;
-          const candidates=open.filter(info=>!qmTriedRooms.has("brawlbound-room-"+info.code)||info.code===code);
-          if(candidates.length){
-            for(const info of candidates)qmTriedRooms.delete("brawlbound-room-"+info.code);
-            quickMatchRooms=candidates.map(info=>"brawlbound-room-"+info.code);tryNextQuickMatchRoom();
-          }else quickMatchRendezvous(codes);
-        }catch(error){if(gen===qmGen){qmQuerying=false;quickMatchRendezvous(codes);}}
+       try{const open=await scanQuickRooms(gen);if(gen!==qmGen)return;qmQuerying=false;
+        const candidates=open.filter(info=>!qmTriedRooms.has("brawlbound-room-"+info.code)||info.code===code);
+        if(candidates.length){for(const info of candidates)qmTriedRooms.delete("brawlbound-room-"+info.code);quickMatchRooms=candidates.map(info=>"brawlbound-room-"+info.code);tryNextQuickMatchRoom();}else quickMatchRendezvous(codes);
+       }catch(error){if(gen===qmGen){qmQuerying=false;quickMatchRendezvous(codes);}}
       });
     } else {
       // Broker hiccup on this code \u2014 try the next one
@@ -6395,8 +6377,7 @@ setInterval(() => {
       qmLastShown = remaining;
       qmClientCountdown = remaining;
       const countdown=ov.querySelector("#qm-live-countdown");
-      if(countdown)countdown.textContent=`Match starts in ${remaining}s`;
-      else refreshLobbyMenu();
+      if(countdown)countdown.textContent=`Match starts in ${remaining}s`;else refreshLobbyMenu();
     }
     outgoingSeq++;
     broadcastToPeers({ type: "QM_COUNTDOWN", remaining, seq: outgoingSeq });
@@ -6635,7 +6616,7 @@ function controlsHTML() {
 
 function championBadgeHTML(champion,detail=false){
  const base=detail?"cd-rarity":"hc-rarity";
- if(champion.isNew)return `<span class="${base} ${detail?"cd-new":"hc-new"}">NEW!</span>${champion.rarity?` <span class="${base}">${escapeHtml(champion.rarity)}</span>`:""}`;
+ if(champion.isNew)return `<span class="${base} ${detail?"cd-new":"hc-new"}">NEW!</span>`;
  return champion.rarity?`<span class="${base}">${escapeHtml(champion.rarity)}${detail?" CHAMPION":""}</span>`:"";
 }
 
@@ -6734,7 +6715,7 @@ function menu(msg) {
               <div class="hc-emoji">${c.e}</div>
               <div class="hc-name">${c.n}</div>
               ${championBadgeHTML(c)}
-              ${i===7&&!ownsChampion(7)?`<div class="jackpot-unlock-price">LOCKED \u00b7 1,000 Shinies</div>`:""}
+              ${i===7&&!ownsChampion(7)?`<div class="jackpot-unlock-price" style="color:${(activeProfile()?.shinies||0)>=1000?'#45d988':'#ff6262'}">LOCKED - 1,000 Shinies</div>`:""}
               <div class="hc-role" style="color:${c.roleCol};">${c.role}</div>
               <div class="hc-stats"><span>\u2764 ${c.hp}</span><span>\u26a1 ${c.sp}</span></div>
             </div>
