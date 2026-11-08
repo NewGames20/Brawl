@@ -410,6 +410,8 @@ html, body {
   z-index: 1; transition: width 0.05s linear;
 }
 .cd-text { position: relative; z-index: 2; }
+#cd3-bar { cursor: pointer; }
+#cd3-bar:focus-visible { outline: 2px solid #f2c14e; outline-offset: 3px; }
 #riposte-meter {
   position: absolute; left: 24px; bottom: 72px; width: 274px; padding: 6px 9px 7px;
   display: none; border: 1px solid rgba(159,197,255,0.45); border-radius: 9px;
@@ -651,8 +653,8 @@ html, body {
 #round-panel{background:radial-gradient(ellipse at 15% 0%,#354158aa,transparent 52%),radial-gradient(ellipse at 95% 70%,#693d1e55,transparent 50%),#080d17;gap:20px}.round-title{font-size:clamp(25px,4.3vw,48px);letter-spacing:.07em}.round-title span{display:inline-grid;place-items:center;margin:0 0 0 18px;min-width:75px;padding:10px 14px;border:1px solid #ffcf8266;border-radius:14px;background:#ffcf8211;color:#ffdc9e;font-size:30px;font-variant-numeric:tabular-nums}.round-subtitle{max-width:750px;font-size:14px;color:#a9b8ce}.round-options{width:min(1120px,100%);grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.round-map-card{text-align:left;padding:16px;border:1px solid #8397b844;border-radius:18px;background:linear-gradient(155deg,#243044,#101722);display:flex;flex-direction:column;min-height:310px;position:relative;overflow:hidden}.round-map-card:nth-child(1){--vote-accent:#ffa34e}.round-map-card:nth-child(2){--vote-accent:#48e4e3}.round-map-card:nth-child(3){--vote-accent:#b598ff}.round-map-card:hover:not(:disabled){border-color:var(--vote-accent);transform:translateY(-5px)}.round-map-card.selected{border:2px solid var(--vote-accent);background:linear-gradient(155deg,#354459,#121d30);box-shadow:0 0 25px #7fbaff22}.vote-card-top{display:flex;justify-content:space-between;font-size:9px;letter-spacing:1px;color:#a4b4cb;font-weight:800}.vote-card-top span:last-child{color:var(--vote-accent)}.vote-arena-art{width:100%;height:140px;margin:14px 0;filter:drop-shadow(0 7px 7px #0008)}.round-map-card strong{font:900 clamp(18px,2vw,25px) Outfit,sans-serif;color:white}.round-map-card small{font-size:11px;font-weight:600;color:#aab9ce;margin:8px 0 18px;line-height:1.5}.vote-meter{height:5px;border-radius:8px;background:#ffffff15;overflow:hidden;margin-top:auto}.vote-meter i{display:block;height:100%;background:var(--vote-accent);transition:width .3s}.round-map-count{display:flex;justify-content:space-between;font-size:12px;color:#e4eafa;margin-top:10px}.round-map-count em{font-style:normal;color:var(--vote-accent)}.vote-random-art{height:140px;margin:14px 0;text-align:center;font:900 90px 'Space Grotesk',sans-serif;color:#b598ff;text-shadow:0 0 35px #925fff66}.vote-random-art span{display:block;font:800 9px Outfit,sans-serif;letter-spacing:3px;color:#cab8ff}.round-status{background:#ffffff06;border:1px solid #ffffff12;border-radius:14px;padding:12px 20px;font-size:12px}.round-status span{display:inline-block;margin:0 8px}.round-champion{padding:10px 16px;background:#ffffff07;border-radius:12px;font-size:13px}
 @media(max-width:680px){#round-panel{justify-content:flex-start;padding:22px 15px}.round-options{grid-template-columns:1fr;gap:12px}.round-map-card{min-height:210px}.vote-arena-art,.vote-random-art{height:90px}.vote-random-art{font-size:58px}.round-title span{font-size:20px;min-width:52px}.round-champion{flex-wrap:wrap}}
 </style>
-<style>#rico-status{margin-top:7px;color:#8bf4c8;font:800 10px Outfit,sans-serif;letter-spacing:.4px}</style>
-<style id="rico-followup-style">
+<style>#ref-status{margin-top:7px;color:#ffe27a;font:800 10px Outfit,sans-serif;letter-spacing:.4px}</style>
+<style id="ref-status-style">
 #projectile-hit-notices{position:absolute;right:24px;bottom:25%;display:flex;flex-direction:column;gap:6px;width:min(310px,65vw);pointer-events:none;z-index:9}
 .projectile-hit-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 11px;border:1px solid #72e3b34d;border-left:3px solid #72e3b3;border-radius:7px;background:rgba(9,19,22,.92);font:700 11px Outfit,system-ui,sans-serif;color:#eaf6f2}
 .projectile-hit-target{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.projectile-hit-amount{flex-shrink:0;color:#9ff0c8;font-weight:900}
@@ -692,6 +694,7 @@ html, body {
     <div id="hud-cooldowns">
       <div class="cd-bar"><div id="cd1-fill" class="cd-fill"></div><span id="cd1-label" class="cd-text">[E] A1</span></div>
       <div class="cd-bar"><div id="cd2-fill" class="cd-fill"></div><span id="cd2-label" class="cd-text">[Q] A2</span></div>
+      <div class="cd-bar" id="cd3-bar"><div id="cd3-fill" class="cd-fill"></div><span id="cd3-label" class="cd-text">[F] A3</span></div>
     </div>
     <div id="riposte-meter" aria-live="polite">
       <span id="riposte-meter-label">COUNTER CHARGE 0 / 40</span>
@@ -777,7 +780,7 @@ const HEROES = [
    hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
    a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 15 damage, heavy knockback, and a 1.1-second stun.",
    a2n:"Charge", a2cd: 14.0,
-   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink’s bullets and cannonballs, Sizzle’s meatballs, and Quackbot’s bullets in front of Bruno. Rico’s cue balls, bananas, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
+   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink’s bullets and cannonballs, Sizzle’s meatballs, and Quackbot’s bullets in front of Bruno. Boomerangs, bananas, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
    melee: true, d:"A durable frontline tank who controls space with a wide, hard-hitting hammer. Slam interrupts nearby enemies, while Charge lets Bruno cross a short gap and scatter anyone in his path. Time his swings to turn away incoming shots and hold space around himself."
  },
  {
@@ -846,25 +849,47 @@ const HEROES = [
    ab1Range: 130,
    ab2Range: 100,
 
-   passive: "Hollow Armor: Dentley's armor can break once per match. At 0 armor HP, he becomes a 60 HP Squire. The armor bursts for 25 damage and knocks back nearby enemies, while Squire is knocked away from the dropped husk. Squire moves faster and gains 50% damage reduction for 1 second after the armor breaks. The husk lasts 10 seconds and can be destroyed. Stand still within 50 units of it for 1.5 seconds to rearm with 70 HP. Taking damage interrupts the rearming channel.",
+   passiveName: "Hollow Armor",
+   passive: "Dentley's armor can break once per match. At 0 armor HP, he becomes a 60 HP Squire. The armor bursts for 25 damage and knocks back nearby enemies, while Squire is knocked away from the dropped husk. Squire moves faster and gains 50% damage reduction for 1 second after the armor breaks. The husk lasts 10 seconds and can be destroyed. Stand still within 50 units of it for 1.5 seconds to rearm with 70 HP. Taking damage interrupts the rearming channel.",
 
    d: "A duelist who turns defense into a counterattack. In armor, Shield Guard builds Counter Charge to strengthen Counter Lunge, while early shield release creates a brief opportunity to reposition. If his armor breaks, Dentley survives once as a faster, vulnerable Squire. Use Dagger Feint to evade attacks and Recall Armor to reposition the surviving husk, then find an opening to stand still and rearm."
 }
 ];
 
 
-HEROES.push({n:"Rico",e:"🎱",w:"🎱",wn:"Cue Stick",role:"Skirmisher",rarity:"Epic",isNew:true,roleCol:"#56dfbb",hp:170,sp:150,col:0x45345f,cd:1,
- a1n:"Bumper",a1cd:11,a2n:"Bank Shot",a2cd:9,melee:false,atkRange:600,ab1Range:300,ab2Range:600,
- ad:"Strike a visible cue ball for 18 damage every second. Cue balls ricochet up to twice off walls, cover, and bumpers, and disappear on their first enemy hit. Bruno cannot reflect cue balls. Basic banks do not increase damage.",
- a1d:"Recoil-dash backward up to 70 units and place a short, circular green bumper 60 units ahead for 7 seconds. If another champion overlaps its placement spot, they are pushed clear and the bumper is still placed. A blocked placement does not dash or consume cooldown. The bumper blocks movement, sight and projectiles; cue balls bounce off it while other shots stop. Indestructible. Other champions who run into it are gently pushed away and stunned for 0.3 seconds; its owner is immune. One per Rico; replacing it removes the previous one. Cooldown: 11 seconds from a successful placement.",
- a2d:"Empower your next cue ball for five ricochets. The Bank Shot is red, 1.35× larger, and 10% faster, with a larger hit radius. It starts at 22 damage; each bank compounds damage by 20%: 22 / 26 / 32 / 38 / 46 / 55, rounded only at the resulting damage. Consumed when fired, even on a miss; stays armed until fired. Cooldown: 9s from activation.",
- d:"A ranged skirmisher who turns positioning and bank shots into precise pressure. Bumper's recoil dash creates space while its barrier shapes the fight. Arm Bank Shot and strike a cue ball around cover; longer banks hit harder. Normal cue balls deal 18 damage, and Bank Shot starts at 22."
+HEROES.push({n:"Ref",e:"📣",w:"📣",wn:"Whistle Dart",role:"Ranged",roleCol:"#e2c34e",hp:170,sp:150,col:0x2f3a52,cd:0.65,
+ a1n:"Red Card",a1cd:10,a2n:"Blow the Whistle",a2cd:16,melee:false,atkRange:520,ab1Range:300,ab2Range:180,
+ ad:"Fire a Whistle Dart for 13 damage every 0.65 seconds.",
+ a1d:"Throw a red card. Hitting one player marks them for 4 seconds; Ref's next hit on that target deals 50% bonus damage and consumes the mark.",
+ a2d:"After a visible 1-second wind-up, freeze enemy basic attacks within 250 units for 2.5 seconds. Ref pulls out and blows his whistle; he can still move, attack, and use abilities.",
+ passiveName:"Chalk Line",
+ passive:"Chalk Line: when Red Card marks a player, a visible line connects Ref and the target for 3 seconds. Enemies crossing the line are slowed by 25% for 1 second.",
+ d:"A ranged control specialist. Red Card marks one target for Ref's next Whistle Dart, while the chalk line punishes enemies who cross between them. Blow the Whistle briefly silences nearby basic attacks without stopping movement or abilities."
 });
-const RICO={hero:7,speed:420,bankSpeed:462,life:4,ballRadius:5,bankBallRadius:7.5,bankVisualScale:1.35,damage:18,bankDamage:22,ballHeight:14,bumperRadius:22,bumperLife:7,bumperStun:.3,bumperPush:90,placement:60,recoilImpulse:560};
+HEROES.push({n:"Jackpot",e:"🎰",w:"🪙",wn:"Lucky Revolver",role:"Ranged",roleCol:"#f2c14e",hp:160,sp:150,col:0x8c3d39,cd:0.6,
+ a1n:"Roll the Dice",a1cd:9,a2n:"All In",a2cd:17,a3n:"Coin Toss",a3cd:1,melee:false,atkRange:500,
+ ad:"Fire for 6 damage every 0.6 seconds. A loaded Heads coin makes the next shot deal 20 damage; Tails deals 6.",
+ a1d:"Roll a visible die: 1 takes 15 damage; 2 slows you by 50% for 2 seconds; 3 heals 25; 4 grants 35% speed for 3 seconds; 5 absorbs 40 damage; 6 heals 40, boosts speed, and guarantees Heads on your next 3 shots.",
+ a2d:"Wager 20% of your current HP. For 7 seconds, every shot is a guaranteed 25-damage Heads. Get a kill during the window to heal twice the wager; otherwise the wager is lost.",
+ a3d:"Flip and load one coin. It takes 0.5 seconds to land: Heads deals 20 damage on your next shot, Tails deals 6. A Tail guarantees Heads on your next flip. Fire to clear the chamber before flipping again.",
+ d:"A high-variance gunslinger who can flip for a stronger shot, gamble on a die, or wager health for a short all-in burst."
+});
+HEROES.push({n:"Cosmo",e:"🌙",w:"🌙",wn:"Moon Launcher",role:"Ranged",roleCol:"#aeb8ff",hp:170,sp:145,col:0x555da8,cd:0.7,
+ a1n:"Moon Tag",a1cd:0.5,a2n:"Gravity Well",a2cd:13,melee:false,atkRange:520,ab1Range:520,ab2Range:190,
+ ad:"Launch a ready orbiting moon for 24 damage. It pierces and flies for 0.9 seconds; each launched moon returns after 3.5 seconds.",
+ a1d:"Send one ready moon to the enemy in your crosshair. Click again to drop it for 24 damage and a 1.1-second stun. A tagged moon cannot be broken; if its target dies, it returns without hitting. The moon takes 5 seconds to recover after returning.",
+ a2d:"After a visible 0.5-second wind-up, create a gravity well for 5 seconds. Enemies within 190 units are pulled toward its center and slowed by 25%.",
+ passiveName:"Orbiting Moons",
+ passive:"Three moons orbit 28 units away. Each blocks one incoming projectile, then recovers for 5 seconds. Enemies touching a moon take 6 damage and a small shove every 0.6 seconds.",
+ d:"Three orbiting moons trade personal defense for ranged pressure and team control. Send one to tag a target, then pull opponents together with Gravity Well."
+});
+const REF={hero:7,damage:13,cardSpeed:460,cardDamageBonus:0.5,markDuration:4,lineDuration:3,lineSlowDuration:1,lineSlowMultiplier:0.75,whistleWindup:1,whistleRadius:250,whistleDuration:2.5};
+const JACKPOT={hero:8,baseDamage:6,headsDamage:20,allInDamage:25,flipDuration:0.5,allInDuration:7,wagerFraction:0.2};
+const COSMO={hero:9,moonCount:3,moonOrbitRadius:28,moonDamage:24,moonRecovery:3.5,moonTagRecovery:5,moonTagStun:1.1,moonTouchDamage:6,moonTouchInterval:0.6,moonGuardRecovery:5,wellRadius:190,wellDuration:5,wellWindup:0.5,wellSlow:0.25};
 
 const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
 
-const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5,16];
+const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5,16,16,16];
 
 const SHINY_REWARDS = { daily: 50, kill: 15, win: 75 };
 
@@ -1044,8 +1069,6 @@ NAMEPLATE_CATEGORIES.push({key:"nameFonts",label:"Nametag Fonts",cratePrice:120,
  {id:"font-copperplate",name:"Imperial Inscription",rarity:"Legendary",family:"'Cinzel',Copperplate,Palatino,serif",weight:700}
 ]});
 
-SKIN_CATEGORIES.find(c=>c.key==="weaponSkins").items.push({id:"rico-gilded-break",hero:7,name:"Gilded Break",rarity:"Epic",base:"#e9dfbd",accent:"#f1c566",glow:"#926118"});
-SKIN_CATEGORIES.find(c=>c.key==="championSkins").items.push({id:"rico-emerald-hustler",hero:7,name:"Emerald Hustler",rarity:"Epic",base:"#101d25",accent:"#66e8b0",glow:"#16895f"});
 const SHOP_CATEGORIES = [...NAMEPLATE_CATEGORIES, ...SKIN_CATEGORIES];
 const USERNAME_FILTER_TERMS = ["fuck", "shit", "bitch", "bastard", "asshole", "cunt", "dick", "whore", "slut", "faggot", "nigger", "nazi", "retard", "kike", "spic"];
 const DEFAULT_COSMETIC_SELECTION = { nameColors: "default", borderColors: "default", backgrounds: "default", nameFonts: "default" };
@@ -1954,33 +1977,8 @@ function championRadius(ci,form=0){return (CHAMPION_RADII[ci]||16)*(ci===6&&form
 function applyChampionModelSize(model,ci,form=0){if(model)model.scale.setScalar(championRadius(ci,form)/16*(model.userData.bbPresentationScale||1));}
 function applyChampionBodySize(e){e.r=championRadius(e.ci,e.form||0);applyChampionModelSize(e.mesh,e.ci,e.form||0);}
 
-function ricoBumperRunIn(e,dx,dz){
- if(!e||e.dead||(!dx&&!dz)||(isMultiplayer&&!isLobbyLeader))return false;
- const motion=dx*dx+dz*dz;
- for(const b of RicoBumpers){
-  if(b.ownerId!=null&&e.netId!=null&&b.ownerId===e.netId)continue;
-  const ox=e.x-b.x,oz=e.z-b.z,d=Math.hypot(ox,oz),radius=e.r+b.r;
-  if(dx*ox+dz*oz>=0)continue;
-  const t=Math.max(0,Math.min(1,-(ox*dx+oz*dz)/motion));
-  if(Math.hypot(ox+dx*t,oz+dz*t)>radius+2)continue;
-  if(!b.contacts)b.contacts=new Map();
-  const previous=b.contacts.get(e);
-  if(previous&&(matchTime<previous.until||d<=radius+6))continue;
-  b.contacts.set(e,{until:matchTime+.8});
-  const nx=d>.001?ox/d:-dx/Math.sqrt(motion),nz=d>.001?oz/d:-dz/Math.sqrt(motion);
-  const outward=(e.kx||0)*nx+(e.kz||0)*nz,extra=Math.max(0,RICO.bumperPush-outward);
-  e.kx=(e.kx||0)+nx*extra;e.kz=(e.kz||0)+nz*extra;
-  e.stun=Math.max(e.stun||0,RICO.bumperStun);e.chargeT=0;e.lungeT=0;
-  if(isMultiplayer&&e!==pl){e.targetX=e.x;e.targetZ=e.z;}
-  spawn3DRing(b.x,b.z,b.r+5,0x8bffc1);spawnSparks(b.x,b.z,0x8bffc1,4);
-  return true;
- }
- return false;
-}
-
 function moveChampion(e,dx,dz){
  if(!Number.isFinite(dx)||!Number.isFinite(dz))return;
- if(ricoBumperRunIn(e,dx,dz))return;
  alignChampionForShortcut(e,dx,dz);
  const steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dz))/3)),sx=dx/steps,sz=dz/steps;
  for(let i=0;i<steps;i++){if(!blocked(e.x+sx,e.z,e.r))e.x+=sx;if(!blocked(e.x,e.z+sz,e.r))e.z+=sz;}
@@ -2180,6 +2178,7 @@ let fallbackLook = false; // cursor-steer mode for environments without Pointer 
 let fbMouse = { x: 0, y: 0 };
 const K = {}, M = { down: 0 };
 let P1_ab1 = 0, P1_ab2 = 0;
+let P1_ab3 = 0;
 let emoteWheelOpen = false, emoteSelection = 0;
 let emoteVector = { x: 0, y: 0 };
 const EMOTES = []; // add { label, text, color } entries here (up to 4) to fill the emote wheel
@@ -2257,6 +2256,7 @@ function clearHeldInputs() {
   M.down = 0;
   P1_ab1 = 0;
   P1_ab2 = 0;
+  P1_ab3 = 0;
   closeEmoteWheel(false);
 }
 window.addEventListener("blur", clearHeldInputs);
@@ -2320,9 +2320,11 @@ addEventListener("keydown", e => {
   if(controlScheme === "wasd") {
     if(e.code === "KeyE" && !e.repeat) P1_ab1 = 1;
     if(e.code === "KeyQ") P1_ab2 = 1;
+    if(e.code === "KeyF" && !e.repeat) P1_ab3 = 1;
   } else {
     if(e.code === "ShiftRight" && !e.repeat) P1_ab1 = 1;
     if(e.code === "Slash") P1_ab2 = 1;
+    if(e.code === "Period" && !e.repeat) P1_ab3 = 1;
   }
 });
 
@@ -2821,12 +2823,40 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
   }
 
   if(heroIndex===7){
-    const add=(geo,mat,z)=>{const m=new THREE.Mesh(geo,mat);m.rotation.x=-Math.PI/2;m.position.set(0,0,z);m.castShadow=true;root.add(m);return m;};
-    add(new THREE.CylinderGeometry(.55,.95,34,12),new THREE.MeshStandardMaterial({color:0xdab77a,roughness:.5}),-12);
-    add(new THREE.CylinderGeometry(.95,1.05,14,12),new THREE.MeshStandardMaterial({color:0x39261b,roughness:.75}),12);
-    add(new THREE.CylinderGeometry(.58,.58,2,10),new THREE.MeshStandardMaterial({color:0xf4eee0,roughness:.35}),-30);
-    add(new THREE.CylinderGeometry(.6,.6,1.1,10),new THREE.MeshStandardMaterial({color:0x4d9ac5,roughness:.85}),-31.5);
+    const metal = new THREE.MeshStandardMaterial({ color: 0xd3c69b, roughness: 0.45, metalness: 0.66 });
+    const grip = new THREE.MeshStandardMaterial({ color: 0x2a2d36, roughness: 0.72 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(6.5, 5, 13), grip);
+    body.position.set(0, -1, 3); root.add(body);
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.5, 20, 12), metal);
+    barrel.rotation.x = -Math.PI / 2; barrel.position.set(0, 0, -9); root.add(barrel);
+    const handle = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 5), grip);
+    handle.position.set(0, -5.7, 7); root.add(handle);
+    const whistle = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 3, 10), new THREE.MeshStandardMaterial({ color: 0xf0c65d, roughness: 0.3, metalness: 0.6 }));
+    whistle.rotation.x = Math.PI / 2; whistle.position.set(0, 3, 5); root.add(whistle);
+    const prop=new THREE.Group();
+    const whistleBody=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.5,8,10),new THREE.MeshStandardMaterial({color:0xf0c65d,roughness:.3,metalness:.65}));
+    whistleBody.rotation.x=Math.PI/2;prop.add(whistleBody);
+    const mouth=new THREE.Mesh(new THREE.CylinderGeometry(.65,.65,2.4,8),new THREE.MeshStandardMaterial({color:0x2a2d36,metalness:.5,roughness:.35}));
+    mouth.rotation.x=Math.PI/2;mouth.position.z=4.5;prop.add(mouth);
+    prop.visible=false;prop.position.set(0,-5,7);root.add(prop);root.userData.blowWhistle=prop;
     return root;
+  }
+  if(heroIndex===8){
+    const steel=new THREE.MeshStandardMaterial({color:0xc9a45b,metalness:.8,roughness:.25});
+    const grip=new THREE.MeshStandardMaterial({color:0x382a27,roughness:.6});
+    const barrel=new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.4,12,12),steel);
+    barrel.rotation.x=-Math.PI/2;barrel.position.z=-8;
+    const cylinder=new THREE.Mesh(new THREE.CylinderGeometry(4.2,4.2,3,12),steel);
+    cylinder.rotation.x=Math.PI/2;cylinder.position.z=1;
+    const handle=new THREE.Mesh(new THREE.BoxGeometry(5,9,5),grip);handle.position.set(0,-5,6);
+    const gripRing=new THREE.Mesh(new THREE.TorusGeometry(3.2,.7,6,16),steel);
+    gripRing.position.z=1;root.add(barrel,cylinder,handle,gripRing);return root;
+  }
+  if(heroIndex===9){
+    const metal=new THREE.MeshStandardMaterial({color:0x9ca9ed,metalness:.7,roughness:.28});
+    const core=new THREE.Mesh(new THREE.SphereGeometry(5,12,10),metal);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(7,1.3,8,20),new THREE.MeshStandardMaterial({color:0x7fe6ff,emissive:0x255e83,emissiveIntensity:.7}));
+    ring.rotation.x=Math.PI/2;root.add(core,ring);return root;
   }
   if(heroIndex === 0) {
     const handleMat = new THREE.MeshStandardMaterial({ color: 0x3d2516, roughness: 0.65 });
@@ -2882,29 +2912,28 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
 function addHeroDetails(grp, headGrp, heroIndex) {
   const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.55 }, o || {}));
   if(heroIndex===7){
-    const outfit=new THREE.Group();grp.add(outfit);grp.ricoDefaultOutfit=outfit;
-    const hairGroup=new THREE.Group();headGrp.add(hairGroup);grp.ricoDefaultHead=hairGroup;
-    const add=(parent,geo,mat,x,y,z,rz=0)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.z=rz;m.castShadow=true;parent.add(m);return m;};
-    const shirt=M(0xf2ead7),vest=M(0x45345f),pants=M(0x202635),hair=M(0x242333),skin=M(0xc99472),gold=M(0xd7b567,{metalness:.55});
-    add(outfit,new THREE.CylinderGeometry(11.3,12.8,23,16),vest,0,14,0);
-    add(outfit,new THREE.BoxGeometry(9,16,2),shirt,0,21,11);
-    for(const side of [-1,1]){
-      add(outfit,new THREE.BoxGeometry(5,16,3),vest,side*6,18,12,-side*.1);
-      add(outfit,new THREE.BoxGeometry(3,7,2),shirt,side*3.5,26,12,side*.5);
-      add(outfit,new THREE.CylinderGeometry(3.5,3,9,12),shirt,side*12,22,1,side*.18);
-      add(outfit,new THREE.CylinderGeometry(3.7,3.7,2,12),shirt,side*12.7,18,1,side*.18);
-      add(outfit,new THREE.CylinderGeometry(2.6,2.8,8,10),skin,side*13,13,1,side*.08);
-      add(outfit,new THREE.BoxGeometry(6.2,10,7),pants,side*6.3,5,0);
-      add(outfit,new THREE.BoxGeometry(6.8,3.5,9),hair,side*6.3,1.5,2);
-    }
-    add(outfit,new THREE.BoxGeometry(19,2.4,22),pants,0,9,0);
-    add(outfit,new THREE.BoxGeometry(3,2.4,1),gold,0,9,11.6);
-    for(let j=0;j<3;j++)add(outfit,new THREE.SphereGeometry(.65,6,6),gold,0,13+j*3.5,13.2);
-    const badge=add(outfit,new THREE.CylinderGeometry(1.6,1.6,.6,12),gold,-7,23,14);badge.rotation.x=Math.PI/2;
-    for(const side of [-1,1])add(hairGroup,new THREE.SphereGeometry(4.2,12,8),hair,side*5.5,5,-1);
-    const swept=add(hairGroup,new THREE.SphereGeometry(7.7,18,12),hair,0,6,-2.7);swept.scale.set(1,.55,.9);
-    const forelock=add(hairGroup,new THREE.SphereGeometry(4.1,12,8),hair,-2,7,2.4);forelock.scale.set(1.2,.55,1);forelock.rotation.z=-.3;
+    const sash = M(0x3d4f73);
+    const trim = M(0xc9d4ef);
+    const badge = new THREE.Mesh(new THREE.CylinderGeometry(4.8, 4.8, 1.5, 18), trim);
+    badge.position.set(0, 1.2, 5.8); badge.rotation.x = Math.PI / 2; headGrp.add(badge);
+    const chest = new THREE.Mesh(new THREE.BoxGeometry(14, 15, 8), sash); chest.position.set(0, 11, 0); grp.add(chest);
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(16, 2.5, 2), trim); stripe.position.set(0, 18, 6); grp.add(stripe);
+    const armband = new THREE.Mesh(new THREE.BoxGeometry(3.5, 10, 2.8), trim); armband.position.set(8.5, 14, 0); grp.add(armband);
+    const other = armband.clone(); other.position.x = -8.5; grp.add(other);
     return;
+  }
+  if(heroIndex===8){
+    const hat=new THREE.Mesh(new THREE.CylinderGeometry(7.5,8,3,12),M(0x392c2b));
+    hat.position.y=8;headGrp.add(hat);
+    const brim=new THREE.Mesh(new THREE.CylinderGeometry(10,10,.8,14),M(0x8c3d39));
+    brim.position.y=6.2;headGrp.add(brim);
+    const star=new THREE.Mesh(new THREE.OctahedronGeometry(2.2),M(0xf2c14e,{emissive:0x694500,emissiveIntensity:.45}));
+    star.position.set(0,8,7.7);headGrp.add(star);
+  } else if(heroIndex===9){
+    const halo=new THREE.Mesh(new THREE.TorusGeometry(8.7,.85,8,24),M(0x93d9ff,{emissive:0x356a9a,emissiveIntensity:.65}));
+    halo.position.y=4;halo.rotation.x=Math.PI/2;headGrp.add(halo);
+    const star=new THREE.Mesh(new THREE.OctahedronGeometry(2.4),M(0xc3b7ff,{emissive:0x5d55a0,emissiveIntensity:.6}));
+    star.position.set(0,0,8.5);headGrp.add(star);
   }
   if(heroIndex === 0) { // Bruno: round ears + muzzle
     const earMat = M(0x4a2c14);
@@ -3004,7 +3033,7 @@ function applyChampionSkin(model, heroIndex, item) {
  if(!model)return;
  for(const k of ["skinFx","skinOutfit"])if(model[k]){disposeHierarchy(model[k]);model[k]=null;}
  if(model.bodyMat){model.bodyMat.color.set(item?item.base:HEROES[heroIndex].col);model.bodyMat.emissive.set(item?item.glow:0);model.bodyMat.emissiveIntensity=item?0.16:0;}
- if(heroIndex===7){if(model.ricoDefaultOutfit)model.ricoDefaultOutfit.visible=!item;if(model.ricoDefaultHead)model.ricoDefaultHead.visible=!item;}
+ if(heroIndex===7 && model.bodyMat){ model.bodyMat.color.set(item ? (item.base || HEROES[heroIndex].col) : HEROES[heroIndex].col); }
  if(!item)return;
  const g=new THREE.Group();model.add(g);model.skinOutfit=g;
  const base=new THREE.MeshStandardMaterial({color:item.base,metalness:0.45,roughness:0.45});
@@ -3334,14 +3363,29 @@ function syncDentleyViewmodel(entity) {
 
 function spawnProjectileMesh(type, opts = {}) {
   let mesh;
-  if(type==="cue"){
-    const root=new THREE.Group(),bank=!!opts.bank,scale=bank?RICO.bankVisualScale:1;
-    const ball=new THREE.Mesh(new THREE.SphereGeometry(7.5*scale,20,14),new THREE.MeshStandardMaterial({color:bank?0xff3030:0xffffff,emissive:bank?0x9b0808:0xc7ffe2,emissiveIntensity:bank?.9:.65,metalness:.08,roughness:.2}));root.add(ball);root.userData.cueBall=ball;root.userData.bankShot=bank;
-    const stripe=new THREE.Mesh(new THREE.TorusGeometry(7.1*scale,1.1*scale,8,24),new THREE.MeshBasicMaterial({color:bank?0x710909:0x087849}));ball.add(stripe);
-    const trail=new THREE.Mesh(new THREE.ConeGeometry(3.2*scale,24*scale,10),new THREE.MeshBasicMaterial({color:bank?0xff4242:0xb1ffcc,transparent:true,opacity:.6,depthWrite:false}));trail.rotation.x=Math.PI/2;trail.position.z=15*scale;root.add(trail);root.userData.cueTrail=trail;
-    scene.add(root);return root;
-  }
-  if(type === "cannonball" || type === "bomb") {
+  if(type === "ref_card") {
+    mesh = new THREE.Mesh(new THREE.BoxGeometry(10, 1.5, 14), new THREE.MeshStandardMaterial({
+      color: 0xe94b52, emissive: 0x60151b, emissiveIntensity: 0.45, roughness: 0.35,
+      side: THREE.DoubleSide
+    }));
+  } else if(type === "ref_dart") {
+    mesh = new THREE.Group();
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 12, 8), new THREE.MeshStandardMaterial({color:0xf2da83,metalness:0.35,roughness:0.3}));
+    shaft.rotation.x = Math.PI / 2;
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(2, 5, 8), new THREE.MeshStandardMaterial({color:0xe94b52,roughness:0.3}));
+    tip.rotation.x = Math.PI / 2;
+    tip.position.z = 8;
+    mesh.add(shaft, tip);
+  } else if(type === "jackpot_bullet") {
+    mesh=new THREE.Group();
+    const slug=new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.4,9,10),new THREE.MeshStandardMaterial({color:0xf6d76b,emissive:0x73501a,emissiveIntensity:.7,metalness:.65,roughness:.22}));
+    slug.rotation.x=Math.PI/2;mesh.add(slug);
+  } else if(type === "cosmo_moon") {
+    mesh=new THREE.Group();
+    const moon=new THREE.Mesh(new THREE.SphereGeometry(6.5,14,10),new THREE.MeshStandardMaterial({color:0xbac7ff,emissive:0x535da7,emissiveIntensity:.9,metalness:.25,roughness:.3}));
+    const halo=new THREE.Mesh(new THREE.TorusGeometry(8,1,6,18),new THREE.MeshBasicMaterial({color:0x80eaff}));
+    halo.rotation.x=Math.PI/2;mesh.add(moon,halo);
+  } else if(type === "cannonball" || type === "bomb") {
     mesh = new THREE.Mesh(new THREE.SphereGeometry(6.5, 16, 16), new THREE.MeshStandardMaterial({
       color: type === "bomb" ? 0xcca010 : 0x1b1c22, metalness: 0.85, roughness: 0.25
     }));
@@ -3452,7 +3496,7 @@ function glowTexture() {
   _glowTex = new THREE.CanvasTexture(can);
   return _glowTex;
 }
-const GLOW_COLORS = { s: 0x36e0ff, b: 0xffd000, meatball: 0xff7733, spore: 0x9955ff, vine: 0x55dd44, cannonball: 0xff8833, bomb: 0xffd000 };
+const GLOW_COLORS = { s: 0x36e0ff, b: 0xffd000, meatball: 0xff7733, spore: 0x9955ff, vine: 0x55dd44, cannonball: 0xff8833, bomb: 0xffd000, jackpot_bullet: 0xf6d76b, cosmo_moon: 0x80eaff };
 
 function spawnPickup() {
   const types = [
@@ -3603,6 +3647,13 @@ function endChain(e) {
 }
 function disposeEntityExtras(e) {
   endChain(e);
+  clearRefLine(e);
+  if(e.refWhistleMesh) { disposeHierarchy(e.refWhistleMesh); e.refWhistleMesh = null; }
+  if(e.jackpotDiceMesh) { disposeHierarchy(e.jackpotDiceMesh); e.jackpotDiceMesh = null; }
+  for(const moon of e.cosmoMoonMeshes||[])if(moon)disposeHierarchy(moon);
+  e.cosmoMoonMeshes=[];
+  if(e.cosmoTagMesh){disposeHierarchy(e.cosmoTagMesh);e.cosmoTagMesh=null;}
+  if(e.cosmoWindupMesh){disposeHierarchy(e.cosmoWindupMesh);e.cosmoWindupMesh=null;}
   if(e.emoteSprite) { disposeHierarchy(e.emoteSprite); e.emoteSprite = null; }
 }
 
@@ -3614,6 +3665,41 @@ function removePeerEntity(peerId) {
       E.splice(i, 1);
     }
   }
+}
+
+function applyRefSnapshotState(entity, item) {
+  entity.refMarkT = Math.max(0, Number(item.rmt) || 0);
+  entity.refMarkOwnerId = item.rmo != null ? item.rmo : null;
+  entity.refMarkOwner = null;
+  entity.refLineT = Math.max(0, Number(item.rlt) || 0);
+  entity.refLineTargetId = item.rti != null ? item.rti : null;
+  entity.refLineTarget = null;
+  entity.refSlowT = Math.max(0, Number(item.rsl) || 0);
+  entity.refWhistleWindup = Math.max(0, Number(item.rww) || 0);
+  entity.refWhistleActive = Math.max(0, Number(item.rwa) || 0);
+  entity.jackpotFlipT=Math.max(0,Number(item.jft)||0);
+  entity.jackpotFlipPending=!!item.jfp;
+  entity.jackpotLoaded=item.jhl==="heads"||item.jhl==="tails"?item.jhl:null;
+  entity.jackpotPityHead=!!item.jph;
+  entity.jackpotAutoHeads=Math.max(0,Number(item.jah)||0);
+  entity.jackpotAllInT=Math.max(0,Number(item.jat)||0);
+  entity.jackpotWager=Math.max(0,Number(item.jw)||0);
+  entity.jackpotAllInPaid=!!item.jap;
+  entity.jackpotShield=Math.max(0,Number(item.jsh)||0);
+  entity.jackpotDice=Math.max(0,Number(item.jd)||0);
+  entity.jackpotDiceT=Math.max(0,Number(item.jdt)||0);
+  entity.jackpotSlowT=Math.max(0,Number(item.jst)||0);
+  entity.cosmoMoonRecovery=Array.isArray(item.cmr)?item.cmr.map(value=>Math.max(0,Number(value)||0)):[0,0,0];
+  entity.cosmoWellWindup=Math.max(0,Number(item.cww)||0);
+  entity.cosmoWellPending=!!item.cwp;
+  entity.cosmoWellSlowT=Math.max(0,Number(item.cws)||0);
+  entity.cosmoTouchT=Math.max(0,Number(item.ctt)||0);
+  const tagTarget=item.cti==null?null:E.find(actor=>actor.netId===item.cti)||null;
+  entity.cosmoMoonTag=tagTarget&&Number.isInteger(item.cmi)?{
+    moonIndex:item.cmi,target:tagTarget,targetId:item.cti,
+    launchX:Number(item.clx)||entity.x,launchZ:Number(item.clz)||entity.z,
+    travelT:Math.max(0,Number(item.clt)||0)
+  }:null;
 }
 
 const BOT_PERSONALITIES = [
@@ -3652,14 +3738,13 @@ function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tag
   if(isLocalP1) mesh.visible = false;
 
   return {
-    ricoBank:false,
     ci,x,z,r:championRadius(ci),lastSafeX:x,lastSafeZ:z,
     bobPhase: Math.random() * 6.28,
     targetX: x, targetZ: z, targetA: 0,
     pitch: 0, targetP: 0, moveSpd: 0,
     hp: c.hp, mhp: c.hp,
     a: Math.random() * Math.PI * 2,
-    c1: 0, c2: 0, c3: 0, stun: 0,
+    c1: 0, c2: 0, c3: 0, c4: 0, stun: 0,
     kx: 0, kz: 0, fl: 0, swing: 0,
     pNum: playerNum,
     netId: netId,
@@ -3671,6 +3756,14 @@ function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tag
     emote: -1, emoteT: 0, emoteCooldown: 0, emoteSprite: null,
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
+    refMarkT: 0, refMarkOwnerId: null, refMarkOwner: null,
+    refLineT: 0, refLineTargetId: null, refLineTarget: null, refLineMesh: null,
+    refSlowT: 0, refWhistleWindup: 0, refWhistleActive: 0, refWhistleMesh: null,
+    jackpotFlipT: 0, jackpotLoaded: null, jackpotPityHead: false, jackpotAutoHeads: 0,
+    jackpotAllInT: 0, jackpotWager: 0, jackpotAllInPaid: false, jackpotShield: 0,
+    jackpotDice: 0, jackpotDiceT: 0, jackpotDiceMesh: null,
+    cosmoMoonRecovery: [0,0,0], cosmoMoonMeshes: [], cosmoMoonTag: null, cosmoTagMesh: null,
+    cosmoWellWindup: 0, cosmoWellPending: false, cosmoWindupMesh: null, cosmoTouchT: 0,
     chargeVx: 0, chargeVz: 0, chargeT: 0,
     lungeVx: 0, lungeVz: 0, lungeA: 0, lungeT: 0, lungeDamage: 0, lungeKb: 0, lungeStun: 0, lungeFinisher: false, lungeHit: new Set(),
     activePod: null,
@@ -3750,118 +3843,285 @@ function getCombatPosition(target, attacker = null, projectileTravelMs = 0) {
   return target;
 }
 
+function refLineTargetFor(owner) {
+  if(owner.refLineTarget && E.includes(owner.refLineTarget)) return owner.refLineTarget;
+  return owner.refLineTargetId != null ? getRemoteActorByNetId(owner.refLineTargetId) : null;
+}
 
-let RicoBumpers=[],ricoBumperSerial=0;
-function ricoDamage(bounces,bank=true){return bank?Math.round(RICO.bankDamage*Math.pow(1.2,bounces)):RICO.damage;}
-function ricoBallRadius(p){return p.bank?RICO.bankBallRadius:RICO.ballRadius;}
-function ricoBumperMesh(){
- const g=new THREE.Group();
- const rubber=new THREE.MeshStandardMaterial({color:0x179344,roughness:.8});
- const top=new THREE.MeshStandardMaterial({color:0x38d965,emissive:0x095b22,emissiveIntensity:.3,roughness:.6});
- const disc=new THREE.Mesh(new THREE.CylinderGeometry(RICO.bumperRadius,RICO.bumperRadius,9,32),rubber);disc.position.y=4.5;disc.castShadow=true;disc.receiveShadow=true;g.add(disc);
- const cap=new THREE.Mesh(new THREE.CylinderGeometry(RICO.bumperRadius-1.5,RICO.bumperRadius-1.5,1,32),top);cap.position.y=9;cap.receiveShadow=true;g.add(cap);
- const rim=new THREE.Mesh(new THREE.TorusGeometry(RICO.bumperRadius-.8,.7,8,32),top);rim.rotation.x=Math.PI/2;rim.position.y=9.2;g.add(rim);
- return g;
-}
-function clearRicoBumpers(){for(const b of RicoBumpers)disposeHierarchy(b.mesh);RicoBumpers=[];}
-function ricoRecoilDash(e){
- const retreatAngle=e.a+Math.PI;
- e.kx=(e.kx||0)+Math.cos(retreatAngle)*RICO.recoilImpulse;
- e.kz=(e.kz||0)+Math.sin(retreatAngle)*RICO.recoilImpulse;
- spawn3DRing(e.x,e.z,28,0x8bffc1);
-}
-function placeRicoBumper(e){
- const x=e.x+Math.cos(e.a)*RICO.placement,z=e.z+Math.sin(e.a)*RICO.placement,r=RICO.bumperRadius;
- if(blocked(x,z,r+3)||!hasLOS(e.x,e.z,x,z)){
-  if(e===pl)showAnnouncer("BUMPER PLACEMENT BLOCKED");return false;
- }
- for(let i=RicoBumpers.length-1;i>=0;i--)if(RicoBumpers[i].ownerId===e.netId){disposeHierarchy(RicoBumpers[i].mesh);RicoBumpers.splice(i,1);}
- const mesh=ricoBumperMesh();mesh.position.set(x,0,z);scene.add(mesh);
- const bumper={id:"bumper_"+(++ricoBumperSerial),ownerId:e.netId,x,z,r,life:RICO.bumperLife,mesh};
- RicoBumpers.push(bumper);
- for(const actor of E){
-  if(actor.dead)continue;
-  const dx=actor.x-x,dz=actor.z-z,overlap=r+actor.r+1;
-  if(Math.hypot(dx,dz)>=overlap)continue;
-  const start=Math.atan2(dz,dx),offsets=[0];
-  for(let i=1;i<=8;i++)offsets.push(i*Math.PI/8,-i*Math.PI/8);
-  let destination=null;
-  for(const distance of [overlap,overlap+8,overlap+16,overlap+24,overlap+32]){
-   for(const offset of offsets){
-    const angle=start+offset,cx=x+Math.cos(angle)*distance,cz=z+Math.sin(angle)*distance;
-    if(blocked(cx,cz,actor.r)||E.some(other=>other!==actor&&!other.dead&&Math.hypot(other.x-cx,other.z-cz)<other.r+actor.r))continue;
-    destination={x:cx,z:cz};break;
-   }
-   if(destination)break;
+function clearRefLine(owner) {
+  if(owner.refLineMesh) {
+    disposeHierarchy(owner.refLineMesh);
+    owner.refLineMesh = null;
   }
-  if(destination){
-   actor.x=destination.x;actor.z=destination.z;actor.targetX=actor.x;actor.targetZ=actor.z;
-   actor.lastSafeX=actor.x;actor.lastSafeZ=actor.z;
-  }else{
-   const angle=Math.hypot(dx,dz)>0.001?start:Math.atan2(-Math.sin(e.a),-Math.cos(e.a));
-   actor.x=x+Math.cos(angle)*overlap;actor.z=z+Math.sin(angle)*overlap;
-   pushCollisions(actor);actor.targetX=actor.x;actor.targetZ=actor.z;
+  owner.refLineTarget = null;
+  owner.refLineTargetId = null;
+  owner.refLineT = 0;
+}
+
+function updateRefTimers(entity, dt) {
+  entity.refMarkT = Math.max(0, (entity.refMarkT || 0) - dt);
+  if(entity.refMarkT <= 0) {
+    entity.refMarkOwnerId = null;
+    entity.refMarkOwner = null;
   }
- }
- spawn3DRing(x,z,r+7,0x38d965);return true;
-}
-function syncRicoBumpers(list){
- const seen=new Set();
- for(const data of list){
-  if(!data||typeof data.id!=="string"||!Number.isFinite(data.x)||!Number.isFinite(data.z))continue;
-  seen.add(data.id);let b=RicoBumpers.find(b=>b.id===data.id);
-  if(!b){const mesh=ricoBumperMesh();scene.add(mesh);b={id:data.id,mesh,r:RICO.bumperRadius};RicoBumpers.push(b);}
-  Object.assign(b,{x:data.x,z:data.z,ownerId:data.ownerId,life:Math.max(0,data.life||0)});b.mesh.position.set(b.x,0,b.z);
- }
- for(let i=RicoBumpers.length-1;i>=0;i--)if(!seen.has(RicoBumpers[i].id)){disposeHierarchy(RicoBumpers[i].mesh);RicoBumpers.splice(i,1);}
-}
-function updateRicoBumpers(dt){
- for(let i=RicoBumpers.length-1;i>=0;i--){const b=RicoBumpers[i];b.life-=dt;
-  if(b.life<=0){disposeHierarchy(b.mesh);RicoBumpers.splice(i,1);continue;}
-  if(b.contacts)for(const [actor,contact]of b.contacts)if(actor.dead||(matchTime>=contact.until&&Math.hypot(actor.x-b.x,actor.z-b.z)>actor.r+b.r+6))b.contacts.delete(actor);
-  b.mesh.scale.y=b.life<1?.93+Math.sin(matchTime*15)*.07:1;
- }
-}
-function ricoRectNormal(x,z,rect){
- const [rx,rz,w,h]=rect,cx=Math.max(rx,Math.min(x,rx+w)),cz=Math.max(rz,Math.min(z,rz+h)),dx=x-cx,dz=z-cz,d=Math.hypot(dx,dz);
- if(d>0)return [dx/d,dz/d];
- return [[Math.abs(x-rx),-1,0],[Math.abs(x-rx-w),1,0],[Math.abs(z-rz),0,-1],[Math.abs(z-rz-h),0,1]].sort((a,b)=>a[0]-b[0])[0].slice(1);
-}
-function ricoSurface(x,z,r){
- if(x<B+r)return [1,0];if(x>W-B-r)return [-1,0];if(z<B+r)return [0,1];if(z>H-B-r)return [0,-1];
- for(const b of RicoBumpers){const dx=x-b.x,dz=z-b.z,d=Math.hypot(dx,dz);if(d<b.r+r)return d>0?[dx/d,dz/d]:[1,0];}
- for(const rect of currentRects){const [rx,rz,w,h]=rect,dx=x-Math.max(rx,Math.min(x,rx+w)),dz=z-Math.max(rz,Math.min(z,rz+h));if(dx*dx+dz*dz<r*r)return ricoRectNormal(x,z,rect);}
- return null;
-}
-function ricoBounce(p,n){
- if(p.bounces>=p.maxBounces)return false;
- const dot=p.vx*n[0]+p.vz*n[1];if(dot<0){p.vx-=2*dot*n[0];p.vz-=2*dot*n[1];}
- p.bounces++;p.d=ricoDamage(p.bounces,p.bank);return true;
-}
-function updateRicoBall(p,dt){
- p.age+=dt;p.life-=dt;if(p.life<=0)return false;
- const radius=ricoBallRadius(p);
- const steps=Math.max(1,Math.ceil(Math.hypot(p.vx,p.vz)*dt/3)),step=dt/steps;
- for(let i=0;i<steps;i++){
-  const nx=p.x+p.vx*step,nz=p.z+p.vz*step,n=ricoSurface(nx,nz,radius);
-  if(n){
-   if(!ricoBounce(p,n))return false;
-   spawnSparks(p.x,p.z,p.bank?0xff4242:0x8fffd2,3);
-   const ball=p.mesh.userData.cueBall;
-   if(p.bank&&ball){ball.material.emissive.setHex(0xff2020);ball.material.emissiveIntensity=.9+p.bounces*.15;}
-  }else{p.x=nx;p.z=nz;}
-  for(const h of Husks)if(h.owner!==p.o&&Math.hypot(h.x-p.x,h.z-p.z)<14+radius){if(!isMultiplayer||isLobbyLeader)h.hp-=p.d;return false;}
-  if(worldCrate&&!(worldCrate.y>0)&&worldCrate.bombT===null&&Math.hypot(worldCrate.x-p.x,worldCrate.z-p.z)<worldCrate.r+radius){if(!isMultiplayer||isLobbyLeader)damageWorldCrate(p.d,p.o);return false;}
-  for(const t of E){if(t===p.o||t.dead||!areEnemies(p.o,t))continue;
-   const pos=getCombatPosition(t,p.o,p.age*1000);
-   if(Math.hypot(pos.x-p.x,pos.z-p.z)<t.r+radius){hurt(t,p.d,Math.atan2(p.vz,p.vx),p.kb,p.o,"projectile");return false;}
+  entity.refSlowT = Math.max(0, (entity.refSlowT || 0) - dt);
+  entity.refLineT = Math.max(0, (entity.refLineT || 0) - dt);
+  if(entity.refLineT <= 0) clearRefLine(entity);
+  entity.refWhistleActive = Math.max(0, (entity.refWhistleActive || 0) - dt);
+  if(entity.refWhistleWindup > 0) {
+    entity.refWhistleWindup = Math.max(0, entity.refWhistleWindup - dt);
+    if(entity.refWhistleWindup <= 0 && !entity.dead && (!isMultiplayer || isLobbyLeader)) {
+      entity.refWhistleActive = REF.whistleDuration;
+      spawn3DRing(entity.x, entity.z, REF.whistleRadius, 0xffe27a);
+    }
   }
- }
- p.rot+=dt*11;p.mesh.position.set(p.x,RICO.ballHeight,p.z);orientProjectile(p);return true;
+  entity.jackpotFlipT = Math.max(0, (entity.jackpotFlipT || 0) - dt);
+  if(entity.jackpotFlipT <= 0 && entity.jackpotFlipPending) {
+    entity.jackpotFlipPending = false;
+    entity.jackpotLoaded = entity.jackpotPityHead || Math.random() < 0.5 ? "heads" : "tails";
+    entity.jackpotPityHead = entity.jackpotLoaded === "tails";
+    Snd.play("pickup");
+  }
+  entity.jackpotAllInT = Math.max(0, (entity.jackpotAllInT || 0) - dt);
+  if(entity.jackpotAllInT <= 0) entity.jackpotWager = 0;
+  entity.jackpotDiceT = Math.max(0, (entity.jackpotDiceT || 0) - dt);
+  entity.cosmoWellWindup = Math.max(0, (entity.cosmoWellWindup || 0) - dt);
+  if(entity.cosmoWellWindup <= 0 && entity.cosmoWellPending) {
+    entity.cosmoWellPending = false;
+    createCosmoGravityWell(entity);
+  }
+  entity.cosmoTouchT = Math.max(0, (entity.cosmoTouchT || 0) - dt);
+  entity.cosmoWellSlowT = Math.max(0, (entity.cosmoWellSlowT || 0) - dt);
+  if(entity.ci === COSMO.hero) {
+    for(let i=0;i<COSMO.moonCount;i++) entity.cosmoMoonRecovery[i]=Math.max(0,(entity.cosmoMoonRecovery[i]||0)-dt);
+    const tag=entity.cosmoMoonTag;
+    if(tag)tag.travelT=Math.max(0,(tag.travelT||0)-dt);
+    if(tag && (!tag.target || tag.target.dead || !E.includes(tag.target))) returnCosmoTag(entity);
+  }
+}
+
+function createCosmoGravityWell(owner) {
+  const geometry=new THREE.CylinderGeometry(COSMO.wellRadius,COSMO.wellRadius,1.5,40);
+  const material=new THREE.MeshBasicMaterial({color:0x7794ff,transparent:true,opacity:.2,depthWrite:false});
+  const mesh=new THREE.Mesh(geometry,material);mesh.position.set(owner.x,.8,owner.z);scene.add(mesh);
+  const ringGeo=new THREE.TorusGeometry(COSMO.wellRadius*.72,2.5,8,48);
+  const ring=new THREE.Mesh(ringGeo,new THREE.MeshBasicMaterial({color:0xb8a5ff,transparent:true,opacity:.85}));
+  ring.rotation.x=Math.PI/2;ring.position.set(0,1.2,0);mesh.add(ring);
+  Zones.push({kind:"cosmo_well",x:owner.x,z:owner.z,r:COSMO.wellRadius,life:COSMO.wellDuration,owner,mesh});
+}
+
+function returnCosmoTag(owner) {
+  const tag=owner.cosmoMoonTag;
+  if(!tag) return;
+  owner.cosmoMoonRecovery[tag.moonIndex]=COSMO.moonTagRecovery;
+  owner.cosmoMoonTag=null;
+  if(owner.cosmoTagMesh){disposeHierarchy(owner.cosmoTagMesh);owner.cosmoTagMesh=null;}
+}
+
+function createJackpotDice(value) {
+  const group=new THREE.Group();
+  const cube=new THREE.Mesh(new THREE.BoxGeometry(15,15,15),new THREE.MeshStandardMaterial({color:0xf3c95d,roughness:.36,metalness:.18}));
+  group.add(cube);
+  const pipMat=new THREE.MeshBasicMaterial({color:0x482d34});
+  const patterns={1:[[0,0]],2:[[-1,-1],[1,1]],3:[[-1,-1],[0,0],[1,1]],4:[[-1,-1],[-1,1],[1,-1],[1,1]],5:[[-1,-1],[-1,1],[0,0],[1,-1],[1,1]],6:[[-1,-1],[-1,0],[-1,1],[1,-1],[1,0],[1,1]]};
+  for(const [x,z] of patterns[value]){const pip=new THREE.Mesh(new THREE.SphereGeometry(1.25,8,6),pipMat);pip.position.set(x*4.2,8,z*4.2);group.add(pip);}
+  return group;
+}
+
+function updateJackpotCosmoVisuals() {
+  for(const entity of E) {
+    if(entity.ci===JACKPOT.hero && !entity.dead && entity.jackpotDiceT>0) {
+      if(!entity.jackpotDiceMesh){entity.jackpotDiceMesh=createJackpotDice(entity.jackpotDice);scene.add(entity.jackpotDiceMesh);}
+      entity.jackpotDiceMesh.position.set(entity.x,58+Math.sin(matchTime*5)*3,entity.z);
+      entity.jackpotDiceMesh.rotation.y+=0.025;
+    } else if(entity.jackpotDiceMesh) {
+      disposeHierarchy(entity.jackpotDiceMesh);entity.jackpotDiceMesh=null;
+    }
+
+    if(entity.ci!==COSMO.hero || entity.dead) {
+      for(const moon of entity.cosmoMoonMeshes||[]) if(moon) disposeHierarchy(moon);
+      entity.cosmoMoonMeshes=[];
+      if(entity.cosmoTagMesh){disposeHierarchy(entity.cosmoTagMesh);entity.cosmoTagMesh=null;}
+      if(entity.cosmoWindupMesh){disposeHierarchy(entity.cosmoWindupMesh);entity.cosmoWindupMesh=null;}
+      continue;
+    }
+    if(entity.cosmoWellWindup>0) {
+      if(!entity.cosmoWindupMesh) {
+        const geo=new THREE.RingGeometry(COSMO.wellRadius-2,COSMO.wellRadius,48);geo.rotateX(-Math.PI/2);
+        entity.cosmoWindupMesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xb8a5ff,transparent:true,opacity:.65,side:THREE.DoubleSide,depthWrite:false}));
+        scene.add(entity.cosmoWindupMesh);
+      }
+      entity.cosmoWindupMesh.position.set(entity.x,1.4,entity.z);
+    } else if(entity.cosmoWindupMesh) {
+      disposeHierarchy(entity.cosmoWindupMesh);entity.cosmoWindupMesh=null;
+    }
+    if(!entity.cosmoMoonMeshes || entity.cosmoMoonMeshes.length!==COSMO.moonCount) {
+      for(const moon of entity.cosmoMoonMeshes||[])if(moon)disposeHierarchy(moon);
+      entity.cosmoMoonMeshes=[];
+      for(let i=0;i<COSMO.moonCount;i++){
+        const group=new THREE.Group();
+        const moon=new THREE.Mesh(new THREE.SphereGeometry(5.5,12,10),new THREE.MeshStandardMaterial({color:0xb9c7ff,emissive:0x4654a0,emissiveIntensity:.8,metalness:.28,roughness:.32}));
+        const halo=new THREE.Mesh(new THREE.TorusGeometry(6.5,.65,6,16),new THREE.MeshBasicMaterial({color:0x80eaff}));
+        halo.rotation.x=Math.PI/2;group.add(moon,halo);scene.add(group);entity.cosmoMoonMeshes.push(group);
+      }
+    }
+    for(let i=0;i<COSMO.moonCount;i++){
+      const mesh=entity.cosmoMoonMeshes[i],available=(entity.cosmoMoonRecovery[i]||0)<=0&&(!entity.cosmoMoonTag||entity.cosmoMoonTag.moonIndex!==i);
+      mesh.visible=available;
+      if(available){const angle=matchTime*2.2+i*Math.PI*2/COSMO.moonCount;mesh.position.set(entity.x+Math.cos(angle)*COSMO.moonOrbitRadius,22+Math.sin(angle*1.6+i)*3,entity.z+Math.sin(angle)*COSMO.moonOrbitRadius);}
+    }
+    if(entity.cosmoMoonTag && entity.cosmoMoonTag.target && !entity.cosmoMoonTag.target.dead) {
+      if(!entity.cosmoTagMesh){
+        const group=new THREE.Group();
+        group.add(new THREE.Mesh(new THREE.SphereGeometry(6,12,10),new THREE.MeshStandardMaterial({color:0xb9c7ff,emissive:0x637cff,emissiveIntensity:1})));
+        const halo=new THREE.Mesh(new THREE.TorusGeometry(8,.8,6,20),new THREE.MeshBasicMaterial({color:0x80eaff}));
+        halo.rotation.x=Math.PI/2;group.add(halo);scene.add(group);entity.cosmoTagMesh=group;
+      }
+      const tag=entity.cosmoMoonTag,target=tag.target;
+      const progress=1-Math.max(0,Math.min(1,(tag.travelT||0)/.35));
+      entity.cosmoTagMesh.position.set(tag.launchX+(target.x-tag.launchX)*progress,55+Math.sin(matchTime*4)*2,tag.launchZ+(target.z-tag.launchZ)*progress);
+    } else if(entity.cosmoTagMesh) {
+      disposeHierarchy(entity.cosmoTagMesh);entity.cosmoTagMesh=null;
+    }
+  }
+}
+
+function setRefMark(owner, target) {
+  target.refMarkT = REF.markDuration;
+  target.refMarkOwnerId = owner.netId;
+  target.refMarkOwner = owner;
+  owner.refLineTarget = target;
+  owner.refLineTargetId = target.netId;
+  owner.refLineT = REF.lineDuration;
+  spawn3DRing(target.x, target.z, 28, 0xff5d67);
+}
+
+function refPointSegmentDistance(px, pz, ax, az, bx, bz) {
+  const dx = bx - ax, dz = bz - az, length2 = dx * dx + dz * dz;
+  if(length2 < 0.0001) return Math.hypot(px - ax, pz - az);
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / length2));
+  return Math.hypot(px - (ax + dx * t), pz - (az + dz * t));
+}
+
+function refSegmentsIntersect(ax, az, bx, bz, cx, cz, dx, dz) {
+  const cross = (x1, z1, x2, z2, x3, z3) => (x2 - x1) * (z3 - z1) - (z2 - z1) * (x3 - x1);
+  const abC = cross(ax, az, bx, bz, cx, cz), abD = cross(ax, az, bx, bz, dx, dz);
+  const cdA = cross(cx, cz, dx, dz, ax, az), cdB = cross(cx, cz, dx, dz, bx, bz);
+  const eps = 0.0001;
+  const onSegment = (x1, z1, x2, z2, x, z) =>
+    x >= Math.min(x1, x2) - eps && x <= Math.max(x1, x2) + eps &&
+    z >= Math.min(z1, z2) - eps && z <= Math.max(z1, z2) + eps;
+  if(Math.abs(abC) < eps && onSegment(ax, az, bx, bz, cx, cz)) return true;
+  if(Math.abs(abD) < eps && onSegment(ax, az, bx, bz, dx, dz)) return true;
+  if(Math.abs(cdA) < eps && onSegment(cx, cz, dx, dz, ax, az)) return true;
+  if(Math.abs(cdB) < eps && onSegment(cx, cz, dx, dz, bx, bz)) return true;
+  return abC * abD < 0 && cdA * cdB < 0;
+}
+
+function createRefLine(owner) {
+  const geometry = new THREE.CylinderGeometry(1.8, 1.8, 1, 8);
+  const material = new THREE.MeshBasicMaterial({ color: 0xffe27a, transparent: true, opacity: 0.9, depthWrite: false });
+  owner.refLineMesh = new THREE.Mesh(geometry, material);
+  owner.refLineMesh.frustumCulled = false;
+  scene.add(owner.refLineMesh);
+}
+
+function updateRefVisuals() {
+  for(const owner of E) {
+    if(owner.ci !== REF.hero || owner.dead) {
+      if(owner.refLineMesh) clearRefLine(owner);
+      if(owner.refWhistleMesh) {
+        disposeHierarchy(owner.refWhistleMesh);
+        owner.refWhistleMesh = null;
+      }
+      if(owner.mesh&&owner.mesh.weapon&&owner.mesh.weapon.userData.blowWhistle)owner.mesh.weapon.userData.blowWhistle.visible=false;
+      if((owner.dead||viewmodelCi!==REF.hero)&&viewmodelHolder.wep&&viewmodelHolder.wep.userData.blowWhistle)viewmodelHolder.wep.userData.blowWhistle.visible=false;
+      continue;
+    }
+
+    const target = owner.refLineT > 0 ? refLineTargetFor(owner) : null;
+    if(target && !target.dead) {
+      if(!owner.refLineMesh) createRefLine(owner);
+      const dx = target.x - owner.x, dz = target.z - owner.z, length = Math.hypot(dx, dz);
+      owner.refLineMesh.position.set((owner.x + target.x) / 2, 4, (owner.z + target.z) / 2);
+      owner.refLineMesh.scale.y = length;
+      if(length > 0.001) owner.refLineMesh.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx / length, 0, dz / length)
+      );
+    } else {
+      if(owner.refLineMesh) {
+        disposeHierarchy(owner.refLineMesh);
+        owner.refLineMesh = null;
+      }
+      if(target && target.dead) clearRefLine(owner);
+    }
+
+    const showWhistle = owner.refWhistleWindup > 0 || owner.refWhistleActive > 0;
+    const progress=owner.refWhistleWindup>0?1-owner.refWhistleWindup/REF.whistleWindup:1;
+    const prop=owner.mesh&&owner.mesh.weapon&&owner.mesh.weapon.userData.blowWhistle;
+    if(prop) {
+      prop.visible=showWhistle;
+      prop.position.set(0,-5+progress*13,7-progress*3);
+      prop.rotation.set(Math.PI/2+progress*.25,0,progress*.18);
+    }
+    if(viewmodelHolder.wep&&viewmodelCi===REF.hero&&viewmodelHolder.wep.userData.blowWhistle) {
+      const viewProp=viewmodelHolder.wep.userData.blowWhistle;
+      viewProp.visible=showWhistle;
+      viewProp.position.set(0,-5+progress*13,7-progress*3);
+      viewProp.rotation.set(Math.PI/2+progress*.25,0,progress*.18);
+    }
+    if(showWhistle && !owner.refWhistleMesh) {
+      const geometry = new THREE.RingGeometry(REF.whistleRadius - 1.5, REF.whistleRadius, 64);
+      geometry.rotateX(-Math.PI / 2);
+      const material = new THREE.MeshBasicMaterial({
+        color: 0xffe27a, transparent: true, opacity: 0.42, side: THREE.DoubleSide, depthWrite: false
+      });
+      owner.refWhistleMesh = new THREE.Mesh(geometry, material);
+      owner.refWhistleMesh.position.y = 1.5;
+      scene.add(owner.refWhistleMesh);
+    }
+    if(owner.refWhistleMesh) {
+      if(!showWhistle) {
+        disposeHierarchy(owner.refWhistleMesh);
+        owner.refWhistleMesh = null;
+      } else {
+        owner.refWhistleMesh.position.x = owner.x;
+        owner.refWhistleMesh.position.z = owner.z;
+        owner.refWhistleMesh.material.opacity = owner.refWhistleWindup > 0 ? 0.25 : 0.5;
+      }
+    }
+  }
+}
+
+function updateRefLineCrossings() {
+  if(isMultiplayer && !isLobbyLeader) return;
+  for(const owner of E) {
+    if(owner.ci !== REF.hero || owner.dead || owner.refLineT <= 0) continue;
+    const target = refLineTargetFor(owner);
+    if(!target || target.dead) continue;
+    for(const enemy of E) {
+      if(enemy === owner || enemy === target || enemy.dead || !areEnemies(owner, enemy)) continue;
+      const ax = owner.x, az = owner.z, bx = target.x, bz = target.z;
+      const px = Number.isFinite(enemy.refPrevX) ? enemy.refPrevX : enemy.x;
+      const pz = Number.isFinite(enemy.refPrevZ) ? enemy.refPrevZ : enemy.z;
+      const pad = enemy.r + 2;
+      const oldDistance = refPointSegmentDistance(px, pz, ax, az, bx, bz);
+      const newDistance = refPointSegmentDistance(enemy.x, enemy.z, ax, az, bx, bz);
+      if(refSegmentsIntersect(px, pz, enemy.x, enemy.z, ax, az, bx, bz) ||
+         (oldDistance > pad && newDistance <= pad)) {
+        enemy.refSlowT = Math.max(enemy.refSlowT || 0, REF.lineSlowDuration);
+      }
+    }
+  }
+}
+
+function isRefWhistleSuppressing(entity) {
+  return E.some(owner => owner.ci === REF.hero && !owner.dead && owner.refWhistleActive > 0 &&
+    entity !== owner && areEnemies(owner, entity) &&
+    Math.hypot(owner.x - entity.x, owner.z - entity.z) <= REF.whistleRadius);
 }
 
 function blocked(x, z, r) {
-  for(const b of RicoBumpers)if(Math.hypot(x-b.x,z-b.z)<b.r+r)return true;
   for(const h of Husks) if(Math.hypot(x - h.x, z - h.z) < 14 + r) return true;
   if(x < B+r || z < B+r || x > W-B-r || z > H-B-r) return true;
   for(const [rx, ry, rw, rh] of currentRects) {
@@ -3885,7 +4145,6 @@ function hasLOS(x1, z1, x2, z2) {
 
 function pushCollisions(e){
  for(let pass=0;pass<4;pass++){
- for(const b of RicoBumpers){const dx=e.x-b.x,dz=e.z-b.z,d=Math.hypot(dx,dz),r=e.r+b.r;if(d<r){e.x=b.x+(d>0?dx/d:1)*(r+.01);e.z=b.z+(d>0?dz/d:0)*(r+.01);}}
  for(const h of Husks){const dx=e.x-h.x,dz=e.z-h.z,d=Math.hypot(dx,dz),m=14+e.r;if(d<m){e.x=h.x+(d>0?dx/d:1)*m;e.z=h.z+(d>0?dz/d:0)*m;}}
  e.x=Math.max(B+e.r,Math.min(W-B-e.r,e.x));e.z=Math.max(B+e.r,Math.min(H-B-e.r,e.z));
  for(const [x,z,w,d] of currentRects){const cx=Math.max(x,Math.min(e.x,x+w)),cz=Math.max(z,Math.min(e.z,z+d)),dx=e.x-cx,dz=e.z-cz,dist=Math.hypot(dx,dz);if(dist>=e.r)continue;
@@ -3952,6 +4211,18 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
   if(isMultiplayer && !isLobbyLeader) return;
   if(t.chain && t.chain.inv) return; // Captain Oink is invulnerable while his chain is out / hooking
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
+  if(attacker && attacker.ci === REF.hero && t.refMarkT > 0 &&
+     ((t.refMarkOwnerId != null && t.refMarkOwnerId === attacker.netId) || t.refMarkOwner === attacker)) {
+    rawDmg *= 1 + REF.cardDamageBonus;
+    t.refMarkT = 0;
+    t.refMarkOwnerId = null;
+    t.refMarkOwner = null;
+  }
+  if(t.jackpotShield > 0 && rawDmg > 0) {
+    const absorbed=Math.min(t.jackpotShield,rawDmg);
+    t.jackpotShield-=absorbed;rawDmg-=absorbed;
+    if(absorbed>0)spawnSparks(t.x,t.z,0xf2c14e,4);
+  }
 
   if(t.ci === 6) { // Dentley: squire grace, Shield Guard
     if(t.grace > 0) rawDmg *= BALANCE_PATCH.dentley.squireDamageMultiplier;
@@ -4012,6 +4283,14 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
       attacker.killStreak++;
       attacker.lastKillTime = matchTime;
       killMeta = { streak: attacker.killStreak, multi: attacker.killChain };
+      if(attacker.ci===JACKPOT.hero && attacker.jackpotAllInT>0 && !attacker.jackpotAllInPaid) {
+        const payout=(attacker.jackpotWager||0)*2;
+        attacker.hp=Math.min(attacker.mhp,attacker.hp+payout);
+        attacker.jackpotAllInPaid=true;
+        attacker.jackpotWager=0;
+        spawnDamageNumber(attacker.x,attacker.z,"+"+Math.round(payout)+" ALL IN","#f2c14e");
+        spawn3DRing(attacker.x,attacker.z,32,0xf2c14e);
+      }
       if(matchIsQuickMatch && attacker.netId === myNetId) {awardShinies(SHINY_REWARDS.kill,"Elimination");progressDaily("kills");}
     }
     Snd.play("death");
@@ -4083,8 +4362,8 @@ function melee(e, rng, d, kb, noReflect) {
 
 function reflect(e,r){
  for(const p of P){
-  // Rico cue balls (type "cue"), bananas, and magical shots cannot be reflected.
-  if(p.o===e||p.life<=0||p.t==="cue"||!["s","meatball","cannonball"].includes(p.t))continue;
+  // Boomerangs and magical projectiles cannot be reflected.
+  if(p.o===e||p.life<=0||!["s","meatball","cannonball"].includes(p.t))continue;
   if(Math.hypot(p.x-e.x,p.z-e.z)>=r+15)continue;
   const angle=Math.atan2(p.z-e.z,p.x-e.x)-e.a,da=Math.atan2(Math.sin(angle),Math.cos(angle));
   if(Math.abs(da)>=1.25)continue;
@@ -4094,9 +4373,8 @@ function reflect(e,r){
  }
 }
 function orientProjectile(p){
- if(p.t==="cue"){
-  p.mesh.rotation.set(0,Math.atan2(-p.vx,-p.vz),0);
-  if(p.mesh.userData.cueBall)p.mesh.userData.cueBall.rotation.z=p.rot;
+ if(p.t==="ref_dart"||p.t==="ref_card"||p.t==="jackpot_bullet"||p.t==="cosmo_moon"){
+  p.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),new THREE.Vector3(p.vx,0,p.vz).normalize());
  }else if(p.t==="s"){
   p.mesh.rotation.set(0,0,0);
   p.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(p.vx,0,p.vz).normalize());
@@ -4109,15 +4387,14 @@ function shot(e, a, o) {
   const startZ = o.z !== undefined ? o.z : (e.z + Math.sin(a)*18);
 
   const mesh = spawnProjectileMesh(o.t,o);
-  mesh.position.set(startX, o.t==="cue"?RICO.ballHeight:14, startZ);
-  const glowColor=o.t==="cue"&&o.bank?0xff2929:GLOW_COLORS[o.t];
+  mesh.position.set(startX, 14, startZ);
+  const glowColor=GLOW_COLORS[o.t];
   if(GFX[gfxLevel].glow && glowColor) {
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({
       map: glowTexture(), color: glowColor, transparent: true, opacity: 0.85,
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
-    const glowSize=o.t==="cue"&&o.bank?23:17;
-    glow.scale.set(glowSize,glowSize,1);
+    glow.scale.set(17,17,1);
     mesh.add(glow);
   }
 
@@ -4174,18 +4451,97 @@ function recallDentleyHusk(e) {
  return true; // Existing HP/lifetime are preserved; expired armor cannot be revived.
 }
 
+function jackpotRollDie(e) {
+  const roll=1+Math.floor(Math.random()*6);
+  e.jackpotDice=roll;e.jackpotDiceT=1.35;
+  spawn3DRing(e.x,e.z,34,0xf2c14e);
+  if(roll===1)hurt(e,15,0,0,null);
+  else if(roll===2)e.jackpotSlowT=2;
+  else if(roll===3){e.hp=Math.min(e.mhp,e.hp+25);spawnDamageNumber(e.x,e.z,"+25","#45d988");}
+  else if(roll===4)e.speedBoost=Math.max(e.speedBoost||0,3);
+  else if(roll===5)e.jackpotShield=Math.min(40,(e.jackpotShield||0)+40);
+  else {
+    e.hp=Math.min(e.mhp,e.hp+40);e.speedBoost=Math.max(e.speedBoost||0,3);e.jackpotAutoHeads=3;
+    e.jackpotLoaded=null;e.jackpotFlipT=0;e.jackpotFlipPending=false;
+    spawnDamageNumber(e.x,e.z,"JACKPOT · +40","#f2c14e");
+  }
+}
+
+function findCosmoCrosshairTarget(e) {
+  let best=null,bestScore=Infinity;
+  for(const target of E) {
+    if(target===e||target.dead||!areEnemies(e,target))continue;
+    const pos=getCombatPosition(target,e),dx=pos.x-e.x,dz=pos.z-e.z,dist=Math.hypot(dx,dz);
+    if(dist>HEROES[COSMO.hero].ab1Range)continue;
+    const angle=Math.atan2(dz,dx),delta=Math.atan2(Math.sin(angle-e.a),Math.cos(angle-e.a));
+    if(Math.abs(delta)>0.2||!hasLOS(e.x,e.z,pos.x,pos.z))continue;
+    const score=dist+Math.abs(delta)*220;
+    if(score<bestScore){best=target;bestScore=score;}
+  }
+  return best;
+}
+
+function beginCosmoMoonTag(e) {
+  const moonIndex=e.cosmoMoonRecovery.findIndex((time,index)=>time<=0&&(!e.cosmoMoonTag||e.cosmoMoonTag.moonIndex!==index));
+  const target=findCosmoCrosshairTarget(e);
+  if(moonIndex<0||!target)return false;
+  e.cosmoMoonTag={moonIndex,target,targetId:target.netId,launchX:e.x,launchZ:e.z,travelT:.35};
+  spawn3DRing(target.x,target.z,20,0x80eaff);
+  return true;
+}
+
+function dropCosmoMoonTag(e) {
+  const tag=e.cosmoMoonTag;
+  if(!tag)return false;
+  const target=tag.target||E.find(entity=>entity.netId===tag.targetId);
+  if(target&&!target.dead) {
+    if(!isMultiplayer||isLobbyLeader) {
+      hurt(target,COSMO.moonDamage,Math.atan2(target.z-e.z,target.x-e.x),100,e,"projectile");
+      target.stun=Math.max(target.stun||0,COSMO.moonTagStun);
+    }
+    spawn3DRing(target.x,target.z,34,0x80eaff);
+  }
+  returnCosmoTag(e);
+  return true;
+}
+
+function executeAbility3(e) {
+  if(e.ci!==JACKPOT.hero||e.jackpotFlipT>0||e.jackpotLoaded||e.jackpotFlipPending||
+     e.jackpotAutoHeads>0||e.jackpotAllInT>0)return;
+  e.c4=HEROES[e.ci].a3cd;e.jackpotFlipPending=true;e.jackpotFlipT=JACKPOT.flipDuration;
+  Snd.abilityCue(e.ci,3);
+}
+
 function dentleyGuardActive(e) {
   return !!(e && e.ci === 6 && e.form === 0 && e.guard > 0);
 }
 
 function executeAttack(e) {
-  if(dentleyGuardActive(e)) return;
+  if(dentleyGuardActive(e) || isRefWhistleSuppressing(e)) return;
   const c = HEROES[e.ci];
   e.c1 = c.cd;
   Snd.play(c.melee ? "melee" : "shoot");
   if(e.ci===7){
-    const bank=!!e.ricoBank;e.ricoBank=false;
-    shot(e,e.a,{t:"cue",s:bank?RICO.bankSpeed:RICO.speed,d:ricoDamage(0,bank),kb:65,life:RICO.life,x:e.x+Math.cos(e.a)*10,z:e.z+Math.sin(e.a)*10,bank,bounces:0,maxBounces:bank?5:2});return;
+    shot(e, e.a, {t:"ref_dart",s:500,d:REF.damage,kb:35,life:1.15});
+    return;
+  }
+  if(e.ci===JACKPOT.hero) {
+    const loaded=e.jackpotLoaded,hasAutoHead=e.jackpotAutoHeads>0;
+    e.jackpotLoaded=null;
+    if(hasAutoHead)e.jackpotAutoHeads--;
+    let damage=JACKPOT.baseDamage;
+    if(e.jackpotAllInT>0) damage=JACKPOT.allInDamage;
+    else if(hasAutoHead) damage=JACKPOT.headsDamage;
+    else if(loaded) damage=loaded==="heads"?JACKPOT.headsDamage:JACKPOT.baseDamage;
+    shot(e,e.a,{t:"jackpot_bullet",s:660,d:damage,kb:35,life:0.78});
+    return;
+  }
+  if(e.ci===COSMO.hero) {
+    const moonIndex=e.cosmoMoonRecovery.findIndex((time,index)=>time<=0&&(!e.cosmoMoonTag||e.cosmoMoonTag.moonIndex!==index));
+    if(moonIndex<0)return;
+    e.cosmoMoonRecovery[moonIndex]=COSMO.moonRecovery;
+    shot(e,e.a,{t:"cosmo_moon",s:520,d:COSMO.moonDamage,kb:45,life:0.9,moonIndex});
+    return;
   }
   if(e.ci === 6) {
     dentleyAttack(e);
@@ -4208,7 +4564,7 @@ function executeAttack(e) {
 
 function attack(e) {
   if(hostVisibilityPaused && isMultiplayer) return;
-  if(dentleyGuardActive(e)) return;
+  if(dentleyGuardActive(e) || isRefWhistleSuppressing(e)) return;
   // Send the intent BEFORE executing locally so movement abilities (Blink, Backdraft)
   // aren't applied twice on remote machines from the post-move position.
   if(isMultiplayer) sendActionIntent("ATTACK", e.a, e.x, e.z);
@@ -4220,8 +4576,20 @@ function executeAbility1(e) {
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 1);
   if(e.ci===7){
-    if(isMultiplayer&&!isLobbyLeader)return;
-    if(placeRicoBumper(e)){ricoRecoilDash(e);e.c2=c.a1cd;}return;
+    e.c2 = c.a1cd;
+    shot(e, e.a, {t:"ref_card",s:REF.cardSpeed,d:0,kb:0,life:1.25});
+    return;
+  }
+  if(e.ci===JACKPOT.hero) {
+    e.c2=c.a1cd;
+    jackpotRollDie(e);
+    return;
+  }
+  if(e.ci===COSMO.hero) {
+    if(e.cosmoMoonTag) {
+      if(dropCosmoMoonTag(e))e.c2=c.a1cd;
+    } else beginCosmoMoonTag(e);
+    return;
   }
   if(e.ci === 6) { dentleyGuard(e, c); return; }
   if(e.ci === 0) {
@@ -4371,8 +4739,24 @@ function executeAbility2(e) {
   if(e.ci===6 && e.form===1){ recallDentleyHusk(e); return; }
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 2);
-  if(e.ci===7){if(e.ricoBank)return;e.ricoBank=true;e.c3=c.a2cd;spawn3DRing(e.x,e.z,25,0xffce63);return;}
+  if(e.ci===7){
+    e.c3 = c.a2cd;
+    e.refWhistleWindup = REF.whistleWindup;
+    return;
+  }
   e.c3 = c.a2cd;
+  if(e.ci===JACKPOT.hero) {
+    const wager=Math.max(1,e.hp*JACKPOT.wagerFraction);
+    e.hp=Math.max(1,e.hp-wager);
+    e.jackpotWager=wager;e.jackpotAllInT=JACKPOT.allInDuration;e.jackpotAllInPaid=false;
+    spawnDamageNumber(e.x,e.z,"-"+Math.round(wager)+" WAGER","#ff8b79");
+    spawn3DRing(e.x,e.z,34,0xf2c14e);
+    return;
+  }
+  if(e.ci===COSMO.hero) {
+    e.cosmoWellWindup=COSMO.wellWindup;e.cosmoWellPending=true;
+    return;
+  }
   if(e.ci === 6) { dentleyLunge(e); return; }
   if(e.ci === 0) {
     e.chargeT = 0.32; 
@@ -4450,12 +4834,17 @@ function executeAbility2(e) {
 }
 
 function ability2(e) {
-  if(e.ci===7&&e.ricoBank)return;
   if(hostVisibilityPaused && isMultiplayer) return;
   if(dentleyGuardActive(e)) return;
   if(e.ci === 6 && e.form === 1 && !canRecallDentleyHusk(e)) return;
   if(isMultiplayer) sendActionIntent("AB2", e.a, e.x, e.z);
   executeAbility2(e);
+}
+
+function ability3(e) {
+  if(hostVisibilityPaused && isMultiplayer)return;
+  if(isMultiplayer)sendActionIntent("AB3",e.a,e.x,e.z);
+  executeAbility3(e);
 }
 
 function scheduleShot(e, delay, opts) {
@@ -4615,23 +5004,6 @@ function botWaypoint(e,gx,gz) {
 }
 
 
-function ricoFindBankAngle(e,target){
- const candidates=[];
- for(const wall of [B,W-B])candidates.push(Math.atan2(target.z-e.z,2*wall-target.x-e.x));
- for(const wall of [B,H-B])candidates.push(Math.atan2(2*wall-target.z-e.z,target.x-e.x));
- for(const [x,z,w,h]of currentRects.slice(0,12)){
-  for(const side of [x,x+w])candidates.push(Math.atan2(target.z-e.z,2*side-target.x-e.x));
-  for(const side of [z,z+h])candidates.push(Math.atan2(2*side-target.z-e.z,target.x-e.x));
- }
- for(const a of candidates){let x=e.x+Math.cos(a)*10,z=e.z+Math.sin(a)*10,vx=Math.cos(a),vz=Math.sin(a),banks=0;
-  for(let distance=0;distance<1400;distance+=6){const nx=x+vx*6,nz=z+vz*6,n=ricoSurface(nx,nz,5);
-   if(n){if(++banks>(e.ricoBank?5:2))break;const dot=vx*n[0]+vz*n[1];vx-=2*dot*n[0];vz-=2*dot*n[1];}else{x=nx;z=nz;}
-   if(Math.hypot(target.x-x,target.z-z)<target.r+4)return a;
-  }
- }
- return null;
-}
-
 function updateAI(e, dt) {
  const difficulty=AI_DIFFICULTIES[e.ai.difficulty||"normal"];
  e.ai.pathTimer=(e.ai.pathTimer||0)-dt;
@@ -4747,10 +5119,6 @@ function updateAI(e, dt) {
   }
   moveAng=bestAngle;e.ai.lastMoveAng=moveAng;
   if(!e.ai.currentTarget||!hasLOS(e.x,e.z,e.ai.currentTarget.x,e.ai.currentTarget.z))targetAng=moveAng+Math.sin(matchTime*1.7+e.bobPhase)*0.25;
-  let ricoBankAngle=null;
-  if(e.ci===7&&e.ai.currentTarget&&!hasLOS(e.x,e.z,e.ai.currentTarget.x,e.ai.currentTarget.z)){
-    ricoBankAngle=ricoFindBankAngle(e,e.ai.currentTarget);if(ricoBankAngle!==null)targetAng=ricoBankAngle;
-  }
   const da=Math.atan2(Math.sin(targetAng-e.a),Math.cos(targetAng-e.a));e.a+=da*difficulty.turn;
   if(difficulty.aim)e.a+=Math.sin(matchTime*3+e.bobPhase)*difficulty.aim;
   if(bestScore===-Infinity){e.ai.mx=0;e.ai.mz=0;e.ai.pathTimer=0;}
@@ -4769,11 +5137,6 @@ function updateAI(e, dt) {
   const ultimateDistance = canSeeTarget && targetDist < (c.ab2Range || (c.melee ? 150 : 240));
   e.ai.ab1 = (abilityDistance && Math.random() < 0.22 * e.ai.abilityBias) ? 1 : 0;
   e.ai.ab2 = (ultimateDistance && Math.random() < 0.18 * e.ai.abilityBias) ? 1 : 0;
-  if(e.ci===7){
-    if(ricoBankAngle!==null){e.ai.at=1;e.ai.ab2=!e.ricoBank&&e.c3<=0?1:0;}
-    if(e.ricoBank)e.ai.ab2=0;
-    if(blocked(e.x+Math.cos(e.a)*RICO.placement,e.z+Math.sin(e.a)*RICO.placement,RICO.bumperRadius+3))e.ai.ab1=0;
-  }
 
   return [e.ai.mx, e.ai.mz, e.ai.at, e.ai.ab1, e.ai.ab2];
 }
@@ -4783,13 +5146,20 @@ function syncHUD() {
   if(!targetEnt) {
     syncDentleyViewmodel(null);
     document.getElementById("riposte-meter").classList.remove("visible");
+    const coinAbility=document.getElementById("cd3-bar");
+    if(coinAbility)coinAbility.style.display="none";
+    const refStatus=document.getElementById("ref-status");
+    if(refStatus) refStatus.style.display="none";
     return;
   }
   const c = HEROES[targetEnt.ci];
-  let ricoStatus=document.getElementById("rico-status");
-  if(!ricoStatus){ricoStatus=document.createElement("div");ricoStatus.id="rico-status";document.getElementById("hud-player").appendChild(ricoStatus);}
-  ricoStatus.style.display=targetEnt.ci===7?"block":"none";
-  if(targetEnt.ci===7){const b=RicoBumpers.find(b=>b.ownerId===targetEnt.netId);ricoStatus.textContent=(targetEnt.ricoBank?"BANK SHOT ARMED · 5 BANKS":"CUE BALL · 2 BANKS")+(b?" | BUMPER "+Math.ceil(b.life)+"s":"");}
+  let refStatus=document.getElementById("ref-status");
+  if(!refStatus) {
+    refStatus=document.createElement("div");
+    refStatus.id="ref-status";
+    document.getElementById("hud-player").appendChild(refStatus);
+  }
+  refStatus.style.display = "none";
   const sq = targetEnt.ci === 6 && targetEnt.form === 1;
   syncDentleyViewmodel(targetEnt);
   const riposteMeter = document.getElementById("riposte-meter");
@@ -4803,6 +5173,7 @@ function syncHUD() {
   }
   const ab1LabelKey = controlScheme === "wasd" ? "[E]" : "[R-SHIFT]";
   const ab2LabelKey = controlScheme === "wasd" ? "[Q]" : "[/]";
+  const ab3LabelKey = controlScheme === "wasd" ? "[F]" : "[.]";
 
   const playerName = targetEnt.username || (targetEnt === pl ? activeUsername() : `${c.e} ${c.n}`);
   setNametagContent(document.getElementById("hud-player-name"),`${entityUsernameTag(targetEnt)}<span class="bb-hero-label">${escapeHtml(c.n)} ${isSpectating?"(SPECTATING)":""}</span>`);
@@ -4820,9 +5191,53 @@ function syncHUD() {
     document.getElementById("cd1-label").innerText = `${ab1LabelKey} ${sq ? "Dagger Feint" : targetEnt.guard>0 ? (canReleaseDentleyGuard(targetEnt)?(earnsDentleyReleaseBoost(targetEnt)?"Release + Speed":"Release (No Boost)"):"GUARD LOCKED") : c.a1n}`;
   }
 
-  const cd2Prog = targetEnt.ci===7&&targetEnt.ricoBank ? 1 : sq ? (targetEnt.huskRecallUsed||!targetEnt.husk ? 0 : Math.max(0,Math.min(1,1-targetEnt.c3/BALANCE_PATCH.dentley.recallDelay))) : targetEnt.c3 <= 0 ? 1 : Math.max(0,Math.min(1,1 - targetEnt.c3 / c.a2cd));
+  const cd2Prog = sq ? (targetEnt.huskRecallUsed||!targetEnt.husk ? 0 : Math.max(0,Math.min(1,1-targetEnt.c3/BALANCE_PATCH.dentley.recallDelay))) : targetEnt.c3 <= 0 ? 1 : Math.max(0,Math.min(1,1 - targetEnt.c3 / c.a2cd));
   document.getElementById("cd2-fill").style.width = (cd2Prog * 100) + "%";
-  document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${targetEnt.ci===7&&targetEnt.ricoBank ? "BANK SHOT ARMED" : sq ? (!targetEnt.husk?"ARMOR LOST":targetEnt.huskRecallUsed?"RECALL USED":targetEnt.c3>0?"Recall Armor "+Math.ceil(targetEnt.c3)+"s":"Recall Armor") : c.a2n}`;
+  document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${sq ? (!targetEnt.husk?"ARMOR LOST":targetEnt.huskRecallUsed?"RECALL USED":targetEnt.c3>0?"Recall Armor "+Math.ceil(targetEnt.c3)+"s":"Recall Armor") : c.a2n}`;
+
+  const cd3Bar=document.getElementById("cd3-bar");
+  if(cd3Bar) {
+    cd3Bar.style.display=targetEnt.ci===JACKPOT.hero?"flex":"none";
+    if(targetEnt.ci===JACKPOT.hero) {
+      cd3Bar.setAttribute("role","button");cd3Bar.setAttribute("tabindex","0");cd3Bar.setAttribute("aria-label","Flip and load a coin");
+      if(!cd3Bar.dataset.bbBound) {
+        cd3Bar.dataset.bbBound="1";
+        const useCoin=()=>{if(pl&&!pl.dead&&pl.ci===JACKPOT.hero&&pl.c4<=0){ability3(pl);syncHUD();}};
+        cd3Bar.addEventListener("click",useCoin);
+        cd3Bar.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();useCoin();}});
+      }
+      const loaded=targetEnt.jackpotLoaded||targetEnt.jackpotFlipPending||targetEnt.jackpotAutoHeads>0||targetEnt.jackpotAllInT>0;
+      const cd3Prog=targetEnt.c4<=0&&!loaded?1:Math.max(0,Math.min(1,1-targetEnt.c4/c.a3cd));
+      document.getElementById("cd3-fill").style.width=(cd3Prog*100)+"%";
+      document.getElementById("cd3-label").innerText=`${ab3LabelKey} ${targetEnt.jackpotFlipPending?"Flipping…":targetEnt.jackpotLoaded?`Loaded ${targetEnt.jackpotLoaded.toUpperCase()}`:targetEnt.jackpotAutoHeads>0?`Auto HEADS ×${targetEnt.jackpotAutoHeads}`:targetEnt.jackpotAllInT>0?"AUTO HEADS":c.a3n}`;
+    }
+  }
+
+  const refStatusParts=[];
+  if(targetEnt.ci===REF.hero) {
+    const marked=E.find(enemy=>!enemy.dead&&enemy.refMarkT>0&&
+      ((enemy.refMarkOwnerId!=null&&enemy.refMarkOwnerId===targetEnt.netId)||enemy.refMarkOwner===targetEnt));
+    if(marked) refStatusParts.push(`BONUS READY · ${marked.username||HEROES[marked.ci].n} ${marked.refMarkT.toFixed(1)}s`);
+    if(targetEnt.refLineT>0) refStatusParts.push(`CHALK LINE ${targetEnt.refLineT.toFixed(1)}s`);
+    if(targetEnt.refWhistleWindup>0) refStatusParts.push(`WHISTLE ${targetEnt.refWhistleWindup.toFixed(1)}s`);
+    else if(targetEnt.refWhistleActive>0) refStatusParts.push(`ATTACKS FROZEN ${targetEnt.refWhistleActive.toFixed(1)}s`);
+  } else if(targetEnt.ci===JACKPOT.hero) {
+    if(targetEnt.jackpotFlipPending)refStatusParts.push(`COIN IN THE AIR ${targetEnt.jackpotFlipT.toFixed(1)}s`);
+    else if(targetEnt.jackpotLoaded)refStatusParts.push(`LOADED ${targetEnt.jackpotLoaded.toUpperCase()}`);
+    else if(targetEnt.jackpotAutoHeads>0)refStatusParts.push(`GUARANTEED HEADS ×${targetEnt.jackpotAutoHeads}`);
+    if(targetEnt.jackpotAllInT>0)refStatusParts.push(`ALL IN ${targetEnt.jackpotAllInT.toFixed(1)}s · WAGER ${Math.ceil(targetEnt.jackpotWager)}`);
+    if(targetEnt.jackpotShield>0)refStatusParts.push(`ABSORB ${Math.ceil(targetEnt.jackpotShield)}`);
+    if(targetEnt.jackpotDiceT>0)refStatusParts.push(`DICE ${targetEnt.jackpotDice}`);
+  } else if(targetEnt.ci===COSMO.hero) {
+    const ready=targetEnt.cosmoMoonRecovery.filter(time=>time<=0).length-(targetEnt.cosmoMoonTag?1:0);
+    refStatusParts.push(`MOONS ${Math.max(0,ready)} / 3 READY`);
+    if(targetEnt.cosmoMoonTag)refStatusParts.push(`MOON TAG · CLICK A1 TO DROP`);
+    if(targetEnt.cosmoWellWindup>0)refStatusParts.push(`GRAVITY WELL ${targetEnt.cosmoWellWindup.toFixed(1)}s`);
+  } else if(isRefWhistleSuppressing(targetEnt)) {
+    refStatusParts.push("BASIC ATTACKS FROZEN");
+  }
+  refStatus.textContent=refStatusParts.join(" · ");
+  refStatus.style.display=refStatusParts.length?"block":"none";
 
   stormTimerDisp.innerText = `STORM: ${Math.round(stormRadius)}m`;
 }
@@ -4936,7 +5351,7 @@ window.returnToMenu = function(message = "Select a champion to battle in the are
 let roundVote=null,roundVoteSerial=0,pendingRoundReady=false,lastRoundStatePacket=null,lastRoundStartPacket=null,pendingStartGamePacket=null,lastStartedRoundId=null;
 const REMATCH_COUNTDOWN_MS=10000,MAP_VOTE_DURATION_MS=7000;
 const HOST_AWAY_TIMEOUT_MS=20000;
-const ARENA_PROTOCOL_VERSION=8;
+const ARENA_PROTOCOL_VERSION=9;
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,m)=>total+(votes[m.id]===i?1:0),0)),max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===MAPS.length?Math.floor(random()*MAPS.length):winner;
 }
@@ -5087,6 +5502,7 @@ function executeIntentAtPose(ent, data, pose) {
   if(data.act === "ATTACK") executeAttack(ent);
   else if(data.act === "AB1") executeAbility1(ent);
   else if(data.act === "AB2") executeAbility2(ent);
+  else if(data.act === "AB3") executeAbility3(ent);
 
   const abilityMoved = ent.x !== pose.x || ent.z !== pose.z ||
     ent.kx !== oldKx || ent.kz !== oldKz || ent.chargeT > oldChargeT;
@@ -5402,7 +5818,6 @@ function handleIncomingData(conn, data) {
     const ent = getRemoteActorByNetId(data.id);
     if(ent&&!ent.dead){
       applyChampionBodySize(ent);
-      if(ricoBumperRunIn(ent,data.x-ent.x,data.z-ent.z))return;
       if(ent.stun>0){ent.targetA=data.a;ent.targetP=data.p||0;return;}
       if(blocked(data.x,data.z,ent.r))return;
       ent.targetX = data.x;
@@ -5422,7 +5837,10 @@ function handleIncomingData(conn, data) {
           if(item.hp < pl.hp && !pl.dead) applyLocalHitFeedback(pl.hp - item.hp);
           pl.hp = item.hp;
           pl.mhp=item.mh||pl.mhp;pl.form=item.fm||0;applyChampionBodySize(pl);
-          if(pl.ci===7){pl.ricoBank=!!item.rb;if(Number.isFinite(item.rc2))pl.c2=item.rc2;if(Number.isFinite(item.rc3))pl.c3=item.rc3;}
+          applyRefSnapshotState(pl,item);
+          if(Number.isFinite(item.c2)) pl.c2 = item.c2;
+          if(Number.isFinite(item.c3)) pl.c3 = item.c3;
+          if(Number.isFinite(item.c4)) pl.c4 = item.c4;
           pl.guard = item.gd || 0; pl.riposte = item.rp || 0; pl.guardBoost=item.gb||0; if(pl.ci===6){if(Number.isFinite(item.dc3))pl.c3=item.dc3;pl.huskRecallUsed=!!item.hr;}
           // Replicate host-applied status effects so stuns/slows/poison actually stop a client
           pl.stun = Math.max(pl.stun, item.st || 0);
@@ -5466,15 +5884,17 @@ function handleIncomingData(conn, data) {
         ent.targetP = item.p || 0;
         ent.hp = item.hp;
         ent.mhp=item.mh||ent.mhp;ent.form=item.fm||0;applyChampionBodySize(ent);
-        if(ent.ci===7){ent.ricoBank=!!item.rb;if(Number.isFinite(item.rc2))ent.c2=item.rc2;if(Number.isFinite(item.rc3))ent.c3=item.rc3;}
-      ent.guard = item.gd || 0; ent.riposte = item.rp || 0; ent.guardBoost=item.gb||0; if(ent.ci===6){if(Number.isFinite(item.dc3))ent.c3=item.dc3;ent.huskRecallUsed=!!item.hr;}
+        applyRefSnapshotState(ent,item);
+        if(Number.isFinite(item.c2)) ent.c2 = item.c2;
+        if(Number.isFinite(item.c3)) ent.c3 = item.c3;
+        if(Number.isFinite(item.c4)) ent.c4 = item.c4;
+        ent.guard = item.gd || 0; ent.riposte = item.rp || 0; ent.guardBoost=item.gb||0; if(ent.ci===6){if(Number.isFinite(item.dc3))ent.c3=item.dc3;ent.huskRecallUsed=!!item.hr;}
         ent.dead = item.dead;
         ent.stun = item.st || 0;
         ent.slow = item.sl || 0;
         if(ent.dead && ent.mesh) ent.mesh.visible = false;
       }
     }
-    syncRicoBumpers(data.ricoBumpers||[]);
     syncRemotePickups(data.pickups || []);
     syncRemoteCrate(data.crate || null);
     syncRemoteHusks(data.husks || []);
@@ -5526,7 +5946,8 @@ function handleIncomingData(conn, data) {
         const slack = actionCooldownSlack(conn);
         if(data.act === "ATTACK" && ent.c1 <= slack) accepted = true;
         else if(data.act === "AB1" && (ent.c2 <= slack || canReleaseDentleyGuard(ent))) accepted = true;
-        else if(data.act === "AB2" && ent.c3 <= slack && !(ent.ci===7&&ent.ricoBank)) accepted = true;
+        else if(data.act === "AB2" && ent.c3 <= slack) accepted = true;
+        else if(data.act === "AB3" && ent.ci===JACKPOT.hero && ent.c4 <= slack && !ent.jackpotLoaded && !ent.jackpotFlipPending && ent.jackpotAutoHeads<=0 && ent.jackpotAllInT<=0) accepted = true;
         if(accepted) {
           ent.hitRewindMs = actionHitRewind(conn);
           executeIntentAtPose(ent, data, pose);
@@ -5536,7 +5957,7 @@ function handleIncomingData(conn, data) {
       if(data.act === "EMOTE") accepted = executeEmote(ent, Math.round(data.a));
       else {
         const pose = actionPose(ent, data);
-        if(pose && ["ATTACK", "AB1", "AB2"].includes(data.act)) executeIntentAtPose(ent, data, pose);
+        if(pose && ["ATTACK", "AB1", "AB2", "AB3"].includes(data.act)) executeIntentAtPose(ent, data, pose);
       }
     }
     if(isLobbyLeader && accepted) {
@@ -5576,16 +5997,24 @@ setInterval(() => {
       kz: Math.round(e.kz),
       kl: e.killedBy,
       fm: e.form, mh: e.mhp, gd: e.guard > 0 ? e.guard : 0, rp: e.riposte, gb:e.guardBoost||0, dc3:e.c3, hr:!!e.huskRecallUsed,
-      rb:!!e.ricoBank,rc2:e.ci===7?e.c2:undefined,rc3:e.ci===7?e.c3:undefined,
+      c2: e.c2, c3: e.c3, c4:e.c4,
+      rmt:e.refMarkT||0,rmo:e.refMarkOwnerId,
+      rlt:e.refLineT||0,rti:e.refLineTargetId,
+      rsl:e.refSlowT||0,rww:e.refWhistleWindup||0,rwa:e.refWhistleActive||0,
+      jft:e.jackpotFlipT||0,jfp:!!e.jackpotFlipPending,jhl:e.jackpotLoaded||null,jph:!!e.jackpotPityHead,
+      jah:e.jackpotAutoHeads||0,jat:e.jackpotAllInT||0,jw:e.jackpotWager||0,jap:!!e.jackpotAllInPaid,
+      jsh:e.jackpotShield||0,jd:e.jackpotDice||0,jdt:e.jackpotDiceT||0,jst:e.jackpotSlowT||0,
+      cmr:e.cosmoMoonRecovery||[0,0,0],cww:e.cosmoWellWindup||0,cwp:!!e.cosmoWellPending,
+      cws:e.cosmoWellSlowT||0,ctt:e.cosmoTouchT||0,cti:e.cosmoMoonTag?e.cosmoMoonTag.targetId:null,
+      cmi:e.cosmoMoonTag?e.cosmoMoonTag.moonIndex:null,clx:e.cosmoMoonTag?e.cosmoMoonTag.launchX:null,
+      clz:e.cosmoMoonTag?e.cosmoMoonTag.launchZ:null,clt:e.cosmoMoonTag?e.cosmoMoonTag.travelT:null,
       un: e.username, tc: e.tagCosmetics,
       cs: e.skins && e.skins.championSkins ? e.skins.championSkins[e.ci] : "default",
-      ws: e.skins && e.skins.weaponSkins ? e.skins.weaponSkins[e.ci] : "default"
-    }));
+      ws: e.skins && e.skins.weaponSkins ? e.skins.weaponSkins[e.ci] : "default"    }));
     broadcastToPeers({
       type: "SNAPSHOT",
       seq: outgoingSeq,
       entities: snapEntities,
-      ricoBumpers:RicoBumpers.map(b=>({id:b.id,x:b.x,z:b.z,ownerId:b.ownerId,life:b.life})),
       pickups: Pickups.map(pk => ({ id: pk.uid, k: pk.kind, x: pk.x, z: pk.z })),
       husks: Husks.map(h => ({ id: h.id, x: h.x, z: h.z, hp: h.hp, l: h.life, ownerId:h.owner?h.owner.netId:null })),
       crate: worldCrate ? { id:worldCrate.id, x:worldCrate.x, z:worldCrate.z, y:worldCrate.y||0, hp:worldCrate.hp, bombT:worldCrate.bombT, exploded:!!worldCrate.exploded } : null,
@@ -6445,6 +6874,7 @@ function controlsHTML() {
     "<span>" + k("L-CLICK") + " Attack</span>", "<span>" + k(keys[1]) + " Ability 1</span>",
     "<span>" + k(keys[2]) + " Ability 2</span>"
   ];
+  if(p1HeroChoice>=0&&HEROES[p1HeroChoice]&&HEROES[p1HeroChoice].a3n)parts.push("<span>"+k(controlScheme==="wasd"?"F":".")+" "+HEROES[p1HeroChoice].a3n+"</span>");
   if(EMOTES.length) parts.push("<span>" + k("HOLD T") + " Emotes</span>");
   return parts.join(" · ");
 }
@@ -6480,12 +6910,13 @@ function champDetailHTML(ci) {
       <div class="statbar"><span>HP</span><div class="sb-track"><div class="sb-fill" style="width:${hpPct}%"></div></div><b>${c.hp}</b></div>
       <div class="statbar"><span>SPD</span><div class="sb-track"><div class="sb-fill spd" style="width:${spPct}%"></div></div><b>${c.sp}</b></div>
     </div>
-    <div class="cd-summary">Body size: ${["Largest","Large","Small","Medium","Smallest","Medium","Medium-large","Medium"][ci]} · ${ci===0?"Too large for the narrow shortcuts.":ci===1?"Fits Kitchen service passages, but not BBQ squeeze gaps.":"Fits BBQ squeeze gaps and Kitchen service passages."}</div>
+    <div class="cd-summary">Body size: ${["Largest","Large","Small","Medium","Smallest","Medium","Medium-large","Medium","Medium","Medium"][ci]} · ${ci===0?"Too large for the narrow shortcuts.":ci===1?"Fits Kitchen service passages, but not BBQ squeeze gaps.":"Fits BBQ squeeze gaps and Kitchen service passages."}</div>
     <div class="cd-weapon">${c.w} <b>${c.wn}</b> — ${c.ad}</div>
     <div class="cd-summary">${c.d}</div>
-    ${c.passive ? `<div class="cd-ability"><span class="cd-passive-label">P</span><div class="cd-ab-body"><b>Passive · Hollow Armor</b><br>${c.passive}</div></div>` : ""}
+    ${c.passive ? `<div class="cd-ability"><span class="cd-passive-label">P</span><div class="cd-ab-body"><b>Passive · ${c.passiveName || "Passive"}</b><br>${c.passive}</div></div>` : ""}
     <div class="cd-ability"><span class="key-badge">E</span><div class="cd-ab-body"><b>${c.a1n}</b> <span class="cd-chip">${c.a1cdSquire ? `${c.a1cd}s / ${c.a1cdSquire}s Squire` : `${c.a1cd}s`}</span><br>${c.a1d}</div></div>
     <div class="cd-ability"><span class="key-badge">Q</span><div class="cd-ab-body"><b>${c.a2n}</b> <span class="cd-chip">${c.a2cd}s</span><br>${c.a2d}</div></div>
+    ${c.a3n ? `<div class="cd-ability"><span class="key-badge">${controlScheme==="wasd"?"F":"."}</span><div class="cd-ab-body"><b>${c.a3n}</b> <span class="cd-chip">${c.a3cd}s</span><br>${c.a3d}</div></div>` : ""}
   `;
 }
 
@@ -6605,6 +7036,8 @@ function menu(msg) {
       });
       const detail = document.getElementById("champ-detail");
       if(detail) detail.innerHTML = champDetailHTML(p1HeroChoice);
+      const controls=document.getElementById("footer-controls-text");
+      if(controls)controls.innerHTML=controlsHTML();
       if(demoActive) rebuildShowcase();
       if(isMultiplayer) {
         const me = roster.find(x => x.id === myNetId);
@@ -6658,7 +7091,6 @@ window.cancelLobby = function() {
 
 function clearSceneEntities() {
  clearProjectileHitNotices();
-  clearRicoBumpers();
   for(const e of E) { disposeEntityExtras(e); disposeHierarchy(e.mesh); }
   for(const p of P) { disposeHierarchy(p.mesh); }
   for(const f of F) { disposeHierarchy(f.mesh); }
@@ -6975,7 +7407,7 @@ function initMatchView() {
   demoActive = false;
   demoResetTimer = 0;
   if(showcaseMesh) { disposeHierarchy(showcaseMesh); showcaseMesh = null; }
-  matchOver = false; M.down = 0; P1_ab1 = 0; P1_ab2 = 0; specSwayTarget = null;
+  matchOver = false; M.down = 0; P1_ab1 = 0; P1_ab2 = 0; P1_ab3 = 0; specSwayTarget = null;
 
   isSpectating = false;
   spectateTarget = null;
@@ -7130,7 +7562,6 @@ function upd(dt) {
   }
 
   matchTime += dt;
-  updateRicoBumpers(dt);
   updateArenaMechanics(dt);
   updateStormAudio();
   if(!demoActive && matchTime > 4.0 && stormRadius > minStormRadius) {
@@ -7234,6 +7665,10 @@ function upd(dt) {
             e.sporeAttacker = z.owner;
             spawnDamageNumber(e.x, e.z, "BLIGHTED", "#a855f7");
           }
+        } else if(z.kind === "cosmo_well" && (!isMultiplayer||isLobbyLeader)) {
+          const dx=z.x-targetPos.x,dz=z.z-targetPos.z,dist=Math.hypot(dx,dz)||1;
+          e.kx+=dx/dist*150*dt;e.kz+=dz/dist*150*dt;
+          e.cosmoWellSlowT=Math.max(e.cosmoWellSlowT||0,.18);
         }
       }
     }
@@ -7254,6 +7689,7 @@ function upd(dt) {
   updateHusks(dt);
 
   // ENTITIES
+  for(const e of E) { e.refPrevX = e.x; e.refPrevZ = e.z; }
   for(const e of E) {
     applyChampionBodySize(e);
     if(e.dead) {
@@ -7289,7 +7725,9 @@ function upd(dt) {
       }
     }
 
-    e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt; e.guard -= dt; e.guardBoost=Math.max(0,(e.guardBoost||0)-dt); e.comboT -= dt; e.grace -= dt; e.feintInvuln = Math.max(0, e.feintInvuln - dt);
+    e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt; e.c4 -= dt; e.guard -= dt; e.guardBoost=Math.max(0,(e.guardBoost||0)-dt); e.comboT -= dt; e.grace -= dt; e.feintInvuln = Math.max(0, e.feintInvuln - dt);
+    e.jackpotSlowT=Math.max(0,(e.jackpotSlowT||0)-dt);
+    updateRefTimers(e,dt);
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
     e.emoteCooldown = Math.max(0, e.emoteCooldown - dt);
     if(e.emoteT > 0) {
@@ -7386,7 +7824,7 @@ function upd(dt) {
       ab2 = P1_ab2;
 
       const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
-      const slowMod = (e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0);
+      const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.refSlowT > 0 ? REF.lineSlowMultiplier : 1) * (e.jackpotSlowT>0?0.5:1) * (e.cosmoWellSlowT>0?1-COSMO.wellSlow:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
@@ -7394,10 +7832,11 @@ function upd(dt) {
       if(at && e.stun<=0 && e.c1 <= 0) attack(e);
       if(ab1 && e.stun<=0 && (e.c2 <= 0 || canReleaseDentleyGuard(e))) ability1(e);
       if(ab2 && e.stun<=0 && e.c3 <= 0) ability2(e);
+      if(P1_ab3 && e.stun<=0 && e.c4<=0)ability3(e);
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
       const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
-      const slowMod = (e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0);
+      const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.refSlowT > 0 ? REF.lineSlowMultiplier : 1) * (e.jackpotSlowT>0?0.5:1) * (e.cosmoWellSlowT>0?1-COSMO.wellSlow:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
@@ -7407,7 +7846,7 @@ function upd(dt) {
       if(ab2 && e.stun<=0 && e.c3 <= 0) ability2(e);
     }
 
-    if(e === pl) { P1_ab1 = 0; P1_ab2 = 0; }
+    if(e === pl) { P1_ab1 = 0; P1_ab2 = 0; P1_ab3 = 0; }
 
     moveChampion(e,e.kx*dt,e.kz*dt);
     const fr = 1 - Math.min(1, 8*dt);
@@ -7418,6 +7857,20 @@ function upd(dt) {
         const dx = e.x - o.x, dz = e.z - o.z, d = Math.hypot(dx, dz), m = e.r + o.r;
         if(d > 0 && d < m) {
           moveChampion(e,(dx/d)*(m-d)*.5,(dz/d)*(m-d)*.5);
+        }
+      }
+      if(e.ci===COSMO.hero&&e.cosmoTouchT<=0&&(!isMultiplayer||isLobbyLeader)) {
+        let touched=null;
+        for(let i=0;i<COSMO.moonCount&&!touched;i++) {
+          if(e.cosmoMoonRecovery[i]>0||(e.cosmoMoonTag&&e.cosmoMoonTag.moonIndex===i))continue;
+          const angle=matchTime*2.2+i*Math.PI*2/COSMO.moonCount;
+          const mx=e.x+Math.cos(angle)*COSMO.moonOrbitRadius,mz=e.z+Math.sin(angle)*COSMO.moonOrbitRadius;
+          touched=E.find(target=>target!==e&&!target.dead&&areEnemies(e,target)&&Math.hypot(target.x-mx,target.z-mz)<target.r+7)||null;
+        }
+        if(touched) {
+          e.cosmoTouchT=COSMO.moonTouchInterval;
+          const angle=Math.atan2(touched.z-e.z,touched.x-e.x);
+          hurt(touched,COSMO.moonTouchDamage,angle,60,e);
         }
       }
     }
@@ -7469,16 +7922,16 @@ function upd(dt) {
     }
   }
 
+  updateRefLineCrossings();
+  updateRefVisuals();
+  updateJackpotCosmoVisuals();
+
   // Projectiles — all termination paths funnel through one finalize step so
   // onDeath fires exactly once (lifetime, wall, or player hit) and no further
   // collisions are processed after a projectile is marked dead.
   if(isMultiplayer && isLobbyLeader) recordCombatHistory();
   for(let i = P.length - 1; i >= 0; i--) {
     const p = P[i];
-    if(p.t==="cue"){
-      if(!updateRicoBall(p,dt)){disposeHierarchy(p.mesh);P.splice(i,1);}
-      continue;
-    }
     let finalize = false;
 
     if(p.t === "b") {
@@ -7508,12 +7961,12 @@ function upd(dt) {
     if(!finalize && p.out && (!isMultiplayer || isLobbyLeader)) {
       for(const h of Husks) {
         if(h.owner !== p.o && Math.hypot(h.x - p.x, h.z - p.z) < 19) {
-          h.hp -= p.d || 8; spawnSparks(h.x, h.z, 0xaab2c0, 3); finalize = true; break;
+          if(p.t !== "ref_card") { h.hp -= p.d || 8; spawnSparks(h.x, h.z, 0xaab2c0, 3); }
+          finalize = true; break;
         }
       }
     }
-    // Wall handling: boomerangs switch to their return phase, ricochet balls bank,
-    // everything else dies (with its onDeath firing exactly once at finalize)
+    // Wall handling: boomerangs switch to their return phase; other shots terminate.
     if(!finalize && p.out && blocked(p.x, p.z, 2)) {
       if(p.t === "b") {
         p.out = false;
@@ -7526,8 +7979,24 @@ function upd(dt) {
 
     if(!finalize && p.out && worldCrate&&!(worldCrate.y>0)&&worldCrate.bombT===null&&(!isMultiplayer||isLobbyLeader)
        && Math.hypot(worldCrate.x - p.x, worldCrate.z - p.z) < worldCrate.r + 8) {
-      damageWorldCrate(p.d || 8, p.o);
+      if(p.t !== "ref_card") damageWorldCrate(p.d || 8, p.o);
       finalize = true;
+    }
+
+    if(!finalize&&p.out&&p.t!=="cosmo_moon"&&(!isMultiplayer||isLobbyLeader)) {
+      for(const cosmo of E) {
+        if(cosmo.ci!==COSMO.hero||cosmo.dead||!areEnemies(p.o,cosmo))continue;
+        for(let mi=0;mi<COSMO.moonCount;mi++) {
+          if(cosmo.cosmoMoonRecovery[mi]>0||(cosmo.cosmoMoonTag&&cosmo.cosmoMoonTag.moonIndex===mi))continue;
+          const orbit=matchTime*2.2+mi*Math.PI*2/COSMO.moonCount;
+          const moonX=cosmo.x+Math.cos(orbit)*COSMO.moonOrbitRadius,moonZ=cosmo.z+Math.sin(orbit)*COSMO.moonOrbitRadius;
+          if(refPointSegmentDistance(moonX,moonZ,p.x-p.vx*dt,p.z-p.vz*dt,p.x,p.z)<8) {
+            cosmo.cosmoMoonRecovery[mi]=COSMO.moonGuardRecovery;
+            spawnSparks(moonX,moonZ,0x80eaff,7);finalize=true;break;
+          }
+        }
+        if(finalize)break;
+      }
     }
 
     if(!finalize) {
@@ -7537,8 +8006,12 @@ function upd(dt) {
            && areEnemies(p.o, t)
            && Math.hypot(targetPos.x - p.x, targetPos.z - p.z) < t.r + 9) {
           p.hit.add(t);
-          hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o, "projectile");
-          if(p.t !== "b") {
+          if(p.t === "ref_card") {
+            if(!isMultiplayer || isLobbyLeader) setRefMark(p.o,t);
+          } else {
+            hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o, "projectile");
+          }
+          if(p.t !== "b"&&p.t!=="cosmo_moon") {
             finalize = true;
             break; // a terminating hit stops further collisions this frame
           }
