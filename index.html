@@ -7970,62 +7970,63 @@ requestAnimationFrame(loop);
 <script>
 (() => {
   // ============== EDIT YOUR UPDATE NOTES HERE ==============
-  const VERSION_UPDATES = {
-  "version": "BRAWLBOUND v1.2.8",
-  "game": [
-    "NORMAL RELEASE: Developer Mode controls and developer-account switching are not included. Normal account progress and purchases are used.",
-    "Jackpot is an Epic champion unlocked permanently for 1,000 Shinies. His card has a yellow NEW! badge and thin yellow border; the locked price is red when unaffordable and green when affordable.",
-    "Jackpot cosmetics: House Edge weapon skin and High Roller Jackpot champion outfit, both Epic, available through their existing cosmetic crates.",
-    "Champion outfit upgrades: Temple Trickster Mango, Dragon Chef Sizzle, Neon Overdrive Quackbot, and Dawn Knight Dentley have additional modeled armor and accessories. Jackpot's jacket and lapels sit lower to clear his face.",
-    "Roll the Dice shows the last rolled number and its effect in Jackpot's HUD until the next roll.",
-    "Bruno and Dentley now display directional melee sectors matching their attack arcs instead of misleading full-circle hit rings. Walls clip the sector display.",
-    "Mango's boomerangs pass through supply crates, damaging the same surviving crate once outbound and once on the return leg.",
-    "Quick Match probes QM01-QM06 twice and prioritizes the fullest reachable lobby with open seats. Collision fallback rechecks populations; countdown text updates without rebuilding the menu every second.",
-    "Account creation uses direct click/Enter handlers for embedded previews, with visible error reporting and a session-only warning when persistent storage is restricted. Jackpot purchases use an in-game confirmation panel.",
-    "Champion information wraps vertically. Special characters use encoding-safe representations to avoid garbled text.",
-    "Shinies rewards remain 50 for daily login, 15 per Quick Match elimination, and 75 per Quick Match win, plus daily challenges. Ordinary elimination healing restores 25% max HP without refilling Jackpot's excess HP.",
-    "The update panel has separate Game Updates and Champion Balance tabs and opens collapsed."
+const VERSION_UPDATES = {
+  version: "BRAWLBOUND v1.2.0",
+
+  game: [
+    "NEW CHAMPION: Jackpot! Permanently unlock him for 1,000 Shinies.",
+
+    "NEW JACKPOT SKINS: House Edge weapon skin and High Roller Jackpot outfit.",
+
+    "Improved champion skins for Mango, Chef Sizzle, Quackbot, and Sir Dentley. Adjusted Jackpot's suit to keep his face clear.",
+
+    "Quick Match now prioritizes the fullest reachable lobby with open spaces."
   ],
-  "champions": [
+
+  champions: [
     {
-      "type": "nerf",
-      "text": "Captain Oink: Cannonball direct damage 27 \u2192 25; cooldown 9.5s \u2192 10s. Chain Hook cooldown 11.5s \u2192 12s. Cannonball splash remains 15 damage in an 80-unit radius."
+      type: "nerf",
+      text: "Captain Oink — Cannonball direct damage reduced from 27 to 25 and cooldown increased from 9.5s to 10s. Chain Hook cooldown increased from 11.5s to 12s."
     },
+
     {
-      "type": "buff",
-      "text": "Bruno: normal Sledgehammer sweeps a 270\u00b0 arc, with a matching directional indicator. Damage remains 30 and range remains 80. It can reflect ordinary Jackpot bullets, but bullets fired during ALL IN cannot be reflected. Boomerangs, bananas, and magical shots remain unreflectable."
+      type: "buff",
+      text: "Bruno — Sledgehammer now hits a 270° arc with an accurate attack indicator. Can reflect Jackpot's bullets unless they were fired during ALL IN."
     },
+
     {
-      "type": "buff",
-      "text": "Sir Dentley: armored normal sword attacks sweep 210\u00b0, including the combo-finisher strike. Counter Lunge reaches 110 units instead of 100; cooldown remains 8.5s, damage remains 10 + Counter Charge (up to 50), with 0.3\u20131.5s stun."
+      type: "buff",
+      text: "Sir Dentley — Normal sword attacks now hit a 210° arc. Counter Lunge range increased from 100 to 110 units."
     },
+
     {
-      "type": "buff",
-      "text": "Squire: normal dagger attacks hit all 360\u00b0 around him. Recall Armor becomes available 5s after armor breaks instead of 6s. Dagger Feint moves forward up to 70 units rather than sideways; it retains a 7s cooldown, 0.2s invulnerability, and 10 damage plus 0.4s stun per crossed enemy, once each."
+      type: "buff",
+      text: "Squire — Normal attacks now hit all 360° around him. Recall Armor becomes available after 5s instead of 6s. Dagger Feint now dashes forward up to 70 units instead of sideways."
     },
+
     {
-      "type": "nerf",
-      "text": "Quackbot: Blink moves up to 15 short steps instead of 16; walls still stop it. Normal Plasma Blaster damage 8 \u2192 7 per shot. Barrage remains seven 7.5-damage darts with a 9s cooldown."
+      type: "nerf",
+      text: "Quackbot — Blink reduced from 16 to 15 short steps. Normal Plasma Blaster damage reduced from 8 to 7 per shot."
     },
+
     {
-      "type": "nerf",
-      "text": "Mycelis: Root Entangle root duration 1.8s \u2192 1.7s. Damage remains 10 direct + 10 over 3s, radius 50, cooldown 9s. This is a root, not a newly added full stun."
+      type: "nerf",
+      text: "Mycelis — Root Entangle duration reduced from 1.8s to 1.7s."
     },
+
     {
-      "type": "buff",
-      "text": "Mango: normal returning boomerangs retain 16 damage and now pass through supply crates, allowing one hit on each leg. Cluster Bomb remains 9s cooldown with 9-damage bananas; Peel Trap remains 11s cooldown, 40-unit placement, and 10 damage."
+      type: "buff",
+      text: "Mango — Boomerangs now pass through supply crates and can hit them once outbound and once returning."
     },
+
     {
-      "type": "rework",
-      "text": "Jackpot: ALL IN lasts 6s (was 7), wagers 25% current HP (was 20%), grants 25% movement speed, and fires normal 20-damage Heads (was 25). Each kill heals twice the original wager and restarts the 6s timer without another wager. Payouts can exceed max HP; ordinary healing cannot refill excess HP after damage removes it."
-    },
-    {
-      "type": "rework",
-      "text": "Current unchanged balance: Bruno Slam 15 damage / 1.1s stun; Charge 10 damage. Chef Sizzle Marinara radius 60 / 3s duration. Dentley Guard lasts 2.2s in a 180\u00b0 front arc; releasing between 0.5s and 1.8s grants +25% speed for 0.8s. Guard cooldown remains 10s. Squire husk lasts 10s and requires 1.5s stationary rearming within 50 units."
+      type: "rework",
+      text: "Jackpot — ALL IN lasts 6s, wagers 25% of current HP, grants 25% movement speed, and fires 20-damage Heads. Each kill heals twice the original wager and resets the timer to 6s. Payouts can temporarily exceed max HP."
     }
   ]
 };
-  // =================== END EDIT SECTION ===================
+
+// =================== END EDIT SECTION ===================
 
   const oldPanel = document.getElementById("menu-updates-panel");
   if (!oldPanel) {
