@@ -656,7 +656,7 @@ html, body {
 .menu-updates summary{cursor:pointer;list-style:none;display:flex;flex-direction:column;gap:3px;font:900 12px 'Space Grotesk',sans-serif;}
 .menu-updates summary::-webkit-details-marker{display:none;}
 .menu-updates summary>span:first-child::after{content:" +";color:#ffd166;}
-.menu-updates[open] summary>span:first-child::after{content:" âˆ’";}
+.menu-updates[open] summary>span:first-child::after{content:" \2212 ";}
 .menu-updates summary:focus-visible{outline:2px solid #ffd166;outline-offset:4px;}
 </style>
 
@@ -686,7 +686,17 @@ html, body {
 .hc-rarity.hc-new,.cd-rarity.cd-new{color:#382700;background:#ffdb63;border-color:#ffeaa1;box-shadow:0 0 12px #ffd75c33;text-shadow:none;font-weight:900}
 .hero-card[data-new="true"]{border-color:#ffd75c77}
 </style>
-</head>
+<style id="jackpot-menu-layout-fix">
+#ov { overflow-x:hidden; } #ov > * { flex-shrink:0; }
+.menu-cols,.detail-col,.champ-detail { min-width:0; }
+.detail-col { width:316px; max-width:100%; }
+#champ-detail { display:flex; flex-flow:column nowrap; width:100%; }
+#champ-detail > * { min-width:0; max-width:100%; flex-shrink:0; }
+#champ-detail .cd-ab-body { flex:1 1 0; min-width:0; }
+#champ-detail .cd-ab-body,#champ-detail .cd-weapon,#champ-detail .cd-summary { white-space:normal; overflow-wrap:anywhere; }
+#champ-detail .key-badge { flex-shrink:0; } #champ-detail .cd-hero { flex-wrap:wrap; }
+@media(max-width:860px) { .detail-col { width:100%; } }
+</style></head>
 <body>
 <div id="wrap">
   <canvas id="c3d"></canvas>
@@ -705,7 +715,7 @@ html, body {
       <div id="hud-player-name">Hero Name</div>
       <div id="hud-hp-bar"><div id="hud-hp-fill"></div></div>
       <div id="hud-player-hp">HP: 100 / 100</div>
-      <div id="hud-currency">âœ¨ 0 Shinies</div>
+      <div id="hud-currency">&#10024; 0 Shinies</div>
     </div>
     <div id="compass">
       <span id="room-badge">ARENA ZONE</span>
@@ -719,7 +729,7 @@ html, body {
       <div class="emote-option" data-dir="right"></div>
       <div class="emote-option" data-dir="down"></div>
       <div class="emote-option" data-dir="left"></div>
-      <div id="emote-hint">MOVE MOUSE Â· RELEASE T</div>
+      <div id="emote-hint">MOVE MOUSE &#183; RELEASE T</div>
     </div>
     <div id="hud-cooldowns">
       <div class="cd-bar"><div id="cd1-fill" class="cd-fill"></div><span id="cd1-label" class="cd-text">[E] A1</span></div>
@@ -751,8 +761,8 @@ html, body {
     <div class="economy-card">
       <div class="economy-head">
         <div class="economy-title" id="economy-title">Account</div>
-        <div class="economy-wallet" id="economy-wallet">âœ¨ 0 Shinies</div>
-        <button class="economy-close" id="economy-close" aria-label="Close" onclick="closeEconomyModal()">Ã—</button>
+        <div class="economy-wallet" id="economy-wallet">&#10024; 0 Shinies</div>
+        <button class="economy-close" id="economy-close" aria-label="Close" onclick="closeEconomyModal()">&#215;</button>
       </div>
       <div id="economy-body"></div>
     </div>
@@ -805,25 +815,25 @@ const PATCH_UPDATES = {
 // CHAIN=hook tuning; RADII=collision size in roster order; DAILY_POOL=targets/payouts.
 const HEROES = [
  {
-   n:"Bruno", e:"ðŸ»", w:"ðŸ”¨", wn:"Grand Sledgehammer",
+   n:"Bruno", e:"\ud83d\udc3b", w:"\ud83d\udd28", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
    hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
    a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 15 damage, heavy knockback, and a 1.1-second stun.",
    a2n:"Charge", a2cd: 14.0,
-   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oinkâ€™s bullets and cannonballs, Sizzleâ€™s meatballs, and Quackbotâ€™s bullets in front of Bruno. Boomerangs, bananas, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
+   ad:"A broad 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink\u2019s bullets and cannonballs, Sizzle\u2019s meatballs, and Quackbot\u2019s bullets in front of Bruno. Boomerangs, bananas, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
    melee: true, d:"A durable frontline tank who controls space with a wide, hard-hitting hammer. Slam interrupts nearby enemies, while Charge lets Bruno cross a short gap and scatter anyone in his path. Time his swings to turn away incoming shots and hold space around himself."
  },
  {
-   n:"Captain Oink", e:"ðŸ·", w:"âš“", wn:"Scrap Cannon",
+   n:"Captain Oink", e:"\ud83d\udc37", w:"\u2693", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
    hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
    a1n:"Chain Hook", a1cd: 11.5, a1d:"Launch a hook up to 200 units ahead. Hitting an enemy pulls them toward Captain Oink and stuns them when they arrive; striking a wall pulls him to it. He is protected while the hook flies or reels in a target, but a miss leaves him rooted and vulnerable for a longer return.",
    a2n:"Cannonball", a2cd: 9.5,
    ad:"Fire five scrap pellets in a spread, each dealing 8.5 damage. It rewards close aim, where more pellets can connect.", a2d:"Fire a heavy cannonball for 27 direct damage and a blast that can hit enemies within 80 units for 15 damage, knockback, and a half-second stun.",
-   melee: false, d:"A sturdy close-range bruiser who can start fights with a hook, then punish clustered opponents with his scrap shotgun or explosive cannonball. Hooked foes are dragged into Captain Oinkâ€™s preferred range, while a wall hit gives him a quick route through the arena. A missed hook creates a brief opening, so choose the angle carefully."
+   melee: false, d:"A sturdy close-range bruiser who can start fights with a hook, then punish clustered opponents with his scrap shotgun or explosive cannonball. Hooked foes are dragged into Captain Oink\u2019s preferred range, while a wall hit gives him a quick route through the arena. A missed hook creates a brief opening, so choose the angle carefully."
  },
  {
-   n:"Mango the Monkey", e:"ðŸµ", w:"ðŸŒ", wn:"Twin Crescent Boomerang",
+   n:"Mango the Monkey", e:"\ud83d\udc35", w:"\ud83c\udf4c", wn:"Twin Crescent Boomerang",
    role: "Skirmisher", roleCol: "#d6a71e",
    hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
    a1n:"Cluster Bomb", a1cd: BALANCE_PATCH.mango.bombCooldown, a1d:"Lob a fruit bomb ahead. When it bursts, six returning banana boomerangs fan out from the blast point, each dealing 9 damage and knockback on a hit.",
@@ -832,7 +842,7 @@ const HEROES = [
    melee: false, d:"A fast skirmisher who keeps moving while boomerangs pressure opponents from different angles. Cluster Bomb scatters returning blades across a fight, and Peel Trap can punish a pursuer or guard a narrow route. Mango is less durable than the frontliners, so use speed and spacing to avoid being pinned down."
  },
  {
-   n:"Chef Sizzle", e:"ðŸ§‘â€ðŸ³", w:"ðŸ", wn:"Culinary Meatball Cannon",
+   n:"Chef Sizzle", e:"\ud83e\uddd1\u200d\ud83c\udf73", w:"\ud83c\udf5d", wn:"Culinary Meatball Cannon",
    role: "Sniper", roleCol: "#d44722",
    hp: 130, sp: 155, col: 0xededed, cd: 1.1,
    a1n:"Marinara", a1cd: 7.5, a1d:"Place a 60-unit sauce pool 80 units ahead for 3 seconds. Enemies standing in it are slowed and take continuous burn damage.",
@@ -841,7 +851,7 @@ const HEROES = [
    melee: false, d:"A fragile ranged specialist who controls lanes with heavy meatball shots and lingering fire. Marinara makes a section of the arena costly to hold, while Backdraft creates distance and leaves a dangerous trail behind. Sizzle performs best when she can see a route ahead and keep opponents outside close range."
  },
  {
-   n:"Quackbot", e:"ðŸ¤–", w:"ðŸ¦†", wn:"Cybernetic Plasma Blaster",
+   n:"Quackbot", e:"\ud83e\udd16", w:"\ud83e\udd86", wn:"Cybernetic Plasma Blaster",
    role: "Assassin", roleCol: "#2b9bc4",
    hp: 110, sp: 185, col: 0x309bb0, cd: 0.25,
    a1n:"Blink", a1cd: 6.0, a1d:"Dash instantly forward in up to sixteen short steps. Walls stop the movement, so Blink can slip around cover but cannot pass through it.",
@@ -850,7 +860,7 @@ const HEROES = [
    melee: false, d:"A very fast but fragile assassin built around accurate, repeated shots. Blink changes position quickly, and Barrage adds a concentrated burst when an opponent is exposed. Quackbot relies on movement and timing to avoid trading hits with tougher champions."
  },
  {
-   n:"Mycelis", e:"ðŸ„", w:"ðŸª„", wn:"Chitinous Spore Staff",
+   n:"Mycelis", e:"\ud83c\udf44", w:"\ud83e\ude84", wn:"Chitinous Spore Staff",
    role: "Tactician", roleCol: "#7d5ba6",
    hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
    a1n:"Spore Pod", a1cd: BALANCE_PATCH.mycelis.podCooldown, a1d:"Plant a hidden pod 40 units ahead. It waits for up to 6 seconds. Triggering it releases a cloud that poisons affected enemies for 20 total damage over 5 seconds (4 per second) and slows movement by 60% while poisoned, leaving 40% normal movement speed. The 7-second cooldown begins when the pod triggers or expires.",
@@ -859,20 +869,20 @@ const HEROES = [
    melee: false, d:"A tactician who shapes the fight with concealed traps and precise root projectiles. Spore Pod punishes enemies who chase through a planted route, while Root Entangle can hold a target in place for follow-up attacks. Spore Pod poisons enemies for 20 damage over 5 seconds and slows movement by 60%. Root Entangle deals 10 direct damage plus 10 over 3 seconds and roots for 1.8 seconds. Mycelis relies on preparation and accurate placement to control fights."
  },
  {
-   n:"Sir Dentley", e:"ðŸ›¡ï¸", w:"âš”ï¸", wn:"Longsword",
+   n:"Sir Dentley", e:"\ud83d\udee1\ufe0f", w:"\u2694\ufe0f", wn:"Longsword",
    role: "Duelist", roleCol: "#9fb4d6",
    hp: 210, sp: 125, col: 0x8d97a8, cd: 0.5,
 
    a1n:"Shield Guard",
    a1cd: BALANCE_PATCH.dentley.guardCooldown,
    a1cdSquire: BALANCE_PATCH.dentley.feintCooldown,
-   a1d:"Armored â€” Shield Guard: Guard for 2.2 seconds in a 180Â° front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage builds Counter Charge, up to 40. Movement is 25% slower while guarding, and attacks and other abilities are unavailable. Press this ability again between 0.5 and 1.8 seconds after raising the shield to release it and gain 25% movement speed for 0.8 seconds. Releasing after 1.8 seconds is allowed but grants no boost; letting Guard expire naturally also grants no boost. Early release does not refund the cooldown. Squire â€” Dagger Feint: Sidestep up to 70 units with 0.2 seconds of invulnerability. Each enemy crossed takes 10 damage before damage reduction and is stunned for 0.4 seconds, once per activation. Walls stop the sidestep. Cooldown: 7 seconds.",
+   a1d:"Armored \u2014 Shield Guard: Guard for 2.2 seconds in a 180\u00b0 front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage builds Counter Charge, up to 40. Movement is 25% slower while guarding, and attacks and other abilities are unavailable. Press this ability again between 0.5 and 1.8 seconds after raising the shield to release it and gain 25% movement speed for 0.8 seconds. Releasing after 1.8 seconds is allowed but grants no boost; letting Guard expire naturally also grants no boost. Early release does not refund the cooldown. Squire \u2014 Dagger Feint: Sidestep up to 70 units with 0.2 seconds of invulnerability. Each enemy crossed takes 10 damage before damage reduction and is stunned for 0.4 seconds, once per activation. Walls stop the sidestep. Cooldown: 7 seconds.",
 
    a2n:"Counter Lunge",
    a2cd: BALANCE_PATCH.dentley.lungeCooldown,
-   a2d:"Armored â€” Counter Lunge: Lunge forward up to 100 units, dealing 10 damage plus stored Counter Charge, up to 50 total damage. Stun scales from 0.3 seconds at zero charge to 1.5 seconds at 40 charge. All charge is spent when used, even if the lunge misses. Squire â€” Recall Armor: Becomes available 6 seconds after turning into Squire. Press this ability to place the surviving armor husk directly in front of you. Usable once per armor break. Recall does not restore the husk's health, refresh its remaining lifetime, or immediately rearm you. Destroyed or expired armor cannot be recalled.",
+   a2d:"Armored \u2014 Counter Lunge: Lunge forward up to 100 units, dealing 10 damage plus stored Counter Charge, up to 50 total damage. Stun scales from 0.3 seconds at zero charge to 1.5 seconds at 40 charge. All charge is spent when used, even if the lunge misses. Squire \u2014 Recall Armor: Becomes available 6 seconds after turning into Squire. Press this ability to place the surviving armor husk directly in front of you. Usable once per armor break. Recall does not restore the husk's health, refresh its remaining lifetime, or immediately rearm you. Destroyed or expired armor cannot be recalled.",
 
-   ad:"Armored â€” Longsword: A 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units. The combo resets after 0.9 seconds without another hit. Squire â€” Dagger: Close-range attacks deal 8 damage.",
+   ad:"Armored \u2014 Longsword: A 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units. The combo resets after 0.9 seconds without another hit. Squire \u2014 Dagger: Close-range attacks deal 8 damage.",
 
    melee: true,
    atkRange: 70,
@@ -887,15 +897,15 @@ const HEROES = [
 ];
 
 
-HEROES.push({n:"Jackpot",e:"ðŸŽ°",w:"ðŸª™",wn:"Lucky Revolver",role:"Ranged",roleCol:"#f2c14e",hp:160,sp:150,col:0x8c3d39,cd:0.6,
+HEROES.push({n:"Jackpot",e:"\ud83c\udfb0",w:"\ud83e\ude99",wn:"Lucky Revolver",role:"Ranged",roleCol:"#f2c14e",hp:160,sp:150,col:0x8c3d39,cd:0.6,
  a1n:"Roll the Dice",a1cd:9,a2n:"All In",a2cd:17,a3n:"Coin Toss",a3cd:1,melee:false,atkRange:500,
  ad:"Fire for 6 damage every 0.6 seconds. A loaded Heads coin makes the next shot deal 20 damage; Tails deals 6.",
  a1d:"Roll a visible die: 1 takes 15 damage; 2 slows you by 50% for 2 seconds; 3 heals 25; 4 grants 35% speed for 3 seconds; 5 absorbs 40 damage; 6 heals 40, boosts speed, and guarantees Heads on your next 3 shots.",
- a2d:"Wager 20% of your current HP. For 7 seconds, every shot is a guaranteed 25-damage Heads. Get a kill during the window to heal twice the wager; otherwise the wager is lost.",
+ a2d:"Wager 25% of your current HP. For 6 seconds, move 25% faster and fire guaranteed 20-damage Heads. Every kill heals twice the original wager and restarts the 6-second window without another wager. Payouts can exceed max HP until damage removes the excess; normal healing cannot refill excess HP.",
  a3d:"Flip and load one coin. It takes 0.5 seconds to land: Heads deals 20 damage on your next shot, Tails deals 6. A Tail guarantees Heads on your next flip. Fire to clear the chamber before flipping again.",
  d:"A high-variance gunslinger who can flip for a stronger shot, gamble on a die, or wager health for a short all-in burst."
 });
-const JACKPOT={hero:7,baseDamage:6,headsDamage:20,allInDamage:25,flipDuration:0.5,allInDuration:7,wagerFraction:0.2};
+const JACKPOT={hero:7,baseDamage:6,headsDamage:20,allInDamage:20,flipDuration:0.5,allInDuration:6,wagerFraction:0.25,allInSpeedMultiplier:1.25};
 
 const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
 
@@ -1015,7 +1025,7 @@ const COSMETIC_HERO_COUNT = 7;
 
 const MENU_ANNOUNCEMENT = PATCH_UPDATES.announcement;
 const NAMEPLATE_CATEGORIES = [
-  { key: "nameColors", label: "Nametag Colors", cratePrice: 250, crateName: "Prismatic Color Cache", crateIcon: "ðŸŒˆ", items: [
+  { key: "nameColors", label: "Nametag Colors", cratePrice: 250, crateName: "Prismatic Color Cache", crateIcon: "\ud83c\udf08", items: [
     { id: "ember-soul", name: "Ember Soul", rarity: "Common", color: { from: "#fff0a6", to: "#ff552e" } },
     { id: "glacier-arc", name: "Glacier Arc", rarity: "Common", color: { from: "#c3ffff", to: "#4199ff" } },
     { id: "verdant-relic", name: "Verdant Relic", rarity: "Uncommon", color: { from: "#e6ff9a", to: "#12c58d" } },
@@ -1025,7 +1035,7 @@ const NAMEPLATE_CATEGORIES = [
     { id: "solar-crown", name: "Solar Crown", rarity: "Epic", color: { from: "#fff8ad", to: "#ff8a21" } },
     { id: "aurora-crown", name: "Aurora Crown", rarity: "Legendary", color: { from: "#a7fff4", to: "#ff8be8" } }
   ]},
-  { key: "borderColors", label: "Nametag Borders", cratePrice: 250, crateName: "Runebound Border Cache", crateIcon: "ðŸ’ ", items: [
+  { key: "borderColors", label: "Nametag Borders", cratePrice: 250, crateName: "Runebound Border Cache", crateIcon: "\ud83d\udca0", items: [
     { id: "copper-rune", name: "Copper Rune", rarity: "Common", color: "#ff9a5c", style: "rune" },
     { id: "ice-filament", name: "Ice Filament", rarity: "Common", color: "#8bf4ff", style: "double" },
     { id: "jade-circuit", name: "Jade Circuit", rarity: "Uncommon", color: "#70ffc5", style: "circuit" },
@@ -1035,7 +1045,7 @@ const NAMEPLATE_CATEGORIES = [
     { id: "crown-of-stars", name: "Crown of Stars", rarity: "Epic", color: "#ffe68b", style: "stars" },
     { id: "dragon-regalia", name: "Dragon Regalia", rarity: "Legendary", color: "#ffcf73", style: "ornate" }
   ]},
-  { key: "backgrounds", label: "Nametag Designs", cratePrice: 300, crateName: "Mythic Pattern Cache", crateIcon: "ðŸŒŒ", items: [
+  { key: "backgrounds", label: "Nametag Designs", cratePrice: 300, crateName: "Mythic Pattern Cache", crateIcon: "\ud83c\udf0c", items: [
     { id: "emberforge", name: "Emberforge", rarity: "Common", from: "rgba(64,18,18,0.94)", to: "rgba(255,107,36,0.7)", pattern: "grid" },
     { id: "moonlit", name: "Moonlit Observatory", rarity: "Common", from: "rgba(10,22,54,0.95)", to: "rgba(81,105,173,0.72)", pattern: "stars" },
     { id: "jade-temple", name: "Jade Temple", rarity: "Uncommon", from: "rgba(5,54,46,0.95)", to: "rgba(71,189,128,0.72)", pattern: "hex" },
@@ -1047,7 +1057,7 @@ const NAMEPLATE_CATEGORIES = [
   ]}
 ];
 const SKIN_CATEGORIES = [
-  { key: "weaponSkins", label: "Weapon Skins", cratePrice: 400, crateName: "Arsenal Cache", crateIcon: "âš”ï¸", items: [
+  { key: "weaponSkins", label: "Weapon Skins", cratePrice: 400, crateName: "Arsenal Cache", crateIcon: "\u2694\ufe0f", items: [
     { id: "bruno-sunforged", hero: 0, name: "Sunforged Sledge", rarity: "Uncommon", base: "#38201b", accent: "#ffb12e", glow: "#ff5728" },
     { id: "oink-abyssal", hero: 1, name: "Abyssal Broadside", rarity: "Rare", base: "#102d45", accent: "#63e7ff", glow: "#0ab9e0" },
     { id: "mango-prism", hero: 2, name: "Prism Crescent", rarity: "Uncommon", base: "#3e175f", accent: "#ffc84d", glow: "#cf4dff" },
@@ -1056,7 +1066,7 @@ const SKIN_CATEGORIES = [
     { id: "mycelis-mooncap", hero: 5, name: "Mooncap Scepter", rarity: "Rare", base: "#2c173e", accent: "#ff9bf4", glow: "#b94dff" },
     { id: "dentley-sunblade", hero: 6, name: "Sunblade Oath", rarity: "Uncommon", base: "#34303f", accent: "#ffe19a", glow: "#ffb63d" }
   ]},
-  { key: "championSkins", label: "Champion Skins", cratePrice: 500, crateName: "Champion Relic Cache", crateIcon: "ðŸ‘‘", items: [
+  { key: "championSkins", label: "Champion Skins", cratePrice: 500, crateName: "Champion Relic Cache", crateIcon: "\ud83d\udc51", items: [
     { id: "bruno-starwarden", hero: 0, name: "Starwarden Bruno", rarity: "Uncommon", base: "#17457a", accent: "#76eaff", glow: "#248dff" },
     { id: "oink-admiral", hero: 1, name: "Admiral Abyss", rarity: "Rare", base: "#174050", accent: "#75f1d2", glow: "#28d4cb" },
     { id: "mango-temple", hero: 2, name: "Temple Trickster", rarity: "Uncommon", base: "#81501f", accent: "#ffe282", glow: "#ffb21e" },
@@ -1267,11 +1277,11 @@ function showEconomyToast(message) {
 function updateEconomyDisplays() {
   const profile = activeProfile();
   const summary = document.getElementById("account-summary");
-  if(summary)setNametagContent(summary,profile?`${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))} Â· âœ¨ ${profile.shinies} Shinies`:"Create a local account to save Shinies and cosmetics");
+  if(summary)setNametagContent(summary,profile?`${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))} \u00b7 \u2728 ${profile.shinies} Shinies`:"Create a local account to save Shinies and cosmetics");
   const currency = document.getElementById("hud-currency");
-  if(currency) currency.textContent = `âœ¨ ${profile ? profile.shinies : 0} Shinies`;
+  if(currency) currency.textContent = `\u2728 ${profile ? profile.shinies : 0} Shinies`;
   const wallet = document.getElementById("economy-wallet");
-  if(wallet) wallet.textContent = `âœ¨ ${profile ? profile.shinies : 0} Shinies`;
+  if(wallet) wallet.textContent = `\u2728 ${profile ? profile.shinies : 0} Shinies`;
 }
 
 function awardShinies(amount, reason, showToast = true) {
@@ -1299,8 +1309,8 @@ function claimDailyShinies() {
 
 function accountToolbarHTML() {
   const profile = activeProfile();
-  const summary = profile ? `ðŸ‘¤ ${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))} Â· <span class="wallet">âœ¨ ${profile.shinies} Shinies</span>` : "Create an account to save your Shinies";
-  return `<div class="account-toolbar"><span id="account-summary">${summary}</span><button class="lobby-btn" onclick="openAccountModal()">Account</button><button class="lobby-btn" onclick="openDailyChallenges()">ðŸ“… Daily Challenges</button><button class="lobby-btn action-accent" onclick="openShop()">âœ¨ Shinies Shop</button></div>`;
+  const summary = profile ? `\ud83d\udc64 ${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))} \u00b7 <span class="wallet">\u2728 ${profile.shinies} Shinies</span>` : "Create an account to save your Shinies";
+  return `<div class="account-toolbar"><span id="account-summary">${summary}</span><button class="lobby-btn" onclick="openAccountModal()">Account</button><button class="lobby-btn" onclick="openDailyChallenges()">\ud83d\udcc5 Daily Challenges</button><button class="lobby-btn action-accent" onclick="openShop()">\u2728 Shinies Shop</button></div>`;
 }
 
 function renderAccountModal(){
@@ -1312,7 +1322,7 @@ function renderAccountModal(){
  <p class="economy-note">One account is saved in this browser. Rename it without losing Shinies, cosmetics, or challenge progress. Extra accounts and account switching are disabled.</p>
  <form class="account-form" onsubmit="event.preventDefault();renameCurrentAccount();"><input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" value="${escapeHtml(profile.username)}" aria-label="Username"><button class="economy-action primary" type="submit">Rename Account</button></form><div class="account-error" id="account-error"></div>`:`
  <p class="economy-note">Create your one local account. Your progress saves in this browser.</p>
- <form class="account-form" onsubmit="event.preventDefault();createOrSwitchAccount();"><input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="3â€“16 character username" aria-label="Username"><button class="economy-action primary" type="submit">Create Account</button></form><div class="account-error" id="account-error"></div>`;
+ <form class="account-form" onsubmit="event.preventDefault();createOrSwitchAccount();"><input class="account-input" id="account-username-input" maxlength="16" autocomplete="nickname" placeholder="3\u201316 character username" aria-label="Username"><button class="economy-action primary" type="submit">Create Account</button></form><div class="account-error" id="account-error"></div>`;
 }
 
 function renderSavedProfiles(){return "";}
@@ -1400,7 +1410,7 @@ function cosmeticIsEquipped(profile, category, item) {
 }
 
 function cratePreviewText(category, item) {
-  if(item.hero != null) return `${HEROES[item.hero].e} ${HEROES[item.hero].n} Â· ${category.key === "weaponSkins" ? "weapon" : "champion"}`;
+  if(item.hero != null) return `${HEROES[item.hero].e} ${HEROES[item.hero].n} \u00b7 ${category.key === "weaponSkins" ? "weapon" : "champion"}`;
   return category.label.replace("Nametag ", "");
 }
 
@@ -1411,7 +1421,7 @@ function crateRewardPreview(category, profile, item) {
 function crateSpinHTML(category, spin) {
   if(!spin || spin.categoryKey !== category.key) return "";
   const cards = spin.reel.map((item, index) => `<div class="crate-reel-card rarity-${item.rarity.toLowerCase()}" ${index === spin.stopIndex ? 'data-reel-winner="true"' : ""}><b>${escapeHtml(item.name)}</b><small class="rarity-${item.rarity.toLowerCase()}">${item.rarity}</small></div>`).join("");
-  return `<div class="crate-reel-shell" aria-live="polite"><div class="crate-reel-title">âœ¨ OPENING ${escapeHtml(category.crateName.toUpperCase())} âœ¨</div><div class="crate-reel-window"><div class="crate-reel-track">${cards}</div><div class="crate-reel-marker"></div></div><div class="crate-reel-subtitle">The center card is your reward Â· this roll uses the odds shown above</div></div>`;
+  return `<div class="crate-reel-shell" aria-live="polite"><div class="crate-reel-title">\u2728 OPENING ${escapeHtml(category.crateName.toUpperCase())} \u2728</div><div class="crate-reel-window"><div class="crate-reel-track">${cards}</div><div class="crate-reel-marker"></div></div><div class="crate-reel-subtitle">The center card is your reward \u00b7 this roll uses the odds shown above</div></div>`;
 }
 
 function finishCosmeticCrateSpin(spinId){
@@ -1432,7 +1442,7 @@ function finishCosmeticCrateSpin(spinId){
  profile.pendingCrate=null;saveAccountBook();activeCrateSpin=null;
  lastCrateReveal={categoryKey:spin.categoryKey,item:spin.item,duplicate,refund};
  if(activeProfile()?.id===profile.id){if(duplicate)updateEconomyDisplays();else syncProfileIdentity();}
- Snd.play("pickup");showEconomyToast(duplicate?`Duplicate: ${spin.item.name} Â· +${refund} Shinies refunded`:`${spin.item.rarity} drop: ${spin.item.name}`);
+ Snd.play("pickup");showEconomyToast(duplicate?`Duplicate: ${spin.item.name} \u00b7 +${refund} Shinies refunded`:`${spin.item.rarity} drop: ${spin.item.name}`);
  const modal=document.getElementById("economy-modal");
  if(modal&&modal.classList.contains("show")&&economyModalView==="shop")renderEconomyModal();
 }
@@ -1471,7 +1481,7 @@ function renderShopModal() {
   const empty = odds.length === 0;
   const oddsHtml = odds.map(tier => `<span class="crate-odds rarity-${tier.key.toLowerCase()}">${tier.key} ${tier.chance.toFixed(tier.chance % 1 ? 1 : 0)}%</span>`).join("");
   const reveal = lastCrateReveal && lastCrateReveal.categoryKey === category.key
-    ? `<div class="crate-reveal"><div class="reveal-spark">âœ¦</div><div><b>${escapeHtml(lastCrateReveal.item.name)}</b><span class="rarity-${lastCrateReveal.item.rarity.toLowerCase()}">${lastCrateReveal.item.rarity}</span><small>${escapeHtml(cratePreviewText(category, lastCrateReveal.item))}</small></div><div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key, lastCrateReveal.item)}">${escapeHtml(crateRewardPreview(category, profile, lastCrateReveal.item))}</div></div>` : "";
+    ? `<div class="crate-reveal"><div class="reveal-spark">\u2726</div><div><b>${escapeHtml(lastCrateReveal.item.name)}</b><span class="rarity-${lastCrateReveal.item.rarity.toLowerCase()}">${lastCrateReveal.item.rarity}</span><small>${escapeHtml(cratePreviewText(category, lastCrateReveal.item))}</small></div><div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key, lastCrateReveal.item)}">${escapeHtml(crateRewardPreview(category, profile, lastCrateReveal.item))}</div></div>` : "";
   const reel = crateSpinHTML(category, spin);
   const loot = category.items.map(item => {
     const owned = profile.owned[category.key].includes(item.id);
@@ -1487,7 +1497,7 @@ function renderShopModal() {
     const action = equipped ? "EQUIPPED" : owned ? "EQUIP" : "LOCKED";
     return `<div class="loot-card ${owned ? "unlocked" : "locked"} ${equipped ? "equipped" : ""}">
       <div class="loot-card-top"><b>${escapeHtml(item.name)}</b><span class="rarity-${item.rarity.toLowerCase()}">${item.rarity}</span></div>
-      <small>${escapeHtml(cratePreviewText(category, item))} Â· ${itemOdds.toFixed(itemOdds % 1 ? 1 : 0)}% drop${owned?" Â· OWNED (duplicate refunds 50%)":""}</small>
+      <small>${escapeHtml(cratePreviewText(category, item))} \u00b7 ${itemOdds.toFixed(itemOdds % 1 ? 1 : 0)}% drop${owned?" \u00b7 OWNED (duplicate refunds 50%)":""}</small>
       <div class="cosmetic-preview" style="${previewStyle}">${escapeHtml(preview)}</div>
       <button class="economy-action ${owned && !equipped ? "primary" : ""}" data-equip-category="${category.key}" data-equip-item="${item.id}" ${spinning || !owned || equipped ? "disabled" : ""}>${action}</button>
     </div>`;
@@ -1495,16 +1505,16 @@ function renderShopModal() {
   body.innerHTML = `
     <div class="economy-tabs">${tabs}</div>
     <section class="crate-panel">
-      <div class="crate-art">${category.crateIcon}<i>âœ¦</i><b>âœ§</b></div>
+      <div class="crate-art">${category.crateIcon}<i>\u2726</i><b>\u2727</b></div>
       <div class="crate-copy"><div class="shop-item-name">${escapeHtml(category.crateName)}</div><div class="economy-note">One ${category.label.toLowerCase()} reward. Duplicates are possible. A duplicate refunds 50% of the Shinies spent after the reveal.</div><div class="crate-odds-row">${oddsHtml || "All rewards collected"}</div></div>
-      <div class="crate-actions"><button class="economy-action crate-open" data-reset-category="${category.key}" ${spinning ? "disabled" : ""}>RESET LOOK</button><button class="economy-action primary crate-open" data-open-crate="${category.key}" ${spinning || empty || profile.shinies < category.cratePrice ? "disabled" : ""}>${spinning ? "SPINNINGâ€¦" : empty ? "COLLECTED" : `OPEN Â· ${category.cratePrice} âœ¨`}</button></div>
+      <div class="crate-actions"><button class="economy-action crate-open" data-reset-category="${category.key}" ${spinning ? "disabled" : ""}>RESET LOOK</button><button class="economy-action primary crate-open" data-open-crate="${category.key}" ${spinning || empty || profile.shinies < category.cratePrice ? "disabled" : ""}>${spinning ? "SPINNING\u2026" : empty ? "COLLECTED" : `OPEN \u00b7 ${category.cratePrice} \u2728`}</button></div>
     </section>
     ${reel}
     ${reveal}
-    ${lastCrateReveal&&lastCrateReveal.categoryKey===category.key&&lastCrateReveal.duplicate?`<div class="economy-note" role="status">DUPLICATE Â· +${lastCrateReveal.refund} Shinies refunded (50% of this opening). Your equipped cosmetic has not changed.</div>`:""}
+    ${lastCrateReveal&&lastCrateReveal.categoryKey===category.key&&lastCrateReveal.duplicate?`<div class="economy-note" role="status">DUPLICATE \u00b7 +${lastCrateReveal.refund} Shinies refunded (50% of this opening). Your equipped cosmetic has not changed.</div>`:""}
     <div class="economy-note">${spinning ? "This reward was rolled before the animation began; the odds above are the odds used for this opening." : "All items remain in the pool, including owned items. Duplicate drops refund 50% of the opening price. Crates use earned Shinies only."}</div>
     ${spinning?'<div class="economy-note">Opening your crate... rewards and equip options appear after the reveal.</div>':`<div class="loot-grid">${loot}</div>`}
-    <div class="economy-note">Earn Shinies: daily login +${SHINY_REWARDS.daily} Â· Quick Match elimination +${SHINY_REWARDS.kill} Â· Quick Match win +${SHINY_REWARDS.win}</div>
+    <div class="economy-note">Earn Shinies: daily login +${SHINY_REWARDS.daily} \u00b7 Quick Match elimination +${SHINY_REWARDS.kill} \u00b7 Quick Match win +${SHINY_REWARDS.win}</div>
   `;
   body.querySelectorAll("[data-shop-category]").forEach(button => button.onclick = () => {
     shopCategoryKey = button.dataset.shopCategory;
@@ -1690,7 +1700,7 @@ function renderDailyChallenges(){
  document.getElementById("economy-title").textContent="Daily Challenges";
  document.getElementById("economy-body").innerHTML=`${profile?usernameTagHTML(profile.username,getNameplateCosmeticIds(profile)):""}<p class="economy-note">Quick Matches only. Resets at local midnight, in ${Math.floor(minutes/60)}h ${minutes%60}m. Claim rewards before the reset.</p><div class="shop-grid">${daily?dailySelection().map(c=>{
  const p=Math.min(c.target,daily.progress[c.event]||0),claimed=daily.claimed.includes(c.id);
- return `<div class="shop-item"><div class="shop-item-name">${c.text}</div><div class="shop-item-price">âœ¨ ${c.reward} Shinies</div><progress max="${c.target}" value="${p}" aria-label="${c.text}"></progress><span>${p} / ${c.target}</span><button class="economy-action primary" onclick="claimDailyChallenge('${c.id}')" ${claimed||p<c.target?"disabled":""}>${claimed?"CLAIMED":"CLAIM REWARD"}</button></div>`;
+ return `<div class="shop-item"><div class="shop-item-name">${c.text}</div><div class="shop-item-price">\u2728 ${c.reward} Shinies</div><progress max="${c.target}" value="${p}" aria-label="${c.text}"></progress><span>${p} / ${c.target}</span><button class="economy-action primary" onclick="claimDailyChallenge('${c.id}')" ${claimed||p<c.target?"disabled":""}>${claimed?"CLAIMED":"CLAIM REWARD"}</button></div>`;
  }).join(""):"Create an account first."}</div>`;
 }
 function openDailyChallenges(){if(!requireLocalAccount())return;economyModalView="daily";renderEconomyModal();}
@@ -2634,7 +2644,7 @@ function syncRemoteCrate(data) {
   }
 }
 
-// --- PROCEDURAL TEXTURES (cached per map, shared â€” never disposed) ---
+// --- PROCEDURAL TEXTURES (cached per map, shared \u2014 never disposed) ---
 function canvasTex(w, h, drawFn) {
   const can = document.createElement("canvas");
   can.width = w; can.height = h;
@@ -2922,7 +2932,7 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
   return root;
 }
 
-// Per-hero visual identity: ears, snouts, hats, tails â€” so every champion reads at a glance
+// Per-hero visual identity: ears, snouts, hats, tails \u2014 so every champion reads at a glance
 function addHeroDetails(grp, headGrp, heroIndex) {
   const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.55 }, o || {}));
   if(heroIndex===7){
@@ -3414,7 +3424,7 @@ function spawnDamageNumber(x, z, text, col = "#ff3333") {
   DamageNumbers.push({ sprite, life: 0.85, maxLife: 0.85, vy: 28 });
 }
 
-// --- HIT SPARKS (pooled: fixed set of meshes, reused â€” never disposed) ---
+// --- HIT SPARKS (pooled: fixed set of meshes, reused \u2014 never disposed) ---
 const SparkPool = [];
 function initSparkPool() {
   if(SparkPool.length) return;
@@ -3481,7 +3491,7 @@ const GLOW_COLORS = { s: 0x36e0ff, b: 0xffd000, meatball: 0xff7733, spore: 0x995
 function spawnPickup() {
   const types = [
     { k:"hp", color: 0x45d988, apply:(ent)=>{
-      ent.hp = Math.min(ent.mhp, ent.hp + 35);
+      ent.hp = Math.min(Math.max(ent.mhp, ent.hp), ent.hp + 35);
       spawnDamageNumber(ent.x, ent.z, "+35", "#45d988");
     }},
     { k:"speed", color: 0xffd000, apply:(ent)=>{ ent.speedBoost = 3.5; } }
@@ -3503,7 +3513,7 @@ function spawnPickup() {
 function spawnPickupAt(rx, rz, kind, suppliedChoice = null) {
   const types = suppliedChoice ? [suppliedChoice] : [
     { k:"hp", color: 0x45d988, apply:(ent)=>{
-      ent.hp = Math.min(ent.mhp, ent.hp + 35);
+      ent.hp = Math.min(Math.max(ent.mhp, ent.hp), ent.hp + 35);
       spawnDamageNumber(ent.x, ent.z, "+35", "#45d988");
     }},
     { k:"speed", color: 0xffd000, apply:(ent)=>{ ent.speedBoost = 3.5; } }
@@ -3852,21 +3862,21 @@ function createJackpotDice(value) {
 }
 
 function jackpotDieResultText(value) {
-  return ["","15 DAMAGE","50% SLOW","HEAL +25","SPEED +35%","SHIELD 40","JACKPOT Â· +40 / 3 HEADS"][value]||"";
+  return ["","Lose 15 HP","50% slower for 2 seconds","Heal 25 HP","35% faster for 3 seconds","Gain a 40-damage shield","Heal 40 HP \u00b7 +35% speed for 3s \u00b7 next 3 shots Heads"][value]||"";
 }
 
 function applyJackpotDieResult(entity,value) {
   if(value===1)hurt(entity,15,0,0,null);
   else if(value===2)entity.jackpotSlowT=2;
-  else if(value===3){entity.hp=Math.min(entity.mhp,entity.hp+25);spawnDamageNumber(entity.x,entity.z,"+25 HP","#45d988");}
+  else if(value===3){entity.hp=Math.min(Math.max(entity.mhp,entity.hp),entity.hp+25);spawnDamageNumber(entity.x,entity.z,"+25 HP","#45d988");}
   else if(value===4)entity.speedBoost=Math.max(entity.speedBoost||0,3);
   else if(value===5)entity.jackpotShield=Math.min(40,(entity.jackpotShield||0)+40);
   else if(value===6) {
-    entity.hp=Math.min(entity.mhp,entity.hp+40);
+    entity.hp=Math.min(Math.max(entity.mhp,entity.hp),entity.hp+40);
     entity.speedBoost=Math.max(entity.speedBoost||0,3);
     entity.jackpotAutoHeads=3;entity.jackpotLoaded=null;
     entity.jackpotFlipT=0;entity.jackpotFlipPending=false;
-    spawnDamageNumber(entity.x,entity.z,"JACKPOT Â· +40","#f2c14e");
+    spawnDamageNumber(entity.x,entity.z,"JACKPOT \u00b7 +40","#f2c14e");
   }
 }
 
@@ -4000,8 +4010,8 @@ function startSpectating() {
   spectateTarget = null;
   M.down = 0;
   spectatorBanner.innerText = isMultiplayer
-    ? "SPECTATING Â· CLICK TO SWITCH PLAYER"
-    : "SPECTATING Â· CLICK TO SWITCH Â· SPACE FOR MENU";
+    ? "SPECTATING \u00b7 CLICK TO SWITCH PLAYER"
+    : "SPECTATING \u00b7 CLICK TO SWITCH \u00b7 SPACE FOR MENU";
   spectatorBanner.style.display = "block";
   findNextSpectateTarget(1);
 }
@@ -4114,11 +4124,11 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
       attacker.killStreak++;
       attacker.lastKillTime = matchTime;
       killMeta = { streak: attacker.killStreak, multi: attacker.killChain };
-      if(attacker.ci===JACKPOT.hero && attacker.jackpotAllInT>0 && !attacker.jackpotAllInPaid) {
+      if(attacker.ci===JACKPOT.hero && attacker.jackpotAllInT>0 ) {
         const payout=(attacker.jackpotWager||0)*2;
-        attacker.hp=Math.min(attacker.mhp,attacker.hp+payout);
-        attacker.jackpotAllInPaid=true;
-        attacker.jackpotWager=0;
+        attacker.hp+=payout;
+        attacker.jackpotAllInPaid=false;
+        attacker.jackpotAllInT=JACKPOT.allInDuration;
         spawnDamageNumber(attacker.x,attacker.z,"+"+Math.round(payout)+" ALL IN","#f2c14e");
         spawn3DRing(attacker.x,attacker.z,32,0xf2c14e);
       }
@@ -4146,7 +4156,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
 
     if(attacker && !attacker.dead) {
       const healAmt = Math.round(attacker.mhp * 0.25);
-      attacker.hp = Math.min(attacker.mhp, attacker.hp + healAmt);
+      attacker.hp = Math.min(Math.max(attacker.mhp, attacker.hp), attacker.hp + healAmt);
       spawnDamageNumber(attacker.x, attacker.z, "+" + healAmt + " HP", "#45d988");
       spawn3DRing(attacker.x, attacker.z, 28, 0x45d988);
     }
@@ -4505,8 +4515,8 @@ function executeAbility2(e) {
   Snd.abilityCue(e.ci, 2);
   e.c3 = c.a2cd;
   if(e.ci===JACKPOT.hero) {
-    const wager=Math.max(1,e.hp*JACKPOT.wagerFraction);
-    e.hp=Math.max(1,e.hp-wager);
+    const wager=e.hp*JACKPOT.wagerFraction;
+    e.hp-=wager;
     e.jackpotWager=wager;e.jackpotAllInT=JACKPOT.allInDuration;e.jackpotAllInPaid=false;
     spawnDamageNumber(e.x,e.z,"-"+Math.round(wager)+" WAGER","#ff8b79");
     spawn3DRing(e.x,e.z,34,0xf2c14e);
@@ -4925,7 +4935,7 @@ function syncHUD() {
   if(hasRiposte) {
     const charge = Math.max(0, Math.min(40, targetEnt.riposte || 0));
     document.getElementById("riposte-meter-label").innerText =
-      `COUNTER CHARGE ${Math.round(charge)} / 40${targetEnt.guard > 0 ? " Â· GUARD UP" : (sq ? " Â· SQUIRE" : "")}`;
+      `COUNTER CHARGE ${Math.round(charge)} / 40${targetEnt.guard > 0 ? " \u00b7 GUARD UP" : (sq ? " \u00b7 SQUIRE" : "")}`;
     document.getElementById("riposte-fill").style.width = (charge / 40 * 100) + "%";
   }
   const ab1LabelKey = controlScheme === "wasd" ? "[E]" : "[R-SHIFT]";
@@ -4934,7 +4944,7 @@ function syncHUD() {
 
   const playerName = targetEnt.username || (targetEnt === pl ? activeUsername() : `${c.e} ${c.n}`);
   setNametagContent(document.getElementById("hud-player-name"),`${entityUsernameTag(targetEnt)}<span class="bb-hero-label">${escapeHtml(c.n)} ${isSpectating?"(SPECTATING)":""}</span>`);
-  document.getElementById("hud-currency").innerText = `âœ¨ ${activeProfile() ? activeProfile().shinies : 0} Shinies`;
+  document.getElementById("hud-currency").innerText = `\u2728 ${activeProfile() ? activeProfile().shinies : 0} Shinies`;
   document.getElementById("hud-player-hp").innerText = `HP: ${Math.ceil(targetEnt.hp)} / ${targetEnt.mhp}`;
   document.getElementById("hud-hp-fill").style.width = Math.max(0, (targetEnt.hp / targetEnt.mhp) * 100) + "%";
 
@@ -4966,20 +4976,20 @@ function syncHUD() {
       const loaded=targetEnt.jackpotLoaded||targetEnt.jackpotFlipPending||targetEnt.jackpotAutoHeads>0||targetEnt.jackpotAllInT>0;
       const cd3Prog=targetEnt.c4<=0&&!loaded?1:Math.max(0,Math.min(1,1-targetEnt.c4/c.a3cd));
       document.getElementById("cd3-fill").style.width=(cd3Prog*100)+"%";
-      document.getElementById("cd3-label").innerText=`${ab3LabelKey} ${targetEnt.jackpotFlipPending?"COIN FLIPPING":targetEnt.jackpotLoaded?`${targetEnt.jackpotLoaded.toUpperCase()} Â· READY`:targetEnt.jackpotAutoHeads>0?`AUTO HEADS Ã—${targetEnt.jackpotAutoHeads}`:targetEnt.jackpotAllInT>0?"AUTO HEADS":c.a3n}`;
+      document.getElementById("cd3-label").innerText=`${ab3LabelKey} ${targetEnt.jackpotFlipPending?"COIN FLIPPING":targetEnt.jackpotLoaded?`${targetEnt.jackpotLoaded.toUpperCase()} \u00b7 READY`:targetEnt.jackpotAutoHeads>0?`AUTO HEADS \u00d7${targetEnt.jackpotAutoHeads}`:targetEnt.jackpotAllInT>0?"AUTO HEADS":c.a3n}`;
     }
   }
 
   const abilityStatusParts=[];
   if(targetEnt.ci===JACKPOT.hero) {
-    if(targetEnt.jackpotFlipPending)abilityStatusParts.push(["COIN TOSS",`FLIPPING Â· ${targetEnt.jackpotFlipT.toFixed(1)}s`]);
-    else if(targetEnt.jackpotLoaded)abilityStatusParts.push(["CHAMBER LOADED",`${targetEnt.jackpotLoaded.toUpperCase()} Â· NEXT SHOT ${targetEnt.jackpotLoaded==="heads"?JACKPOT.headsDamage:JACKPOT.baseDamage} DAMAGE`]);
-    else if(targetEnt.jackpotAutoHeads>0)abilityStatusParts.push(["JACKPOT BONUS",`GUARANTEED HEADS Ã—${targetEnt.jackpotAutoHeads}`]);
+    if(targetEnt.jackpotFlipPending)abilityStatusParts.push(["COIN TOSS",`FLIPPING \u00b7 ${targetEnt.jackpotFlipT.toFixed(1)}s`]);
+    else if(targetEnt.jackpotLoaded)abilityStatusParts.push(["CHAMBER LOADED",`${targetEnt.jackpotLoaded.toUpperCase()} \u00b7 NEXT SHOT ${targetEnt.jackpotLoaded==="heads"?JACKPOT.headsDamage:JACKPOT.baseDamage} DAMAGE`]);
+    else if(targetEnt.jackpotAutoHeads>0)abilityStatusParts.push(["JACKPOT BONUS",`GUARANTEED HEADS \u00d7${targetEnt.jackpotAutoHeads}`]);
     if(targetEnt.jackpotPityHead&&targetEnt.jackpotLoaded==="tails")abilityStatusParts.push(["PITY FLIP","NEXT COIN IS GUARANTEED HEADS"]);
-    if(targetEnt.jackpotAllInT>0)abilityStatusParts.push(["ALL IN",`${targetEnt.jackpotAllInT.toFixed(1)}s Â· ${Math.ceil(targetEnt.jackpotWager)} HP WAGERED Â· 25 DMG/SHOT`]);
+    if(targetEnt.jackpotAllInT>0)abilityStatusParts.push(["ALL IN",`${targetEnt.jackpotAllInT.toFixed(1)}s \u00b7 ${Math.ceil(targetEnt.jackpotWager)} HP WAGERED \u00b7 20 DMG/SHOT \u00b7 +25% SPEED`]);
     if(targetEnt.jackpotShield>0)abilityStatusParts.push(["DICE SHIELD",`${Math.ceil(targetEnt.jackpotShield)} DAMAGE ABSORPTION`]);
-    if(targetEnt.jackpotDicePending)abilityStatusParts.push(["ROLL THE DICE",`ROLLING Â· ${targetEnt.jackpotDiceRollT.toFixed(1)}s`]);
-    else if(targetEnt.jackpotDiceT>0)abilityStatusParts.push([`DICE RESULT Â· ${targetEnt.jackpotDice}`,jackpotDieResultText(targetEnt.jackpotDice)]);
+    if(targetEnt.jackpotDicePending)abilityStatusParts.push(["ROLL THE DICE",`ROLLING \u00b7 ${targetEnt.jackpotDiceRollT.toFixed(1)}s`]);
+    else if(targetEnt.jackpotDice>=1 && targetEnt.jackpotDice<=6)abilityStatusParts.unshift([`LAST ROLL \u00b7 ${targetEnt.jackpotDice}`,jackpotDieResultText(targetEnt.jackpotDice)]);
   }
   abilityStatus.innerHTML=abilityStatusParts.map(([label,value])=>`<div class="jackpot-status-card"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(value)}</span></div>`).join("");
   abilityStatus.classList.toggle("jackpot-status-grid",targetEnt.ci===JACKPOT.hero);
@@ -4988,7 +4998,7 @@ function syncHUD() {
   const allInActive=targetEnt.ci===JACKPOT.hero&&targetEnt.jackpotAllInT>0&&!targetEnt.dead;
   allInBanner.classList.toggle("active",allInActive);
   if(allInActive) {
-    document.getElementById("jackpot-allin-detail").innerText=`${Math.ceil(targetEnt.jackpotWager)} HP WAGER Â· ${targetEnt.jackpotAllInT.toFixed(1)}s Â· EVERY SHOT 25 DMG`;
+    document.getElementById("jackpot-allin-detail").innerText=`${Math.ceil(targetEnt.jackpotWager)} HP WAGER \u00b7 ${targetEnt.jackpotAllInT.toFixed(1)}s \u00b7 EVERY SHOT 20 DMG \u00b7 +25% SPEED`;
     document.getElementById("jackpot-allin-fill").style.width=`${Math.max(0,Math.min(100,targetEnt.jackpotAllInT/JACKPOT.allInDuration*100))}%`;
   }
 
@@ -5027,8 +5037,8 @@ function showResultScreen(isVictory, winnerId = null, stats = []) {
     resultTitle.innerText = "ROUND OVER";
     resultTitle.style.color = "#3db8f5";
     resultDesc.innerText = w
-      ? `You joined mid-match â€” ${HEROES[w.ci].e} ${HEROES[w.ci].n} won this round. You're in the lobby and will play the next one!`
-      : "You joined mid-match â€” nobody survived this round. You're in the lobby and will play the next one!";
+      ? `You joined mid-match \u2014 ${HEROES[w.ci].e} ${HEROES[w.ci].n} won this round. You're in the lobby and will play the next one!`
+      : "You joined mid-match \u2014 nobody survived this round. You're in the lobby and will play the next one!";
   } else if(isVictory) {
     resultTitle.innerText = "VICTORY!";
     resultTitle.style.color = "#45d988";
@@ -5044,14 +5054,14 @@ function showResultScreen(isVictory, winnerId = null, stats = []) {
   const statsEl = document.getElementById("result-stats");
   if(statsEl) {
     const sorted = stats.slice().sort((a, b) => b.k - a.k || b.d - a.d);
-    const medals = ["ðŸ¥‡", "ðŸ¥ˆ", "ðŸ¥‰"];
+    const medals = ["\ud83e\udd47", "\ud83e\udd48", "\ud83e\udd49"];
     statsEl.innerHTML = stats.length
       ? `<div class="stats-table">` + sorted.map((s, idx) => {
           const c = HEROES[s.ci];
           const me = s.id === myNetId;
           const mm = Math.floor(s.t / 60), ss = String(s.t % 60).padStart(2, "0");
           const playerName=entityUsernameTag(s);
-          return `<div class="stats-row ${me ? 'me' : ''}"><span>${medals[idx] || "ðŸŽ–ï¸"} ${playerName} Â· ${c.e} ${c.n}${me ? " (YOU)" : ""}</span><span>${s.k} K Â· ${s.d} DMG Â· ${mm}:${ss}</span></div>`;
+          return `<div class="stats-row ${me ? 'me' : ''}"><span>${medals[idx] || "\ud83c\udf96\ufe0f"} ${playerName} \u00b7 ${c.e} ${c.n}${me ? " (YOU)" : ""}</span><span>${s.k} K \u00b7 ${s.d} DMG \u00b7 ${mm}:${ss}</span></div>`;
         }).join("") + `</div>`
       : "";
   }
@@ -5090,7 +5100,7 @@ window.returnToMenu = function(message = "Select a champion to battle in the are
   if(document.pointerLockElement) {
     try { document.exitPointerLock(); } catch(e){}
   }
-  // In a lobby the arena is shared state from the network â€” clear our local copy so
+  // In a lobby the arena is shared state from the network \u2014 clear our local copy so
   // fighters don't linger behind the menu until the next round starts
   if(isMultiplayer) {
     clearSceneEntities();
@@ -5141,7 +5151,7 @@ function acceptRoundChoice(id,data){
 function sendRoundChoice(action,value){
  if(!roundVote){
   if(action!=="rematch")return;
-  if(isMultiplayer&&!isLobbyLeader){pendingRoundReady=true;const button=document.getElementById("rematch-button");if(button){button.disabled=true;button.textContent="âœ“ REMATCH READY";}const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;c.send({type:"ROUND_CHOICE",id:myNetId,seq:outgoingSeq,action:"request",rematch:true});}}
+  if(isMultiplayer&&!isLobbyLeader){pendingRoundReady=true;const button=document.getElementById("rematch-button");if(button){button.disabled=true;button.textContent="\u2713 REMATCH READY";}const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;c.send({type:"ROUND_CHOICE",id:myNetId,seq:outgoingSeq,action:"request",rematch:true});}}
   return;
  }
  if((action==="rematch"&&roundVote.phase!=="rematch")||(action!=="rematch"&&roundVote.phase!=="vote"))return;
@@ -5164,7 +5174,7 @@ function arenaVoteArt(index){
 function voteCard(index,voted,counts,total){
  const selected=voted===index,name=index===MAPS.length?"Random Arena":MAPS[index].name;
  const count=counts[index],share=total?Math.round(count/total*100):0;
- const tips=["Fire vents â€¢ 0.8s warning â€¢ Tight cover","Moving belts â€¢ Random prep islands","A surprise arena for the next round"];
+ const tips=["Fire vents \u2022 0.8s warning \u2022 Tight cover","Moving belts \u2022 Random prep islands","A surprise arena for the next round"];
  return `<button class="round-map-card ${selected?"selected":""}" data-vote="${index}" aria-pressed="${selected}"><div class="vote-card-top"><span>0${index+1} / ARENA</span><span>${selected?"YOUR VOTE":"SELECT"}</span></div>${arenaVoteArt(index)}<strong>${escapeHtml(name)}</strong><small>${tips[index]}</small><div class="vote-meter"><i style="width:${share}%"></i></div><span class="round-map-count">${count} ${count===1?"vote":"votes"}<em>${share}%</em></span></button>`;
 }
 
@@ -5173,14 +5183,14 @@ function renderRoundVote(){
  const remaining=Math.max(0,Math.ceil((roundVote.endsAt-Date.now())/1000));
  if(roundVote.phase==="rematch"){
   const members=roundMembers(),readyCount=members.filter(r=>roundVote.ready[r.id]).length,button=document.getElementById("rematch-button");
-  if(button){button.disabled=!!roundVote.ready[myNetId];button.textContent=roundVote.ready[myNetId]?"âœ“ REMATCH READY":"REMATCH";}
-  resultDesc.textContent=`Next round begins in ${remaining}s Â· ${readyCount}/${members.length} ready. Click Rematch now, or the vote starts automatically when time runs out.`;
+  if(button){button.disabled=!!roundVote.ready[myNetId];button.textContent=roundVote.ready[myNetId]?"\u2713 REMATCH READY":"REMATCH";}
+  resultDesc.textContent=`Next round begins in ${remaining}s \u00b7 ${readyCount}/${members.length} ready. Click Rematch now, or the vote starts automatically when time runs out.`;
   const el=document.getElementById("round-panel");if(el)el.remove();document.body.classList.remove("round-open");return;
  }
  document.body.classList.add("round-open");let panel=document.getElementById("round-panel");if(!panel){panel=document.createElement("section");panel.id="round-panel";panel.setAttribute("aria-label","Next round map vote");document.body.appendChild(panel);}
  const members=roundMembers(),key=JSON.stringify([roundVote.id,roundVote.votes,roundVote.heroes,members.map(r=>[r.id,r.username])]),counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,r)=>total+(roundVote.votes[r.id]===i?1:0),0));
  if(panel.dataset.key!==key){const focused=document.activeElement?.dataset?.vote;panel.dataset.key=key;const voted=roundVote.votes[myNetId],hero=roundVote.heroes[myNetId]??p1HeroChoice;
- panel.innerHTML=`<div class="round-title">NEXT STOP: THE ARENA <span id="round-clock"></span></div><div class="round-subtitle">Every player gets one vote. Highest votes wins; ties and no votes are random.</div><div class="round-options">${Array.from({length:MAPS.length+1},(_,i)=>voteCard(i,voted,counts,counts.reduce((a,b)=>a+b,0))).join("")}</div><label class="round-champion">Choose champion <select id="round-champion" class="economy-action"><option value="-1" ${hero===-1?"selected":""}>ðŸŽ² Random</option>${HEROES.map((h,i)=>`<option value="${i}" ${i===hero?"selected":""}>${h.e} ${escapeHtml(h.n)}</option>`).join("")}</select></label><div class="round-status">${members.map(r=>{const vote=roundVote.votes[r.id],voteLabel=Number.isInteger(vote)?(vote===MAPS.length?"ðŸŽ² Random":MAPS[vote]?.name||"hasn't voted yet"):"hasn't voted yet";return `<span>${escapeHtml(r.username||"Player")}: ${escapeHtml(voteLabel)}</span>`;}).join(" Â· ")}</div>`;
+ panel.innerHTML=`<div class="round-title">NEXT STOP: THE ARENA <span id="round-clock"></span></div><div class="round-subtitle">Every player gets one vote. Highest votes wins; ties and no votes are random.</div><div class="round-options">${Array.from({length:MAPS.length+1},(_,i)=>voteCard(i,voted,counts,counts.reduce((a,b)=>a+b,0))).join("")}</div><label class="round-champion">Choose champion <select id="round-champion" class="economy-action"><option value="-1" ${hero===-1?"selected":""}>\ud83c\udfb2 Random</option>${HEROES.map((h,i)=>`<option value="${i}" ${i===hero?"selected":""}>${h.e} ${escapeHtml(h.n)}</option>`).join("")}</select></label><div class="round-status">${members.map(r=>{const vote=roundVote.votes[r.id],voteLabel=Number.isInteger(vote)?(vote===MAPS.length?"\ud83c\udfb2 Random":MAPS[vote]?.name||"hasn't voted yet"):"hasn't voted yet";return `<span>${escapeHtml(r.username||"Player")}: ${escapeHtml(voteLabel)}</span>`;}).join(" \u00b7 ")}</div>`;
  if(focused!==undefined)panel.querySelector(`[data-vote="${focused}"]`)?.focus();
  panel.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>sendRoundChoice("vote",Number(b.dataset.vote)));panel.querySelector("#round-champion").onchange=e=>sendRoundChoice("hero",Number(e.target.value));
  }
@@ -5295,7 +5305,7 @@ function leaveLobby(msg) {
   qmQuerying = false;
   qmActiveConn = null;
   qmGen++; // invalidate all in-flight search callbacks (claims, probes, joins)
-  disarmQmWatchdog(); // search cancelled â€” disarm the watchdog
+  disarmQmWatchdog(); // search cancelled \u2014 disarm the watchdog
   remotePickupMeshes.forEach(m => disposeHierarchy(m));
   remotePickupMeshes.clear();
   // Full teardown: stop the simulation and clear match state before showing the menu
@@ -5341,7 +5351,7 @@ function setupConnectionEvents(conn) {
       if(wasLobbyMember&&roster.length<=1){leaveLobby("The lobby emptied out! You were alone, and lobbies don't grow on trees. Time to find some players.");return;}
     }
 
-    // A failed Quick Match join attempt (room gone or rejected) â€” try the next room.
+    // A failed Quick Match join attempt (room gone or rejected) \u2014 try the next room.
     // Only the connection driving the CURRENT attempt may advance the search, so a
     // stale close event (e.g. after a timeout already moved on) can't double-advance.
     if(quickMatchRooms && !isLobbyLeader) {
@@ -5353,7 +5363,7 @@ function setupConnectionEvents(conn) {
     }
 
     // Clients only ever connect to the host, so a real host migration isn't
-    // possible â€” end the session cleanly instead of pretending to elect a new leader.
+    // possible \u2014 end the session cleanly instead of pretending to elect a new leader.
     if(conn.peer === leaderId && isMultiplayer && !isLobbyLeader) {
       leaveLobby(HOST_DISCONNECT_MESSAGE);
       return;
@@ -5526,13 +5536,13 @@ function handleIncomingData(conn, data) {
   }
   else if(data.type === "ROSTER_SYNC") {
     if(conn.peer !== leaderId || data.leaderId !== conn.peer) return;
-    // The host broadcasts roster updates to every open connection â€” including joiners
+    // The host broadcasts roster updates to every open connection \u2014 including joiners
     // still waiting for admission. While quick-matching, only a roster that actually
     // contains us counts as "joined"; otherwise keep waiting (a REJECT or the join
     // timeout moves us on to the next room).
     if(quickMatchRooms && !(data.roster || []).some(r => r.id === myNetId)) return;
-    quickMatchRooms = null; // joined successfully â€” normal lobby behavior from here
-    disarmQmWatchdog();     // landed â€” disarm the search watchdog
+    quickMatchRooms = null; // joined successfully \u2014 normal lobby behavior from here
+    disarmQmWatchdog();     // landed \u2014 disarm the search watchdog
     roster = data.roster;
     lobbyIsQuickMatch = !!data.quickMatch;
     if(data.leaderId) {
@@ -5553,13 +5563,13 @@ function handleIncomingData(conn, data) {
   }
   else if(data.type === "SPECTATE_MODE") {
     if(isLobbyLeader || conn.peer !== leaderId) return;
-    quickMatchRooms = null; // joined successfully â€” normal lobby behavior from here
-    disarmQmWatchdog();     // landed â€” disarm the search watchdog
+    quickMatchRooms = null; // joined successfully \u2014 normal lobby behavior from here
+    disarmQmWatchdog();     // landed \u2014 disarm the search watchdog
     enterSpectateLobby(data);
   }
   else if(data.type === "START_GAME") {
     if(isLobbyLeader||conn.peer!==leaderId)return;
-    if(quickMatchRooms) return; // still joining â€” ignore games we haven't been admitted to
+    if(quickMatchRooms) return; // still joining \u2014 ignore games we haven't been admitted to
     if(data.roundId===lastStartedRoundId)return;
     if(!roundVote&&state==="menu"){startReceivedRound(data);return;}
     if(typeof data.roundId!=="string"||!roundVote||roundVote.id!==data.roundId){pendingStartGamePacket=data;outgoingSeq++;conn.send({type:"ROUND_SYNC_REQUEST",id:myNetId,seq:outgoingSeq,roundId:data.roundId});return;}
@@ -5831,7 +5841,7 @@ setInterval(() => {
       lastSeenByPeer.delete(id);
 
       if(id === leaderId && !isLobbyLeader) {
-        // No client-to-client connections exist, so migration is impossible â€” close out.
+        // No client-to-client connections exist, so migration is impossible \u2014 close out.
         leaveLobby(HOST_DISCONNECT_MESSAGE);
         return;
       }
@@ -5885,7 +5895,7 @@ function wireHostPeer() {
   peer.on("error", err => {
     console.warn("Peer error:", err);
     if(err && err.type === "unavailable-id") {
-      // Room code collision â€” immediately retry with a fresh code
+      // Room code collision \u2014 immediately retry with a fresh code
       const wasQM = quickMatchHosted;
       hostMultiplayerLobby();
       if(wasQM) { quickMatchHosted = true; lobbyIsQuickMatch = true; }
@@ -5963,7 +5973,7 @@ let qmQuerying = false; // true while probing room populations (suppresses join-
 let qmActiveConn = null;  // the connection driving the current quick-match join attempt
 let qmWatchdog = null;   // safety net: if a search is still running after 20s, recover instead of hanging
 let qmRescued = false;   // first watchdog deadline already fired (recovery in progress)?
-let qmGen = 0;           // search generation â€” invalidates stale async callbacks (claims, probes, joins)
+let qmGen = 0;           // search generation \u2014 invalidates stale async callbacks (claims, probes, joins)
 let qmTriedRooms = new Set();
 
 // Arm/disarm the search watchdog. Disarmed on any successful landing (room admission,
@@ -5980,11 +5990,11 @@ function disarmQmWatchdog() {
   qmRescued = false;
 }
 function fireQmWatchdog() {
-  // Clear the scheduled timer before dropping its handle â€” a manually-fired
+  // Clear the scheduled timer before dropping its handle \u2014 a manually-fired
   // watchdog (e.g. the ensureLivePeer deadline) must not leave the original
   // deadline armed to fire again during recovery or a later search
   if(qmWatchdog) { clearTimeout(qmWatchdog); qmWatchdog = null; }
-  // Landed (a REGISTERED host, or an admitted member) or cancelled â€” nothing to
+  // Landed (a REGISTERED host, or an admitted member) or cancelled \u2014 nothing to
   // recover. A host whose peer hasn't opened yet is NOT a safe landing: the
   // search must keep recovering rather than strand the player in an
   // unregistered (and possibly undiscoverable) lobby.
@@ -5995,7 +6005,7 @@ function fireQmWatchdog() {
   if(!qmRescued) {
     // First deadline: the search is stuck. Invalidate everything in flight (a stale
     // claim or join attempt must never take over after recovery) and retry with a
-    // discoverable QM-code claim cascade â€” bounded at 6s per code, and other
+    // discoverable QM-code claim cascade \u2014 bounded at 6s per code, and other
     // quick-matchers probe these codes even when broker listing is down.
     qmRescued = true;
     qmGen++;                    // invalidate all in-flight search callbacks
@@ -6003,18 +6013,18 @@ function fireQmWatchdog() {
     qmTriedRooms.clear();
     currentLobbyCode = null;    // no longer mid-join
     qmRendezvousStarted = false; // allow a fresh rendezvous
-    // The old search peer is obsolete â€” destroy it so its late open/error callbacks
+    // The old search peer is obsolete \u2014 destroy it so its late open/error callbacks
     // can never resume old work or touch the recovery's replacement peer
     try { if(peer) peer.destroy(); } catch(e) {}
     peer = null;
-    console.warn("Quick Match search stalled â€” retrying with a room-code claim");
+    console.warn("Quick Match search stalled \u2014 retrying with a room-code claim");
     armQmWatchdog(15000);       // hard deadline for the recovery itself
     quickMatchRendezvous(QM_CODES.slice());
   } else {
-    // Recovery also failed â€” after ~35s the matchmaking service is most likely
+    // Recovery also failed \u2014 after ~35s the matchmaking service is most likely
     // unreachable (or every claim stalled). Don't strand the player in a lobby
     // nobody can discover or join: stop the search with a clear, retryable error.
-    console.warn("Quick Match recovery timed out â€” stopping the search");
+    console.warn("Quick Match recovery timed out \u2014 stopping the search");
     leaveLobby("\u26A1 Quick Match couldn't reach the matchmaking service after several tries. \nPlease check your connection and try again!");
   }
 }
@@ -6045,31 +6055,31 @@ function queryRoomStatus(roomId) {
 function handleQuickMatchPeerError(err) {
   console.warn("Peer error:", err);
   // A search is active from the first Quick Match click until we land (join/host)
-  // or cancel â€” room-level errors during a search must never kill it
+  // or cancel \u2014 room-level errors during a search must never kill it
   const searching = !quickMatchHosted && !isLobbyLeader && isMultiplayer &&
                     (qmQuerying || quickMatchRooms || qmRendezvousStarted || qmWatchdog !== null);
   // "peer-unavailable" just means a target room vanished (dead host, stale broker
-  // registration, or a probe straggler arriving late) â€” never fatal, and it never
+  // registration, or a probe straggler arriving late) \u2014 never fatal, and it never
   // advances the search: the error can't be reliably tied to the current connection,
   // so the join attempt's own 5s admission timeout decides when to move on.
   if(err && err.type === "peer-unavailable") {
     return;
   }
-  // The public broker rejects peer listing with a server-error â€” fall back to rendezvous
+  // The public broker rejects peer listing with a server-error \u2014 fall back to rendezvous
   if(err && err.type === "server-error" && searching) {
     // The listing failure also severs this peer's signaling socket, and the disconnected
-    // flag can lag behind â€” so destroy the peer outright; ensureLivePeer builds a fresh
+    // flag can lag behind \u2014 so destroy the peer outright; ensureLivePeer builds a fresh
     // one for the rendezvous probes (a dead socket would make every probe fail silently)
     try { if(peer) peer.destroy(); } catch(e) {}
     peer = null;
     if(!qmRendezvousStarted) startQuickMatchRendezvous();
-    // else: the rendezvous is already in flight â€” its claim timeout and the search
+    // else: the rendezvous is already in flight \u2014 its claim timeout and the search
     // watchdog guarantee the search can't hang forever from a second broker error
     return;
   }
   if(searching) {
     // Any other signaling error mid-search (network blip, disconnect): the watchdog
-    // bounds the search â€” don't boot the player out of it with a modal error
+    // bounds the search \u2014 don't boot the player out of it with a modal error
     return;
   }
   alert("Quick Match connection error. Try again!");
@@ -6077,7 +6087,7 @@ function handleQuickMatchPeerError(err) {
 }
 
 // The broker's listing server-error DISCONNECTS our peer, and a disconnected peer's
-// connect() returns undefined â€” so rebuild a fresh peer before joining through it
+// connect() returns undefined \u2014 so rebuild a fresh peer before joining through it
 function ensureLivePeer(then) {
   if(peer && !peer.destroyed && !peer.disconnected) { then(); return; }
   try { if(peer) peer.destroy(); } catch(e) {}
@@ -6089,7 +6099,7 @@ function ensureLivePeer(then) {
   p.on("error", err => { if(peer === p && gen === qmGen) handleQuickMatchPeerError(err); }); // ignore zombie peers/searches
   if(p.open) { then(); return; }
   let opened = false;
-  // A peer that never finishes opening must not hang the search â€” after 7s clean it
+  // A peer that never finishes opening must not hang the search \u2014 after 7s clean it
   // up (only this captured instance) and let the watchdog's recovery take over.
   // The captured peer is destroyed even on a stale generation; the watchdog fires
   // only for a live generation.
@@ -6106,7 +6116,7 @@ function ensureLivePeer(then) {
     opened = true;
     clearTimeout(openDeadline);
     // A stale generation (restart/recovery happened while opening) must never
-    // resume obsolete search work â€” reject the callback and clean up this peer
+    // resume obsolete search work \u2014 reject the callback and clean up this peer
     if(gen !== qmGen || peer !== p) {
       if(peer === p) peer = null;
       try { p.destroy(); } catch(e) {}
@@ -6144,7 +6154,7 @@ window.quickMatch = function() {
   peer = new Peer(myNetId);
   menu("\u26A1 Quick Match: searching for open lobbies...");
 
-  qmGen++;          // new search â€” invalidate all callbacks from previous searches
+  qmGen++;          // new search \u2014 invalidate all callbacks from previous searches
   qmRescued = false;
   armQmWatchdog(20000); // safety net: never leave the player searching forever
 
@@ -6155,7 +6165,7 @@ window.quickMatch = function() {
   peer.on("error", err => { if(peer === searchPeer && searchGen === qmGen) handleQuickMatchPeerError(err); });
 
   peer.on("open", () => {
-    if(searchGen !== qmGen || peer !== searchPeer) return; // stale â€” invalidated while opening
+    if(searchGen !== qmGen || peer !== searchPeer) return; // stale \u2014 invalidated while opening
     const gen = searchGen;
     // 1) Try listing rooms through the broker (works when the broker allows it)
     try {
@@ -6164,7 +6174,7 @@ window.quickMatch = function() {
         const rooms = (allPeers || []).filter(id => typeof id === "string" && id.startsWith("brawlbound-room-"));
         if(rooms.length > 0) {
           // Ask every room how full it is, then join the one with the most open seats.
-          // A lobby that's mid-match still counts â€” the newcomer spectates until it ends.
+          // A lobby that's mid-match still counts \u2014 the newcomer spectates until it ends.
           qmQuerying = true;
           const statuses = await Promise.all(rooms.map(async roomId => {
             const info = await queryRoomStatus(roomId);
@@ -6179,11 +6189,11 @@ window.quickMatch = function() {
             quickMatchRooms = openRooms.map(s => s.roomId);
             tryNextQuickMatchRoom();
           } else {
-            // No discoverable Quick Match room is open â€” use rendezvous codes
+            // No discoverable Quick Match room is open \u2014 use rendezvous codes
             startQuickMatchRendezvous();
           }
         } else {
-          // No rooms listed (or listing unsupported) â€” use quick-match rendezvous codes
+          // No rooms listed (or listing unsupported) \u2014 use quick-match rendezvous codes
           startQuickMatchRendezvous();
         }
       });
@@ -6198,7 +6208,7 @@ function startQuickMatchRendezvous() {
   qmRendezvousStarted = true;
   // Probe the rendezvous codes first: if a host is already waiting on one, join the
   // fullest non-full room. Only when no open room answers do we claim a code and host.
-  const gen = qmGen; // captured BEFORE waiting â€” a recovery/restart must not be adopted
+  const gen = qmGen; // captured BEFORE waiting \u2014 a recovery/restart must not be adopted
   ensureLivePeer(() => {
     if(gen !== qmGen) return; // invalidated while waiting for a live peer
     qmQuerying = true;
@@ -6215,7 +6225,7 @@ function startQuickMatchRendezvous() {
         quickMatchRooms = open.map(s => "brawlbound-room-" + s.code);
         tryNextQuickMatchRoom();
       } else {
-        // No reachable open rendezvous room â€” claim a code and become the host
+        // No reachable open rendezvous room \u2014 claim a code and become the host
         quickMatchRendezvous(QM_CODES.slice());
       }
     }).catch(() => {
@@ -6226,7 +6236,7 @@ function startQuickMatchRendezvous() {
 }
 
 // 2) Rendezvous: try to CLAIM a quick-match room code. A taken code means a host is
-//    already waiting there â€” join them. If we claim it, we become the host.
+//    already waiting there \u2014 join them. If we claim it, we become the host.
 function quickMatchRendezvous(codes) {
   codes = codes.filter(code => !qmTriedRooms.has("brawlbound-room-" + code));
   if(codes.length === 0) {
@@ -6244,18 +6254,18 @@ function quickMatchRendezvous(codes) {
   const settle = fn => { if(settled) return; settled = true; if(claimTimer) clearTimeout(claimTimer); fn(); };
 
   // A claim that neither opens nor errors (flaky network / unresponsive broker) must
-  // not hang the search forever â€” give up on this code after 6s and try the next one.
+  // not hang the search forever \u2014 give up on this code after 6s and try the next one.
   // The claim peer is always destroyed, even on a stale generation, so a late "open"
   // can never retain the room code without becoming a functioning host
   claimTimer = setTimeout(() => settle(() => {
     try { claim.destroy(); } catch(e) {}
-    if(gen !== qmGen) return; // search was invalidated â€” do not recurse into a new claim
+    if(gen !== qmGen) return; // search was invalidated \u2014 do not recurse into a new claim
     quickMatchRendezvous(codes);
   }), 6000);
 
   claim.on("open", () => settle(() => {
-    if(gen !== qmGen) { try { claim.destroy(); } catch(e) {} return; } // stale claim â€” never take over
-    // We own this room code â€” become the quick-match host
+    if(gen !== qmGen) { try { claim.destroy(); } catch(e) {} return; } // stale claim \u2014 never take over
+    // We own this room code \u2014 become the quick-match host
     if(peer) peer.destroy();
     peer = claim;
     myNetId = roomId;
@@ -6273,13 +6283,13 @@ function quickMatchRendezvous(codes) {
     lastSeenByPeer.clear();
     lastSeqByPeer.clear();
     wireHostPeer();
-    disarmQmWatchdog(); // landed as host â€” disarm the search watchdog
+    disarmQmWatchdog(); // landed as host \u2014 disarm the search watchdog
     refreshLobbyMenu();
   }));
 
   claim.on("error", err => settle(() => {
     try { claim.destroy(); } catch(e) {}
-    if(gen !== qmGen) return; // search was invalidated â€” do not cascade
+    if(gen !== qmGen) return; // search was invalidated \u2014 do not cascade
     if(err && err.type === "unavailable-id") {
       queryRoomStatus(roomId).then(info => {
         if(gen !== qmGen) return;
@@ -6289,7 +6299,7 @@ function quickMatchRendezvous(codes) {
         if(gen === qmGen) quickMatchRendezvous(codes);
       });
     } else {
-      // Broker hiccup on this code â€” try the next one
+      // Broker hiccup on this code \u2014 try the next one
       quickMatchRendezvous(codes);
     }
   }));
@@ -6319,7 +6329,7 @@ function joinQuickRoom(roomId, remainingCodes) {
     }, 5000);
     conn.on("open", () => {
       if(gen !== qmGen || attempt !== qmSeq) return;
-      // Connected â€” now we wait for admission (ROSTER_SYNC / SPECTATE_MODE)
+      // Connected \u2014 now we wait for admission (ROSTER_SYNC / SPECTATE_MODE)
       clearTimeout(roomTimeout);
       roomTimeout = setTimeout(() => {
         if(gen !== qmGen || attempt !== qmSeq || !quickMatchRooms) return;
@@ -6403,9 +6413,9 @@ setInterval(() => {
 
 function refreshLobbyMenu() {
   const qmLine = qmClientCountdown !== null
-    ? ` <span style="color:#ffd000;">â³ Match starts in ${qmClientCountdown}s</span>`
+    ? ` <span style="color:#ffd000;">\u23f3 Match starts in ${qmClientCountdown}s</span>`
     : "";
-  menu(`Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode || "..."}</span> ] - (${roster.length}/6 Players) ${isLobbyLeader ? 'ðŸ‘‘ (Host)' : ''}${qmLine}`);
+  menu(`Lobby [ <span style="color:#ff5533; font-weight:900;">${currentLobbyCode || "..."}</span> ] - (${roster.length}/6 Players) ${isLobbyLeader ? '\ud83d\udc51 (Host)' : ''}${qmLine}`);
 }
 
 window.selectMap=function(idx){
@@ -6461,7 +6471,7 @@ function dentleyGuard(e, c) {
     return;
   }
 
-  // Squire â€” Dagger Feint. Each crossed enemy is hit once per activation.
+  // Squire \u2014 Dagger Feint. Each crossed enemy is hit once per activation.
   e.c2 = c.a1cdSquire;
   e.feintDir = -e.feintDir;
   e.feintInvuln = 0.2;
@@ -6624,7 +6634,7 @@ function controlsHTML() {
   ];
   if(p1HeroChoice>=0&&HEROES[p1HeroChoice]&&HEROES[p1HeroChoice].a3n)parts.push("<span>"+k(controlScheme==="wasd"?"F":".")+" "+HEROES[p1HeroChoice].a3n+"</span>");
   if(EMOTES.length) parts.push("<span>" + k("HOLD T") + " Emotes</span>");
-  return parts.join(" Â· ");
+  return parts.join(" \u00b7 ");
 }
 
 function championBadgeHTML(champion,detail=false){
@@ -6636,11 +6646,11 @@ function championBadgeHTML(champion,detail=false){
 function champDetailHTML(ci) {
   if(ci === RANDOM_HERO) return `
     <div class="cd-hero">
-      <span class="cd-emoji">ðŸŽ²</span>
-      <div><div class="cd-name">Random Champion</div><div class="cd-role" style="color:#ffd166;">Mystery Â· ???</div></div>
+      <span class="cd-emoji">\ud83c\udfb2</span>
+      <div><div class="cd-name">Random Champion</div><div class="cd-role" style="color:#ffd166;">Mystery \u00b7 ???</div></div>
       <div class="cd-tag">YOUR CHAMPION</div>
     </div>
-    <div class="cd-weapon">â“ <b>Who will you be?</b> â€” You won't find out until the match begins. Every match rolls a new champion!</div>`;
+    <div class="cd-weapon">\u2753 <b>Who will you be?</b> \u2014 You won't find out until the match begins. Every match rolls a new champion!</div>`;
   const c = HEROES[ci];
   const hpPct = Math.min(100, Math.round(c.hp / 240 * 100));
   const spPct = Math.min(100, Math.round(c.sp / 190 * 100));
@@ -6650,7 +6660,7 @@ function champDetailHTML(ci) {
       <div>
         <div class="cd-name">${c.n}</div>
         ${championBadgeHTML(c,true)}
-        <div class="cd-role" style="color:${c.roleCol};">${c.role} Â· ${c.rangeLabel || (c.melee ? "Melee" : "Ranged")}</div>
+        <div class="cd-role" style="color:${c.roleCol};">${c.role} \u00b7 ${c.rangeLabel || (c.melee ? "Melee" : "Ranged")}</div>
       </div>
       <div class="cd-tag">YOUR CHAMPION</div>
     </div>
@@ -6658,10 +6668,10 @@ function champDetailHTML(ci) {
       <div class="statbar"><span>HP</span><div class="sb-track"><div class="sb-fill" style="width:${hpPct}%"></div></div><b>${c.hp}</b></div>
       <div class="statbar"><span>SPD</span><div class="sb-track"><div class="sb-fill spd" style="width:${spPct}%"></div></div><b>${c.sp}</b></div>
     </div>
-    <div class="cd-summary">Body size: ${["Largest","Large","Small","Medium","Smallest","Medium","Medium-large","Small","Medium","Medium"][ci]} Â· ${ci===0?"Too large for the narrow shortcuts.":ci===1?"Fits Kitchen service passages, but not BBQ squeeze gaps.":"Fits BBQ squeeze gaps and Kitchen service passages."}</div>
-    <div class="cd-weapon">${c.w} <b>${c.wn}</b> â€” ${c.ad}</div>
+    <div class="cd-summary">Body size: ${["Largest","Large","Small","Medium","Smallest","Medium","Medium-large","Small","Medium","Medium"][ci]} \u00b7 ${ci===0?"Too large for the narrow shortcuts.":ci===1?"Fits Kitchen service passages, but not BBQ squeeze gaps.":"Fits BBQ squeeze gaps and Kitchen service passages."}</div>
+    <div class="cd-weapon">${c.w} <b>${c.wn}</b> \u2014 ${c.ad}</div>
     <div class="cd-summary">${c.d}</div>
-    ${c.passive ? `<div class="cd-ability"><span class="cd-passive-label">P</span><div class="cd-ab-body"><b>Passive Â· ${c.passiveName || "Passive"}</b><br>${c.passive}</div></div>` : ""}
+    ${c.passive ? `<div class="cd-ability"><span class="cd-passive-label">P</span><div class="cd-ab-body"><b>Passive \u00b7 ${c.passiveName || "Passive"}</b><br>${c.passive}</div></div>` : ""}
     <div class="cd-ability"><span class="key-badge">E</span><div class="cd-ab-body"><b>${c.a1n}</b> <span class="cd-chip">${c.a1cdSquire ? `${c.a1cd}s / ${c.a1cdSquire}s Squire` : `${c.a1cd}s`}</span><br>${c.a1d}</div></div>
     <div class="cd-ability"><span class="key-badge">Q</span><div class="cd-ab-body"><b>${c.a2n}</b> <span class="cd-chip">${c.a2cd}s</span><br>${c.a2d}</div></div>
     ${c.a3n ? `<div class="cd-ability"><span class="key-badge">${controlScheme==="wasd"?"F":"."}</span><div class="cd-ab-body"><b>${c.a3n}</b> <span class="cd-chip">${c.a3cd}s</span><br>${c.a3d}</div></div>` : ""}
@@ -6691,7 +6701,7 @@ function menu(msg) {
     <div class="menu-head">
       <div class="brand-title">BRAWLBOUND</div>
       <div class="menu-announcement" id="menu-announcement"></div>
-      <div class="tagline">Pick a champion Â· Survive the shrinking storm Â· Last one standing wins</div>
+      <div class="tagline">Pick a champion \u00b7 Survive the shrinking storm \u00b7 Last one standing wins</div>
       <div class="subtitle">${msg}</div>
     </div>
 
@@ -6700,16 +6710,16 @@ function menu(msg) {
 
     <div class="lobby-panel">
       ${!isMultiplayer ? `
-        <button class="lobby-btn action-primary" onclick="launchSoloMatch()">âš”ï¸ Play Solo <small>vs AI bots â€” instant brawl</small></button>
-        <button class="lobby-btn action-accent" onclick="quickMatch()">âš¡ Quick Match <small>join a live lobby (up to 6)</small></button>
-        <button class="lobby-btn" onclick="hostMultiplayerLobby()">ðŸ‘‘ Host Lobby <small>share your room code</small></button>
+        <button class="lobby-btn action-primary" onclick="launchSoloMatch()">\u2694\ufe0f Play Solo <small>vs AI bots \u2014 instant brawl</small></button>
+        <button class="lobby-btn action-accent" onclick="quickMatch()">\u26a1 Quick Match <small>join a live lobby (up to 6)</small></button>
+        <button class="lobby-btn" onclick="hostMultiplayerLobby()">\ud83d\udc51 Host Lobby <small>share your room code</small></button>
         <div style="display:flex; gap:6px; align-items:center;">
           <input type="text" id="lobby-code-in" class="lobby-input" placeholder="CODE" maxlength="4">
           <button class="lobby-btn" onclick="joinMultiplayerLobby()">Join</button>
         </div>
       ` : (isLobbyLeader ? `
         <span style="font-size:13px; font-weight:800; color:#45d988;">ROOM CODE: ${currentLobbyCode} (${roster.length}/6)</span>
-        <button class="lobby-btn action-primary" onclick="startLobbyMatch()">ðŸš€ Start Match</button>
+        <button class="lobby-btn action-primary" onclick="startLobbyMatch()">\ud83d\ude80 Start Match</button>
         <button class="lobby-btn" onclick="cancelLobby()">Cancel</button>
       ` : `
         <span style="font-size:13px; font-weight:800; color:#3db8f5;">LOBBY: ${currentLobbyCode} (${roster.length}/6)</span>
@@ -6724,19 +6734,19 @@ function menu(msg) {
         <div class="hero-grid">
           ${HEROES.map((c, i) => `
             <div class="hero-card ${i === p1HeroChoice ? 'chosen' : ''}" data-i="${i}" data-rarity="${c.rarity||''}" data-new="${c.isNew?'true':'false'}" style="--rc:${c.roleCol};">
-              <div class="hc-check">${i === p1HeroChoice ? 'âœ“' : ''}</div>
+              <div class="hc-check">${i === p1HeroChoice ? '\u2713' : ''}</div>
               <div class="hc-emoji">${c.e}</div>
               <div class="hc-name">${c.n}</div>
               ${championBadgeHTML(c)}
               <div class="hc-role" style="color:${c.roleCol};">${c.role}</div>
-              <div class="hc-stats"><span>â¤ ${c.hp}</span><span>âš¡ ${c.sp}</span></div>
+              <div class="hc-stats"><span>\u2764 ${c.hp}</span><span>\u26a1 ${c.sp}</span></div>
             </div>
           `).join("")}
         </div>
 
         <div class="settings-panel">
           <label>AI difficulty <select class="economy-action" onchange="setAIDifficulty(this.value)" aria-label="AI difficulty">${["easy","normal","hard"].map(d=>`<option value="${d}" ${aiDifficulty===d?"selected":""}>${d[0].toUpperCase()+d.slice(1)}</option>`).join("")}</select></label>
-          <span>ðŸ–±ï¸ Sensitivity <input type="range" id="sens-slider" min="0.0008" max="0.005" step="0.0001" value="${mouseSens}"> <span id="sens-val">${mouseSens.toFixed(4)}</span></span>
+          <span>\ud83d\uddb1\ufe0f Sensitivity <input type="range" id="sens-slider" min="0.0008" max="0.005" step="0.0001" value="${mouseSens}"> <span id="sens-val">${mouseSens.toFixed(4)}</span></span>
           <label class="audio-switch">Master <input type="checkbox" role="switch" id="vol-slider" ${Snd.vol ? "checked" : ""}><span>${Snd.vol ? "ON" : "OFF"}</span></label>
           <label class="audio-switch">SFX <input type="checkbox" role="switch" id="sfx-slider" ${Snd.sfxVol ? "checked" : ""}><span>${Snd.sfxVol ? "ON" : "OFF"}</span></label>
           <label class="audio-switch">Music <input type="checkbox" role="switch" id="music-slider" ${Snd.musicVol ? "checked" : ""}><span>${Snd.musicVol ? "ON" : "OFF"}</span></label>
@@ -6757,7 +6767,7 @@ function menu(msg) {
           <span id="footer-controls-text">
             ${controlsHTML()}
           </span>
-          <span style="color:#45d988">âš”ï¸ Kills restore 25% Max HP</span>
+          <span style="color:#45d988">\u2694\ufe0f Kills restore 25% Max HP</span>
         </div>
       </div>
     </div>
@@ -6770,7 +6780,7 @@ function menu(msg) {
   const heroGrid = ov.querySelector(".hero-grid");
   if(heroGrid) {
     const rnd = p1HeroChoice === RANDOM_HERO;
-    heroGrid.insertAdjacentHTML("beforeend", '<div class="hero-card random-card ' + (rnd ? 'chosen' : '') + '" data-i="' + RANDOM_HERO + '" style="--rc:#ffd166;"><div class="hc-check">' + (rnd ? 'âœ“' : '') + '</div><div class="hc-emoji">ðŸŽ²</div><div class="hc-name">Random</div><div class="hc-role" style="color:#ffd166;">Mystery</div><div class="hc-stats"><span>â¤ ???</span><span>âš¡ ???</span></div></div>');
+    heroGrid.insertAdjacentHTML("beforeend", '<div class="hero-card random-card ' + (rnd ? 'chosen' : '') + '" data-i="' + RANDOM_HERO + '" style="--rc:#ffd166;"><div class="hc-check">' + (rnd ? '\u2713' : '') + '</div><div class="hc-emoji">\ud83c\udfb2</div><div class="hc-name">Random</div><div class="hc-role" style="color:#ffd166;">Mystery</div><div class="hc-stats"><span>\u2764 ???</span><span>\u26a1 ???</span></div></div>');
   }
   ov.querySelectorAll(".hero-card").forEach(b => {
     b.onclick = () => {
@@ -6780,7 +6790,7 @@ function menu(msg) {
         const ci = +card.dataset.i;
         card.classList.toggle("chosen", ci === p1HeroChoice);
         const check = card.querySelector(".hc-check");
-        if(check) check.textContent = ci === p1HeroChoice ? "âœ“" : "";
+        if(check) check.textContent = ci === p1HeroChoice ? "\u2713" : "";
       });
       const detail = document.getElementById("champ-detail");
       if(detail) detail.innerHTML = champDetailHTML(p1HeroChoice);
@@ -6896,7 +6906,7 @@ function startDemo() {
   camera.rotation.x = 0;
 }
 
-// Height of the obstacle covering arena center (0 if none) â€” the showcase podium sits on top of it
+// Height of the obstacle covering arena center (0 if none) \u2014 the showcase podium sits on top of it
 function centerObstacleHeight() {
   for(const r of currentRects) {
     if(W/2 >= r[0] && W/2 <= r[0] + r[2] && H/2 >= r[1] && H/2 <= r[1] + r[3]) return 65;
@@ -7081,7 +7091,7 @@ function enterSpectateLobby(info) {
 
   isSpectating = true;
   spectateTarget = null;
-  spectatorBanner.innerText = "SPECTATING Â· NEXT ROUND YOU PLAY";
+  spectatorBanner.innerText = "SPECTATING \u00b7 NEXT ROUND YOU PLAY";
   spectatorBanner.style.display = "block";
 
   // Vantage point over the arena until the first snapshot brings the fighters in
@@ -7129,7 +7139,7 @@ function updateMatchIntro(dt) {
     }
     const hero = HEROES[current.ci];
     setNametagContent(introName,entityUsernameTag(current));
-    introMeta.textContent=hero.e+" "+hero.n+" Â· "+(index+1)+" / "+fighters.length+" Â· "+hero.role;
+    introMeta.textContent=hero.e+" "+hero.n+" \u00b7 "+(index+1)+" / "+fighters.length+" \u00b7 "+hero.role;
   }
 
   if(introElapsed >= duration) {
@@ -7444,7 +7454,7 @@ function upd(dt) {
 
     const prevX = e.x, prevZ = e.z;
 
-    // Simulated delayed shots (Quackbot Barrage) â€” lives inside the loop,
+    // Simulated delayed shots (Quackbot Barrage) \u2014 lives inside the loop,
     // so it can never fire after the match is over or the entity is gone.
     if(e.pending && e.pending.length) {
       for(let pi = e.pending.length - 1; pi >= 0; pi--) {
@@ -7566,7 +7576,7 @@ function upd(dt) {
       ab1 = P1_ab1;
       ab2 = P1_ab2;
 
-      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
+      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
       const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.5:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
@@ -7578,7 +7588,7 @@ function upd(dt) {
       if(P1_ab3 && e.stun<=0 && e.c4<=0)ability3(e);
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
-      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0);
+      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
       const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.5:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
@@ -7653,7 +7663,7 @@ function upd(dt) {
 
   updateJackpotVisuals();
 
-  // Projectiles â€” all termination paths funnel through one finalize step so
+  // Projectiles \u2014 all termination paths funnel through one finalize step so
   // onDeath fires exactly once (lifetime, wall, or player hit) and no further
   // collisions are processed after a projectile is marked dead.
   if(isMultiplayer && isLobbyLeader) recordCombatHistory();
@@ -7873,7 +7883,7 @@ requestAnimationFrame(loop);
   }
 
   #menu-updates-panel[open] .updates-heading::after {
-    content: " âˆ’";
+    content: " \2212 ";
   }
 
   #menu-updates-panel summary:focus-visible,
@@ -7972,37 +7982,37 @@ requestAnimationFrame(loop);
        champions: [
       {
         type: "rework",
-        text: "Sir Dentley â€” Shield Guard cooldown increased from 9s to 10s. Shield arc widened from 150Â° to 180Â°, but the movement penalty increased from 20% to 25%. NEW: The early-release reward now requires releasing between 0.5s and 1.8s after raising Guard, instead of allowing it at any point after 0.5s. A successful timed release grants 25% movement speed for 0.8s. Releasing later still lowers the shield, but grants no boost; natural expiry grants no boost. Riposte renamed to Counter Charge, and Riposte Lunge renamed to Counter Lunge. Lunge cooldown increased from 8s to 8.5s. Base damage reduced from 20 to 10; stored charge still adds up to 40 damage, reducing maximum damage from 60 to 50. Stun increased from 0â€“1.2s to 0.3â€“1.5s, depending on charge."
+        text: "Sir Dentley \u2014 Shield Guard cooldown increased from 9s to 10s. Shield arc widened from 150\u00b0 to 180\u00b0, but the movement penalty increased from 20% to 25%. NEW: The early-release reward now requires releasing between 0.5s and 1.8s after raising Guard, instead of allowing it at any point after 0.5s. A successful timed release grants 25% movement speed for 0.8s. Releasing later still lowers the shield, but grants no boost; natural expiry grants no boost. Riposte renamed to Counter Charge, and Riposte Lunge renamed to Counter Lunge. Lunge cooldown increased from 8s to 8.5s. Base damage reduced from 20 to 10; stored charge still adds up to 40 damage, reducing maximum damage from 60 to 50. Stun increased from 0\u20131.2s to 0.3\u20131.5s, depending on charge."
       },
 
       {
         type: "buff",
-        text: "Squire â€” Gains 50% damage reduction for 1s after armor breaks. Recall Armor is Squire's Q ability: it's initial waiting period is 6s. It can reposition the surviving husk once without refreshing its health or lifetime. Dagger Feint is Squire's E ability: cooldown increased from 6.5s to 7s, but each crossed enemy now takes 10 damage and a 0.4s stun, once per Feint. Rearm by standing still within 50 units for 1.5s. Husk lifetime increased from 8s to 10s. Overall, the new recovery options outweigh the protection and channel tradeoffs."
+        text: "Squire \u2014 Gains 50% damage reduction for 1s after armor breaks. Recall Armor is Squire's Q ability: it's initial waiting period is 6s. It can reposition the surviving husk once without refreshing its health or lifetime. Dagger Feint is Squire's E ability: cooldown increased from 6.5s to 7s, but each crossed enemy now takes 10 damage and a 0.4s stun, once per Feint. Rearm by standing still within 50 units for 1.5s. Husk lifetime increased from 8s to 10s. Overall, the new recovery options outweigh the protection and channel tradeoffs."
       },
 
       {
         type: "rework",
-        text: "Bruno â€” Slam damage reduced from 16 to 15, but stun increased from 1s to 1.1s. Charge damage reduced from 14 to 10."
+        text: "Bruno \u2014 Slam damage reduced from 16 to 15, but stun increased from 1s to 1.1s. Charge damage reduced from 14 to 10."
       },
 
       {
         type: "nerf",
-        text: "Quackbot â€” Barrage cooldown increased from 8.5s to 9s."
+        text: "Quackbot \u2014 Barrage cooldown increased from 8.5s to 9s."
       },
 
       {
         type: "buff",
-        text: "Chef Sizzle â€” Marinara duration increased from 2.8s to 3s, and its radius increased from 50 to 60 units."
+        text: "Chef Sizzle \u2014 Marinara duration increased from 2.8s to 3s, and its radius increased from 50 to 60 units."
       },
 
       {
         type: "rework",
-        text: "Mycelis â€” Root Entangle direct damage reduced from 20 to 10. The instant 10-damage burst is replaced by 10 damage over 3s: a direct hit plus the full effect now deals 20 instead of 30. Root duration increased from 1.5s to 1.8s; radius remains 50. Spore Pod declared cooldown increased from 6.5s to 7s; waiting lifetime reduced from 7s to 6s. Poison changed from 15 over 3s to 20 over 5s. Movement slow is now 60% (40% movement speed), up from 55%."
+        text: "Mycelis \u2014 Root Entangle direct damage reduced from 20 to 10. The instant 10-damage burst is replaced by 10 damage over 3s: a direct hit plus the full effect now deals 20 instead of 30. Root duration increased from 1.5s to 1.8s; radius remains 50. Spore Pod declared cooldown increased from 6.5s to 7s; waiting lifetime reduced from 7s to 6s. Poison changed from 15 over 3s to 20 over 5s. Movement slow is now 60% (40% movement speed), up from 55%."
       },
 
       {
         type: "nerf",
-        text: "Mango the Monkey â€” Each Cluster Bomb banana deals 9 damage instead of 10. Peel Trap cooldown increased from 10.5s to 11s, but placement increased from 38 to 40 units ahead, and damage increased from 9 to 10. Overall, the nerfs outweigh the Peel improvements."
+        text: "Mango the Monkey \u2014 Each Cluster Bomb banana deals 9 damage instead of 10. Peel Trap cooldown increased from 10.5s to 11s, but placement increased from 38 to 40 units ahead, and damage increased from 9 to 10. Overall, the nerfs outweigh the Peel improvements."
       },
 
     ]
@@ -8238,7 +8248,7 @@ requestAnimationFrame(loop);
   const focus=document.activeElement;close();returnFocus=focus;
   overlay.classList.add('open');closeButton.focus();
   overlay.querySelector('h2').textContent=item.name;
-  overlay.querySelector('.inspect-meta').textContent=`${HEROES[item.hero].n} Â· ${categoryKey==='championSkins'?'Champion Skin':'Weapon Skin'} Â· ${item.rarity}`;
+  overlay.querySelector('.inspect-meta').textContent=`${HEROES[item.hero].n} \u00b7 ${categoryKey==='championSkins'?'Champion Skin':'Weapon Skin'} \u00b7 ${item.rarity}`;
   zoomInput.value='1';rotateButton.textContent='Pause Rotation';
   let renderer=null,previewScene=null,model=null;
   try{
