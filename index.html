@@ -3032,9 +3032,6 @@ function build3DMap(def){
 // --- HERO & WEAPON BUILDER ---
 function createHighQualityWeapon(heroIndex, isViewmodel = false) {
   const root = new THREE.Group();
-  root.userData.bbViewmodel=!!isViewmodel;
-  root.userData.bbWeaponHero=heroIndex;
-  root.userData.bbWeaponType=['hammer','scrap-cannon','banana-boomerang','sniper-rifle','plasma-blaster','spore-staff','longsword','revolver'][heroIndex];
 
   if(isViewmodel) {
     const armGeo = new THREE.CylinderGeometry(1.4, 1.8, 14, 12);
@@ -3109,7 +3106,6 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
   }
 
   else if(heroIndex === 3) {
-    // The base and every skin use one slim, forward-facing sniper-rifle silhouette.
     const copper=new THREE.MeshStandardMaterial({color:0xc8643c,metalness:.8,roughness:.3});
     const steel=new THREE.MeshStandardMaterial({color:0x8994a3,metalness:.88,roughness:.25});
     const dark=new THREE.MeshStandardMaterial({color:0x18202a,metalness:.45,roughness:.45});
@@ -3117,17 +3113,9 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
     const lens=new THREE.MeshStandardMaterial({color:0x9ee9f1,metalness:.5,roughness:.2});
     const box=(w,h,d,mat,x,y,z,name)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.name=name;root.add(m);return m;};
     const tube=(r,len,mat,x,y,z,name)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,14),mat);m.rotation.x=Math.PI/2;m.position.set(x,y,z);m.name=name;root.add(m);return m;};
-    box(4.1,4,13,copper,0,0,-1,'rifle-receiver');
-    tube(1,27,steel,0,.4,-19,'rifle-barrel');
-    tube(1.25,.8,dark,0,.4,-32.7,'rifle-muzzle');
-    box(3.2,3.3,10,stock,0,-.4,10,'rifle-stock');
-    box(4,4.2,1.1,dark,0,-.4,15.5,'stock-pad');
-    box(2,5,3.2,stock,0,-4,3,'rifle-grip');
-    box(2,4,4,dark,0,-3,-3,'rifle-magazine');
-    box(1,1.2,9,dark,0,2.8,-3,'scope-mount');
-    tube(1.45,11,dark,0,4,-4,'rifle-scope');
-    tube(1.55,.35,lens,0,4,-9.7,'scope-front-lens');
-    tube(1.55,.35,lens,0,4,1.7,'scope-rear-lens');
+    box(4.1,4,13,copper,0,0,-1,'rifle-receiver');tube(1,27,steel,0,.4,-19,'rifle-barrel');tube(1.25,.8,dark,0,.4,-32.7,'rifle-muzzle');
+    box(3.2,3.3,10,stock,0,-.4,10,'rifle-stock');box(4,4.2,1.1,dark,0,-.4,15.5,'stock-pad');box(2,5,3.2,stock,0,-4,3,'rifle-grip');box(2,4,4,dark,0,-3,-3,'rifle-magazine');
+    box(1,1.2,9,dark,0,2.8,-3,'scope-mount');tube(1.45,11,dark,0,4,-4,'rifle-scope');tube(1.55,.35,lens,0,4,-9.7,'scope-front-lens');tube(1.55,.35,lens,0,4,1.7,'scope-rear-lens');
     root.userData.bbMuzzleZ=-33.1;
   }
   else if(heroIndex === 4) {
@@ -3372,41 +3360,112 @@ break;
 
 }
 
+function applyWeaponSkin(weapon, item, heroIndex) {
+  if(!weapon) return;
+  if(weapon.skinParts) { disposeHierarchy(weapon.skinParts); weapon.skinParts = null; }
+  weapon.skinGem = null;
+  weapon.traverse(node => {
+    if(!node.isMesh || !node.material || node.userData.bbArm) return;
+    const materials = Array.isArray(node.material) ? node.material : [node.material];
+    for(const material of materials) {
+      if(!material.color) continue;
+      if(material.userData.bbBaseColor === undefined) material.userData.bbBaseColor = material.color.getHex();
+      if(material.userData.bbBaseEmissive === undefined && material.emissive) material.userData.bbBaseEmissive = material.emissive.getHex();
+      if(material.userData.bbBaseEmissiveIntensity === undefined) material.userData.bbBaseEmissiveIntensity = material.emissiveIntensity || 0;
+      if(item) {
+        material.color.set((Number(material.metalness) || 0) > 0.5 ? item.accent : item.base);
+        if(material.emissive) { material.emissive.set(item.glow); material.emissiveIntensity = 0.42; }
+      } else {
+        material.color.setHex(material.userData.bbBaseColor);
+        if(material.emissive) { material.emissive.setHex(material.userData.bbBaseEmissive || 0); material.emissiveIntensity = material.userData.bbBaseEmissiveIntensity; }
+      }
+      material.needsUpdate = true;
+    }
+  });
+  if(item) {
+    const parts = new THREE.Group();
+    const steel=new THREE.MeshStandardMaterial({color:item.base,metalness:.82,roughness:.28});
+    const trim=new THREE.MeshStandardMaterial({color:item.accent,metalness:.7,roughness:.24});
+    const light=new THREE.MeshStandardMaterial({color:item.accent,emissive:item.glow,emissiveIntensity:1.2,metalness:.25,roughness:.2});
+    const dark=new THREE.MeshStandardMaterial({color:0x10151c,metalness:.6,roughness:.45});
+    const add=(geo,x,y,z,mat=steel,rx=0,ry=0,rz=0)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;parts.add(m);return m;};
+    const box=(w,h,d,x,y,z,m=steel)=>add(new THREE.BoxGeometry(w,h,d),x,y,z,m);
+    const ring=(r,t,x,y,z,rx=0,m=trim)=>add(new THREE.TorusGeometry(r,t,8,24),x,y,z,m,rx);
+    switch(heroIndex){
+    case 0:
+      box(15,11,17,0,23,0);box(3,7,12,0,23,-9,light);
+      for(const side of [-1,1]){box(3,13,19,side*8,23,0,trim);ring(3,.8,side*9.6,23,0,0,light).rotation.y=Math.PI/2;
+       for(const z of [-5,5])add(new THREE.ConeGeometry(2.3,6,4),side*11,23,z,trim,0,0,-side*Math.PI/2);}
+      for(let y=-4;y<18;y+=4)ring(1.2,.35,0,y,0,Math.PI/2,dark);
+      add(new THREE.ConeGeometry(3,7,6),0,32,0,light);break;
+    case 1:
+      box(10,6,12,0,-2,2);box(3,7,5,0,-6,7,dark);
+      add(new THREE.CylinderGeometry(5.5,6.8,6,12,1,true),0,0,-14,trim,Math.PI/2);
+      ring(4.9,1,0,0,-17,0,light);
+      for(let i=0;i<6;i++){const a=i*Math.PI/3;add(new THREE.ConeGeometry(1.4,8,4),Math.cos(a)*5.5,Math.sin(a)*5.5,-16,steel,-Math.PI/2);}
+      for(const side of [-1,1]){box(2,5,14,side*5,1,-2,trim);ring(2.4,.65,side*5,-4,5);}
+      add(new THREE.SphereGeometry(3,12,8),0,4,5,light);break;
+    case 2:
+      for(let i=0;i<9;i++){const a=i*Math.PI*.72/8,r=8.2;
+       const shard=add(new THREE.OctahedronGeometry(2.5,0),Math.cos(a)*r,0,Math.sin(a)*r,i%2?trim:light);shard.scale.set(1,.4,1.7);shard.rotation.y=-a;}
+      add(new THREE.TorusGeometry(8.8,.55,6,32,Math.PI*.72),0,.3,0,trim,Math.PI/2);
+      box(2,2,7,4,0,-1,dark);add(new THREE.OctahedronGeometry(2.3),4,1,1,light);break;
 
-function applyWeaponSkin(weapon,item,heroIndex){
- if(!weapon)return;
- if(weapon.skinParts){disposeHierarchy(weapon.skinParts);weapon.skinParts=null;}
- weapon.skinGem=null;
- weapon.traverse(node=>{
-  if(!node.isMesh||!node.material||node.userData.bbArm)return;
-  for(const m of (Array.isArray(node.material)?node.material:[node.material])){
-   if(!m.color)continue;
-   if(m.userData.bbBaseColor===undefined){m.userData.bbBaseColor=m.color.getHex();m.userData.bbBaseEmissive=m.emissive?m.emissive.getHex():0;m.userData.bbBaseEmissiveIntensity=m.emissiveIntensity||0;}
-   if(item){
-    // Preserve dark grips, muzzle interiors, and lenses for readable silhouettes.
-    const darkPart=/grip|stock-pad|muzzle|scope-mount|magazine/.test(node.name||'');
-    const lensPart=/lens/.test(node.name||'');
-    m.color.set(darkPart||lensPart?m.userData.bbBaseColor:(Number(m.metalness)||0)>.5?item.accent:item.base);
-    if(m.emissive){m.emissive.set(darkPart?0x000000:item.glow);m.emissiveIntensity=darkPart?0:item.masteryOnly?.18:.10;}
-   }else{m.color.setHex(m.userData.bbBaseColor);if(m.emissive){m.emissive.setHex(m.userData.bbBaseEmissive);m.emissiveIntensity=m.userData.bbBaseEmissiveIntensity;}}
-   m.needsUpdate=true;
+    case 3:
+      // Decorated sniper variant: long barrel, stock, scope, slim rails and muzzle crown.
+      box(4.4,3.5,12,0,0,-1,steel);
+      box(3.6,3.5,8,0,-.4,10,steel);
+      box(3.9,.7,8,0,1.6,10,trim);
+      for(const side of [-1,1]){
+        box(.55,.7,17,side*2.4,.7,-5,trim);
+        box(.35,.6,9,side*2.3,-.8,0,light);
+        add(new THREE.ConeGeometry(.65,3,4),side*1.6,.5,-31,trim,-Math.PI/2);
+      }
+      add(new THREE.CylinderGeometry(1.15,1.15,24,12),0,.4,-18,steel,Math.PI/2);
+      ring(1.4,.25,0,.4,-30.5,0,trim);
+      ring(1.35,.22,0,.4,-33,0,light);
+      box(.8,1.1,8,0,2.7,-3,dark);
+      add(new THREE.CylinderGeometry(1.7,1.7,11.8,16),0,4,-4,dark,Math.PI/2);
+      for(const z of [-10,2])ring(1.8,.3,0,4,z,0,trim);
+      add(new THREE.CylinderGeometry(1.42,1.42,.3,16),0,4,-10.35,light,Math.PI/2);
+      box(1.2,.6,2,0,6,-3,trim);
+      add(new THREE.OctahedronGeometry(.8),0,6.8,-3,light);
+      for(const z of [-24,-20,-16])ring(1.35,.2,0,.4,z,0,trim);
+      break;
+    case 4:
+      box(7,4,12,0,0,-2);box(2,6,4,0,-5,4,dark);
+      for(const side of [-1,1]){box(1,2,21,side*3,2,-3,light);box(2,4,10,side*4,-1,0,steel);
+       add(new THREE.ConeGeometry(2,6,3),side*4,1,7,trim,Math.PI/2);}
+      ring(3.6,.65,0,0,-12,0,light);box(4,1,4,0,5,1,trim);box(2,.7,2,0,5.7,1,light);
+      for(let i=0;i<3;i++)box(5,.7,1,0,3,-8+i*3,dark);break;
+    case 5:
+      add(new THREE.SphereGeometry(6.8,16,10,0,Math.PI*2,0,Math.PI/2),0,27,0,steel);
+      ring(6.8,.7,0,27,0,Math.PI/2,light);add(new THREE.OctahedronGeometry(4),0,34,0,light);
+      for(let i=0;i<5;i++){const a=i*Math.PI*2/5;
+       add(new THREE.CylinderGeometry(.45,.7,8,6),Math.cos(a)*4,22,Math.sin(a)*4,trim,0,0,Math.sin(a)*.35);
+       add(new THREE.SphereGeometry(1.4,8,6),Math.cos(a)*6,29,Math.sin(a)*6,light);}
+      for(let y=-7;y<21;y+=5)ring(1.2,.4,0,y,0,Math.PI/2,trim);
+      add(new THREE.ConeGeometry(2.6,6,5),0,-10,0,light,Math.PI);break;
+    case 6:
+      box(4.5,25,1.2,0,26,0,steel);box(.9,25,1.4,0,26,0,light);
+      add(new THREE.ConeGeometry(2.3,8,4),0,42,0,trim,0,Math.PI/4);
+      for(const side of [-1,1]){add(new THREE.ConeGeometry(2.2,9,3),side*6,12,0,trim,0,0,-side*.8);
+       add(new THREE.OctahedronGeometry(1.5),side*7,15,0,light);}
+      ring(2.8,.7,0,10,0);add(new THREE.OctahedronGeometry(2.4),0,-2,0,light);
+      for(let y=1;y<9;y+=2)ring(1.1,.25,0,y,0,Math.PI/2,dark);break;
+    case 7:
+      add(new THREE.CylinderGeometry(1.12,1.2,12,12),0,0,12,dark,-Math.PI/2);
+      for(const z of [-28,-25,4,6,18])ring(z<0?.68:1.18,.18,0,0,z,0,trim);
+      for(const side of [-1,1]){const inlay=add(new THREE.BoxGeometry(.2,.3,14),side*.72,.45,-12,trim);inlay.rotation.z=side*.3;}
+      add(new THREE.CylinderGeometry(.7,.7,2.4,12),0,0,-30,trim,-Math.PI/2);
+      add(new THREE.CylinderGeometry(.68,.68,1.2,12),0,0,-31.7,light,-Math.PI/2);
+      break;
+
+    }
+
+    weapon.add(parts);
+    weapon.skinParts = parts;
   }
- });
- weapon.userData.bbSkinId=item?item.id:'default';
-}
-function fitWeaponViewmodel(weapon,heroIndex){
- const parent=weapon.parent;if(parent)parent.remove(weapon);
- weapon.scale.setScalar(1);weapon.position.set(0,0,0);weapon.updateMatrixWorld(true);
- const box=new THREE.Box3().setFromObject(weapon),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
- const scale=Math.min(.23,1.65/Math.max(size.x,.01),2.65/Math.max(size.y,.01),5.2/Math.max(size.z,.01));
- weapon.scale.setScalar(scale);
- weapon.position.set(-center.x*scale,1-box.max.y*scale,-box.max.z*scale);
- weapon.userData.bbViewScale=scale;
- if(parent)parent.add(weapon);
-}
-function weaponViewmodelAnchor(){
- const aspect=Math.max(.3,camera.aspect||1),tan=Math.tan(camera.fov*Math.PI/360),depth=6;
- return {x:Math.max(.8,Math.min(2.7,depth*tan*aspect*.40)),y:-2.55,z:-depth};
 }
 
 function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, playerName = null, tagCosmetics = null, skins = null) {
@@ -3473,7 +3532,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   const wep = createHighQualityWeapon(heroIndex, false);
   wep.position.set(12, 16, 8);
 
-  // Ranged models point -Z locally; champion bodies face +Z.
+  // Ranged muzzles face local -Z; bodies face +Z. Both base and skin parts turn together.
   if([1,3,4,7].includes(heroIndex))wep.rotation.y=Math.PI;
 
   grp.add(wep);
@@ -3489,6 +3548,18 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   return grp;
 }
 
+
+function fitWeaponViewmodel(weapon){
+ const parent=weapon.parent;if(parent)parent.remove(weapon);
+ weapon.scale.setScalar(1);weapon.position.set(0,0,0);weapon.updateMatrixWorld(true);
+ const box=new THREE.Box3().setFromObject(weapon),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+ const scale=Math.min(.26,2.0/Math.max(size.x,.01),3.1/Math.max(size.y,.01),6.2/Math.max(size.z,.01));
+ weapon.scale.setScalar(scale);weapon.position.set(-center.x*scale,1.0-box.max.y*scale,-box.max.z*scale);
+ weapon.userData.bbViewScale=scale;
+ if(parent)parent.add(weapon);
+}
+function weaponViewmodelAnchor(){const depth=6,aspect=Math.max(.3,camera.aspect||1),tan=Math.tan(camera.fov*Math.PI/360);return {x:Math.max(1.25,Math.min(2.8,depth*tan*aspect*.44)),y:-2.55,z:-depth};}
+
 function setupViewmodel(heroIndex) {
   while(viewmodelHolder.children.length > 0) {
     disposeHierarchy(viewmodelHolder.children[0]);
@@ -3501,10 +3572,8 @@ function setupViewmodel(heroIndex) {
 
   const profile = activeProfile();
   applyWeaponSkin(wep, skinItemFor("weaponSkins", heroIndex, profile), heroIndex);
-  fitWeaponViewmodel(wep,heroIndex);
-  const anchor=weaponViewmodelAnchor();
-  viewmodelHolder.position.set(anchor.x,anchor.y,anchor.z);
-  viewmodelHolder.rotation.set(0,0,0);
+  fitWeaponViewmodel(wep);
+  const anchor=weaponViewmodelAnchor();viewmodelHolder.position.set(anchor.x,anchor.y,anchor.z);viewmodelHolder.rotation.set(0,0,0);
   viewmodelHolder.add(wep);
   viewmodelHolder.wep = wep;
   if(heroIndex === 6) {
@@ -8178,42 +8247,43 @@ const VERSION_UPDATES = {
   version: "BRAWLBOUND v1.3.0",
 
   game: [
-    "WEAPON VISUALS: Forward-facing ranged weapons, matching base/mastery weapon types, and compact first-person models. Chef Sizzle carries a scoped sniper-style rifle.",
-    "ROUND START: Main champion abilities unlock 3 seconds after BRAWL! Basic attacks and extra actions such as Jackpot’s Coin Toss are not delayed.",
-    "NEW NAMETAG COSMETICS: 12 additions—two Epics and one Legendary each for Nametag Colors, Borders, Designs, and Fonts. Rarity drop rates are unchanged.",
     "NEW CHAMPION: Jackpot! Permanently unlock him for 1,000 Shinies.",
 
     "NEW CHAMPION CHALLENGES! Open a champion’s challenges from their card in the main menu. Each champion has seven challenges to complete in order. Finish one to reveal the next!",
+
+    "Earn Shinies along the way, plus an exclusive weapon skin and champion skin. Challenge skins can’t drop from shop crates.",
+
+    "Challenge progress saves between sessions and never expires. Only your currently unlocked challenge earns progress in Quick Matches.",
 
     "BBQ MAP UPDATE: Trap placements are now randomized, making each match less predictable.",
 
     "KITCHEN MAP UPDATE: Countertop layouts are now randomized, creating different routes and cover each match.",
 
-    "Earn Shinies along the way, plus an exclusive weapon skin and champion skin. Challenge skins can’t drop from shop crates.",
-
-    "Challenge progress saves between sessions and never expires. Only your currently unlocked challenge earns progress in Quick Matches.",
-    
-    "NEW Inventory! View your collection, inspect owned skins and auras in 3D, and equip your cosmetics—all in one place.",
-    
     "NEW Champion Auras! Collect five aura styles from the Aura Cache. Epic auras surround your champion with subtle energy, while Legendary auras feature stronger full-body effects and a glowing halo.",
-    
-    "Improved crate openings with reel sounds, enhanced reward reveals, and clearer new-item and duplicate labels. Skip the animation whenever you want.",
-    
-    "New crate rewards go straight to your Inventory without replacing your equipped cosmetics.",
-    
-    "Updated crate prices: Weapon Caches cost 500 Shinies, Champion Caches cost 600, and Aura Caches cost 400.",
 
-    "Improved champion skins for Mango, Chef Sizzle, Quackbot, and Sir Dentley. Adjusted Jackpot's suit to keep his face clear.",
+    "NEW Inventory! View your collection, inspect owned skins and auras in 3D, and equip your cosmetics—all in one place.",
 
     "Quick Match now prioritizes the fullest reachable lobby with open spaces.",
 
     "Updated map-voting screen with arena previews and live vote counts.",
 
+    "ROUND START: Main champion abilities unlock 3 seconds after BRAWL! Basic attacks and extra actions such as Jackpot’s Coin Toss are not delayed.",
+
     "Eliminations now restore 25% of your maximum HP instead of 15%.",
 
-    "More nametag fonts: eight collectible styles to customize your name.",
+    "NEW NAMETAG COSMETICS: 12 additions—two Epics and one Legendary each for Nametag Colors, Borders, Designs, and Fonts. Rarity drop rates are unchanged.",
+
+    "Improved crate openings with reel sounds, enhanced reward reveals, and clearer new-item and duplicate labels. Skip the animation whenever you want.",
+
+    "New crate rewards go straight to your Inventory without replacing your equipped cosmetics.",
+
+    "Updated crate prices: Weapon Caches cost 500 Shinies, Champion Caches cost 600, and Aura Caches cost 400.",
+
+    "Improved champion skins for Mango, Chef Sizzle, Quackbot, and Sir Dentley. Adjusted Jackpot's suit to keep his face clear.",
 
     "Rebalanced crate rarity odds, scaled to the rarities available in each crate.",
+
+    "More nametag fonts: eight collectible styles to customize your name.",
 
     "Choose Easy, Normal, or Hard AI difficulty.",
 
