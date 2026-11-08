@@ -798,27 +798,16 @@ const PATCH_UPDATES = {
   "version": "BRAWLBOUND v1.2.8",
   "announcement": "v1.2.8: champion balance, accurate attack arcs, and normal account progression.",
   "notes": [
-    "NORMAL RELEASE: Developer Mode controls and developer-account switching are not included. Normal account progress and purchases are used.",
-    "Jackpot is an Epic champion unlocked permanently for 1,000 Shinies. His card has a yellow NEW! badge and thin yellow border; the locked price is red when unaffordable and green when affordable.",
-    "Jackpot cosmetics: House Edge weapon skin and High Roller Jackpot champion outfit, both Epic, available through their existing cosmetic crates.",
-    "Champion outfit upgrades: Temple Trickster Mango, Dragon Chef Sizzle, Neon Overdrive Quackbot, and Dawn Knight Dentley have additional modeled armor and accessories. Jackpot's jacket and lapels sit lower to clear his face.",
-    "Roll the Dice shows the last rolled number and its effect in Jackpot's HUD until the next roll.",
-    "Bruno and Dentley now display directional melee sectors matching their attack arcs instead of misleading full-circle hit rings. Walls clip the sector display.",
-    "Mango's boomerangs pass through supply crates, damaging the same surviving crate once outbound and once on the return leg.",
-    "Quick Match probes QM01-QM06 twice and prioritizes the fullest reachable lobby with open seats. Collision fallback rechecks populations; countdown text updates without rebuilding the menu every second.",
-    "Account creation uses direct click/Enter handlers for embedded previews, with visible error reporting and a session-only warning when persistent storage is restricted. Jackpot purchases use an in-game confirmation panel.",
-    "Champion information wraps vertically. Special characters use encoding-safe representations to avoid garbled text.",
-    "Shinies rewards remain 50 for daily login, 15 per Quick Match elimination, and 75 per Quick Match win, plus daily challenges. Ordinary elimination healing restores 25% max HP without refilling Jackpot's excess HP.",
-    "The update panel has separate Game Updates and Champion Balance tabs and opens collapsed.",
-    "Captain Oink: Cannonball direct damage 27 \u2192 25; cooldown 9.5s \u2192 10s. Chain Hook cooldown 11.5s \u2192 12s. Cannonball splash remains 15 damage in an 80-unit radius.",
-    "Bruno: normal Sledgehammer sweeps a 270\u00b0 arc, with a matching directional indicator. Damage remains 30 and range remains 80. It can reflect ordinary Jackpot bullets, but bullets fired during ALL IN cannot be reflected. Boomerangs, bananas, and magical shots remain unreflectable.",
-    "Sir Dentley: armored normal sword attacks sweep 210\u00b0, including the combo-finisher strike. Counter Lunge reaches 110 units instead of 100; cooldown remains 8.5s, damage remains 10 + Counter Charge (up to 50), with 0.3\u20131.5s stun.",
-    "Squire: normal dagger attacks hit all 360\u00b0 around him. Recall Armor becomes available 5s after armor breaks instead of 6s. Dagger Feint moves forward up to 70 units rather than sideways; it retains a 7s cooldown, 0.2s invulnerability, and 10 damage plus 0.4s stun per crossed enemy, once each.",
-    "Quackbot: Blink moves up to 15 short steps instead of 16; walls still stop it. Normal Plasma Blaster damage 8 \u2192 7 per shot. Barrage remains seven 7.5-damage darts with a 9s cooldown.",
-    "Mycelis: Root Entangle root duration 1.8s \u2192 1.7s. Damage remains 10 direct + 10 over 3s, radius 50, cooldown 9s. This is a root, not a newly added full stun.",
-    "Mango: normal returning boomerangs retain 16 damage and now pass through supply crates, allowing one hit on each leg. Cluster Bomb remains 9s cooldown with 9-damage bananas; Peel Trap remains 11s cooldown, 40-unit placement, and 10 damage.",
-    "Jackpot: ALL IN lasts 6s (was 7), wagers 25% current HP (was 20%), grants 25% movement speed, and fires normal 20-damage Heads (was 25). Each kill heals twice the original wager and restarts the 6s timer without another wager. Payouts can exceed max HP; ordinary healing cannot refill excess HP after damage removes it.",
-    "Current unchanged balance: Bruno Slam 15 damage / 1.1s stun; Charge 10 damage. Chef Sizzle Marinara radius 60 / 3s duration. Dentley Guard lasts 2.2s in a 180\u00b0 front arc; releasing between 0.5s and 1.8s grants +25% speed for 0.8s. Guard cooldown remains 10s. Squire husk lasts 10s and requires 1.5s stationary rearming within 50 units."
+    "NEW CHAMPION: Jackpot! Permanently unlock him for 1,000 Shinies.",
+    "NEW JACKPOT SKINS: House Edge weapon skin and High Roller Jackpot outfit.",
+    "Improved champion skins for Mango, Chef Sizzle, Quackbot, and Sir Dentley. Adjusted Jackpot's suit to keep his face clear.",
+    "Quick Match now prioritizes the fullest reachable lobby with open spaces.",
+    "Updated map-voting screen with arena previews and live vote counts.",
+    "Eliminations now restore 25% of your maximum HP instead of 15%.",
+    "More nametag fonts: eight collectible styles to customize your name.",
+    "Rebalanced crate rarity odds, scaled to the rarities available in each crate.",
+    "Choose Easy, Normal, or Hard AI difficulty.",
+    "Separate Master, SFX, and Music toggles let you choose which sounds play."
   ]
 };
 // HEROES: hp=max health, sp=movement speed, cd=attack cooldown, a1cd/a2cd=ability cooldown.
@@ -3711,6 +3700,7 @@ function removePeerEntity(peerId) {
 
 function applyAbilitySnapshotState(entity, item) {
   entity.jackpotFlipT=Math.max(0,Number(item.jft)||0);
+  entity.jackpotCoinRevealT=Math.max(0,Number(item.jrt)||0);
   entity.jackpotFlipPending=!!item.jfp;
   entity.jackpotLoaded=item.jhl==="heads"||item.jhl==="tails"?item.jhl:null;
   entity.jackpotPendingHeads=!!item.jhb;
@@ -3785,7 +3775,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tag
     emote: -1, emoteT: 0, emoteCooldown: 0, emoteSprite: null,
     ai, dead: false,
     slow: 0, fire: 0, speedBoost: 0,
-    jackpotFlipT: 0, jackpotLoaded: null, jackpotPendingHeads: false, jackpotPityHead: false,
+    jackpotFlipT: 0, jackpotCoinRevealT: 0, jackpotLoaded: null, jackpotPendingHeads: false, jackpotPityHead: false,
     jackpotCoinT: 0, jackpotCoinMesh: null, jackpotCoinLabel: null, jackpotAutoHeads: 0,
     jackpotAllInT: 0, jackpotWager: 0, jackpotAllInPaid: false, jackpotShield: 0,
     jackpotDice: 0, jackpotDiceT: 0, jackpotDiceRollT: 0, jackpotDicePending: false,
@@ -3871,9 +3861,11 @@ function getCombatPosition(target, attacker = null, projectileTravelMs = 0) {
 }
 
 function updateAbilityTimers(entity, dt) {
+  entity.jackpotCoinRevealT=Math.max(0,(entity.jackpotCoinRevealT||0)-dt);
   entity.jackpotFlipT = Math.max(0, (entity.jackpotFlipT || 0) - dt);
   if(entity.jackpotFlipT <= 0 && entity.jackpotFlipPending) {
     entity.jackpotFlipPending = false;
+    entity.jackpotCoinRevealT=0.2;
     entity.jackpotLoaded = entity.jackpotPendingHeads ? "heads" : "tails";
     entity.jackpotPityHead = entity.jackpotLoaded === "tails";
     if(!isMultiplayer||isLobbyLeader)spawn3DRing(entity.jackpotEffectX,entity.jackpotEffectZ,19,entity.jackpotLoaded==="heads"?0xffd166:0x91a5ff);
@@ -4372,8 +4364,12 @@ function jackpotRollDie(e) {
   e.jackpotEffectX=e.x;e.jackpotEffectZ=e.z;e.jackpotEffectA=e.a;
 }
 
+function jackpotCoinBlocksAttack(e){
+ return !!(e&&e.ci===JACKPOT.hero&&(e.jackpotFlipPending||e.jackpotFlipT>0||e.jackpotCoinRevealT>0));
+}
+
 function executeAbility3(e) {
-  if(e.ci!==JACKPOT.hero||e.jackpotFlipT>0||e.jackpotLoaded||e.jackpotFlipPending||
+  if(e.ci!==JACKPOT.hero||e.c4>0||jackpotCoinBlocksAttack(e)||e.jackpotLoaded||
      e.jackpotAutoHeads>0||e.jackpotAllInT>0)return;
   e.c4=HEROES[e.ci].a3cd;e.jackpotFlipPending=true;e.jackpotFlipT=JACKPOT.flipDuration;
   e.jackpotPendingHeads=e.jackpotPityHead||Math.random()<0.5;
@@ -4386,6 +4382,7 @@ function dentleyGuardActive(e) {
 }
 
 function executeAttack(e) {
+  if(jackpotCoinBlocksAttack(e)) return;
   if(dentleyGuardActive(e)) return;
   const c = HEROES[e.ci];
   e.c1 = c.cd;
@@ -4422,6 +4419,7 @@ function executeAttack(e) {
 }
 
 function attack(e) {
+  if(jackpotCoinBlocksAttack(e)) return;
   if(hostVisibilityPaused && isMultiplayer) return;
   if(dentleyGuardActive(e)) return;
   // Send the intent BEFORE executing locally so movement abilities (Blink, Backdraft)
@@ -4681,6 +4679,7 @@ function ability2(e) {
 }
 
 function ability3(e) {
+  if(e.ci!==JACKPOT.hero||e.c4>0||jackpotCoinBlocksAttack(e)||e.jackpotLoaded||e.jackpotAutoHeads>0||e.jackpotAllInT>0)return;
   if(hostVisibilityPaused && isMultiplayer)return;
   if(isMultiplayer)sendActionIntent("AB3",e.a,e.x,e.z);
   executeAbility3(e);
@@ -5057,7 +5056,7 @@ function syncHUD() {
   const abilityStatusParts=[];
   if(targetEnt.ci===JACKPOT.hero) {
     if(targetEnt.jackpotFlipPending)abilityStatusParts.push(["COIN TOSS",`FLIPPING \u00b7 ${targetEnt.jackpotFlipT.toFixed(1)}s`]);
-    else if(targetEnt.jackpotLoaded)abilityStatusParts.push(["CHAMBER LOADED",`${targetEnt.jackpotLoaded.toUpperCase()} \u00b7 NEXT SHOT ${targetEnt.jackpotLoaded==="heads"?JACKPOT.headsDamage:JACKPOT.baseDamage} DAMAGE`]);
+    else if(targetEnt.jackpotLoaded)abilityStatusParts.push([targetEnt.jackpotCoinRevealT>0?"COIN RESULT":"CHAMBER LOADED",`${targetEnt.jackpotLoaded.toUpperCase()} \u00b7 NEXT SHOT ${targetEnt.jackpotLoaded==="heads"?JACKPOT.headsDamage:JACKPOT.baseDamage} DAMAGE`]);
     else if(targetEnt.jackpotAutoHeads>0)abilityStatusParts.push(["JACKPOT BONUS",`GUARANTEED HEADS \u00d7${targetEnt.jackpotAutoHeads}`]);
     if(targetEnt.jackpotPityHead&&targetEnt.jackpotLoaded==="tails")abilityStatusParts.push(["PITY FLIP","NEXT COIN IS GUARANTEED HEADS"]);
     if(targetEnt.jackpotAllInT>0)abilityStatusParts.push(["ALL IN",`${targetEnt.jackpotAllInT.toFixed(1)}s \u00b7 ${Math.ceil(targetEnt.jackpotWager)} HP WAGERED \u00b7 20 DMG/SHOT \u00b7 +25% SPEED`]);
@@ -5782,10 +5781,10 @@ function handleIncomingData(conn, data) {
         const pose = actionPose(ent, data, true);
         if(!pose) return;
         const slack = actionCooldownSlack(conn);
-        if(data.act === "ATTACK" && ent.c1 <= slack) accepted = true;
+        if(data.act === "ATTACK" && !jackpotCoinBlocksAttack(ent) && ent.c1 <= slack) accepted = true;
         else if(data.act === "AB1" && (ent.c2 <= slack || canReleaseDentleyGuard(ent))) accepted = true;
         else if(data.act === "AB2" && ent.c3 <= slack) accepted = true;
-        else if(data.act === "AB3" && ent.ci===JACKPOT.hero && ent.c4 <= slack && !ent.jackpotLoaded && !ent.jackpotFlipPending && ent.jackpotAutoHeads<=0 && ent.jackpotAllInT<=0) accepted = true;
+        else if(data.act === "AB3" && ent.ci===JACKPOT.hero && ent.c4 <= slack && !ent.jackpotLoaded && !jackpotCoinBlocksAttack(ent) && ent.jackpotAutoHeads<=0 && ent.jackpotAllInT<=0) accepted = true;
         if(accepted) {
           ent.hitRewindMs = actionHitRewind(conn);
           executeIntentAtPose(ent, data, pose);
@@ -5836,7 +5835,7 @@ setInterval(() => {
       kl: e.killedBy,
       fm: e.form, mh: e.mhp, gd: e.guard > 0 ? e.guard : 0, rp: e.riposte, gb:e.guardBoost||0, dc3:e.c3, hr:!!e.huskRecallUsed,
       c2: e.c2, c3: e.c3, c4:e.c4,
-      jft:e.jackpotFlipT||0,jfp:!!e.jackpotFlipPending,jhl:e.jackpotLoaded||null,jhb:!!e.jackpotPendingHeads,
+      jft:e.jackpotFlipT||0,jrt:e.jackpotCoinRevealT||0,jfp:!!e.jackpotFlipPending,jhl:e.jackpotLoaded||null,jhb:!!e.jackpotPendingHeads,
       jph:!!e.jackpotPityHead,jct:e.jackpotCoinT||0,jah:e.jackpotAutoHeads||0,
       jat:e.jackpotAllInT||0,jw:e.jackpotWager||0,jap:!!e.jackpotAllInPaid,
       jsh:e.jackpotShield||0,jd:e.jackpotDice||0,jdt:e.jackpotDiceT||0,jdr:e.jackpotDiceRollT||0,
@@ -7986,43 +7985,55 @@ const VERSION_UPDATES = {
 
     "Improved champion skins for Mango, Chef Sizzle, Quackbot, and Sir Dentley. Adjusted Jackpot's suit to keep his face clear.",
 
-    "Quick Match now prioritizes the fullest reachable lobby with open spaces."
+    "Quick Match now prioritizes the fullest reachable lobby with open spaces.",
+
+    "Updated map-voting screen with arena previews and live vote counts.",
+
+    "Eliminations now restore 25% of your maximum HP instead of 15%.",
+
+    "More nametag fonts: eight collectible styles to customize your name.",
+
+    "Rebalanced crate rarity odds, scaled to the rarities available in each crate.",
+
+    "Choose Easy, Normal, or Hard AI difficulty.",
+
+    "Separate Master, SFX, and Music toggles let you choose which sounds play."
   ],
 
   champions: [
     {
       type: "nerf",
-      text: "Captain Oink — Cannonball direct damage reduced from 27 to 25 and cooldown increased from 9.5s to 10s. Chain Hook cooldown increased from 11.5s to 12s."
+      text: "Captain Oink \u2014 Cannonball direct damage reduced from 27 to 25 and cooldown increased from 9.5s to 10s. Chain Hook cooldown increased from 11.5s to 12s."
     },
 
     {
       type: "buff",
-      text: "Bruno — Sledgehammer now hits a 270° arc with an accurate attack indicator. Can reflect Jackpot's bullets unless they were fired during ALL IN."
+      text: "Bruno \u2014 Sledgehammer now hits a 270\u00b0 arc with an accurate attack indicator. Can reflect Jackpot's bullets unless they were fired during ALL IN."
     },
 
     {
       type: "buff",
-      text: "Sir Dentley — Normal sword attacks now hit a 210° arc. Counter Lunge range increased from 100 to 110 units."
+      text: "Sir Dentley \u2014 Normal sword attacks now hit a 210\u00b0 arc. Counter Lunge range increased from 100 to 110 units."
     },
 
     {
       type: "buff",
-      text: "Squire — Normal attacks now hit all 360° around him. Recall Armor becomes available after 5s instead of 6s. Dagger Feint now dashes forward up to 70 units instead of sideways."
+      text: "Squire \u2014 Normal attacks now hit all 360\u00b0 around him. Recall Armor becomes available after 5s instead of 6s. Dagger Feint now dashes forward up to 70 units instead of sideways."
     },
 
     {
       type: "nerf",
-      text: "Quackbot — Blink reduced from 16 to 15 short steps. Normal Plasma Blaster damage reduced from 8 to 7 per shot."
+      text: "Quackbot \u2014 Blink reduced from 16 to 15 short steps. Normal Plasma Blaster damage reduced from 8 to 7 per shot."
     },
 
     {
       type: "nerf",
-      text: "Mycelis — Root Entangle duration reduced from 1.8s to 1.7s."
+      text: "Mycelis \u2014 Root Entangle duration reduced from 1.8s to 1.7s."
     },
 
     {
       type: "buff",
-      text: "Mango — Boomerangs now pass through supply crates and can hit them once outbound and once returning."
+      text: "Mango \u2014 Boomerangs now pass through supply crates and can hit them once outbound and once returning."
     }
   ]
 };
