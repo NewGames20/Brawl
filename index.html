@@ -787,7 +787,7 @@ const BALANCE_PATCH = {
   releaseBoostDeadline:1.8,
   // Squire Dagger Feint: cooldown, damage per enemy crossed, and stun.
   feintCooldown:7, feintDamage:10, feintStun:0.4,
-  guardHalfArc:Math.PI/2, lungeCooldown:8.5, lungeBaseDamage:10,
+  guardHalfArc:Math.PI*7/12, lungeCooldown:8.5, lungeBaseDamage:10,
   maxCharge:40, minStun:0.3, maxStun:1.5,
   squireGrace:1, squireDamageMultiplier:0.5,
   recallDelay:5, recallDistance:32, rearmRange:50, rearmTime:1.5, huskLife:10},
@@ -829,7 +829,7 @@ const HEROES = [
    hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
    a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 15 damage, heavy knockback, and a 1.1-second stun.",
    a2n:"Charge", a2cd: 14.0,
-   ad:"A 270-degree, 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink\u2019s bullets and cannonballs, Sizzle\u2019s meatballs, Quackbot\u2019s bullets, and Jackpot\u2019s bullets unless fired during ALL IN. Boomerangs, bananas, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
+   ad:"A 180-degree forward, 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink\u2019s bullets and cannonballs, Sizzle\u2019s meatballs, Quackbot\u2019s bullets, and Jackpot\u2019s bullets unless fired during ALL IN. Boomerangs, bananas, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
    melee: true, d:"A durable frontline tank who controls space with a wide, hard-hitting hammer. Slam interrupts nearby enemies, while Charge lets Bruno cross a short gap and scatter anyone in his path. Time his swings to turn away incoming shots and hold space around himself."
  },
  {
@@ -885,13 +885,13 @@ const HEROES = [
    a1n:"Shield Guard",
    a1cd: BALANCE_PATCH.dentley.guardCooldown,
    a1cdSquire: BALANCE_PATCH.dentley.feintCooldown,
-   a1d:"Armored \u2014 Shield Guard: Guard for 2.2 seconds in a 180\u00b0 front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage builds Counter Charge, up to 40. Movement is 25% slower while guarding, and attacks and other abilities are unavailable. Press this ability again between 0.5 and 1.8 seconds after raising the shield to release it and gain 25% movement speed for 0.8 seconds. Releasing after 1.8 seconds is allowed but grants no boost; letting Guard expire naturally also grants no boost. Early release does not refund the cooldown. Squire \u2014 Dagger Feint: Dash forward up to 70 units with 0.2 seconds of invulnerability. Each enemy crossed takes 10 damage before damage reduction and is stunned for 0.4 seconds, once per activation. Walls stop the forward dash. Cooldown: 7 seconds.",
+   a1d:"Armored \u2014 Shield Guard: Guard for 2.2 seconds in a 210\u00b0 front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage builds Counter Charge, up to 40. Movement is 25% slower while guarding, and attacks and other abilities are unavailable. Press this ability again between 0.5 and 1.8 seconds after raising the shield to release it and gain 25% movement speed for 0.8 seconds. Releasing after 1.8 seconds is allowed but grants no boost; letting Guard expire naturally also grants no boost. Early release does not refund the cooldown. Squire \u2014 Dagger Feint: Dash forward up to 70 units with 0.2 seconds of invulnerability. Each enemy crossed takes 10 damage before damage reduction and is stunned for 0.4 seconds, once per activation. Walls stop the forward dash. Cooldown: 7 seconds.",
 
    a2n:"Counter Lunge",
    a2cd: BALANCE_PATCH.dentley.lungeCooldown,
    a2d:"Armored \u2014 Counter Lunge: Lunge forward up to 110 units, dealing 10 damage plus stored Counter Charge, up to 50 total damage. Stun scales from 0.3 seconds at zero charge to 1.5 seconds at 40 charge. All charge is spent when used, even if the lunge misses. Squire \u2014 Recall Armor: Becomes available 5 seconds after turning into Squire. Press this ability to place the surviving armor husk directly in front of you. Usable once per armor break. Recall does not restore the husk's health, refresh its remaining lifetime, or immediately rearm you. Destroyed or expired armor cannot be recalled.",
 
-   ad:"Armored \u2014 Longsword: A 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units. The combo resets after 0.9 seconds without another hit. Squire \u2014 Dagger: Close-range attacks deal 8 damage.",
+   ad:"Armored \u2014 Longsword: Attacks cover a 150-degree arc in front of Dentley. A 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units. The combo resets after 0.9 seconds without another hit. Squire \u2014 Dagger: Close-range attacks deal 8 damage.",
 
    melee: true,
    atkRange: 70,
@@ -1179,6 +1179,7 @@ SKIN_CATEGORIES.push({key:'auras',label:'Champion Auras',cratePrice:400,crateNam
 ].map(([id,name,rarity,color])=>({id:`aura-${id}-${hero}`,hero,name:`${name} — ${h.n}`,rarity,base:'#111522',accent:color,glow:color}))) });
 PATCH_UPDATES.version='BRAWLBOUND v1.3.1';
 PATCH_UPDATES.announcement='Seven secret champion challenges, Inventory, and full-body Epic & Legendary auras!';
+PATCH_UPDATES.notes.unshift('Bruno: Sledgehammer sweeps a 180-degree frontal arc.','Sir Dentley: Armored longsword attacks cover a 150-degree frontal arc; Shield Guard protects a 210-degree frontal arc.');
 PATCH_UPDATES.notes.unshift('Champion menu cards now open their own challenge tracks.','Seven sequential challenges per champion. Future objectives stay secret; only the active challenge earns progress.','Epic auras have subtle full-body energy; Legendary auras have stronger full-body effects.','Weapon / Champion / Aura Caches now cost 500 / 600 / 400 Shinies.','Inventory handles inspecting and equipping. Mastery rewards are excluded from crates.');
 function normalizeMastery(value){const r={};for(let i=0;i<HEROES.length;i++){const v=value?.[i];r[i]={version:2,stage:v?.version===2?Math.max(0,Math.min(7,Math.floor(Number(v.stage)||0))):0,progress:v?.version===2?Math.max(0,Math.min(1e9,Math.floor(Number(v.progress)||0))):0};}return r;}
 
@@ -4313,7 +4314,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
   }
 }
 
-function meleeHalfArc(e){return e.ci===0?Math.PI*3/4:e.ci===6?(e.form===1?Math.PI:Math.PI*7/12):1.15;}
+function meleeHalfArc(e){return e.ci===0?Math.PI/2:e.ci===6?(e.form===1?Math.PI:Math.PI*5/12):1.15;}
 function spawnMeleeSector(e,radius,halfArc,color){
  const segments=72,positions=[],edges=[];
  function point(angle){
@@ -5291,7 +5292,7 @@ window.returnToMenu = function(message = "Select a champion to battle in the are
 let roundVote=null,roundVoteSerial=0,pendingRoundReady=false,lastRoundStatePacket=null,lastRoundStartPacket=null,pendingStartGamePacket=null,lastStartedRoundId=null;
 const REMATCH_COUNTDOWN_MS=10000,MAP_VOTE_DURATION_MS=7000;
 const HOST_AWAY_TIMEOUT_MS=20000;
-const ARENA_PROTOCOL_VERSION=14;
+const ARENA_PROTOCOL_VERSION=15;
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,m)=>total+(votes[m.id]===i?1:0),0)),max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===MAPS.length?Math.floor(random()*MAPS.length):winner;
 }
@@ -8132,13 +8133,13 @@ const VERSION_UPDATES = {
     },
 
     {
-      type: "buff",
-      text: "Bruno \u2014 Sledgehammer now hits a 270\u00b0 arc with an accurate attack indicator. Can reflect Jackpot's bullets unless they were fired during ALL IN."
+      type: "info",
+      text: "Bruno \u2014 Sledgehammer sweeps a 180\u00b0 arc in front of him, with a matching attack indicator. Can reflect eligible projectiles, including Jackpot's bullets unless fired during ALL IN."
     },
 
     {
-      type: "buff",
-      text: "Sir Dentley \u2014 Normal sword attacks now hit a 210\u00b0 arc. Counter Lunge range increased from 100 to 110 units."
+      type: "info",
+      text: "Sir Dentley \u2014 Armored longsword attacks cover a 150\u00b0 arc in front of him. Shield Guard protects a 210\u00b0 frontal arc, reducing projectile damage by 75% and melee/zone damage by 60%. Counter Lunge reaches up to 110 units."
     },
 
     {
