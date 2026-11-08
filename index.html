@@ -864,12 +864,12 @@ const HEROES = [
    melee: false, d:"A sturdy close-range bruiser who can start fights with a hook, then punish clustered opponents with his scrap shotgun or explosive cannonball. Hooked foes are dragged into Captain Oink\u2019s preferred range, while a wall hit gives him a quick route through the arena. A missed hook creates a brief opening, so choose the angle carefully."
  },
  {
-   n:"Mango the Monkey", e:"\ud83d\udc35", w:"\ud83c\udf4c", wn:"Twin Crescent Boomerang",
+   n:"Mango the Monkey", e:"\ud83d\udc35", w:"\ud83c\udf4c", wn:"Banana Boomerang",
    role: "Skirmisher", roleCol: "#d6a71e",
    hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
    a1n:"Cluster Bomb", a1cd: BALANCE_PATCH.mango.bombCooldown, a1d:"Lob a fruit bomb ahead. When it bursts, six returning banana boomerangs fan out from the blast point, each dealing 9 damage and knockback on a hit.",
    a2n:"Peel Trap", a2cd: BALANCE_PATCH.mango.peelCooldown,
-   ad:"Throw a crescent boomerang for 16 damage. Cannot be reflected: they are bananas, not bullets! It travels forward, then curves back toward Mango. It passes through supply crates and can damage the same crate once outbound and once returning.", a2d:"Drop a peel 40 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 10 damage, is launched, and is stunned for 1.5 seconds.",
+   ad:"Throw a Banana Boomerang for 15 damage. Cannot be reflected: they are bananas, not bullets! It travels forward, then curves back toward Mango. It passes through supply crates and can damage the same crate once outbound and once returning.", a2d:"Drop a peel 40 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 10 damage, is launched, and is stunned for 1.5 seconds.",
    melee: false, d:"A fast skirmisher who keeps moving while boomerangs pressure opponents from different angles. Cluster Bomb scatters returning blades across a fight, and Peel Trap can punish a pursuer or guard a narrow route. Mango is less durable than the frontliners, so use speed and spacing to avoid being pinned down."
  },
  {
@@ -887,7 +887,7 @@ const HEROES = [
    hp: 110, sp: 185, col: 0x309bb0, cd: 0.25,
    a1n:"Blink", a1cd: 6.0, a1d:"Dash instantly forward in up to fifteen short steps. Walls stop the movement, so Blink can slip around cover but cannot pass through it.",
    a2n:"Barrage", a2cd: BALANCE_PATCH.quackbot.barrageCooldown,
-   ad:"Fire quick plasma darts for 7 damage each. Quackbot's short attack cooldown favors steady aim and repeated pressure over one large hit.", a2d:"Queue seven plasma darts in a rapid burst. Each dart deals 7.5 damage, letting the full stream punish a target who stays in the firing lane.",
+   ad:"Fire quick plasma darts for 7 damage each with a tight, simple firing spread. Quackbot's short attack cooldown favors steady aim and repeated pressure over one large hit.", a2d:"Queue seven plasma darts in a rapid burst. Each dart deals 7.5 damage, letting the full stream punish a target who stays in the firing lane.",
    melee: false, d:"A very fast but fragile assassin built around accurate, repeated shots. Blink changes position quickly, and Barrage adds a concentrated burst when an opponent is exposed. Quackbot relies on movement and timing to avoid trading hits with tougher champions."
  },
  {
@@ -968,9 +968,9 @@ const CRATE_RARITY_ODDS = [
 const ATTACK_TUNING = {
  bruno:{range:80,damage:30,knockback:360},
  oink:{speed:410,damage:8.5,knockback:100,life:0.32,spread:0.14},
- mango:{speed:380,damage:16,knockback:140,life:99},
+ mango:{speed:380,damage:15,knockback:140,life:99},
  sizzle:{speed:380,damage:35,knockback:95,life:1.6},
- quackbot:{speed:540,damage:7,knockback:35,life:0.48,spread:0.14},
+ quackbot:{speed:540,damage:7,knockback:35,life:0.48,spread:0.12},
  mycelis:{speed:410,damage:20,knockback:80,life:0.85}
 };
 // ================= END EDIT ZONE =================
@@ -1038,6 +1038,24 @@ function addChampionAura(model,item){
 function animateOneAura(group,t){const full=group.userData.full,legendary=group.userData.legendary;for(let i=1;i<group.children.length;i++){const m=group.children[i],phase=m.userData.phase||0,a=phase+t*(legendary?.9:.6);switch(m.userData.kind){case 'mote':{const y=full?3+((m.userData.index*5.3+t*(legendary?8:5))%42):4+Math.sin(a*2+t)*2;m.position.set(Math.cos(a)*(full?19:23),y,Math.sin(a)*(full?19:23));m.rotation.set(t,a,t*.5);break;}case 'band':m.position.y=6+((phase*10+t*8)%34);m.rotation.z=Math.sin(t+phase)*.12;break;case 'shell':m.material.opacity=(legendary?.075:.035)*(1+Math.sin(t*2)*.2);break;case 'halo':m.rotation.z=Math.sin(t)*.08;break;}}}
 function animateChampionAuras(now){const t=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:now/1000;for(const e of E){const a=e.mesh?.getObjectByName('bb-champion-aura');if(a)animateOneAura(a,t);}}
 function crateTone(freq,duration=.04){try{Snd.ensure();if(!Snd.ctx||!Snd.sfxGain)return;const ctx=Snd.ctx,o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.035,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+duration);o.connect(g);g.connect(Snd.sfxGain);o.start();o.stop(ctx.currentTime+duration);o.onended=()=>{o.disconnect();g.disconnect();};}catch(e){}}
+
+
+// Main abilities start with a 3-second cooldown AFTER the countdown ends.
+// Normal attacks and extra actions such as Jackpot's Coin Toss are excluded.
+const ROUND_START_ABILITY_COOLDOWN = 3;
+function startupAbilityCooldownRemaining() {
+  if(demoActive)return 0;
+  if(state==='intro'||state==='countdown')return ROUND_START_ABILITY_COOLDOWN;
+  return state==='play'?Math.max(0,ROUND_START_ABILITY_COOLDOWN-matchTime):0;
+}
+function initializeStartupAbilityCooldowns() {
+  for(const e of E) {
+    if(e.dead)continue;
+    e.c2=Math.max(e.c2||0,ROUND_START_ABILITY_COOLDOWN);
+    e.c3=Math.max(e.c3||0,ROUND_START_ABILITY_COOLDOWN);
+    // c1 (normal attack) and c4 (extra action) are intentionally untouched.
+  }
+}
 
 // --- ARENA CONSTANTS ---
 const BASE_W = 680, BASE_H = 460;
@@ -4611,6 +4629,7 @@ function attack(e) {
 }
 
 function executeAbility1(e) {
+  if(startupAbilityCooldownRemaining()>0)return;
   if(dentleyGuardActive(e)) { releaseDentleyGuard(e); return; }
   const c = HEROES[e.ci];
   Snd.abilityCue(e.ci, 1);
@@ -4724,6 +4743,7 @@ function executeAbility1(e) {
 }
 
 function ability1(e) {
+  if(startupAbilityCooldownRemaining()>0)return;
   if(hostVisibilityPaused && isMultiplayer) return;
   if(dentleyGuardActive(e) && !canReleaseDentleyGuard(e)) return;
   if(isMultiplayer) sendActionIntent("AB1", e.a, e.x, e.z);
@@ -4763,6 +4783,7 @@ function tickMycelisEffects(e, dt) {
 }
 
 function executeAbility2(e) {
+  if(startupAbilityCooldownRemaining()>0)return;
   if(dentleyGuardActive(e)) return;
   if(e.ci===6 && e.form===1){ recallDentleyHusk(e); return; }
   const c = HEROES[e.ci];
@@ -4853,6 +4874,7 @@ function executeAbility2(e) {
 }
 
 function ability2(e) {
+  if(startupAbilityCooldownRemaining()>0)return;
   if(hostVisibilityPaused && isMultiplayer) return;
   if(dentleyGuardActive(e)) return;
   if(e.ci === 6 && e.form === 1 && !canRecallDentleyHusk(e)) return;
@@ -5217,6 +5239,16 @@ function syncHUD() {
   document.getElementById("cd2-fill").style.width = (cd2Prog * 100) + "%";
   document.getElementById("cd2-label").innerText = `${ab2LabelKey} ${sq ? (!targetEnt.husk?"ARMOR LOST":targetEnt.huskRecallUsed?"RECALL USED":targetEnt.c3>0?"Recall Armor "+Math.ceil(targetEnt.c3)+"s":"Recall Armor") : c.a2n}`;
 
+
+  const startupRemaining=startupAbilityCooldownRemaining();
+  if(startupRemaining>0) {
+    const progress=Math.max(0,1-startupRemaining/ROUND_START_ABILITY_COOLDOWN)*100;
+    document.getElementById('cd1-fill').style.width=progress+'%';
+    document.getElementById('cd2-fill').style.width=progress+'%';
+    document.getElementById('cd1-label').innerText=`${ab1LabelKey} ${sq?'Dagger Feint':c.a1n} · ${Math.ceil(startupRemaining)}s`;
+    document.getElementById('cd2-label').innerText=`${ab2LabelKey} ${sq?'Recall Armor':c.a2n} · ${Math.ceil(startupRemaining)}s`;
+  }
+
   const cd3Bar=document.getElementById("cd3-bar");
   if(cd3Bar) {
     cd3Bar.style.display=targetEnt.ci===JACKPOT.hero?"flex":"none";
@@ -5372,7 +5404,7 @@ window.returnToMenu = function(message = "Select a champion to battle in the are
 let roundVote=null,roundVoteSerial=0,pendingRoundReady=false,lastRoundStatePacket=null,lastRoundStartPacket=null,pendingStartGamePacket=null,lastStartedRoundId=null;
 const REMATCH_COUNTDOWN_MS=10000,MAP_VOTE_DURATION_MS=7000;
 const HOST_AWAY_TIMEOUT_MS=20000;
-const ARENA_PROTOCOL_VERSION="18:"+Object.values(COMBAT_SETTINGS).join(":");
+const ARENA_PROTOCOL_VERSION="19:"+Object.values(COMBAT_SETTINGS).join(":");
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,m)=>total+(votes[m.id]===i?1:0),0)),max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===MAPS.length?Math.floor(random()*MAPS.length):winner;
 }
@@ -5961,6 +5993,7 @@ function handleIncomingData(conn, data) {
   }
   else if(data.type === "ACTION_INTENT") {
     if(hostVisibilityPaused || state !== "play") return;
+    if((data.act === "AB1" || data.act === "AB2") && startupAbilityCooldownRemaining()>0)return;
     const ent = getRemoteActorByNetId(data.id);
     let accepted = !isLobbyLeader;
     if(isLobbyLeader) {
@@ -7382,6 +7415,7 @@ function initMatchView() {
   stormRadius = initialStormRadius;
   stormMesh.scale.set(stormRadius, 1, stormRadius);
   countdown = 3.0;
+  initializeStartupAbilityCooldowns();
   introElapsed = 0;
   screenShake = 0;
   localHitStopFrames = 0;
@@ -7520,6 +7554,7 @@ function upd(dt) {
     updateCountdownFacing(dt);
 
     if(countdown <= 0) {
+      initializeStartupAbilityCooldowns();
       state = "play";
       Snd.play("go");
       centerMsg.style.display = "none";
@@ -8177,6 +8212,7 @@ const VERSION_UPDATES = {
   version: "BRAWLBOUND v1.3.0",
 
   game: [
+    "ROUND START: Main champion abilities unlock 3 seconds after BRAWL! Basic attacks and extra actions such as Jackpot’s Coin Toss are not delayed.",
     "NEW NAMETAG COSMETICS: 12 additions—two Epics and one Legendary each for Nametag Colors, Borders, Designs, and Fonts. Rarity drop rates are unchanged.",
     "NEW CHAMPION: Jackpot! Permanently unlock him for 1,000 Shinies.",
 
@@ -8224,23 +8260,23 @@ const VERSION_UPDATES = {
     },
 
     {
-      type: "info",
+      type: "buff",
       text: `Bruno — Sledgehammer sweeps a ${COMBAT_SETTINGS.brunoAttackDegrees}° arc in front of him, with a matching attack indicator. Can reflect eligible projectiles, including Jackpot's bullets unless fired during ALL IN.`
     },
 
     {
-      type: "info",
+      type: "buff",
       text: `Sir Dentley — Armored longsword attacks cover a ${COMBAT_SETTINGS.dentleyAttackDegrees}° arc in front of him. Shield Guard protects a ${COMBAT_SETTINGS.dentleyShieldDegrees}° frontal arc. Counter Lunge reaches up to 110 units.`
     },
 
     {
-      type: "info",
+      type: "buff",
       text: `Squire — Dagger attacks cover a ${COMBAT_SETTINGS.squireAttackDegrees}° arc. Recall Armor becomes available after 5 seconds. Dagger Feint dashes forward up to 70 units.`
     },
 
     {
-      type: "nerf",
-      text: "Quackbot \u2014 Blink reduced from 16 to 15 short steps. Normal Plasma Blaster damage reduced from 8 to 7 per shot."
+      type: "buff",
+      text: "Quackbot \u2014 Plasma Blaster has a slightly tighter firing spread for more consistent aim. Normal shots still deal 7 damage, and fire rate is unchanged. Blink travels up to 15 short steps."
     },
 
     {
@@ -8249,8 +8285,8 @@ const VERSION_UPDATES = {
     },
 
     {
-      type: "buff",
-      text: "Mango \u2014 Boomerangs now pass through supply crates and can hit them once outbound and once returning."
+      type: "rework",
+      text: "Mango the Monkey \u2014 Wields the Banana Boomerang, dealing 15 damage per hit. It passes through supply crates and can hit a crate once outbound and once returning. Banana projectiles cannot be reflected."
     }
   ]
 };
