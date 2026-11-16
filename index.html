@@ -723,6 +723,17 @@ html, body {
 @keyframes bb-aura-breathe{to{transform:scale(1.08);filter:brightness(1.15)}}@keyframes bb-marker-tick{from{filter:brightness(2.3);transform:translateX(-50%) scaleX(2)}to{filter:brightness(1);transform:translateX(-50%) scaleX(1)}}@keyframes bb-reward-arrive{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.bb-aura-ring,.bb-aura-preview:before,.crate-reveal,.crate-reel-marker.bb-tick{animation:none!important}.bb-progress i,.crate-reel-track{transition:none!important}}
 </style>
+<style id="survivalist-design-system">
+:root{--bg-core:#080d13;--panel-bg:#101b25f5;--panel-solid:#111c27f5;--primary:#e5b477;--accent:#96dfd0;--good:#96dfb0;--text-muted:#96a9ba;--border:#b8d0df1f;--border-highlight:#b8d0df44}
+#ov{background:linear-gradient(110deg,#07101bf5 0%,#091320e8 54%,#07101ba8);padding:28px max(24px,calc((100vw - 1240px)/2));gap:18px;align-items:stretch;text-align:left}
+#ov>*{width:100%;max-width:1240px;margin-left:auto;margin-right:auto}.menu-head{align-items:flex-start;border-bottom:1px solid var(--border);padding:8px 0 22px;position:relative}.brand-title{font-size:clamp(36px,5vw,64px);letter-spacing:-2px;background:none;-webkit-text-fill-color:#edf3f5;filter:none;animation:none;font-weight:800}.tagline{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#95acba;text-shadow:none;margin-top:12px}.menu-announcement{background:#96dfd009;border:1px solid #96dfd030;color:#b9e9db;padding:11px 16px;border-radius:6px;max-width:none}
+.lobby-panel{justify-content:flex-start;background:#12202bbb;border-radius:8px;padding:12px;gap:10px}.lobby-btn{border-radius:5px;background:#1b2a38;box-shadow:none;min-height:48px;padding:10px 22px;align-items:flex-start;transition:background .18s}.lobby-btn:hover{transform:none;background:#293e4e;box-shadow:none}.lobby-btn.action-primary{background:#d9af78;color:#15212a;border-color:#f3d6ae;box-shadow:none}.lobby-btn.action-primary small{color:#344451}.lobby-btn.action-accent{background:#21534f;border-color:#68b9aa;box-shadow:none}.account-toolbar{justify-content:flex-start;background:none;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:0 0 16px;color:#b4c8d5}.account-toolbar button{border-radius:5px}.menu-cols{gap:24px;max-width:1240px}.detail-col{flex-basis:350px;width:350px}.roster-col{gap:14px}.hero-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}.section-label{letter-spacing:3px;color:#9ab0bf;margin:4px 0}
+.hero-card{border-radius:7px;padding:20px 10px 15px;background:linear-gradient(155deg,#1b2c39ee,#101b25f5);gap:7px;min-height:170px;border-color:#91b1c222}.hero-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px #0004}.hero-card.chosen{border-color:#a2e4d2!important;box-shadow:inset 0 -3px #a2e4d2}.hc-name{font-size:14px;letter-spacing:.2px}.hc-role{font-size:9px;letter-spacing:1.3px}.hc-emoji{font-size:34px}.hc-stats{background:#050e1744;padding:5px 10px;color:#b6cad7}.hc-check{box-shadow:none;border-radius:3px}.bb-card-challenges{background:#ffffff05;border-color:#ffffff15;color:#a8bac8;border-radius:4px;font-size:9px}.champ-detail{background:linear-gradient(150deg,#223441f5,#101c28fa);border-radius:8px;padding:22px;border-color:#b8d0df33;box-shadow:0 20px 48px #0003;gap:15px}.cd-name{font-size:24px}.cd-role{letter-spacing:1.8px;margin-top:6px}.cd-tag{border-radius:3px;font-size:8px}.cd-weapon,.cd-ability{background:#06101b55;border:1px solid #b8d0df12;border-radius:5px;padding:12px}.cd-ab-body{font-size:11px;line-height:1.6}.cd-summary{font-size:11px;line-height:1.6;background:none}.settings-panel,.footer-bar{border-radius:6px;background:#0d1a26c9;justify-content:flex-start;padding:13px 16px}.tab-btn.selected{background:#2c494f;box-shadow:none;color:#c5f3e8}.map-selector,.control-selector,.gfx-selector{border-radius:6px}.tab-btn{border-radius:4px}.menu-updates{position:static;width:100%;max-width:none;border-radius:6px;background:#101e2b}.menu-updates ul{font-size:11px;line-height:1.6}
+#hud-player,#compass{border-radius:6px;background:#0b1721ed;box-shadow:0 8px 25px #0004;border-color:#b8d0df33}#hud-player{padding:15px 18px}#hud-hp-bar{height:8px;border-radius:2px}#hud-hp-fill{background:#91d9b1;box-shadow:none}#hud-cooldowns{left:50%;transform:translateX(-50%);flex-direction:row;bottom:24px}.cd-bar{height:50px;width:158px;border-radius:5px;background:#091620ed;border-color:#b8d0df33;font-size:11px}.cd-fill{background:linear-gradient(0deg,#70baa44d,#70baa418);border-bottom:3px solid #95e3c6}.result-card,.economy-card{border-radius:10px;background:linear-gradient(145deg,#20313f,#0b1622);border-color:#c1d5df33;box-shadow:0 24px 80px #0008}.result-btn{border-radius:5px;background:#d9af78;color:#14212a;box-shadow:none}.economy-action,.economy-tab,.shop-item,.loot-card{border-radius:5px}.round-map-card{border-radius:8px;box-shadow:none}#aim-mode{position:absolute;bottom:88px;left:50%;transform:translateX(-50%);padding:7px 13px;border:1px solid #b8d0df33;background:#0b1721e8;color:#9db3c4;border-radius:4px;font:700 10px system-ui;letter-spacing:1.6px}#aim-mode[data-vertical=true]{color:#b0f6df;border-color:#96dfd0}
+#upgrade-draft{position:absolute;inset:0;z-index:85;background:radial-gradient(ellipse at 80% 20%,#254c4b66,transparent 55%),#09131ffb;display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px;overflow:auto}.draft-eyebrow{font:700 11px system-ui;letter-spacing:3px;color:#9ce0cf}#upgrade-draft h1{font-size:clamp(30px,4vw,54px);letter-spacing:-1.4px}#upgrade-draft>p{font-size:13px;color:#97acbc;text-align:center}.draft-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:min(100%,1050px);margin:15px 0}.draft-cards button{font-family:inherit;text-align:left;display:flex;flex-direction:column;gap:22px;min-height:290px;padding:28px;background:linear-gradient(145deg,#233948,#13212f);border:1px solid #b7d3e033;border-radius:8px;color:#edf5f5;cursor:pointer;transition:.2s}.draft-cards button:hover,.draft-cards button.chosen{border-color:#9ce0cf;transform:translateY(-4px);background:linear-gradient(145deg,#2c514f,#142b32)}.draft-cards button span{font-size:9px;letter-spacing:2px;color:#91b0bd}.draft-cards h2{font-size:24px;line-height:1.2}.draft-cards p{font-size:13px;color:#b2c4d0;line-height:1.7}.draft-cards small{margin-top:auto;color:#b4ebd9;font-size:10px;letter-spacing:1px}.draft-cards button:disabled{cursor:default}.draft-cards button:disabled:not(.chosen){opacity:.45}#draft-clock{font-size:11px;letter-spacing:2px;color:#d9b98a}button:focus-visible{outline:2px solid #d7f8ee;outline-offset:4px}
+@media(max-width:860px){.detail-col{width:100%}.draft-cards{gap:10px}.draft-cards button{padding:18px;min-height:240px}}@media(max-width:600px){#ov{padding:18px 14px}.hero-grid{grid-template-columns:repeat(2,1fr)}.draft-cards{grid-template-columns:1fr}.draft-cards button{min-height:170px;gap:12px}#upgrade-draft{justify-content:flex-start;padding:28px 18px}.cd-bar{width:105px;font-size:9px}#hud-player{left:12px;top:12px;min-width:190px}#compass{right:12px;top:105px;font-size:10px}.lobby-btn{flex:1 1 130px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
 <div id="wrap">
@@ -826,8 +837,8 @@ const BALANCE_PATCH = {
  }
 };
 const PATCH_UPDATES = {
-  "version": "BRAWLBOUND v1.2.8",
-  "announcement": "v1.2.8: champion balance, accurate attack arcs, and normal account progression.",
+  "version": "BRAWLBOUND · SURVIVALIST UPDATE",
+  "announcement": "SURVIVALIST UPDATE: Patch · Vertical aiming · Round upgrades",
   "notes": [
     "NEW CHAMPION: Jackpot! Permanently unlock him for 1,000 Shinies.",
     "NEW JACKPOT SKINS: House Edge weapon skin and High Roller Jackpot outfit.",
@@ -937,6 +948,9 @@ HEROES.push({n:"Jackpot",e:"\ud83c\udfb0",w:"\ud83e\ude99",wn:"Lucky Revolver",r
  d:"A high-variance gunslinger who can flip for a stronger shot, gamble on a die, or wager health for a short all-in burst."
 });
 
+
+HEROES.push({n:"Patch",e:"⛨",w:"⌖",wn:"FIELD BLASTER",role:"Ranged Survivalist",roleCol:"#7cdbb0",hp:170,sp:160,col:0x527560,cd:.6,melee:false,atkRange:480,a1n:"Medkit",a1cd:13,a2n:"Stim",a2cd:11,a3n:"Cooked Grenade",a3cd:12,ad:"Accurate projectile: 13 damage every 0.6 seconds.",a1d:"Restore 35 HP over 2 seconds. Enemy damage interrupts healing. Cannot exceed maximum HP. Unavailable while cooking.",a2d:"Gain 30% movement speed for 3 seconds. Does not remove stuns or pass through obstacles.",a3d:"Hold F (or .) to cook; release to throw. The 3-second fuse never resets. Up to 25 damage with distance falloff, modest knockback, terrain bounces and cover blocking. Can kill Patch. Death drops the live grenade.",d:"A reliable survivalist. Find cover to heal, use Stim to reposition, and time a live grenade carefully. No passive or special resource."});
+
 // Champion text is generated from the same settings as the real hitboxes.
 HEROES[0].ad=HEROES[0].ad.replace(/A \d+-degree(?: forward)?,/,`A ${COMBAT_SETTINGS.brunoAttackDegrees}-degree forward,`);
 HEROES[6].a1d=HEROES[6].a1d.replace(/\d+\u00b0 front arc/,`${COMBAT_SETTINGS.dentleyShieldDegrees}\u00b0 front arc`);
@@ -946,7 +960,7 @@ const JACKPOT={hero:7,baseDamage:6,headsDamage:20,allInDamage:20,flipDuration:0.
 
 const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
 
-const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5,16];
+const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5,16,16];
 
 const SHINY_REWARDS = { daily: 50, kill: 15, win: 75 };
 
@@ -1053,6 +1067,7 @@ function initializeStartupAbilityCooldowns() {
     if(e.dead)continue;
     e.c2=Math.max(e.c2||0,ROUND_START_ABILITY_COOLDOWN);
     e.c3=Math.max(e.c3||0,ROUND_START_ABILITY_COOLDOWN);
+    if(e.ci===8)e.c4=ROUND_START_ABILITY_COOLDOWN;
     // c1 (normal attack) and c4 (extra action) are intentionally untouched.
   }
 }
@@ -1213,9 +1228,9 @@ SKIN_CATEGORIES.find(c=>c.key==="weaponSkins").items.push({id:"jackpot-house-edg
 SKIN_CATEGORIES.find(c=>c.key==="championSkins").items.push({id:"jackpot-high-roller",hero:7,name:"High Roller Jackpot",rarity:"Epic",base:"#29133f",accent:"#ffdc83",glow:"#a855f7"});
 
 // v1.3.1: Inventory, sequential champion challenges and full-body prestige auras.
-const MASTERY_NAMES=[['Titanfall','Arena Colossus'],['Royal Broadside','Dread Admiral'],['Solar Crescent','Sun Temple Mango'],['Starlight Supper','Celestial Chef'],['Ion Needle','Quantum Quackbot'],['Eclipse Scepter','Eclipse Mycelis'],['Kingsguard Edge','Sovereign Dentley'],['Royal Flush','Casino Sovereign']];
+const MASTERY_NAMES=[['Titanfall','Arena Colossus'],['Royal Broadside','Dread Admiral'],['Solar Crescent','Sun Temple Mango'],['Starlight Supper','Celestial Chef'],['Ion Needle','Quantum Quackbot'],['Eclipse Scepter','Eclipse Mycelis'],['Kingsguard Edge','Sovereign Dentley'],['Royal Flush','Casino Sovereign'],['Trailblazer','Field Commander']];
 for(let hero=0;hero<HEROES.length;hero++){
- const colors=[['#30221a','#ffe08a','#ff9d38'],['#122c48','#99edff','#46bfff'],['#3d2037','#ffdc7a','#ff963a'],['#291838','#e8baff','#bd78ff'],['#122c36','#8effdf','#30eacd'],['#291b40','#e9aaff','#b47aff'],['#273248','#fff0ba','#ffd16b'],['#35172e','#ffe09b','#ff68b5']][hero];
+ const colors=[['#30221a','#ffe08a','#ff9d38'],['#122c48','#99edff','#46bfff'],['#3d2037','#ffdc7a','#ff963a'],['#291838','#e8baff','#bd78ff'],['#122c36','#8effdf','#30eacd'],['#291b40','#e9aaff','#b47aff'],['#273248','#fff0ba','#ffd16b'],['#35172e','#ffe09b','#ff68b5'],['#183d30','#b8ffcf','#51e7b2']][hero];
  for(const [key,index] of [['weaponSkins',0],['championSkins',1]])SKIN_CATEGORIES.find(c=>c.key===key).items.push({id:`mastery-${key}-${hero}`,hero,name:MASTERY_NAMES[hero][index],rarity:'Legendary',base:colors[0],accent:colors[1],glow:colors[2],masteryOnly:true});
 }
 SKIN_CATEGORIES.find(c=>c.key==='weaponSkins').cratePrice=500;
@@ -1332,7 +1347,7 @@ function normalizeStoredProfile(profile) {
   for(const category of NAMEPLATE_CATEGORIES) if(!owned[category.key].includes(equipped[category.key])) equipped[category.key] = "default";
   const balance = Math.max(0, Math.floor(Number(profile && profile.shinies) || 0));
   return {
-    id, username, shinies: balance, owned, equipped, unlockedChampions: Array.isArray(profile?.unlockedChampions)?profile.unlockedChampions.filter(ci=>ci===7):[],
+    id, username, shinies: balance, owned, equipped, unlockedChampions: Array.isArray(profile?.unlockedChampions)?profile.unlockedChampions.filter(ci=>ci===7||ci===8):[],
     pendingCrate: normalizePendingCrate(profile&&profile.pendingCrate),
     dailyChallenges: normalizeDailyChallenges(profile&&profile.dailyChallenges),
     mastery: normalizeMastery(profile&&profile.mastery),
@@ -1441,7 +1456,7 @@ function showEconomyToast(message) {
 }
 
 function updateEconomyDisplays() {
-  refreshJackpotUnlockLabel();
+  refreshJackpotUnlockLabel();refreshPatchUnlockLabel();
   const profile = activeProfile();
   const summary = document.getElementById("account-summary");
   if(summary)setNametagContent(summary,profile?`${usernameTagHTML(profile.username,getNameplateCosmeticIds(profile))} \u00b7 \u2728 ${profile.shinies} Shinies`:"Create a local account to save Shinies and cosmetics");
@@ -1717,18 +1732,22 @@ function openShop() {
   renderEconomyModal();
 }
 
-function ownsChampion(ci,profile=activeProfile()){return ci!==7||!!profile?.unlockedChampions?.includes(7);}
+function ownsChampion(ci,profile=activeProfile()){return ![7,8].includes(ci)||!!profile?.unlockedChampions?.includes(ci);}
 function unlockJackpot(){
  const profile=activeProfile();if(!profile){openAccountModal(true);return false;}if(ownsChampion(7,profile))return true;
  if(profile.shinies<1000){showEconomyToast(`Jackpot costs 1,000 Shinies. You need ${1000-profile.shinies} more.`);return false;}
  bbConfirm('Permanently unlock Jackpot for 1,000 Shinies?').then(approved=>{
   if(!approved||activeProfile()!==profile||ownsChampion(7,profile)||profile.shinies<1000)return;
-  profile.shinies-=1000;profile.unlockedChampions=[7];saveAccountBook();updateEconomyDisplays();showEconomyToast('Jackpot permanently unlocked!');const card=ov.querySelector('.hero-card[data-i="7"]');if(card)card.click();
+  profile.shinies-=1000;profile.unlockedChampions=[...new Set([...(profile.unlockedChampions||[]),7])];saveAccountBook();updateEconomyDisplays();showEconomyToast('Jackpot permanently unlocked!');const card=ov.querySelector('.hero-card[data-i="7"]');if(card)card.click();
  });return false;
 }
 window.unlockJackpot=unlockJackpot;
 function refreshJackpotUnlockLabel(){const canAfford=!!activeProfile()&&activeProfile().shinies>=1000;document.querySelectorAll('.jackpot-unlock-price').forEach(label=>{label.style.color=canAfford?'#45d988':'#ff6262';label.hidden=ownsChampion(7);});}
+function unlockPatch(){const p=activeProfile();if(!p){openAccountModal(true);return false;}if(ownsChampion(8,p))return true;if(p.shinies<500){showEconomyToast(`Patch costs 500 Shinies. You need ${500-p.shinies} more.`);return false;}bbConfirm('Permanently unlock Patch for 500 Shinies?').then(ok=>{if(!ok||activeProfile()!==p||ownsChampion(8,p)||p.shinies<500)return;p.shinies-=500;p.unlockedChampions=[...new Set([...(p.unlockedChampions||[]),8])];saveAccountBook();updateEconomyDisplays();showEconomyToast('Patch unlocked!');ov.querySelector('.hero-card[data-i="8"]')?.click();});return false;}
+function refreshPatchUnlockLabel(){document.querySelectorAll('.patch-unlock-price').forEach(el=>{el.hidden=ownsChampion(8);el.style.color=(activeProfile()?.shinies||0)>=500?'#a8e3ae':'#edb38b';});}
+
 function requireLocalAccount() {
+  if(p1HeroChoice===8&&!ownsChampion(8)){if(!activeProfile())openAccountModal(true);else showEconomyToast("Unlock Patch for 500 Shinies first.");return false;}
   if(activeProfile()) {if(p1HeroChoice===7&&!ownsChampion(7)){showEconomyToast("Unlock Jackpot for 1,000 Shinies first.");return false;}return true;}
   openAccountModal(true);
   return false;
@@ -2450,6 +2469,7 @@ document.addEventListener("pointerlockchange", () => {
 });
 
 function clearHeldInputs() {
+ if(typeof pl!=="undefined"&&pl?.liveGrenade)requestGrenadeRelease(true);
   for(const k in K) K[k] = 0;
   M.down = 0;
   P1_ab1 = 0;
@@ -3031,6 +3051,8 @@ function build3DMap(def){
 
 // --- HERO & WEAPON BUILDER ---
 function createHighQualityWeapon(heroIndex, isViewmodel = false) {
+ if(heroIndex===8)return buildPatchBlaster(isViewmodel);
+
   const root = new THREE.Group();
 
   if(isViewmodel) {
@@ -3254,6 +3276,10 @@ function applyChampionSkin(model, heroIndex, item) {
  const ball=(r,x,y,z,mat=trim)=>add(new THREE.SphereGeometry(r,10,8),x,y,z,mat);
  const ring=(r,x,y,z,rx=0)=>add(new THREE.TorusGeometry(r,0.7,6,24),x,y,z,trim,rx);
  switch(heroIndex){
+ case 8:
+  box(19,14,4,0,20,9);box(21,3,5,0,27,9,trim);box(16,17,4,0,20,-10);
+  for(const side of [-1,1]){box(6,4,9,side*12,26,0,trim);box(5,6,4,side*6,15,12);box(6,5,6,side*5,6,0);}
+  box(1.4,6,1,0,22,12,trim);box(6,1.4,1,0,22,12,trim);ring(8.9,0,35,0,Math.PI/2);box(15,2,7,0,37,4,trim);break;
  case 0:
  box(17,18,5,0,20,-10);box(13,12,3,0,19,11);
  for(const side of [-1,1]){ball(6,side*13,25,0,base);add(new THREE.OctahedronGeometry(3),side*14,30,1,trim);box(3,12,4,side*7,17,-14,trim);}
@@ -3387,6 +3413,9 @@ function applyWeaponSkin(weapon, item, heroIndex) {
     const box=(w,h,d,x,y,z,m=steel)=>add(new THREE.BoxGeometry(w,h,d),x,y,z,m);
     const ring=(r,t,x,y,z,rx=0,m=trim)=>add(new THREE.TorusGeometry(r,t,8,24),x,y,z,m,rx);
     switch(heroIndex){
+    case 8:
+      box(8.5,1.1,17,0,4,-2,steel);box(1,2.5,15,-4.7,1,-3,trim);box(1,2.5,15,4.7,1,-3,trim);ring(2.3,.5,0,0,-28,0,trim);
+      for(const side of [-1,1])for(let k=0;k<3;k++)box(.7,.6,2,side*4.8,2,-8+k*4,light);break;
     case 0:
       box(15,11,17,0,23,0);box(3,7,12,0,23,-9,light);
       for(const side of [-1,1]){box(3,13,19,side*8,23,0,trim);ring(3,.8,side*9.6,23,0,0,light).rotation.y=Math.PI/2;
@@ -3472,6 +3501,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   headGrp.add(head);
 
   addHeroDetails(grp, headGrp, heroIndex);
+  if(heroIndex===8)decoratePatchChampion(grp,headGrp,body,head);
 
   // Eyes (Quackbot gets a visor instead)
   if(heroIndex !== 4) {
@@ -3517,7 +3547,7 @@ function createDetailedHeroModel(heroIndex, isPlayer, isShowcase = false, player
   wep.position.set(12, 16, 8);
 
   // All ranged weapon muzzles point -Z locally; champion models face +Z.
-  if([1,3,4,7].includes(heroIndex))wep.rotation.y=Math.PI;
+  if([1,3,4,7,8].includes(heroIndex))wep.rotation.y=Math.PI;
 
   grp.add(wep);
   grp.weapon = wep;
@@ -3560,7 +3590,7 @@ function setupViewmodel(heroIndex,sourceEntity=null) {
   const selected=source&&source.skins?sanitizeSkinSelection(source.skins):getSkinSelection();
   const wep=buildEquippedWeapon(heroIndex,selected,true);
   // Original first-person sizes restored; no automatic shrinking or recentering.
-  const viewmodelScale=heroIndex===JACKPOT.hero?0.22:0.48;
+  const viewmodelScale=heroIndex===8?.34:heroIndex===JACKPOT.hero?0.22:0.48;
   wep.scale.setScalar(viewmodelScale);
   viewmodelHolder.bbWeaponSkinId=wep.userData.bbWeaponSkinId;
   viewmodelHolder.add(wep);
@@ -4325,6 +4355,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
   if(isMultiplayer && !isLobbyLeader) return;
   if(t.chain && t.chain.inv) return; // Captain Oink is invulnerable while his chain is out / hooking
   if(teamMode && attacker && attacker !== t && attacker.team === t.team) return;
+  if(attacker?.executingBasicAttack&&attacker!==t&&damageType!=="projectile")rawDmg*=attacker.upWeaponDamage||1;
   if(t.jackpotShield > 0 && rawDmg > 0) {
     const absorbed=Math.min(t.jackpotShield,rawDmg);
     t.jackpotShield-=absorbed;rawDmg-=absorbed;
@@ -4342,6 +4373,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
     }
     t.chan = 0; // any damage interrupts re-armouring
   }
+  if(rawDmg>0&&attacker&&attacker!==t)t.medkitT=0;
   t.hp -= rawDmg;
   if(damageType==="projectile"&&attacker&&attacker!==t&&attacker===pl&&rawDmg>0)showProjectileHit(t.username||(HEROES[t.ci]&&HEROES[t.ci].n)||"Player",rawDmg);
   if(attacker && attacker !== t && rawDmg > 0) attacker.dmg += rawDmg;
@@ -4381,6 +4413,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
   if(t.hp <= 0) {
     t.hp = 0;
     t.dead = true;
+    if(t.liveGrenade)releasePatchGrenade(t,true);
     t.deathTime = matchTime;
     t.killedBy = attacker ? attacker.netId : "storm";
     let killMeta = { streak: 0, multi: 0 };
@@ -4421,7 +4454,7 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
     spawnSparks(t.x, t.z, 0xff4438, 14);
 
     if(attacker && !attacker.dead) {
-      const healAmt = Math.round(attacker.mhp * 0.25);
+      const healAmt = Math.round(attacker.mhp * 0.25*(attacker.upElimHeal||1));
       attacker.hp = Math.min(Math.max(attacker.mhp, attacker.hp), attacker.hp + healAmt);
       spawnDamageNumber(attacker.x, attacker.z, "+" + healAmt + " HP", "#45d988");
       spawn3DRing(attacker.x, attacker.z, 28, 0x45d988);
@@ -4513,6 +4546,8 @@ function orientProjectile(p){
 }
 
 function shot(e, a, o) {
+ if(e.executingBasicAttack&&e.upWeaponDamage)o={...o,d:o.d*e.upWeaponDamage};
+
   e.fire = 0.22;
   const startX = o.x !== undefined ? o.x : (e.x + Math.cos(a)*18);
   const startZ = o.z !== undefined ? o.z : (e.z + Math.sin(a)*18);
@@ -4541,6 +4576,8 @@ function shot(e, a, o) {
     out: true,
     mesh
   }, o);
+  projectile.y=14;projectile.vy=0;
+  if(e.verticalAim){const p=e===pl?pitch:(e.pitch||0);projectile.vy=Math.sin(p)*o.s;projectile.vx*=Math.cos(p);projectile.vz*=Math.cos(p);}
   orientProjectile(projectile);P.push(projectile);
 }
 
@@ -4593,6 +4630,8 @@ function jackpotCoinBlocksAttack(e){
 }
 
 function executeAbility3(e) {
+ if(e.ci===8){beginPatchGrenade(e);return;}
+
   if(e.ci!==JACKPOT.hero||e.c4>0||jackpotCoinBlocksAttack(e)||e.jackpotLoaded||
      e.jackpotAutoHeads>0||e.jackpotAllInT>0)return;
   e.c4=HEROES[e.ci].a3cd;e.jackpotFlipPending=true;e.jackpotFlipT=JACKPOT.flipDuration;
@@ -4605,7 +4644,10 @@ function dentleyGuardActive(e) {
   return !!(e && e.ci === 6 && e.form === 0 && e.guard > 0);
 }
 
-function executeAttack(e) {
+function executeAttack(e){e.executingBasicAttack=true;try{return executeBasicAttack(e);}finally{e.executingBasicAttack=false;}}
+function executeBasicAttack(e) {
+ if(e.ci===8){if(e.liveGrenade)return;e.c1=.6;shot(e,e.a,{t:"s",s:550,d:13,kb:35,life:1});Snd.play("shoot");return;}
+
   if(jackpotCoinBlocksAttack(e)) return;
   if(dentleyGuardActive(e)) return;
   const c = HEROES[e.ci];
@@ -4643,6 +4685,7 @@ function executeAttack(e) {
 }
 
 function attack(e) {
+ if(e.liveGrenade)return;
   if(jackpotCoinBlocksAttack(e)) return;
   if(hostVisibilityPaused && isMultiplayer) return;
   if(dentleyGuardActive(e)) return;
@@ -4653,6 +4696,9 @@ function attack(e) {
 }
 
 function executeAbility1(e) {
+ if(e.liveGrenade)return;
+ if(e.ci===8){if(e.liveGrenade||e.c2>0||startupAbilityCooldownRemaining()>0)return;e.c2=13;e.medkitT=2;return;}
+
   if(startupAbilityCooldownRemaining()>0)return;
   if(dentleyGuardActive(e)) { releaseDentleyGuard(e); return; }
   const c = HEROES[e.ci];
@@ -4767,6 +4813,7 @@ function executeAbility1(e) {
 }
 
 function ability1(e) {
+ if(e.liveGrenade)return;
   if(startupAbilityCooldownRemaining()>0)return;
   if(hostVisibilityPaused && isMultiplayer) return;
   if(dentleyGuardActive(e) && !canReleaseDentleyGuard(e)) return;
@@ -4807,6 +4854,8 @@ function tickMycelisEffects(e, dt) {
 }
 
 function executeAbility2(e) {
+ if(e.ci===8){if(e.c3>0||startupAbilityCooldownRemaining()>0)return;e.c3=11;e.stimT=3;return;}
+
   if(startupAbilityCooldownRemaining()>0)return;
   if(dentleyGuardActive(e)) return;
   if(e.ci===6 && e.form===1){ recallDentleyHusk(e); return; }
@@ -4907,6 +4956,8 @@ function ability2(e) {
 }
 
 function ability3(e) {
+ if(e.ci===8){if(isMultiplayer)sendActionIntent("AB3",e.a,e.x,e.z);executeAbility3(e);return;}
+
   if(e.ci!==JACKPOT.hero||e.c4>0||jackpotCoinBlocksAttack(e)||e.jackpotLoaded||e.jackpotAutoHeads>0||e.jackpotAllInT>0)return;
   if(hostVisibilityPaused && isMultiplayer)return;
   if(isMultiplayer)sendActionIntent("AB3",e.a,e.x,e.z);
@@ -5533,6 +5584,7 @@ function gen4LetterCode() {
 function sendActionIntent(act, a, x, z) {
   if(hostVisibilityPaused && isMultiplayer) return;
   outgoingSeq++;
+  sendPatchInput(false,false);
   const packet = { type: "ACTION_INTENT", id: myNetId, act, a, x, z, seq: outgoingSeq };
   if(isLobbyLeader) {
     broadcastToPeers(packet);
@@ -5596,6 +5648,7 @@ function executeIntentAtPose(ent, data, pose) {
 const HOST_DISCONNECT_MESSAGE = "Sorry, the host disconnected or was removed from the match. Please try again.";
 
 function leaveLobby(msg) {
+ draftActive=false;document.getElementById("upgrade-draft")?.style.setProperty("display","none");
   clearRoundVote();
   msg = String(msg || "").replace(/[<>]/g, "");
   Snd.musicStop();
@@ -5750,6 +5803,9 @@ function startReceivedRound(data) {
 }
 
 function handleIncomingData(conn, data) {
+ if(data?.type==="PATCH_INPUT"){if(isLobbyLeader&&conn.peer!==data.id)return;const e=E.find(e=>e.netId===data.id);if(!e)return;e.verticalAim=!!data.vertical;if(Number.isFinite(data.pitch))e.pitch=Math.max(-1.42,Math.min(1.42,data.pitch));if(data.release){if(Number.isFinite(data.a))e.a=Math.atan2(Math.sin(data.a),Math.cos(data.a));releasePatchGrenade(e,!!data.drop);}if(isLobbyLeader)broadcastToPeers(data);return;}
+ if(data?.type==="UPGRADE_PICK"){if(isLobbyLeader&&conn.peer!==data.id)return;const e=E.find(e=>e.netId===data.id);if(e&&draftActive&&upgradeOffer(e).includes(data.pick))applyRoundUpgrade(e,data.pick);if(isLobbyLeader)broadcastToPeers(data);return;}
+
   if(!data || !data.type) return;
 
   if(data.type === "PING") {
@@ -6037,6 +6093,7 @@ function handleIncomingData(conn, data) {
         if(data.act === "ATTACK" && !jackpotCoinBlocksAttack(ent) && ent.c1 <= slack) accepted = true;
         else if(data.act === "AB1" && (ent.c2 <= slack || canReleaseDentleyGuard(ent))) accepted = true;
         else if(data.act === "AB2" && ent.c3 <= slack) accepted = true;
+        else if(data.act === "AB3" && ent.ci===8 && ent.c4<=slack && !ent.liveGrenade) accepted=true;
         else if(data.act === "AB3" && ent.ci===JACKPOT.hero && ent.c4 <= slack && !ent.jackpotLoaded && !jackpotCoinBlocksAttack(ent) && ent.jackpotAutoHeads<=0 && ent.jackpotAllInT<=0) accepted = true;
         if(accepted) {
           ent.hitRewindMs = actionHitRewind(conn);
@@ -6717,7 +6774,7 @@ function dentleyAttack(e) {
   e.combo = (n + 1) % 3; e.comboT = 0.9;
   e.c1 = n === 2 ? 0.8 : 0.5;
   if(n === 2) {
-    beginDentleyLunge(e, 50, 0.18, 25, 220, true);
+    beginDentleyLunge(e, 50, 0.18, 25*(e.upWeaponDamage||1), 220, true);
     return;
   }
   melee(e, 70, 15, 90, true);
@@ -6918,9 +6975,9 @@ function champDetailHTML(ci) {
   const spPct = Math.min(100, Math.round(c.sp / 190 * 100));
   return `
     <div class="cd-hero">
-      <span class="cd-emoji">${c.e}</span>
+      <span class="cd-emoji">${ci===8?patchEmblem():c.e}</span>
       <div>
-        <div class="cd-name">${c.n}</div>
+        <div class="cd-name">${c.n}</div>${ci===8?`<div class="patch-unlock-price">${ownsChampion(8)?"OWNED":"UNLOCK · 500 SHINIES"}</div>`:""}
         ${championBadgeHTML(c,true)}
         <div class="cd-role" style="color:${c.roleCol};">${c.role} \u00b7 ${c.rangeLabel || (c.melee ? "Melee" : "Ranged")}</div>
       </div>
@@ -6941,6 +6998,7 @@ function champDetailHTML(ci) {
 }
 
 function menu(msg) {
+ patchGrenadeKeyHeld=false;draftActive=false;document.getElementById("grenade-cook-status")?.remove();
  clearProjectileHitNotices();
   closeEmoteWheel(false);
   if(introCard) introCard.style.display = "none";
@@ -6997,11 +7055,12 @@ function menu(msg) {
           ${HEROES.map((c, i) => `
             <div class="hero-card ${i === p1HeroChoice ? 'chosen' : ''}" data-i="${i}" data-rarity="${c.rarity||''}" data-new="${c.isNew?'true':'false'}" style="--rc:${c.roleCol};">
               <div class="hc-check">${i === p1HeroChoice ? '\u2713' : ''}</div>
-              <div class="hc-emoji">${c.e}</div>
+              <div class="hc-emoji">${i===8?patchEmblem():c.e}</div>
               <div class="hc-name">${c.n}</div>
               <button type="button" class="bb-card-challenges" onclick="event.preventDefault();event.stopPropagation();openMastery(${i})">Champion Challenges</button>
               ${championBadgeHTML(c)}
               ${i===7&&!ownsChampion(7)?`<div class="jackpot-unlock-price" style="color:${(activeProfile()?.shinies||0)>=1000?'#45d988':'#ff6262'}">LOCKED - 1,000 Shinies</div>`:""}
+              ${i===8&&!ownsChampion(8)?`<div class="patch-unlock-price">LOCKED · 500 SHINIES</div>`:""}
               <div class="hc-role" style="color:${c.roleCol};">${c.role}</div>
               <div class="hc-stats"><span>\u2764 ${c.hp}</span><span>\u26a1 ${c.sp}</span></div>
             </div>
@@ -7049,6 +7108,7 @@ function menu(msg) {
   ov.querySelectorAll(".hero-card").forEach(b => {
     b.onclick = () => {
       if(+b.dataset.i===7&&!ownsChampion(7)&&!unlockJackpot())return;
+    if(+b.dataset.i===8&&!ownsChampion(8)&&!unlockPatch())return;
       p1HeroChoice=+b.dataset.i;
       if(roundVote)sendRoundChoice("hero",p1HeroChoice);
       ov.querySelectorAll(".hero-card").forEach(card => {
@@ -7113,6 +7173,7 @@ window.cancelLobby = function() {
 };
 
 function clearSceneEntities() {
+ if(typeof liveGrenades!=="undefined"){clearPatchGrenades();draftActive=false;const d=document.getElementById("upgrade-draft");if(d)d.style.display="none";}
  clearProjectileHitNotices();
   for(const e of E) { disposeEntityExtras(e); disposeHierarchy(e.mesh); }
   for(const p of P) { disposeHierarchy(p.mesh); }
@@ -7422,6 +7483,7 @@ function updateMatchIntro(dt) {
 }
 
 function initMatchView() {
+ verticalAim=false;clearPatchGrenades();
   clearRoundVote();
   clearHeldInputs();
   yaw = 0; pitch = 0;
@@ -7453,6 +7515,7 @@ function initMatchView() {
   announcer.classList.remove("show");
   wasInStorm = false;
   state = "intro";
+  beginUpgradeDraft();
   Snd.musicStart();
 
   syncHUD();
@@ -7469,6 +7532,108 @@ function initMatchView() {
   lockPrompt.style.display = "none";
 }
 
+
+
+// Field-ready art: shared by roster, live champions, viewmodel and cosmetic previews.
+function patchEmblem(){return `<svg class="patch-emblem" viewBox="0 0 64 64" role="img" aria-label="Patch survivalist insignia"><path d="M32 4 53 13v18c0 13-12 23-21 29C23 54 11 44 11 31V13Z" fill="#203b2d" stroke="#c2d7a6" stroke-width="2.5"/><path d="m18 16 14-6 14 6" fill="none" stroke="#d6b982" stroke-width="2"/><path d="M27 20h10v8h8v10h-8v8H27v-8h-8V28h8Z" fill="#e1ebcc"/><path d="M32 49v5M6 32h7m38 0h7" stroke="#d6b982" stroke-width="2.5"/></svg>`;}
+function buildPatchBlaster(isViewmodel){
+ const g=new THREE.Group();g.name='Field Blaster';
+ const steel=new THREE.MeshStandardMaterial({color:0x29312e,metalness:.78,roughness:.35}),olive=new THREE.MeshStandardMaterial({color:0x667254,roughness:.65,metalness:.32}),rubber=new THREE.MeshStandardMaterial({color:0x19231d,roughness:.9}),brass=new THREE.MeshStandardMaterial({color:0xcdbb85,metalness:.7,roughness:.3}),light=new THREE.MeshStandardMaterial({color:0xa4eac0,emissive:0x298561,emissiveIntensity:.7});
+ const add=(geo,x,y,z,mat,rx=0)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.x=rx;m.castShadow=true;g.add(m);return m;};
+ const box=(w,h,d,x,y,z,mat)=>add(new THREE.BoxGeometry(w,h,d),x,y,z,mat);
+ box(7,5.5,17,0,0,0,olive);box(6,1.3,22,0,3.2,-2,steel);box(6,4,11,0,.3,-13,olive);
+ add(new THREE.CylinderGeometry(1.7,1.7,12,12),0,.2,-23,steel,Math.PI/2);add(new THREE.CylinderGeometry(2.4,2.4,4,12),0,.2,-30,steel,Math.PI/2);add(new THREE.TorusGeometry(1.7,.45,6,16),0,.2,-32.1,brass);
+ box(5,3,9,0,-.3,12,rubber);box(7,6,2,0,-.3,17,rubber);box(3.4,8,4,0,-6,5,rubber);box(4.2,8,5,0,-6,-3,olive);box(5,.7,5.5,0,-10,-3,brass);
+ box(.7,3,5,2.5,-4,1.4,steel);box(5,.7,1,0,-6,1.4,steel);box(3,2,7,0,5,-2,steel);add(new THREE.CylinderGeometry(1.6,1.6,8,12),0,6,-2,steel,Math.PI/2);add(new THREE.CircleGeometry(1.3,12),0,6,-6.1,light);box(.9,2,1,0,4.8,-17,brass);
+ for(const side of [-1,1]){for(let k=0;k<4;k++)box(.4,1.2,1.5,side*3.2,.7,-9-k*2,steel);box(.6,1.6,4,side*3.7,.6,1,brass);for(const z of [-4,5])add(new THREE.SphereGeometry(.55,6,4),side*3.6,1.6,z,brass);}
+ box(1,3,.4,0,.2,8.3,light);box(3,1,.4,0,.2,8.4,light);
+ if(isViewmodel){const arm=add(new THREE.CylinderGeometry(1.5,2,11,10),1,-8,9,new THREE.MeshStandardMaterial({color:0xc89f7b,roughness:.8}),-.8);arm.userData.bbArm=true;const glove=box(3.8,3.5,4.5,.2,-4,5,rubber);glove.userData.bbArm=true;}
+ return g;
+}
+function decoratePatchChampion(grp,headGrp,body,head){
+ body.geometry.dispose();body.geometry=new THREE.CylinderGeometry(9.5,10.5,18,12);body.position.y=20;head.material=new THREE.MeshStandardMaterial({color:0xcda980,roughness:.85});
+ const olive=new THREE.MeshStandardMaterial({color:0x566349,roughness:.85}),dark=new THREE.MeshStandardMaterial({color:0x293329,roughness:.85}),cloth=new THREE.MeshStandardMaterial({color:0xaaa079,roughness:.9}),metal=new THREE.MeshStandardMaterial({color:0x788878,roughness:.4,metalness:.6}),cream=new THREE.MeshStandardMaterial({color:0xe8dfbf,roughness:.65});
+ const add=(parent,geo,x,y,z,m,rx=0,rz=0)=>{const n=new THREE.Mesh(geo,m);n.position.set(x,y,z);n.rotation.set(rx,0,rz);n.castShadow=true;parent.add(n);return n;};const box=(p,w,h,d,x,y,z,m)=>add(p,new THREE.BoxGeometry(w,h,d),x,y,z,m);
+ add(headGrp,new THREE.SphereGeometry(9,16,10,0,Math.PI*2,0,Math.PI*.55),0,1,0,olive);add(headGrp,new THREE.CylinderGeometry(9.4,9.7,1.4,16),0,2,0,olive);box(headGrp,12,1,5,0,2,6,olive);box(headGrp,7,2.3,1.5,0,2,9,dark);
+ for(const side of [-1,1]){box(headGrp,2,4,2,side*7,-1,2,dark);box(grp,6,12,7,side*5,7,0,cloth);box(grp,6.7,4,10,side*5,2,1,dark);box(grp,5.5,4,3,side*5,8,4,metal);add(grp,new THREE.CylinderGeometry(3.4,2.8,13,10),side*12,20,0,olive,0,side*.12);box(grp,5,4,6,side*13,13,0,dark);box(grp,5,5,3,side*5,17,11,cloth);box(grp,2,13,1,side*6,22,10,cloth);}
+ box(grp,16,12,3,0,21,9,olive);box(grp,17,2,3.5,0,27,9,cloth);box(grp,15,3,14,0,13,0,dark);box(grp,14,15,6,0,22,-10,olive);box(grp,11,2,7,0,28,-10,cloth);box(grp,5,7,2,0,22,-14,cream);box(grp,1.3,4.5,1,0,22,-15,dark);box(grp,4.5,1.3,1,0,22,-15,dark);box(grp,1.5,6,1,0,23,11,cream);box(grp,6,1.5,1,0,23,11,cream);
+ add(grp,new THREE.CylinderGeometry(3,3,17,12),0,16,-13,cloth,0,Math.PI/2);box(grp,4,6,3,-8,28,-6,dark);box(grp,.5,8,.5,-9,34,-6,metal);
+}
+
+// Survivalist update: round-scoped state, authoritative damage, continuous grenade fuse.
+
+let verticalAim=false,draftActive=false,draftUntil=0,patchLastClock=performance.now();
+const liveGrenades=[];
+let previewLine=null,previewMarker=null,previewEndMarker=null,patchHandGrenade=null,terrainBoxes=[],patchGrenadeKeyHeld=false;
+function cacheTerrain(){mapGroup.updateMatrixWorld(true);terrainBoxes=[];mapGroup.traverse(m=>{if(m.isMesh&&m.geometry){const b=new THREE.Box3().setFromObject(m);if(b.max.y>5&&b.min.y<70)terrainBoxes.push(b);}});}
+function terrainAt(x,y,z,r=2){if(y<r)return true;if(x<B+r||z<B+r||x>W-B-r||z>H-B-r)return y<65;return terrainBoxes.some(b=>x>=b.min.x-r&&x<=b.max.x+r&&y>=b.min.y-r&&y<=b.max.y+r&&z>=b.min.z-r&&z<=b.max.z+r);}
+function blastLOS(g,e){const dx=e.x-g.x,dy=(e.y||0)+16-g.y,dz=e.z-g.z,n=Math.ceil(Math.hypot(dx,dy,dz)/3);for(let i=1;i<n;i++)if(terrainAt(g.x+dx*i/n,g.y+dy*i/n,g.z+dz*i/n,0))return false;return true;}
+function sendPatchPacket(data){if(!isMultiplayer)return;if(isLobbyLeader)broadcastToPeers(data);else{const c=peerConnections.get(leaderId);if(c?.open)c.send(data);}}
+function sendPatchInput(release,drop){if(pl)sendPatchPacket({type:'PATCH_INPUT',id:myNetId,vertical:verticalAim,pitch,a:pl.a,release,drop});}
+function patchThrowOrigin(e){let x=e.x+Math.cos(e.a)*19,z=e.z+Math.sin(e.a)*19;const y=(e.y||0)+20;if(terrainAt(x,y,z,4)){x=e.x;z=e.z;}return {x,y,z};}
+function createPatchGrenadeMesh(warning=true){
+ const m=new THREE.Mesh(new THREE.SphereGeometry(3.7,12,10),new THREE.MeshStandardMaterial({color:0x586c42,roughness:.65,metalness:.4,emissive:0xff6622,emissiveIntensity:.2}));m.scale.y=1.15;
+ const steel=new THREE.MeshStandardMaterial({color:0xaaa994,metalness:.8,roughness:.3});const neck=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.8,2,8),steel);neck.position.y=3.6;m.add(neck);const lever=new THREE.Mesh(new THREE.BoxGeometry(1,6,1.2),steel);lever.position.set(2.3,2.1,0);lever.rotation.z=-.35;m.add(lever);
+ for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(3.45,.17,4,12),steel);ring.rotation.x=Math.PI/2;ring.position.y=(i-1)*1.6;m.add(ring);}const spark=new THREE.Mesh(new THREE.SphereGeometry(.65,6,6),new THREE.MeshBasicMaterial({color:0xffd273}));spark.position.y=5;m.add(spark);
+ if(warning){const label=makeTextSprite('LIVE GRENADE','#ffbc86',22);label.position.y=13;label.material.depthTest=true;m.add(label);}return m;
+}
+function startGrenadeFuseSound(g){if(g.o!==pl||isSpectating)return;try{Snd.ensure();if(!Snd.ctx||!Snd.sfxGain)return;const c=Snd.ctx,buffer=c.createBuffer(1,Math.floor(c.sampleRate*.4),c.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.4;const src=c.createBufferSource(),filter=c.createBiquadFilter(),gain=c.createGain();src.buffer=buffer;src.loop=true;filter.type='highpass';filter.frequency.value=1700;gain.gain.value=.09;src.connect(filter);filter.connect(gain);gain.connect(Snd.sfxGain);src.start();g.fuseAudio={src,filter,gain};crateTone(1700,.06);}catch(err){console.warn('Grenade audio',err);}}
+function stopGrenadeFuseSound(g){if(!g.fuseAudio)return;try{g.fuseAudio.src.stop();g.fuseAudio.src.disconnect();g.fuseAudio.filter.disconnect();g.fuseAudio.gain.disconnect();}catch(_){}g.fuseAudio=null;}
+function beginPatchGrenade(e){if(e.dead||e.stun>0||e.c4>0||e.liveGrenade||startupAbilityCooldownRemaining()>0||state!=='play'||hostVisibilityPaused)return;e.c4=12;e.medkitT=0;const mesh=createPatchGrenadeMesh();scene.add(mesh);const now=performance.now(),g={o:e,held:true,...patchThrowOrigin(e),vx:0,vy:0,vz:0,deadline:now+3000,mesh,lastBeep:now,lastTime:now};e.liveGrenade=g;liveGrenades.push(g);startGrenadeFuseSound(g);}
+function launchVelocity(e){const p=e.verticalAim?(e===pl?pitch:e.pitch||0):.34;return {vx:Math.cos(e.a)*260*Math.cos(p),vz:Math.sin(e.a)*260*Math.cos(p),vy:260*Math.sin(p)};}
+function releasePatchGrenade(e,drop=false){const g=e.liveGrenade;if(!g)return;stopGrenadeFuseSound(g);e.liveGrenade=null;g.held=false;Object.assign(g,drop?{x:e.x,y:(e.y||0)+20,z:e.z}:patchThrowOrigin(e));g.lastTime=performance.now();if(!drop&&g.deadline>g.lastTime)Object.assign(g,launchVelocity(e));}
+function requestGrenadeRelease(drop=false){if(!pl?.liveGrenade)return;sendPatchInput(true,drop);releasePatchGrenade(pl,drop);drawGrenadePreview(null);syncPatchCookingView();}
+function grenadeStep(g,dt){g.collided=false;g.vy-=190*dt;for(const [axis,v] of [['x','vx'],['y','vy'],['z','vz']]){const old=g[axis];g[axis]+=g[v]*dt;if(terrainAt(g.x,g.y,g.z,4)){g.collided=true;g[axis]=old;g[v]*=-.48;if(axis==='y'){g.vx*=.78;g.vz*=.78;if(Math.abs(g.vy)<8)g.vy=0;}}}}
+function explodePatch(g){if(g.exploded)return;g.exploded=true;stopGrenadeFuseSound(g);if(g.o.liveGrenade===g)g.o.liveGrenade=null;spawn3DRing(g.x,g.z,85,0xffb568);spawnSparks(g.x,g.z,0xffbb66,18);Snd.play('explosion');if(!isMultiplayer||isLobbyLeader)for(const e of E){if(e.dead||(e!==g.o&&!areEnemies(g.o,e)))continue;const d=Math.hypot(e.x-g.x,e.z-g.z,(e.y||0)+16-g.y);if(d<85&&blastLOS(g,e))hurt(e,25*(1-d/85)*(g.o.upGrenade||1),Math.atan2(e.z-g.z,e.x-g.x),100*(1-d/85),g.o,'explosion');}disposeHierarchy(g.mesh);}
+function clearPatchGrenades(){patchGrenadeKeyHeld=false;for(const g of liveGrenades){stopGrenadeFuseSound(g);g.o.liveGrenade=null;disposeHierarchy(g.mesh);}liveGrenades.length=0;for(const obj of [previewLine,previewMarker,previewEndMarker,patchHandGrenade])if(obj)disposeHierarchy(obj);previewLine=previewMarker=previewEndMarker=patchHandGrenade=null;document.getElementById('grenade-cook-status')?.remove();cacheTerrain();}
+function drawGrenadePreview(e){
+ if(!e?.liveGrenade){for(const obj of [previewLine,previewMarker,previewEndMarker])if(obj)obj.visible=false;return;}
+ if(!previewLine){const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(400*3),3));previewLine=new THREE.Line(geometry,new THREE.LineDashedMaterial({color:0xc2f5b7,dashSize:4,gapSize:2,transparent:true,opacity:.95}));previewLine.frustumCulled=false;scene.add(previewLine);}
+ if(!previewMarker){previewMarker=new THREE.Mesh(new THREE.SphereGeometry(2.4,8,6),new THREE.MeshBasicMaterial({color:0xffcc77}));scene.add(previewMarker);}
+ if(!previewEndMarker){previewEndMarker=new THREE.Mesh(new THREE.OctahedronGeometry(3,0),new THREE.MeshBasicMaterial({color:0xff7656,wireframe:true}));scene.add(previewEndMarker);}
+ const g={...patchThrowOrigin(e),...launchVelocity(e)},left=Math.max(0,(e.liveGrenade.deadline-performance.now())/1000),positions=previewLine.geometry.attributes.position;positions.setXYZ(0,g.x,g.y,g.z);let count=1,collision=false;
+ for(let elapsed=0;elapsed<left&&count<400;elapsed+=.008){grenadeStep(g,Math.min(.008,left-elapsed));positions.setXYZ(count++,g.x,g.y,g.z);if(!collision&&g.collided){collision=true;previewMarker.position.set(g.x,g.y,g.z);}}
+ positions.needsUpdate=true;previewLine.geometry.setDrawRange(0,count);previewLine.computeLineDistances();previewLine.visible=true;previewMarker.visible=collision;previewEndMarker.visible=true;previewEndMarker.position.set(g.x,g.y,g.z);
+}
+function syncPatchCookingView(){const e=isSpectating?spectateTarget:pl,cooking=e?.ci===8&&!!e.liveGrenade;if(viewmodelCi===8&&viewmodelHolder.wep)viewmodelHolder.wep.visible=!cooking;if(cooking){if(!patchHandGrenade){patchHandGrenade=createPatchGrenadeMesh(false);patchHandGrenade.scale.setScalar(.35);patchHandGrenade.position.set(3,-2.5,-8);camera.add(patchHandGrenade);}patchHandGrenade.visible=true;patchHandGrenade.rotation.z=.12*Math.sin(performance.now()/180);patchHandGrenade.material.emissiveIntensity=.3+Math.max(0,Math.sin(performance.now()/(e.liveGrenade.deadline-performance.now()<1000?45:130)));}else if(patchHandGrenade){disposeHierarchy(patchHandGrenade);patchHandGrenade=null;}}
+function updatePatchHUD(){
+ syncPatchCookingView();if(pl?.ci!==8){document.getElementById('grenade-cook-status')?.remove();return;}
+ let status=document.getElementById('grenade-cook-status');if(!status){status=document.createElement('div');status.id='grenade-cook-status';document.getElementById('hud').append(status);}
+ const remaining=pl.liveGrenade?Math.max(0,(pl.liveGrenade.deadline-performance.now())/1000):0;status.hidden=!pl.liveGrenade;status.classList.toggle('urgent',remaining<1);status.innerHTML=pl.liveGrenade?`<span>PIN PULLED · RELEASE ${controlScheme==='wasd'?'F':'.'} TO THROW</span><strong>${remaining.toFixed(1)}s</strong><div><i style="width:${remaining/3*100}%"></i></div><small>${remaining<1?'THROW NOW · IN-HAND EXPLOSION IMMINENT':'COOKING · THE FUSE DOES NOT RESET'}</small>`:'';
+ const bar=document.getElementById('cd3-bar');bar.style.display='flex';bar.style.pointerEvents='auto';bar.setAttribute('aria-label','Hold to cook grenade, release to throw');
+ if(!bar.dataset.patchHoldBound){bar.dataset.patchHoldBound='1';bar.addEventListener('pointerdown',ev=>{if(pl?.ci!==8)return;ev.preventDefault();ev.stopImmediatePropagation();if(state==='play'&&pl.c4<=0&&!pl.dead&&pl.stun<=0){ability3(pl);bar.setPointerCapture?.(ev.pointerId);}},true);bar.addEventListener('pointerup',()=>{if(pl?.ci===8)requestGrenadeRelease();});bar.addEventListener('pointercancel',()=>{if(pl?.ci===8)requestGrenadeRelease(true);});}
+ document.getElementById('cd3-label').textContent=pl.liveGrenade?'RELEASE · '+remaining.toFixed(1)+'s':(controlScheme==='wasd'?'[F] GRENADE':'[.] GRENADE')+(pl.c4>0?' · '+Math.ceil(pl.c4)+'s':'');document.getElementById('cd3-fill').style.width=(pl.liveGrenade?remaining/3*100:100*Math.max(0,1-pl.c4/12))+'%';
+}
+function tickPatchGrenades(now){for(let i=liveGrenades.length-1;i>=0;i--){const g=liveGrenades[i],left=(g.deadline-now)/1000;if(g.held){if(g.o.dead)releasePatchGrenade(g.o,true);else Object.assign(g,patchThrowOrigin(g.o));}else{let time=Math.max(0,Math.min(3,(Math.min(now,g.deadline)-g.lastTime)/1000));while(time>0){const step=Math.min(time,.008);grenadeStep(g,step);time-=step;}}g.lastTime=now;g.mesh.position.set(g.x,g.y,g.z);g.mesh.material.emissiveIntensity=.4+1.8*Math.max(0,Math.sin(now/(left<1?40:120)));if(g.fuseAudio)g.fuseAudio.gain.gain.value=.07+(1-Math.max(0,left)/3)*.08;if(now-g.lastBeep>Math.max(70,left*200)){if(Math.hypot((pl?.x||0)-g.x,(pl?.z||0)-g.z)<330)crateTone(left<1?1400:850,.035);g.lastBeep=now;}if(left<=0){explodePatch(g);liveGrenades.splice(i,1);}}}
+function updatePatchSystems(dt){const now=performance.now();tickPatchGrenades(now);if(state==='play')for(const e of E){e.stimT=Math.max(0,(e.stimT||0)-dt);if(e.medkitT>0&&!e.dead){const t=Math.min(dt,e.medkitT);e.medkitT-=t;if(!isMultiplayer||isLobbyLeader)e.hp=Math.min(e.mhp,e.hp+17.5*t*(e.upMedkit||1));}if(e.ai&&e.ci===8&&!e.dead){if(e.liveGrenade&&(e.liveGrenade.deadline-now)<1200)releasePatchGrenade(e);else if(e.c4<=0&&Math.random()<dt*.35)beginPatchGrenade(e);}}
+ drawGrenadePreview(pl?.ci===8?pl:null);let a=document.getElementById('aim-mode');if(!a){a=document.createElement('div');a.id='aim-mode';document.getElementById('hud').append(a);}a.textContent=(verticalAim?'VERTICAL AIM':'LEVEL AIM')+' · C';a.dataset.vertical=verticalAim;
+}
+setInterval(()=>{if(liveGrenades.length&&(document.hidden||hostVisibilityPaused))tickPatchGrenades(performance.now());},50);
+window.addEventListener('keydown',ev=>{if(ev.code!==(controlScheme==='wasd'?'KeyF':'Period')||pl?.ci!==8||state!=='play'||draftActive||/INPUT|TEXTAREA|SELECT/.test(ev.target.tagName))return;ev.preventDefault();ev.stopImmediatePropagation();if(ev.repeat||patchGrenadeKeyHeld)return;patchGrenadeKeyHeld=true;if(!pl.dead&&pl.stun<=0&&pl.c4<=0&&!hostVisibilityPaused){ability3(pl);drawGrenadePreview(pl);updatePatchHUD();}},true);
+window.addEventListener('keyup',ev=>{if(ev.code===(controlScheme==='wasd'?'KeyF':'Period')){patchGrenadeKeyHeld=false;requestGrenadeRelease();}},true);
+window.addEventListener('blur',()=>{patchGrenadeKeyHeld=false;requestGrenadeRelease(true);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){patchGrenadeKeyHeld=false;requestGrenadeRelease(true);}});
+window.addEventListener('keydown',ev=>{if(/INPUT|TEXTAREA|SELECT/.test(ev.target.tagName)||state!=='play')return;if(ev.code==='KeyC'&&!ev.repeat){verticalAim=!verticalAim;if(pl)pl.verticalAim=verticalAim;sendPatchInput(false,false);}});
+
+const UPGRADE_NAMES=HEROES.map((h,i)=>[
+ ['Ironhide','Reinforced Hull','Thick Peel','Chef Armor','Plated Chassis','Barkskin','Tempered Plate','House Insurance','Reinforced Vest'][i],
+ ['Weighted Hammer','Refined Scrap','Sharp Bananas','Seasoned Rounds','Focused Plasma','Honed Spores','Keen Edge','High Caliber','Tuned Blaster'][i],
+ ['Long Stride','Sea Legs','Jungle Runner','Fleet Feet','Efficient Servos','Forest Step','Light Greaves','Fast Shuffle','Trail Runner'][i],
+ i===8?'Advanced Medkit':'Victory Supplies',i===8?'Fragmentation':'Practiced Technique']);
+function upgradeOffer(e){let seed=(e.netId||String(e.ci)).split('').reduce((a,c)=>(Math.imul(a,31)+c.charCodeAt(0))>>>0,e.ci+179);const arr=[0,1,2,3,4];for(let i=4;i>0;i--){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const j=seed%(i+1);[arr[i],arr[j]]=[arr[j],arr[i]];}return arr.slice(0,3);}
+function upgradeText(e,i){return [
+ `+${Math.round(HEROES[e.ci].hp*.10)} maximum HP (10% of base HP). No damage reduction.`,
+ 'Basic weapon attacks deal 8% more damage. Abilities and status damage are unchanged.',
+ 'Movement speed +6%. Does not increase dash distance or bypass stuns and obstacles.',
+ e.ci===8?'Medkit heals 42 HP over 2 seconds instead of 35. Enemy damage still interrupts it.':'Eliminations heal 30% of maximum HP instead of 25%. No passive healing or overheal.',
+ e.ci===8?'Grenade maximum damage increases from 25 to 28. Also increases self-damage. Fuse, falloff and cover rules are unchanged.':'Main ability cooldowns recover 10% faster (about 9% less waiting). Starting lockout, durations and extra actions are unchanged.'
+ ][i];}
+function applyRoundUpgrade(e,i){if(e.roundUpgrade!=null||!Number.isInteger(i)||i<0||i>4)return;e.roundUpgrade=i;if(i===0){const bonus=Math.round(HEROES[e.ci].hp*.1);e.mhp+=bonus;e.hp+=bonus;}if(i===1)e.upWeaponDamage=1.08;if(i===2)e.upSpeed=1.06;if(i===3){if(e.ci===8)e.upMedkit=1.2;else e.upElimHeal=1.2;}if(i===4){if(e.ci===8)e.upGrenade=1.12;else e.upCooldown=1.10;}}
+
+function beginUpgradeDraft(){if(demoActive||!pl)return;draftActive=true;draftUntil=Date.now()+12000;document.exitPointerLock?.();let panel=document.getElementById('upgrade-draft');if(!panel){panel=document.createElement('section');panel.id='upgrade-draft';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Choose a round upgrade');document.getElementById('wrap').append(panel);}panel.style.display='flex';panel.innerHTML=`<div class="draft-eyebrow">ROUND LOADOUT / ${escapeHtml(HEROES[pl.ci].n)}</div><h1>Make it your round.</h1><p>Choose one upgrade. Three offers. Five possibilities. Resets next round.</p><div class="draft-cards">${upgradeOffer(pl).map((i,n)=>`<button data-upgrade="${i}"><span>0${n+1} / ROUND UPGRADE</span><h2>${UPGRADE_NAMES[pl.ci][i]}</h2><p>${upgradeText(pl,i)}</p><small>SELECT UPGRADE →</small></button>`).join('')}</div><div id="draft-clock"></div>`;panel.querySelectorAll('[data-upgrade]').forEach(b=>b.onclick=()=>{if(pl.roundUpgrade!=null)return;const pick=Number(b.dataset.upgrade);applyRoundUpgrade(pl,pick);sendPatchPacket({type:'UPGRADE_PICK',id:myNetId,pick});b.classList.add('chosen');panel.querySelectorAll('button').forEach(x=>x.disabled=true);if(!isMultiplayer)finishDraft();});for(const e of E)if(e.ai)applyRoundUpgrade(e,upgradeOffer(e)[Math.floor(Math.random()*3)]);}
+function finishDraft(){for(const e of E)if(e.roundUpgrade==null)applyRoundUpgrade(e,upgradeOffer(e)[0]);draftActive=false;document.getElementById('upgrade-draft').style.display='none';patchLastClock=performance.now();}
+function updateDraft(){document.getElementById('draft-clock').textContent='ROUND STARTS IN '+Math.max(0,Math.ceil((draftUntil-Date.now())/1000))+'s';if(Date.now()>=draftUntil)finishDraft();}
+
 // --- MAIN LOOP ---
 
 function updateCountdownFacing(dt) {
@@ -7480,6 +7645,9 @@ function updateCountdownFacing(dt) {
 }
 
 function upd(dt) {
+ if(draftActive){updateDraft();return;}
+ updatePatchSystems(dt);
+
   if(state === "intro") {
     updateMatchIntro(dt);
     return;
@@ -7522,6 +7690,7 @@ function upd(dt) {
   mouseVelY *= 0.8;
 
   syncHUD();
+  updatePatchHUD();
 
   if(isSpectating) {
     const st = spectateTarget;
@@ -7753,7 +7922,7 @@ function upd(dt) {
       }
     }
 
-    e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt; e.c4 -= dt; e.guard -= dt; e.guardBoost=Math.max(0,(e.guardBoost||0)-dt); e.comboT -= dt; e.grace -= dt; e.feintInvuln = Math.max(0, e.feintInvuln - dt);
+    e.slow -= dt; e.fire -= dt; e.c1 -= dt; e.c3 -= dt*(startupAbilityCooldownRemaining()>0?1:(e.upCooldown||1)); e.c4 -= dt; e.guard -= dt; e.guardBoost=Math.max(0,(e.guardBoost||0)-dt); e.comboT -= dt; e.grace -= dt; e.feintInvuln = Math.max(0, e.feintInvuln - dt);
     e.jackpotSlowT=Math.max(0,(e.jackpotSlowT||0)-dt);
     updateAbilityTimers(e,dt);
     e.fl -= dt; e.swing -= dt; e.speedBoost -= dt;
@@ -7774,7 +7943,7 @@ function upd(dt) {
     tickMycelisEffects(e, dt);
 
     if(e.ci !== 5 || !e.activePod) {
-      e.c2 -= dt;
+      e.c2 -= dt*(startupAbilityCooldownRemaining()>0?1:(e.upCooldown||1));
     }
 
     const distFromCenter = Math.hypot(e.x - W/2, e.z - H/2);
@@ -7851,7 +8020,7 @@ function upd(dt) {
       ab1 = P1_ab1;
       ab2 = P1_ab2;
 
-      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
+      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.30:1) * (e.upSpeed||1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
       const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.5:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
@@ -7863,7 +8032,7 @@ function upd(dt) {
       if(P1_ab3 && e.stun<=0 && e.c4<=0)ability3(e);
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
-      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
+      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.30:1) * (e.upSpeed||1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
       const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.5:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
@@ -7936,6 +8105,7 @@ function upd(dt) {
     }
   }
 
+  syncPatchCookingView();
   updateJackpotVisuals();
 
   // Projectiles \u2014 all termination paths funnel through one finalize step so
@@ -7967,7 +8137,9 @@ function upd(dt) {
     p.z += p.vz * dt;
     p.rot += dt * 11;
 
-    p.mesh.position.set(p.x, 14, p.z);
+    p.y=(p.y??14)+(p.vy||0)*dt;
+    if(p.y<0)finalize=true;
+    p.mesh.position.set(p.x, p.y, p.z);
     orientProjectile(p);
 
     if(!finalize && p.out && (!isMultiplayer || isLobbyLeader)) {
@@ -7979,7 +8151,7 @@ function upd(dt) {
       }
     }
     // Wall handling: boomerangs switch to their return phase; other shots terminate.
-    if(!finalize && p.out && blocked(p.x, p.z, 2)) {
+    if(!finalize && p.out && terrainAt(p.x,p.y,p.z,2)) {
       if(p.t === "b") {
         p.out = false;
         p.hit.clear();
@@ -8002,6 +8174,7 @@ function upd(dt) {
         const targetPos = getCombatPosition(t, p.o, p.age * 1000);
         if(t !== p.o && !t.dead && !p.hit.has(t)
            && areEnemies(p.o, t)
+           && p.y>=(t.y||0)-5 && p.y<=(t.y||0)+38
            && Math.hypot(targetPos.x - p.x, targetPos.z - p.z) < t.r + 9) {
           p.hit.add(t);
           hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o, "projectile");
@@ -8241,9 +8414,15 @@ requestAnimationFrame(loop);
 (() => {
   // ============== EDIT YOUR UPDATE NOTES HERE ==============
 const VERSION_UPDATES = {
-  version: "BRAWLBOUND v1.3.0",
+  version: "BRAWLBOUND v1.3.2 · FIELD READY",
 
   game: [
+    "PATCH: Permanently unlock the Ranged Survivalist for 500 Shinies. Redesigned champion, Field Blaster and survivalist insignia.",
+    "PATCH SKINS: Nightwatch Patch and Beacon Field Blaster are available in their corresponding cosmetic caches. Inspect and equip them in Inventory.",
+    "GRENADE: Hold F (or . with Arrow Controls) to pull the pin and cook; release to throw. A hissing fuse, flashing grenade and countdown make cooking readable. The fuse never resets.",
+    "TRAJECTORY: Green line = predicted flight. Gold marker = first terrain collision. Red diamond = estimated detonation position for the remaining fuse.",
+    "MENU: Restored the transparent live-battle background and the bottom-right Updates & Balance panel.",
+    "ROUND UPGRADES: Five tuned options per champion, three offers per round. Descriptions state exact effects and exclusions. All bonuses reset next round.",
     "NEW CHAMPION: Jackpot! Permanently unlock him for 1,000 Shinies.",
 
     "NEW CHAMPION CHALLENGES! Open a champion’s challenges from their card in the main menu. Each champion has seven challenges to complete in order. Finish one to reveal the next!",
@@ -8288,6 +8467,9 @@ const VERSION_UPDATES = {
   ],
 
   champions: [
+    {type:"rework",text:"Round upgrades: +10% base maximum HP; +8% basic weapon damage only; +6% movement speed; 30% maximum-HP elimination healing instead of 25%; main cooldowns recover 10% faster without changing the starting lockout."},
+    {type:"rework",text:"Patch upgrades: Advanced Medkit restores 42 HP over 2 seconds and remains interruptible. Fragmentation raises maximum grenade damage from 25 to 28, including potential self-damage."},
+    {type:"rework",text:"Patch grenade: immediate F press starts cooking and trajectory preview. Release throws; focus loss or death drops the same live grenade. The 3-second fuse never resets."},
     {
       type: "nerf",
       text: "Captain Oink \u2014 Cannonball direct damage reduced from 27 to 25 and cooldown increased from 9.5s to 10s. Chain Hook cooldown increased from 11.5s to 12s."
@@ -8359,7 +8541,7 @@ const VERSION_UPDATES = {
 
   panel.innerHTML = `
     <summary>
-      <span class="updates-heading">VERSION &amp; UPDATES</span>
+      <span class="updates-heading">UPDATES &amp; BALANCE CHANGES</span>
       <span class="menu-version" id="patch-version"></span>
     </summary>
 
@@ -8669,5 +8851,15 @@ function bbConfirm(message){return new Promise(resolve=>{
  if(!persistent){const observer=new MutationObserver(()=>{const body=document.getElementById('economy-body');if(body&&body.querySelector('#account-username-input')&&!body.querySelector('.bb-storage-warning')){const warning=document.createElement('p');warning.className='economy-note bb-storage-warning';warning.style.color='#ffd166';warning.textContent='Preview storage is restricted. This account works for this session, but may reset when the preview closes.';body.appendChild(warning);}});observer.observe(document.getElementById('economy-body'),{childList:true});}
 })();
 </script>
+
+<style id="field-ready-fixes">
+#ov{background:radial-gradient(ellipse at 50% 32%,rgba(0,0,0,.03),rgba(0,0,0,.18) 70%,rgba(0,0,0,.38))!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding-bottom:110px}.menu-head{border-color:#ffffff38;text-shadow:0 2px 8px #000}.brand-title{filter:drop-shadow(0 3px 9px #0009)}.tagline{color:#e4e3db;text-shadow:0 2px 5px #000}
+.hero-card{background:linear-gradient(150deg,rgba(33,38,35,.85),rgba(15,19,18,.84));backdrop-filter:blur(3px)}.champ-detail{background:linear-gradient(150deg,rgba(36,43,37,.90),rgba(15,21,18,.88));backdrop-filter:blur(5px)}.lobby-panel{background:rgba(17,23,20,.82)}.settings-panel,.footer-bar{background:rgba(16,22,19,.82)}.account-toolbar{background:rgba(11,18,14,.55);border-radius:5px;padding:10px 12px}.menu-announcement{background:rgba(15,30,22,.80)}
+#menu-updates-panel.menu-updates{position:fixed!important;inset:auto 18px 18px auto!important;z-index:26;width:min(342px,calc(100vw - 36px))!important;max-width:342px!important;margin:0!important;padding:14px 16px;background:rgba(15,20,18,.96)!important;border:1px solid #b6c7b740;border-radius:8px;box-shadow:0 8px 30px #0006;max-height:62vh;overflow:auto;backdrop-filter:blur(10px)}#menu-updates-panel summary{gap:6px;color:#eff0e8;letter-spacing:1px;font-size:11px}#menu-updates-panel .menu-version{font-size:9px;color:#c9b68c;letter-spacing:.7px}#menu-updates-panel .updates-tabs{gap:6px}#menu-updates-panel .updates-tab{font-size:10px;padding:8px 9px}#menu-updates-panel .updates-content{max-height:42vh;overflow:auto}#menu-updates-panel .updates-content li{font-size:11px;line-height:1.6;color:#c3cec5}#menu-updates-panel .updates-content[hidden]{display:none!important}
+.patch-emblem{width:43px;height:43px;display:block;filter:drop-shadow(0 3px 4px #0006)}.cd-emoji .patch-emblem{width:54px;height:54px}.patch-unlock-price{font-size:10px;font-weight:800;color:#e8b87c;letter-spacing:.4px}.hero-card[data-i="8"]{--rc:#9aca88}.hero-card[data-i="8"] .hc-new{background:#b8d6a3;color:#16251c;border-color:#cce5b8;box-shadow:none}
+#grenade-cook-status{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);width:290px;padding:13px 16px;border:1px solid #bfe4a866;border-radius:6px;background:#132319e8;text-align:center;box-shadow:0 6px 24px #0004}#grenade-cook-status[hidden]{display:none}#grenade-cook-status>span{display:block;color:#c9e8b5;font:800 10px system-ui;letter-spacing:1px}#grenade-cook-status strong{display:block;color:#f2f6df;font:800 30px system-ui;font-variant-numeric:tabular-nums;margin:4px}#grenade-cook-status>div{height:5px;background:#ffffff16;border-radius:2px;overflow:hidden}#grenade-cook-status i{display:block;height:100%;background:#c5e99d}#grenade-cook-status small{display:block;font:700 8px system-ui;letter-spacing:.7px;color:#adbea7;margin-top:8px}#grenade-cook-status.urgent{border-color:#ff835f;background:#421d16ed;animation:patch-fuse-alert .22s alternate infinite}#grenade-cook-status.urgent i{background:#ff9163}#grenade-cook-status.urgent>span,#grenade-cook-status.urgent small{color:#ffd0a3}@keyframes patch-fuse-alert{to{box-shadow:0 0 22px #ff6d3b66}}
+@media(max-width:600px){#menu-updates-panel.menu-updates{right:10px!important;bottom:10px!important;width:min(310px,calc(100vw - 20px))!important;max-height:55vh;padding:11px 13px}#grenade-cook-status{top:57%;width:255px}.hero-card{min-height:175px}}
+</style>
+
 </body>
 </html>
