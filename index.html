@@ -831,8 +831,8 @@ const BALANCE_PATCH = {
  mycelis:{
   // Damage totals are per application, NOT damage per second.
   podDistance:40, podCooldown:7, podWait:6,
-  podPoisonDamage:20, podPoisonDuration:5, podSlow:0.60,
-  rootRadius:50, rootDirectDamage:10,
+  podPoisonDamage:20, podPoisonDuration:5, podSlow:0.60, podSlowDuration:3,
+  rootRadius:55, rootDirectDamage:10,
   rootDotDamage:10, rootDotDuration:3, rootDuration:1.7
  }
 };
@@ -840,16 +840,11 @@ const PATCH_UPDATES = {
   "version": "BRAWLBOUND · SURVIVALIST UPDATE",
   "announcement": "SURVIVALIST UPDATE: Patch · Vertical aiming · Round upgrades",
   "notes": [
-    "NEW CHAMPION: Jackpot! Permanently unlock him for 1,000 Shinies.",
-    "NEW JACKPOT SKINS: House Edge weapon skin and High Roller Jackpot outfit.",
-    "Improved champion skins for Mango, Chef Sizzle, Quackbot, and Sir Dentley. Adjusted Jackpot's suit to keep his face clear.",
-    "Quick Match now prioritizes the fullest reachable lobby with open spaces.",
-    "Updated map-voting screen with arena previews and live vote counts.",
-    "Eliminations now restore 25% of your maximum HP instead of 15%.",
-    "More nametag fonts: eight collectible styles to customize your name.",
-    "Rebalanced crate rarity odds, scaled to the rarities available in each crate.",
-    "Choose Easy, Normal, or Hard AI difficulty.",
-    "Separate Master, SFX, and Music toggles let you choose which sounds play."
+    "PATCH: Permanently unlock the Ranged Survivalist for 500 Shinies.",
+    "PATCH SKINS: Buy Beacon Field Blaster for 400 Shinies or Nightwatch Patch for 600 Shinies directly in the Shinies Shop.",
+    "MENU: Transparent live-battle background and bottom-right Updates & Balance panel.",
+    "ROUND UPGRADES: Five options per champion; choose one of three for this round."
+
   ]
 };
 // HEROES: hp=max health, sp=movement speed, cd=attack cooldown, a1cd/a2cd=ability cooldown.
@@ -862,7 +857,7 @@ const HEROES = [
    hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
    a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 15 damage, heavy knockback, and a 1.1-second stun.",
    a2n:"Charge", a2cd: 14.0,
-   ad:"A 270-degree, 80-unit hammer sweep deals 30 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink\u2019s bullets and cannonballs, Sizzle\u2019s meatballs, Quackbot\u2019s bullets, and Jackpot\u2019s bullets unless fired during ALL IN. Boomerangs, bananas, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
+   ad:"A 270-degree, 80-unit hammer sweep deals 25 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink\u2019s scrap bullets, Sizzle\u2019s meatballs, Quackbot\u2019s and Patch\u2019s bullets, and Jackpot\u2019s bullets unless fired during ALL IN. Captain Oink\u2019s Cannonball, boomerangs, bananas, grenades, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
    melee: true, d:"A durable frontline tank who controls space with a wide, hard-hitting hammer. Slam interrupts nearby enemies, while Charge lets Bruno cross a short gap and scatter anyone in his path. Time his swings to turn away incoming shots and hold space around himself."
  },
  {
@@ -905,15 +900,15 @@ const HEROES = [
    n:"Mycelis", e:"\ud83c\udf44", w:"\ud83e\ude84", wn:"Chitinous Spore Staff",
    role: "Tactician", roleCol: "#7d5ba6",
    hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
-   a1n:"Spore Pod", a1cd: BALANCE_PATCH.mycelis.podCooldown, a1d:"Plant a hidden pod 40 units ahead. It waits for up to 6 seconds. Triggering it releases a cloud that poisons affected enemies for 20 total damage over 5 seconds (4 per second) and slows movement by 60% while poisoned, leaving 40% normal movement speed. The 7-second cooldown begins when the pod triggers or expires.",
+   a1n:"Spore Pod", a1cd: BALANCE_PATCH.mycelis.podCooldown, a1d:"Plant a hidden pod 40 units ahead. It waits for up to 6 seconds. Triggering it releases a cloud that poisons affected enemies for 20 total damage over 5 seconds (4 per second) and slows movement by 60% for 3 seconds, leaving 40% normal movement speed during that time. Poison continues for the full 5 seconds. The 7-second cooldown begins when the pod triggers or expires.",
    a2n:"Root Entangle", a2cd: 9.0,
-   ad:"Cannot be reflected: these are shots of magical powers beyond reflection. Fire a spore bolt for 20 damage and knockback. Spore Pod poison deals 20 total damage over 5 seconds and slows movement by 60%; Root Entangle uses a separate damage-over-time effect.", a2d:"Launch an overgrowth projectile for 10 direct damage. On impact, a burst in a 50-unit radius roots affected enemies for 1.7 seconds and deals 10 damage over 3 seconds, with no instant burst damage. A direct hit plus the full damage-over-time effect deals 20 total damage before damage reduction; enemies hit only by the burst take 10 over time.",
-   melee: false, d:"A tactician who shapes the fight with concealed traps and precise root projectiles. Spore Pod punishes enemies who chase through a planted route, while Root Entangle can hold a target in place for follow-up attacks. Spore Pod poisons enemies for 20 damage over 5 seconds and slows movement by 60%. Root Entangle deals 10 direct damage plus 10 over 3 seconds and roots for 1.7 seconds. Mycelis relies on preparation and accurate placement to control fights."
+   ad:"Cannot be reflected: these are shots of magical powers beyond reflection. Fire a spore bolt for 20 damage and knockback. Spore Pod poison deals 20 total damage over 5 seconds and slows movement by 60% for 3 seconds; Root Entangle uses a separate damage-over-time effect.", a2d:"Launch an overgrowth projectile for 10 direct damage. On impact, a burst in a 55-unit radius roots affected enemies for 1.7 seconds and deals 10 damage over 3 seconds, with no instant burst damage. A direct hit plus the full damage-over-time effect deals 20 total damage before damage reduction; enemies hit only by the burst take 10 over time.",
+   melee: false, d:"A tactician who shapes the fight with concealed traps and precise root projectiles. Spore Pod punishes enemies who chase through a planted route, while Root Entangle can hold a target in place for follow-up attacks. Spore Pod poisons enemies for 20 damage over 5 seconds and slows movement by 60% for 3 seconds. Root Entangle deals 10 direct damage plus 10 over 3 seconds and roots for 1.7 seconds. Mycelis relies on preparation and accurate placement to control fights."
  },
  {
    n:"Sir Dentley", e:"\ud83d\udee1\ufe0f", w:"\u2694\ufe0f", wn:"Longsword",
    role: "Duelist", roleCol: "#9fb4d6",
-   hp: 210, sp: 125, col: 0x8d97a8, cd: 0.5,
+   hp: 210, sp: 130, col: 0x8d97a8, cd: 0.5,
 
    a1n:"Shield Guard",
    a1cd: BALANCE_PATCH.dentley.guardCooldown,
@@ -942,14 +937,14 @@ const HEROES = [
 HEROES.push({n:"Jackpot",e:"\ud83c\udfb0",w:"\ud83e\ude99",wn:"Lucky Revolver",role:"Gambler",roleCol:"#f2c14e",hp:160,sp:150,col:0x8c3d39,cd:0.6,
  a1n:"Roll the Dice",a1cd:9,a2n:"All In",a2cd:17,a3n:"Coin Toss",a3cd:1,melee:false,atkRange:500,
  ad:"Fire for 6 damage every 0.6 seconds. A loaded Heads coin makes the next shot deal 20 damage; Tails deals 6.",
- a1d:"Roll a visible die: 1 takes 15 damage; 2 slows you by 50% for 2 seconds; 3 heals 25; 4 grants 35% speed for 3 seconds; 5 absorbs 40 damage; 6 heals 40, boosts speed, and guarantees Heads on your next 3 shots.",
+ a1d:"Roll a visible die: 1 takes 15 damage; 2 slows you by 40% for 2 seconds; 3 heals 25; 4 grants 35% speed for 3 seconds; 5 absorbs 40 damage; 6 heals 40, boosts speed, and guarantees Heads on your next 3 shots.",
  a2d:"Wager 25% of your current HP. For 6 seconds, move 25% faster and fire guaranteed 20-damage Heads. Every kill heals twice the original wager and restarts the 6-second window without another wager. Payouts can exceed max HP until damage removes the excess; normal healing cannot refill excess HP.",
  a3d:"Flip and load one coin. It takes 0.5 seconds to land: Heads deals 20 damage on your next shot, Tails deals 6. A Tail guarantees Heads on your next flip. Fire to clear the chamber before flipping again.",
  d:"A high-variance gunslinger who can flip for a stronger shot, gamble on a die, or wager health for a short all-in burst."
 });
 
 
-HEROES.push({n:"Patch",e:"⛨",w:"⌖",wn:"FIELD BLASTER",role:"Ranged Survivalist",roleCol:"#7cdbb0",hp:170,sp:160,col:0x527560,cd:.6,melee:false,atkRange:480,a1n:"Medkit",a1cd:13,a2n:"Stim",a2cd:11,a3n:"Cooked Grenade",a3cd:12,ad:"Accurate projectile: 13 damage every 0.6 seconds.",a1d:"Restore 35 HP over 2 seconds. Enemy damage interrupts healing. Cannot exceed maximum HP. Unavailable while cooking.",a2d:"Gain 30% movement speed for 3 seconds. Does not remove stuns or pass through obstacles.",a3d:"Hold F (or .) to cook; release to throw. The 3-second fuse never resets. Up to 25 damage with distance falloff, modest knockback, terrain bounces and cover blocking. Can kill Patch. Death drops the live grenade.",d:"A reliable survivalist. Find cover to heal, use Stim to reposition, and time a live grenade carefully. No passive or special resource."});
+HEROES.push({n:"Patch",e:"⛨",w:"⌖",wn:"FIELD BLASTER",role:"Ranged Survivalist",roleCol:"#7cdbb0",hp:170,sp:160,col:0x527560,cd:.6,melee:false,atkRange:480,a1n:"Medkit",a1cd:13,a2n:"Stim",a2cd:11,a3n:"Cooked Grenade",a3cd:12,ad:"Accurate projectile: 13 damage every 0.6 seconds.",a1d:"Restore 35 HP over 3 seconds. Enemy damage interrupts healing. Cannot exceed maximum HP. Unavailable while cooking.",a2d:"Gain 30% movement speed for 3 seconds. Does not remove stuns or pass through obstacles.",a3d:"Hold F (or .) to cook; release to throw. The 3-second fuse never resets. Up to 25 damage with distance falloff, modest knockback, terrain bounces and cover blocking. Can kill Patch. Death drops the live grenade.",d:"A reliable survivalist. Find cover to heal, use Stim to reposition, and time a live grenade carefully. No passive or special resource."});
 
 // Champion text is generated from the same settings as the real hitboxes.
 HEROES[0].ad=HEROES[0].ad.replace(/A \d+-degree(?: forward)?,/,`A ${COMBAT_SETTINGS.brunoAttackDegrees}-degree forward,`);
@@ -980,7 +975,7 @@ const CRATE_RARITY_ODDS = [
   { key: "Rare", chance: 15 }, { key: "Epic", chance: 3.5 }, { key: "Legendary", chance: 0.5 }
 ];
 const ATTACK_TUNING = {
- bruno:{range:80,damage:30,knockback:360},
+ bruno:{range:80,damage:25,knockback:360},
  oink:{speed:410,damage:8.5,knockback:100,life:0.32,spread:0.14},
  mango:{speed:380,damage:15,knockback:140,life:99},
  sizzle:{speed:380,damage:35,knockback:95,life:1.6},
@@ -993,7 +988,7 @@ const ATTACK_TUNING = {
 let inventoryCategory='championSkins',inventoryHero='all',masteryHero=0;
 function openInventory(){if(activeCrateSpin)return;if(!activeProfile()){openAccountModal(true);return;}economyModalView='inventory';renderEconomyModal();}
 function openMastery(hero){if(state!=='menu'||activeCrateSpin)return;if(!activeProfile()){openAccountModal(true);return;}masteryHero=Number.isInteger(hero)&&HEROES[hero]?hero:Math.max(0,p1HeroChoice);economyModalView='mastery';renderEconomyModal();}
-function inventoryPreview(category,item,p){if(NAMEPLATE_CATEGORIES.includes(category)){const ids={...getNameplateCosmeticIds(p),[category.key]:item.id};return `<div class="cosmetic-preview">${usernameTagHTML(p.username,ids)}</div>`;}if(category.key==='auras')return `<div class="bb-aura-preview ${item.rarity==='Legendary'?'full legendary':item.rarity==='Epic'?'full epic':''}" style="--aura:${item.accent}"><div class="bb-aura-ring"></div><span>${HEROES[item.hero].e}</span></div>`;return `<div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key,item)}">${escapeHtml(item.hero!=null?HEROES[item.hero].n:p.username)}</div>`;}
+function inventoryPreview(category,item,p){if(NAMEPLATE_CATEGORIES.includes(category)){const ids={...getNameplateCosmeticIds(p),[category.key]:item.id};return `<div class="cosmetic-preview">${usernameTagHTML(p.username,ids)}</div>`;}if(category.key==='auras')return auraPreviewHTML(item);return `<div class="cosmetic-preview" style="${cosmeticPreviewCss(category.key,item)}">${escapeHtml(item.hero!=null?HEROES[item.hero].n:p.username)}</div>`;}
 function renderInventory(){
  const p=activeProfile(),body=document.getElementById('economy-body');document.getElementById('economy-title').textContent='Inventory';if(!p)return;
  const category=shopCategory(inventoryCategory),items=category.items.filter(i=>p.owned[category.key]?.includes(i.id)&&(inventoryHero==='all'||i.hero==null||i.hero===Number(inventoryHero)));
@@ -1033,23 +1028,55 @@ function renderMastery(){
  }).join('')}</div><button class="economy-action primary" onclick="openInventory()" style="margin-top:16px">Open Inventory</button>`;
 }
 function showMasteryResult(summary){document.getElementById('bb-mastery-result')?.remove();if(!summary)return;const el=document.createElement('div');el.id='bb-mastery-result';el.className='bb-mastery-head';el.innerHTML=`<b>${escapeHtml(HEROES[summary.hero].n)} mastery · ${Math.round(summary.after*100)}%</b>${progressBar(summary.after,'Champion mastery')}<small>${summary.rewards.length?summary.rewards.map(escapeHtml).join('<br>'):'Active challenge progress saved.'}${summary.rewards.length?`<br>${summary.next<7?'Next challenge unlocked. View it on your champion menu card.':'All seven challenges complete!'}`:''}</small>`;document.getElementById('result-stats').insertAdjacentElement('afterend',el);}
+
+const AURA_TIER_SETTINGS={
+ Common:{rank:0,rings:1,motes:4,glyphs:0,bands:0,arcs:0,crown:0,fins:0,shell:0},
+ Uncommon:{rank:1,rings:2,motes:8,glyphs:3,bands:0,arcs:0,crown:0,fins:0,shell:0},
+ Rare:{rank:2,rings:3,motes:12,glyphs:6,bands:1,arcs:1,crown:0,fins:0,shell:0},
+ Epic:{rank:3,rings:4,motes:18,glyphs:8,bands:2,arcs:2,crown:4,fins:0,shell:.025},
+ Legendary:{rank:4,rings:5,motes:24,glyphs:12,bands:3,arcs:3,crown:8,fins:6,shell:.045}
+};
 function addChampionAura(model,item){
  const old=model.getObjectByName('bb-champion-aura');if(old){old.traverse(n=>{n.geometry?.dispose();n.material?.dispose();});model.remove(old);}if(!item)return;
- const group=new THREE.Group();group.name='bb-champion-aura';group.userData.bbAura=true;group.userData.full=item.rarity==='Epic'||item.rarity==='Legendary';group.userData.legendary=item.rarity==='Legendary';
- const color=new THREE.Color(item.accent),full=group.userData.full,legendary=group.userData.legendary;
- const material=(opacity)=>new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending});
- const ring=new THREE.Mesh(new THREE.TorusGeometry(23,.6,5,48),material(.55));ring.rotation.x=Math.PI/2;ring.position.y=1;group.add(ring);
- const count=legendary?18:full?10:4;
- for(let i=0;i<count;i++){const mote=new THREE.Mesh(new THREE.OctahedronGeometry(legendary?1.1:.7,0),material(legendary?.7:full?.4:.55));mote.userData.phase=i/count*Math.PI*2;mote.userData.kind='mote';mote.userData.index=i;group.add(mote);}
- if(full){
-  // Transparent shell spans head to toe; no lights, no opaque silhouette, no weapon recoloring.
-  const shell=new THREE.Mesh(new THREE.CylinderGeometry(17,22,43,24,1,true),material(legendary?.075:.035));shell.position.y=22;shell.userData.kind='shell';group.add(shell);
-  for(let i=0;i<(legendary?3:2);i++){const band=new THREE.Mesh(new THREE.TorusGeometry(legendary?21:19,legendary?.55:.35,5,48),material(legendary?.36:.17));band.userData.kind='band';band.userData.phase=i*Math.PI*.7;band.rotation.x=Math.PI/2;group.add(band);}
-  if(legendary){const halo=new THREE.Mesh(new THREE.TorusGeometry(13,.7,5,40),material(.6));halo.rotation.x=Math.PI/2;halo.position.y=45;halo.userData.kind='halo';group.add(halo);}
- }
+ const cfg=AURA_TIER_SETTINGS[item.rarity]||AURA_TIER_SETTINGS.Common,rank=cfg.rank;
+ const group=new THREE.Group();group.name='bb-champion-aura';Object.assign(group.userData,{bbAura:true,rarity:item.rarity,rank,full:rank>=3,legendary:rank===4});
+ const color=new THREE.Color(item.accent),highlight=color.clone().lerp(new THREE.Color(0xffffff),rank===4?.7:.4);
+ const mat=(opacity,bright=false)=>new THREE.MeshBasicMaterial({color:bright?highlight:color,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending});
+ const ringMat=mat(rank===0?.34:.40+rank*.045),moteMat=mat(rank===0?.40:.5+rank*.055),glyphMat=mat(.35+rank*.055,true),arcMat=mat(.12+rank*.025),bandMat=mat(.16+rank*.04),crownMat=mat(.45+rank*.05,true);
+ function add(geo,material,kind,index,phase=0){const mesh=new THREE.Mesh(geo,material);mesh.userData={kind,index,phase,baseOpacity:material.opacity};group.add(mesh);return mesh;}
+ for(let i=0;i<cfg.rings;i++){const ring=add(new THREE.TorusGeometry(21+i*2.5,i===0?.48:.2+rank*.04,5,48,i===0?Math.PI*2:Math.PI*(1.15+i*.12)),ringMat,'ground',i,i*1.8);ring.rotation.x=Math.PI/2;ring.position.y=1.1+i*.24;}
+ const moteGeo=new THREE.OctahedronGeometry(rank===0?.55:.7+rank*.12,0);
+ for(let i=0;i<cfg.motes;i++)add(moteGeo,moteMat,'mote',i,i/cfg.motes*Math.PI*2);
+ if(cfg.glyphs){const glyphGeo=new THREE.OctahedronGeometry(.9+rank*.12,0);for(let i=0;i<cfg.glyphs;i++){const mesh=add(glyphGeo,glyphMat,'glyph',i,i/cfg.glyphs*Math.PI*2);mesh.scale.set(1,rank>=2?2.2:1.5,.65);}}
+ for(let i=0;i<cfg.bands;i++){const band=add(new THREE.TorusGeometry(19+rank*.7,.22+rank*.045,5,48,Math.PI*1.6),bandMat,'band',i,i/cfg.bands*Math.PI*2);band.rotation.x=Math.PI/2;}
+ for(let i=0;i<cfg.arcs;i++){const arc=add(new THREE.TorusGeometry(22+rank,.24+rank*.045,5,56,Math.PI*1.35),arcMat,'orbit',i,i/cfg.arcs*Math.PI*2);arc.position.y=22;}
+ if(cfg.shell){const shell=add(new THREE.CylinderGeometry(17,22,43,24,1,true),mat(cfg.shell),'shell',0);shell.position.y=22;}
+ if(cfg.crown){const halo=add(new THREE.TorusGeometry(rank===4?13:11,.35+rank*.06,5,48),crownMat,'halo',0);halo.rotation.x=Math.PI/2;halo.position.y=47;
+  const shardGeo=new THREE.OctahedronGeometry(.8+rank*.12,0);for(let i=0;i<cfg.crown;i++){const shard=add(shardGeo,crownMat,'crown',i,i/cfg.crown*Math.PI*2);shard.scale.set(.8,rank===4?3.2:2,.8);}}
+ if(cfg.fins){const finGeo=new THREE.OctahedronGeometry(1,0);for(let i=0;i<cfg.fins;i++){const fin=add(finGeo,mat(.18,true),'fin',i,i/cfg.fins*Math.PI*2);fin.scale.set(1.4,6+i%2*2,1.2);}}
  model.add(group);animateOneAura(group,0);
 }
-function animateOneAura(group,t){const full=group.userData.full,legendary=group.userData.legendary;for(let i=1;i<group.children.length;i++){const m=group.children[i],phase=m.userData.phase||0,a=phase+t*(legendary?.9:.6);switch(m.userData.kind){case 'mote':{const y=full?3+((m.userData.index*5.3+t*(legendary?8:5))%42):4+Math.sin(a*2+t)*2;m.position.set(Math.cos(a)*(full?19:23),y,Math.sin(a)*(full?19:23));m.rotation.set(t,a,t*.5);break;}case 'band':m.position.y=6+((phase*10+t*8)%34);m.rotation.z=Math.sin(t+phase)*.12;break;case 'shell':m.material.opacity=(legendary?.075:.035)*(1+Math.sin(t*2)*.2);break;case 'halo':m.rotation.z=Math.sin(t)*.08;break;}}}
+function animateOneAura(group,t){
+ const rank=group.userData.rank||0,cfg=AURA_TIER_SETTINGS[group.userData.rarity]||AURA_TIER_SETTINGS.Common,speed=.35+rank*.13;
+ for(const m of group.children){const phase=m.userData.phase||0,index=m.userData.index||0,a=phase+t*speed;
+  switch(m.userData.kind){
+   case 'ground':m.rotation.z=phase+t*(index%2?-1:1)*(.15+rank*.09);break;
+   case 'mote':{const full=rank>=2,r=full?18.5+Math.sin(a*1.7)*2:22+Math.sin(a)*1.2,y=full?3+((index*3.8+t*(3+rank*1.4))%40):3+Math.sin(a*2+t)*1.7+(rank===1?index%3*2:0);m.position.set(Math.cos(a)*r,y,Math.sin(a)*r);m.rotation.set(t*.6,a,t*.3);break;}
+   case 'glyph':{const r=25+rank;m.position.set(Math.cos(-a)*r,rank===1?4+Math.sin(a*2)*1.3:5+Math.sin(a*1.4)*3+(index%3)*4,Math.sin(-a)*r);m.rotation.set(Math.sin(a)*.25,-a,t*.45);break;}
+   case 'band':m.position.y=4+((phase*5+t*(5+rank))%37);m.rotation.z=-a;break;
+   case 'orbit':m.rotation.set(.55+phase,t*(index%2?-.32:.32)+phase,.4+Math.sin(a)*.22);break;
+   case 'shell':m.material.opacity=cfg.shell*(.85+Math.sin(t*1.6)*.15);break;
+   case 'halo':m.rotation.z=t*.4;m.position.y=47+Math.sin(t*1.5)*.7;break;
+   case 'crown':m.position.set(Math.cos(a)*12,48+Math.sin(a*2)*1.2,Math.sin(a)*12);m.rotation.set(.15*Math.sin(a),-a,.2*Math.cos(a));break;
+   case 'fin':m.position.set(Math.cos(-a)*25,20+Math.sin(a*2)*5,Math.sin(-a)*25);m.rotation.set(.25*Math.sin(a),a,.25*Math.cos(a));break;
+  }
+ }
+}
+function auraPreviewHTML(item){
+ const rank=(AURA_TIER_SETTINGS[item.rarity]||AURA_TIER_SETTINGS.Common).rank;
+ return `<div class="bb-aura-preview aura-${item.rarity.toLowerCase()} ${rank>=3?'full':''} ${rank===4?'legendary':''}" style="--aura:${item.accent}" aria-label="${escapeHtml(item.rarity+' '+item.name+' aura preview')}"><div class="bb-aura-ring"></div>${rank>=1?'<div class="bb-aura-ring bb-aura-ring-2"></div>':''}${rank>=2?'<div class="bb-aura-orbit"></div><div class="bb-aura-diamonds">◇ · ◇ · ◇</div>':''}${rank>=3?'<div class="bb-aura-orbit bb-aura-orbit-2"></div><div class="bb-aura-halo"></div>':''}${rank===4?'<div class="bb-aura-crown">◇ ◆ ◇ ◆ ◇</div>':''}<span>${HEROES[item.hero].e}</span><small>${item.rarity.toUpperCase()}</small></div>`;
+}
+
 function animateChampionAuras(now){const t=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:now/1000;for(const e of E){const a=e.mesh?.getObjectByName('bb-champion-aura');if(a)animateOneAura(a,t);}}
 function crateTone(freq,duration=.04){try{Snd.ensure();if(!Snd.ctx||!Snd.sfxGain)return;const ctx=Snd.ctx,o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.035,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+duration);o.connect(g);g.connect(Snd.sfxGain);o.start();o.stop(ctx.currentTime+duration);o.onended=()=>{o.disconnect();g.disconnect();};}catch(e){}}
 
@@ -1228,6 +1255,10 @@ SKIN_CATEGORIES.find(c=>c.key==="weaponSkins").items.push({id:"jackpot-house-edg
 SKIN_CATEGORIES.find(c=>c.key==="championSkins").items.push({id:"jackpot-high-roller",hero:7,name:"High Roller Jackpot",rarity:"Epic",base:"#29133f",accent:"#ffdc83",glow:"#a855f7"});
 
 // v1.3.1: Inventory, sequential champion challenges and full-body prestige auras.
+HEROES[8].isNew=true;HEROES[8].rarity='Rare';
+SKIN_CATEGORIES.find(c=>c.key==='weaponSkins').items.push({id:'patch-beacon',hero:8,name:'Beacon Field Blaster',rarity:'Rare',directPrice:400,base:'#e2dbc1',accent:'#7ce4bf',glow:'#228e74'});
+SKIN_CATEGORIES.find(c=>c.key==='championSkins').items.push({id:'patch-nightwatch',hero:8,name:'Nightwatch Patch',rarity:'Rare',directPrice:600,base:'#26303a',accent:'#edb974',glow:'#ba7234'});
+
 const MASTERY_NAMES=[['Titanfall','Arena Colossus'],['Royal Broadside','Dread Admiral'],['Solar Crescent','Sun Temple Mango'],['Starlight Supper','Celestial Chef'],['Ion Needle','Quantum Quackbot'],['Eclipse Scepter','Eclipse Mycelis'],['Kingsguard Edge','Sovereign Dentley'],['Royal Flush','Casino Sovereign'],['Trailblazer','Field Commander']];
 for(let hero=0;hero<HEROES.length;hero++){
  const colors=[['#30221a','#ffe08a','#ff9d38'],['#122c48','#99edff','#46bfff'],['#3d2037','#ffdc7a','#ff963a'],['#291838','#e8baff','#bd78ff'],['#122c36','#8effdf','#30eacd'],['#291b40','#e9aaff','#b47aff'],['#273248','#fff0ba','#ffd16b'],['#35172e','#ffe09b','#ff68b5'],['#183d30','#b8ffcf','#51e7b2']][hero];
@@ -1238,9 +1269,9 @@ SKIN_CATEGORIES.find(c=>c.key==='championSkins').cratePrice=600;
 SKIN_CATEGORIES.push({key:'auras',label:'Champion Auras',cratePrice:400,crateName:'Aura Cache',crateIcon:'✧',items:HEROES.flatMap((h,hero)=>[
  ['ember','Ember Halo','Common','#ff834f'],['frost','Frost Orbit','Uncommon','#77dfff'],['jade','Jade Circuit','Rare','#5effb6'],['void','Void Crown','Epic','#c78aff'],['solar','Solar Sovereign','Legendary','#ffe489']
 ].map(([id,name,rarity,color])=>({id:`aura-${id}-${hero}`,hero,name:`${name} — ${h.n}`,rarity,base:'#111522',accent:color,glow:color}))) });
-PATCH_UPDATES.version='BRAWLBOUND v1.3.1';
-PATCH_UPDATES.announcement='New Champion, Champion Challenges, Map Updates, and Champion Auras';
-PATCH_UPDATES.notes.unshift('Champion menu cards now open their own challenge tracks.','Seven sequential challenges per champion. Future objectives stay secret; only the active challenge earns progress.','Epic auras have subtle full-body energy; Legendary auras have stronger full-body effects.','Weapon / Champion / Aura Caches now cost 500 / 600 / 400 Shinies.','Inventory handles inspecting and equipping. Mastery rewards are excluded from crates.');
+PATCH_UPDATES.version='BRAWLBOUND v1.3.3 · AURA & BALANCE UPDATE';
+PATCH_UPDATES.announcement='Champion balance tuning, direct Patch skin purchases, and upgraded aura effects';
+
 function normalizeMastery(value){const r={};for(let i=0;i<HEROES.length;i++){const v=value?.[i];r[i]={version:2,stage:v?.version===2?Math.max(0,Math.min(7,Math.floor(Number(v.stage)||0))):0,progress:v?.version===2?Math.max(0,Math.min(1e9,Math.floor(Number(v.progress)||0))):0};}return r;}
 
 
@@ -1646,6 +1677,25 @@ function startCosmeticCrateSpin(spin) {
   spin.timer=setTimeout(()=>finishCosmeticCrateSpin(spin.id),6200);
 }
 
+
+function patchDirectShopHTML(profile,disabled=false){
+ const offers=[['weaponSkins','patch-beacon'],['championSkins','patch-nightwatch']];
+ return `<section class="patch-direct-shop"><div class="patch-shop-header"><div><span>GUARANTEED PURCHASES</span><h3>Patch · Field Collection</h3></div><small>Cosmetics only · does not unlock the champion</small></div><div class="patch-direct-grid">${offers.map(([key,id])=>{
+  const category=shopCategory(key),item=category.items.find(i=>i.id===id);if(!item)return '';
+  const owned=profile.owned[key]?.includes(id),afford=profile.shinies>=item.directPrice;
+  return `<article class="shop-item patch-direct-item"><div class="loot-card-top"><b>${escapeHtml(item.name)}</b><span class="rarity-rare">RARE</span></div><small>${key==='weaponSkins'?'PATCH WEAPON SKIN':'PATCH CHAMPION SKIN'}</small>${inventoryPreview(category,item,profile)}<div class="shop-item-price">${owned?'OWNED':item.directPrice+' Shinies · guaranteed unlock'}</div>${owned?`<button class="economy-action" onclick="openInventory()" ${disabled?'disabled':''}>VIEW IN INVENTORY</button>`:`<button class="economy-action primary" data-direct-category="${key}" data-direct-item="${id}" ${disabled||!afford?'disabled':''}>${afford?'BUY · '+item.directPrice+' SHINIES':'NEED '+(item.directPrice-profile.shinies)+' MORE SHINIES'}</button>`}</article>`;
+ }).join('')}</div></section>`;
+}
+async function buyDirectCosmetic(categoryKey,itemId){
+ const profile=activeProfile(),category=SHOP_CATEGORIES.find(c=>c.key===categoryKey),item=category?.items.find(i=>i.id===itemId);
+ if(!profile||activeCrateSpin||profile.pendingCrate||!item||item.hero!==8||!['patch-beacon','patch-nightwatch'].includes(item.id)||!Number.isInteger(item.directPrice)||item.directPrice<=0)return false;
+ if(profile.owned[categoryKey]?.includes(itemId)){showEconomyToast('Already owned. Equip it in Inventory.');return false;}
+ const price=item.directPrice;if(profile.shinies<price){showEconomyToast('Not enough Shinies for '+item.name+'.');return false;}
+ const approved=await bbConfirm('Buy '+item.name+' for '+price+' Shinies? This is a guaranteed cosmetic unlock, not a crate.');
+ if(!approved||activeProfile()!==profile||activeCrateSpin||profile.pendingCrate||profile.shinies<price||profile.owned[categoryKey]?.includes(itemId))return false;
+ profile.shinies-=price;if(!profile.owned[categoryKey])profile.owned[categoryKey]=[];profile.owned[categoryKey].push(itemId);saveAccountBook();updateEconomyDisplays();showEconomyToast(item.name+' purchased! Equip it in Inventory.');renderEconomyModal();return true;
+}
+
 function renderShopModal() {
   const body = document.getElementById("economy-body");
   const profile = activeProfile();
@@ -1684,6 +1734,7 @@ function renderShopModal() {
     </div>`;
   }).join("");
   body.innerHTML = `
+    ${patchDirectShopHTML(profile,spinning)}
     <div class="economy-tabs">${tabs}</div>
     <section class="crate-panel">
       <div class="crate-art">${category.crateIcon}<i>\u2726</i><b>\u2727</b></div>
@@ -1698,6 +1749,7 @@ function renderShopModal() {
     ${spinning?'<div class="economy-note">Opening your crate... your reward will be added to Inventory.</div>':`<div class="loot-grid">${loot}</div>`}
     <div class="economy-note">Earn Shinies: daily login +${SHINY_REWARDS.daily} \u00b7 Quick Match elimination +${SHINY_REWARDS.kill} \u00b7 Quick Match win +${SHINY_REWARDS.win}</div>
   `;
+  body.querySelectorAll("[data-direct-item]").forEach(button=>button.onclick=()=>buyDirectCosmetic(button.dataset.directCategory,button.dataset.directItem));
   body.querySelectorAll("[data-shop-category]").forEach(button => button.onclick = () => {
     shopCategoryKey = button.dataset.shopCategory;
     renderEconomyModal();
@@ -3945,6 +3997,7 @@ function removePeerEntity(peerId) {
 }
 
 function applyAbilitySnapshotState(entity, item) {
+  entity.sporeSlowT=Math.max(0,Number(item.psl)||0);
   entity.jackpotFlipT=Math.max(0,Number(item.jft)||0);
   entity.jackpotCoinRevealT=Math.max(0,Number(item.jrt)||0);
   entity.jackpotFlipPending=!!item.jfp;
@@ -4031,6 +4084,7 @@ function mk(ci, x, z, playerNum, netId = null, team = null, username = null, tag
     lungeVx: 0, lungeVz: 0, lungeA: 0, lungeT: 0, lungeDamage: 0, lungeKb: 0, lungeStun: 0, lungeFinisher: false, lungeHit: new Set(),
     activePod: null,
     sporePoison: 0,
+    sporeSlowT: 0,
     sporeAttacker: null,
     rootDots: [],
     chain: null,                                   // Captain Oink's chain hook
@@ -4527,7 +4581,7 @@ function melee(e, rng, d, kb, noReflect) {
 function reflect(e,r){
  for(const p of P){
   // Boomerangs and magical projectiles cannot be reflected.
-  if(p.o===e||p.life<=0||!["s","meatball","cannonball","jackpot_bullet"].includes(p.t)||p.unreflectable)continue;
+  if(p.o===e||p.life<=0||!["s","meatball","jackpot_bullet"].includes(p.t)||p.unreflectable)continue;
   if(Math.hypot(p.x-e.x,p.z-e.z)>=r+15)continue;
   const angle=Math.atan2(p.z-e.z,p.x-e.x)-e.a,da=Math.atan2(Math.sin(angle),Math.cos(angle));
   if(Math.abs(da)>meleeHalfArc(e))continue;
@@ -4697,7 +4751,7 @@ function attack(e) {
 
 function executeAbility1(e) {
  if(e.liveGrenade)return;
- if(e.ci===8){if(e.liveGrenade||e.c2>0||startupAbilityCooldownRemaining()>0)return;e.c2=13;e.medkitT=2;return;}
+ if(e.ci===8){if(e.liveGrenade||e.c2>0||startupAbilityCooldownRemaining()>0)return;e.c2=13;e.medkitT=3;return;}
 
   if(startupAbilityCooldownRemaining()>0)return;
   if(dentleyGuardActive(e)) { releaseDentleyGuard(e); return; }
@@ -4835,6 +4889,7 @@ function applyMycelisRootDot(target, attacker, angle) {
 }
 function tickMycelisEffects(e, dt) {
   const cfg = BALANCE_PATCH.mycelis;
+  e.sporeSlowT=Math.max(0,(e.sporeSlowT||0)-Math.max(0,dt));
   if(e.sporePoison > 0) {
     const step = Math.min(Math.max(0, dt), e.sporePoison);
     e.sporePoison = Math.max(0, e.sporePoison - step);
@@ -5990,6 +6045,7 @@ function handleIncomingData(conn, data) {
           pl.stun = Math.max(pl.stun, item.st || 0);
           pl.slow = Math.max(pl.slow, item.sl || 0);
           pl.sporePoison = Math.max(pl.sporePoison, item.po || 0);
+          pl.sporeSlowT = Math.max(0, Number(item.psl)||0);
           pl.speedBoost = Math.max(pl.speedBoost, item.sb || 0);
           pl.kx = item.kx || 0;
           pl.kz = item.kz || 0;
@@ -6139,6 +6195,7 @@ setInterval(() => {
       st: e.stun > 0 ? e.stun : 0,
       sl: e.slow > 0 ? e.slow : 0,
       po: e.sporePoison > 0 ? e.sporePoison : 0,
+      psl: e.sporeSlowT > 0 ? e.sporeSlowT : 0,
       sb: e.speedBoost > 0 ? e.speedBoost : 0,
       kx: Math.round(e.kx),
       kz: Math.round(e.kz),
@@ -7605,7 +7662,7 @@ function updatePatchHUD(){
  document.getElementById('cd3-label').textContent=pl.liveGrenade?'RELEASE · '+remaining.toFixed(1)+'s':(controlScheme==='wasd'?'[F] GRENADE':'[.] GRENADE')+(pl.c4>0?' · '+Math.ceil(pl.c4)+'s':'');document.getElementById('cd3-fill').style.width=(pl.liveGrenade?remaining/3*100:100*Math.max(0,1-pl.c4/12))+'%';
 }
 function tickPatchGrenades(now){for(let i=liveGrenades.length-1;i>=0;i--){const g=liveGrenades[i],left=(g.deadline-now)/1000;if(g.held){if(g.o.dead)releasePatchGrenade(g.o,true);else Object.assign(g,patchThrowOrigin(g.o));}else{let time=Math.max(0,Math.min(3,(Math.min(now,g.deadline)-g.lastTime)/1000));while(time>0){const step=Math.min(time,.008);grenadeStep(g,step);time-=step;}}g.lastTime=now;g.mesh.position.set(g.x,g.y,g.z);g.mesh.material.emissiveIntensity=.4+1.8*Math.max(0,Math.sin(now/(left<1?40:120)));if(g.fuseAudio)g.fuseAudio.gain.gain.value=.07+(1-Math.max(0,left)/3)*.08;if(now-g.lastBeep>Math.max(70,left*200)){if(Math.hypot((pl?.x||0)-g.x,(pl?.z||0)-g.z)<330)crateTone(left<1?1400:850,.035);g.lastBeep=now;}if(left<=0){explodePatch(g);liveGrenades.splice(i,1);}}}
-function updatePatchSystems(dt){const now=performance.now();tickPatchGrenades(now);if(state==='play')for(const e of E){e.stimT=Math.max(0,(e.stimT||0)-dt);if(e.medkitT>0&&!e.dead){const t=Math.min(dt,e.medkitT);e.medkitT-=t;if(!isMultiplayer||isLobbyLeader)e.hp=Math.min(e.mhp,e.hp+17.5*t*(e.upMedkit||1));}if(e.ai&&e.ci===8&&!e.dead){if(e.liveGrenade&&(e.liveGrenade.deadline-now)<1200)releasePatchGrenade(e);else if(e.c4<=0&&Math.random()<dt*.35)beginPatchGrenade(e);}}
+function updatePatchSystems(dt){const now=performance.now();tickPatchGrenades(now);if(state==='play')for(const e of E){e.stimT=Math.max(0,(e.stimT||0)-dt);if(e.medkitT>0&&!e.dead){const t=Math.min(dt,e.medkitT);e.medkitT-=t;if(!isMultiplayer||isLobbyLeader)e.hp=Math.min(e.mhp,e.hp+(35/3)*t*(e.upMedkit||1));}if(e.ai&&e.ci===8&&!e.dead){if(e.liveGrenade&&(e.liveGrenade.deadline-now)<1200)releasePatchGrenade(e);else if(e.c4<=0&&Math.random()<dt*.35)beginPatchGrenade(e);}}
  drawGrenadePreview(pl?.ci===8?pl:null);let a=document.getElementById('aim-mode');if(!a){a=document.createElement('div');a.id='aim-mode';document.getElementById('hud').append(a);}a.textContent=(verticalAim?'VERTICAL AIM':'LEVEL AIM')+' · C';a.dataset.vertical=verticalAim;
 }
 setInterval(()=>{if(liveGrenades.length&&(document.hidden||hostVisibilityPaused))tickPatchGrenades(performance.now());},50);
@@ -7625,7 +7682,7 @@ function upgradeText(e,i){return [
  `+${Math.round(HEROES[e.ci].hp*.10)} maximum HP (10% of base HP). No damage reduction.`,
  'Basic weapon attacks deal 8% more damage. Abilities and status damage are unchanged.',
  'Movement speed +6%. Does not increase dash distance or bypass stuns and obstacles.',
- e.ci===8?'Medkit heals 42 HP over 2 seconds instead of 35. Enemy damage still interrupts it.':'Eliminations heal 30% of maximum HP instead of 25%. No passive healing or overheal.',
+ e.ci===8?'Medkit heals 42 HP over 3 seconds instead of 35. Enemy damage still interrupts it.':'Eliminations heal 30% of maximum HP instead of 25%. No passive healing or overheal.',
  e.ci===8?'Grenade maximum damage increases from 25 to 28. Also increases self-damage. Fuse, falloff and cover rules are unchanged.':'Main ability cooldowns recover 10% faster (about 9% less waiting). Starting lockout, durations and extra actions are unchanged.'
  ][i];}
 function applyRoundUpgrade(e,i){if(e.roundUpgrade!=null||!Number.isInteger(i)||i<0||i>4)return;e.roundUpgrade=i;if(i===0){const bonus=Math.round(HEROES[e.ci].hp*.1);e.mhp+=bonus;e.hp+=bonus;}if(i===1)e.upWeaponDamage=1.08;if(i===2)e.upSpeed=1.06;if(i===3){if(e.ci===8)e.upMedkit=1.2;else e.upElimHeal=1.2;}if(i===4){if(e.ci===8)e.upGrenade=1.12;else e.upCooldown=1.10;}}
@@ -7853,6 +7910,7 @@ function upd(dt) {
           Zones.push({ kind: "spore_cloud", x: z.x, z: z.z, r: 55, life: 3.0, owner: z.owner, mesh });
 
           e.sporePoison = BALANCE_PATCH.mycelis.podPoisonDuration;
+          e.sporeSlowT = BALANCE_PATCH.mycelis.podSlowDuration;
           e.sporeAttacker = z.owner;
           spawnDamageNumber(e.x, e.z, "BLIGHTED", "#a855f7");
 
@@ -7864,6 +7922,7 @@ function upd(dt) {
         } else if(z.kind === "spore_cloud") {
           if(e.sporePoison < 0.5) {
             e.sporePoison = BALANCE_PATCH.mycelis.podPoisonDuration;
+          e.sporeSlowT = BALANCE_PATCH.mycelis.podSlowDuration;
             e.sporeAttacker = z.owner;
             spawnDamageNumber(e.x, e.z, "BLIGHTED", "#a855f7");
           }
@@ -8021,7 +8080,7 @@ function upd(dt) {
       ab2 = P1_ab2;
 
       const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.30:1) * (e.upSpeed||1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
-      const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.5:1);
+      const slowMod = ((e.sporeSlowT > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.6:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
@@ -8033,7 +8092,7 @@ function upd(dt) {
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
       const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.30:1) * (e.upSpeed||1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
-      const slowMod = ((e.sporePoison > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.5:1);
+      const slowMod = ((e.sporeSlowT > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.6:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
@@ -8414,97 +8473,14 @@ requestAnimationFrame(loop);
 (() => {
   // ============== EDIT YOUR UPDATE NOTES HERE ==============
 const VERSION_UPDATES = {
-  version: "BRAWLBOUND v1.3.2 · FIELD READY",
-
-  game: [
-    "PATCH: Permanently unlock the Ranged Survivalist for 500 Shinies. Redesigned champion, Field Blaster and survivalist insignia.",
-    "PATCH SKINS: Nightwatch Patch and Beacon Field Blaster are available in their corresponding cosmetic caches. Inspect and equip them in Inventory.",
-    "GRENADE: Hold F (or . with Arrow Controls) to pull the pin and cook; release to throw. A hissing fuse, flashing grenade and countdown make cooking readable. The fuse never resets.",
-    "TRAJECTORY: Green line = predicted flight. Gold marker = first terrain collision. Red diamond = estimated detonation position for the remaining fuse.",
-    "MENU: Restored the transparent live-battle background and the bottom-right Updates & Balance panel.",
-    "ROUND UPGRADES: Five tuned options per champion, three offers per round. Descriptions state exact effects and exclusions. All bonuses reset next round.",
-    "NEW CHAMPION: Jackpot! Permanently unlock him for 1,000 Shinies.",
-
-    "NEW CHAMPION CHALLENGES! Open a champion’s challenges from their card in the main menu. Each champion has seven challenges to complete in order. Finish one to reveal the next!",
-
-    "Earn Shinies along the way, plus an exclusive weapon skin and champion skin. Challenge skins can’t drop from shop crates.",
-
-    "Challenge progress saves between sessions and never expires. Only your currently unlocked challenge earns progress in Quick Matches.",
-
-    "BBQ MAP UPDATE: Trap placements are now randomized, making each match less predictable.",
-
-    "KITCHEN MAP UPDATE: Countertop layouts are now randomized, creating different routes and cover each match.",
-
-    "NEW Champion Auras! Collect five aura styles from the Aura Cache. Epic auras surround your champion with subtle energy, while Legendary auras feature stronger full-body effects and a glowing halo.",
-
-    "NEW Inventory! View your collection, inspect owned skins and auras in 3D, and equip your cosmetics—all in one place.",
-
-    "Quick Match now prioritizes the fullest reachable lobby with open spaces.",
-
-    "Updated map-voting screen with arena previews and live vote counts.",
-
-    "ROUND START: Main champion abilities unlock 3 seconds after BRAWL! Basic attacks and extra actions such as Jackpot’s Coin Toss are not delayed.",
-
-    "Eliminations now restore 25% of your maximum HP instead of 15%.",
-
-    "NEW NAMETAG COSMETICS: 12 additions—two Epics and one Legendary each for Nametag Colors, Borders, Designs, and Fonts. Rarity drop rates are unchanged.",
-
-    "Improved crate openings with reel sounds, enhanced reward reveals, and clearer new-item and duplicate labels. Skip the animation whenever you want.",
-
-    "New crate rewards go straight to your Inventory without replacing your equipped cosmetics.",
-
-    "Updated crate prices: Weapon Caches cost 500 Shinies, Champion Caches cost 600, and Aura Caches cost 400.",
-
-    "Improved champion skins for Mango, Chef Sizzle, Quackbot, and Sir Dentley. Adjusted Jackpot's suit to keep his face clear.",
-
-    "Rebalanced crate rarity odds, scaled to the rarities available in each crate.",
-
-    "More nametag fonts: eight collectible styles to customize your name.",
-
-    "Choose Easy, Normal, or Hard AI difficulty.",
-
-    "Separate Master, SFX, and Music toggles let you choose which sounds play."
-  ],
-
-  champions: [
-    {type:"rework",text:"Round upgrades: +10% base maximum HP; +8% basic weapon damage only; +6% movement speed; 30% maximum-HP elimination healing instead of 25%; main cooldowns recover 10% faster without changing the starting lockout."},
-    {type:"rework",text:"Patch upgrades: Advanced Medkit restores 42 HP over 2 seconds and remains interruptible. Fragmentation raises maximum grenade damage from 25 to 28, including potential self-damage."},
-    {type:"rework",text:"Patch grenade: immediate F press starts cooking and trajectory preview. Release throws; focus loss or death drops the same live grenade. The 3-second fuse never resets."},
-    {
-      type: "nerf",
-      text: "Captain Oink \u2014 Cannonball direct damage reduced from 27 to 25 and cooldown increased from 9.5s to 10s. Chain Hook cooldown increased from 11.5s to 12s."
-    },
-
-    {
-      type: "buff",
-      text: `Bruno — Sledgehammer sweeps a ${COMBAT_SETTINGS.brunoAttackDegrees}° arc in front of him, with a matching attack indicator. Can reflect eligible projectiles, including Jackpot's bullets unless fired during ALL IN.`
-    },
-
-    {
-      type: "buff",
-      text: `Sir Dentley — Armored longsword attacks cover a ${COMBAT_SETTINGS.dentleyAttackDegrees}° arc in front of him. Shield Guard protects a ${COMBAT_SETTINGS.dentleyShieldDegrees}° frontal arc. Counter Lunge reaches up to 110 units.`
-    },
-
-    {
-      type: "buff",
-      text: `Squire — Dagger attacks cover a ${COMBAT_SETTINGS.squireAttackDegrees}° arc. Recall Armor becomes available after 5 seconds. Dagger Feint dashes forward up to 70 units.`
-    },
-
-    {
-      type: "buff",
-      text: "Quackbot \u2014 Plasma Blaster has a slightly tighter firing spread for more consistent aim. Normal shots still deal 7 damage, and fire rate is unchanged. Blink travels up to 15 short steps."
-    },
-
-    {
-      type: "nerf",
-      text: "Mycelis \u2014 Root Entangle duration reduced from 1.8s to 1.7s."
-    },
-
-    {
-      type: "rework",
-      text: "Mango the Monkey \u2014 Wields the Banana Boomerang, dealing 15 damage per hit. It passes through supply crates and can hit a crate once outbound and once returning. Banana projectiles cannot be reflected."
-    }
-  ]
+ version:"BRAWLBOUND v1.3.3 · AURA & BALANCE UPDATE",
+ game:[
+  "PATCH: Permanently unlock the Ranged Survivalist for 500 Shinies. Redesigned champion, Field Blaster and survivalist insignia.",
+  "PATCH SKINS: Buy Beacon Field Blaster for 400 Shinies or Nightwatch Patch for 600 Shinies directly in the Shinies Shop. Both remain available in their corresponding cosmetic caches.",
+  "MENU: Restored the transparent live-battle background and the bottom-right Updates & Balance panel.",
+  "ROUND UPGRADES: Five tuned options per champion, three offers per round. Descriptions state exact effects and exclusions. All bonuses reset next round."
+ ],
+ champions:[]
 };
 
 // =================== END EDIT SECTION ===================
@@ -8859,6 +8835,14 @@ function bbConfirm(message){return new Promise(resolve=>{
 .patch-emblem{width:43px;height:43px;display:block;filter:drop-shadow(0 3px 4px #0006)}.cd-emoji .patch-emblem{width:54px;height:54px}.patch-unlock-price{font-size:10px;font-weight:800;color:#e8b87c;letter-spacing:.4px}.hero-card[data-i="8"]{--rc:#9aca88}.hero-card[data-i="8"] .hc-new{background:#b8d6a3;color:#16251c;border-color:#cce5b8;box-shadow:none}
 #grenade-cook-status{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);width:290px;padding:13px 16px;border:1px solid #bfe4a866;border-radius:6px;background:#132319e8;text-align:center;box-shadow:0 6px 24px #0004}#grenade-cook-status[hidden]{display:none}#grenade-cook-status>span{display:block;color:#c9e8b5;font:800 10px system-ui;letter-spacing:1px}#grenade-cook-status strong{display:block;color:#f2f6df;font:800 30px system-ui;font-variant-numeric:tabular-nums;margin:4px}#grenade-cook-status>div{height:5px;background:#ffffff16;border-radius:2px;overflow:hidden}#grenade-cook-status i{display:block;height:100%;background:#c5e99d}#grenade-cook-status small{display:block;font:700 8px system-ui;letter-spacing:.7px;color:#adbea7;margin-top:8px}#grenade-cook-status.urgent{border-color:#ff835f;background:#421d16ed;animation:patch-fuse-alert .22s alternate infinite}#grenade-cook-status.urgent i{background:#ff9163}#grenade-cook-status.urgent>span,#grenade-cook-status.urgent small{color:#ffd0a3}@keyframes patch-fuse-alert{to{box-shadow:0 0 22px #ff6d3b66}}
 @media(max-width:600px){#menu-updates-panel.menu-updates{right:10px!important;bottom:10px!important;width:min(310px,calc(100vw - 20px))!important;max-height:55vh;padding:11px 13px}#grenade-cook-status{top:57%;width:255px}.hero-card{min-height:175px}}
+</style>
+
+
+<style id="aura-and-shop-refresh">
+.patch-direct-shop{margin:0 0 22px;padding:18px;border:1px solid #a4c3a63d;border-radius:10px;background:linear-gradient(125deg,#263528aa,#111a17dd)}.patch-shop-header{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:15px}.patch-shop-header span{font:800 9px system-ui;letter-spacing:2px;color:#b8cba5}.patch-shop-header h3{font-size:21px;margin-top:5px;color:#f1ecda}.patch-shop-header small{font-size:10px;color:#9eb1a0;max-width:170px;line-height:1.6}.patch-direct-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.patch-direct-item{background:#0a120e7a;border-color:#ccdfb530;gap:11px;padding:15px}.patch-direct-item>small{font-size:9px;color:#a5b69b;letter-spacing:1px}.patch-direct-item .shop-item-price{font-size:11px;color:#e5c892}.patch-direct-item button{min-height:38px;margin-top:auto}.patch-direct-item button:disabled{opacity:.5}
+.bb-aura-preview{height:115px;background:radial-gradient(ellipse at 50% 70%,#29332b66,#080d0a 74%)}.bb-aura-preview .bb-aura-ring{border-width:1px;box-shadow:0 0 8px var(--aura);opacity:.55}.bb-aura-preview>small{position:absolute;bottom:3px;left:8px;font:800 7px system-ui;letter-spacing:1.2px;min-height:0;color:#b2c3b5}.aura-uncommon .bb-aura-ring{border-width:2px;opacity:.75;box-shadow:0 0 13px var(--aura),inset 0 0 8px var(--aura)}.bb-aura-ring-2{width:88px!important;height:36px!important;bottom:9px!important;transform:rotate(-12deg);opacity:.35!important;animation-delay:-1s!important}.aura-rare .bb-aura-ring,.aura-epic .bb-aura-ring,.aura-legendary .bb-aura-ring{border-width:2px;opacity:.9;box-shadow:0 0 20px var(--aura),inset 0 0 12px var(--aura)}.bb-aura-orbit{position:absolute;width:76px;height:85px;border:1px solid var(--aura);border-left-color:transparent;border-radius:50%;transform:rotate(35deg);opacity:.65;box-shadow:0 0 12px color-mix(in srgb,var(--aura),transparent 50%);animation:aura-preview-orbit 5s ease-in-out infinite alternate}.bb-aura-diamonds{position:absolute;top:50%;width:112px;display:flex;justify-content:center;font:900 15px system-ui;color:var(--aura);letter-spacing:5px;text-shadow:0 0 9px var(--aura);transform:rotate(-12deg)}.bb-aura-orbit-2{transform:rotate(-38deg);width:90px;height:92px;animation-delay:-2.5s}.bb-aura-halo{position:absolute;top:11px;width:36px;height:11px;border:2px solid var(--aura);border-radius:50%;box-shadow:0 0 12px var(--aura)}.aura-epic:before{opacity:.38!important;box-shadow:0 0 21px var(--aura),inset 0 0 15px var(--aura)!important}.aura-legendary{background:radial-gradient(ellipse at center,#fff2be16,#0c0e09 76%)}.aura-legendary .bb-aura-ring{box-shadow:0 0 28px var(--aura),inset 0 0 18px var(--aura)}.aura-legendary .bb-aura-orbit{border-width:2px;opacity:.85}.bb-aura-crown{position:absolute;top:4px;color:#fff6ca;font:900 14px system-ui;letter-spacing:4px;text-shadow:0 0 10px var(--aura)}.aura-legendary .bb-aura-halo{top:18px;width:52px;height:14px}
+@keyframes aura-preview-orbit{to{transform:rotate(-25deg) scale(.95)}}@media(max-width:550px){.patch-direct-grid{grid-template-columns:1fr}.patch-shop-header{align-items:flex-start;flex-direction:column}.patch-shop-header small{max-width:none}}
+@media(prefers-reduced-motion:reduce){.bb-aura-orbit{animation:none!important}}
 </style>
 
 </body>
