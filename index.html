@@ -1184,7 +1184,7 @@ const ACCOUNT_STORAGE_KEY = "bb_account_single_v2";
 
 const COSMETIC_HERO_COUNT = HEROES.length;
 
-const MENU_ANNOUNCEMENT = "New Champion, Champion Challenges, Map Updates, and Champion Auras";
+const MENU_ANNOUNCEMENT = "NEW CHAMPION, ROUND UPGRADES, and UI CHANGES!";
 const NAMEPLATE_CATEGORIES = [
   { key: "nameColors", label: "Nametag Colors", cratePrice: 250, crateName: "Prismatic Color Cache", crateIcon: "\ud83c\udf08", items: [
     { id: "ember-soul", name: "Ember Soul", rarity: "Common", color: { from: "#fff0a6", to: "#ff552e" } },
@@ -1256,8 +1256,8 @@ SKIN_CATEGORIES.find(c=>c.key==="championSkins").items.push({id:"jackpot-high-ro
 
 // v1.3.1: Inventory, sequential champion challenges and full-body prestige auras.
 HEROES[8].isNew=true;HEROES[8].rarity='Rare';
-SKIN_CATEGORIES.find(c=>c.key==='weaponSkins').items.push({id:'patch-beacon',hero:8,name:'Beacon Field Blaster',rarity:'Rare',directPrice:400,base:'#e2dbc1',accent:'#7ce4bf',glow:'#228e74'});
-SKIN_CATEGORIES.find(c=>c.key==='championSkins').items.push({id:'patch-nightwatch',hero:8,name:'Nightwatch Patch',rarity:'Rare',directPrice:600,base:'#26303a',accent:'#edb974',glow:'#ba7234'});
+SKIN_CATEGORIES.find(c=>c.key==='weaponSkins').items.push({id:'patch-beacon',hero:8,name:'Beacon Field Blaster',rarity:'Rare',directPrice:500,base:'#e2dbc1',accent:'#7ce4bf',glow:'#228e74'});
+SKIN_CATEGORIES.find(c=>c.key==='championSkins').items.push({id:'patch-nightwatch',hero:8,name:'Nightwatch Patch',rarity:'Rare',directPrice:700,base:'#26303a',accent:'#edb974',glow:'#ba7234'});
 
 const MASTERY_NAMES=[['Titanfall','Arena Colossus'],['Royal Broadside','Dread Admiral'],['Solar Crescent','Sun Temple Mango'],['Starlight Supper','Celestial Chef'],['Ion Needle','Quantum Quackbot'],['Eclipse Scepter','Eclipse Mycelis'],['Kingsguard Edge','Sovereign Dentley'],['Royal Flush','Casino Sovereign'],['Trailblazer','Field Commander']];
 for(let hero=0;hero<HEROES.length;hero++){
