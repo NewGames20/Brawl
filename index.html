@@ -837,14 +837,26 @@ const BALANCE_PATCH = {
  }
 };
 const PATCH_UPDATES = {
-  "version": "BRAWLBOUND · SURVIVALIST UPDATE",
+  "version": "BRAWLBOUND · CHAMPION BALANCE UPDATE",
   "announcement": "SURVIVALIST UPDATE: Patch · Vertical aiming · Round upgrades",
   "notes": [
     "PATCH: Permanently unlock the Ranged Survivalist for 500 Shinies!!",
     "PATCH SKINS: Buy Beacon Field Blaster for 500 Shinies or Nightwatch Patch for 700 Shinies directly in the Shinies Shop.",
     "MENU: New UI,options, and more!",
-    "ROUND UPGRADES: Five options per champion; choose one of three for this round."
-
+    "PATCH FIX: Grenade trajectory preview uses matching flight simulation and current aiming direction.",
+    "PATCH FIX: Grenade cooldown correctly displays the opening 3-second ability lockout separately from its normal cooldown and cooking fuse.",
+    "PATCH FIX: Spectating Patch shows the Grenade option and its cooldown.",
+    "Patch — Stim: movement-speed bonus increased from 30% to 35%.",
+    "Jackpot — Dice 2: slowness reduced from 50% to 40% for 2 seconds (already implemented).",
+    "Jackpot — Lucky Revolver: normal and loaded Tails shots deal 7 damage instead of 6.",
+    "Jackpot — All In: duration increased from 6 to 7 seconds. Eliminations reset the timer to the normal 7-second duration.",
+    "Sir Dentley — Movement speed increased from 125 to 130 (already implemented).",
+    "Bruno — Sledgehammer: damage reduced from 30 to 25; attack interval reduced from 1.25 to 1.2 seconds.",
+    "Bruno — Reflection rework: cannot reflect Captain Oink’s Cannonball; can reflect Patch’s Field Blaster. These reflection rules are already implemented.",
+    "Chef Sizzle — Culinary Sniper Rifle: fires 0.1 seconds slower; attack interval increased from 1.1 to 1.2 seconds.",
+    "Chef Sizzle — Backdraft: cooldown increased from 8.5 to 9 seconds.",
+    "Chef Sizzle — Marinara: description now states its damage rate of 13 damage per second. This is a description clarification, not a damage change.",
+    "Mycelis — Spore Pod: slow duration reduced from 5 to 3 seconds (already implemented). Poison remains 20 total damage over 5 seconds; the slow and poison durations are separate."
   ]
 };
 // HEROES: hp=max health, sp=movement speed, cd=attack cooldown, a1cd/a2cd=ability cooldown.
@@ -854,7 +866,7 @@ const HEROES = [
  {
    n:"Bruno", e:"\ud83d\udc3b", w:"\ud83d\udd28", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
-   hp: 250, sp: 120, col: 0x5e381b, cd: 1.25,
+   hp: 250, sp: 120, col: 0x5e381b, cd: 1.2,
    a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 15 damage, heavy knockback, and a 1.1-second stun.",
    a2n:"Charge", a2cd: 14.0,
    ad:"A 270-degree, 80-unit hammer sweep deals 25 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink\u2019s scrap bullets, Sizzle\u2019s meatballs, Quackbot\u2019s and Patch\u2019s bullets, and Jackpot\u2019s bullets unless fired during ALL IN. Captain Oink\u2019s Cannonball, boomerangs, bananas, grenades, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
@@ -881,9 +893,9 @@ const HEROES = [
  {
    n:"Chef Sizzle", e:"\ud83e\uddd1\u200d\ud83c\udf73", w:"\ud83c\udf5d", wn:"Culinary Sniper Rifle",
    role: "Sniper", roleCol: "#d44722",
-   hp: 130, sp: 155, col: 0xededed, cd: 1.1,
-   a1n:"Marinara", a1cd: 7.5, a1d:"Place a 60-unit sauce pool 80 units ahead for 3 seconds. Enemies standing in it are slowed and take continuous burn damage.",
-   a2n:"Backdraft", a2cd: 8.5,
+   hp: 130, sp: 155, col: 0xededed, cd: 1.2,
+   a1n:"Marinara", a1cd: 7.5, a1d:"Place a 60-unit sauce pool 80 units ahead for 3 seconds. Enemies standing in it are slowed and take 13 damage per second.",
+   a2n:"Backdraft", a2cd: 9,
    ad:"Fire a long-range meatball projectile for 35 damage and knockback. Its travel time rewards aiming where an opponent is moving.", a2d:"Burst backward to make space and leave five patches of flame along the retreat path. Each patch burns and slows enemies who cross it for a short time.",
    melee: false, d:"A fragile ranged specialist who controls lanes with heavy meatball shots and lingering fire. Marinara makes a section of the arena costly to hold, while Backdraft creates distance and leaves a dangerous trail behind. Sizzle performs best when she can see a route ahead and keep opponents outside close range."
  },
@@ -936,22 +948,22 @@ const HEROES = [
 
 HEROES.push({n:"Jackpot",e:"\ud83c\udfb0",w:"\ud83e\ude99",wn:"Lucky Revolver",role:"Gambler",roleCol:"#f2c14e",hp:160,sp:150,col:0x8c3d39,cd:0.6,
  a1n:"Roll the Dice",a1cd:9,a2n:"All In",a2cd:17,a3n:"Coin Toss",a3cd:1,melee:false,atkRange:500,
- ad:"Fire for 6 damage every 0.6 seconds. A loaded Heads coin makes the next shot deal 20 damage; Tails deals 6.",
+ ad:"Fire for 7 damage every 0.6 seconds. A loaded Heads coin makes the next shot deal 20 damage; Tails deals 7.",
  a1d:"Roll a visible die: 1 takes 15 damage; 2 slows you by 40% for 2 seconds; 3 heals 25; 4 grants 35% speed for 3 seconds; 5 absorbs 40 damage; 6 heals 40, boosts speed, and guarantees Heads on your next 3 shots.",
- a2d:"Wager 25% of your current HP. For 6 seconds, move 25% faster and fire guaranteed 20-damage Heads. Every kill heals twice the original wager and restarts the 6-second window without another wager. Payouts can exceed max HP until damage removes the excess; normal healing cannot refill excess HP.",
- a3d:"Flip and load one coin. It takes 0.5 seconds to land: Heads deals 20 damage on your next shot, Tails deals 6. A Tail guarantees Heads on your next flip. Fire to clear the chamber before flipping again.",
+ a2d:"Wager 25% of your current HP. For 7 seconds, move 25% faster and fire guaranteed 20-damage Heads. Every kill heals twice the original wager and restarts the 7-second window without another wager. Payouts can exceed max HP until damage removes the excess; normal healing cannot refill excess HP.",
+ a3d:"Flip and load one coin. It takes 0.5 seconds to land: Heads deals 20 damage on your next shot, Tails deals 7. A Tail guarantees Heads on your next flip. Fire to clear the chamber before flipping again.",
  d:"A high-variance gunslinger who can flip for a stronger shot, gamble on a die, or wager health for a short all-in burst."
 });
 
 
-HEROES.push({n:"Patch",e:"⛨",w:"⌖",wn:"FIELD BLASTER",role:"Ranged Survivalist",roleCol:"#7cdbb0",hp:170,sp:160,col:0x527560,cd:.6,melee:false,atkRange:480,a1n:"Medkit",a1cd:13,a2n:"Stim",a2cd:11,a3n:"Cooked Grenade",a3cd:12,ad:"Accurate projectile: 13 damage every 0.6 seconds.",a1d:"Restore 35 HP over 3 seconds. Enemy damage interrupts healing. Cannot exceed maximum HP. Unavailable while cooking.",a2d:"Gain 30% movement speed for 3 seconds. Does not remove stuns or pass through obstacles.",a3d:"Hold F (or .) to cook; release to throw. The 3-second fuse never resets. Up to 25 damage with distance falloff, modest knockback, terrain bounces and cover blocking. Can kill Patch. Death drops the live grenade.",d:"A reliable survivalist. Find cover to heal, use Stim to reposition, and time a live grenade carefully. No passive or special resource."});
+HEROES.push({n:"Patch",e:"⛨",w:"⌖",wn:"FIELD BLASTER",role:"Ranged Survivalist",roleCol:"#7cdbb0",hp:170,sp:160,col:0x527560,cd:.6,melee:false,atkRange:480,a1n:"Medkit",a1cd:13,a2n:"Stim",a2cd:11,a3n:"Cooked Grenade",a3cd:12,ad:"Accurate projectile: 13 damage every 0.6 seconds.",a1d:"Restore 35 HP over 3 seconds. Enemy damage interrupts healing. Cannot exceed maximum HP. Unavailable while cooking.",a2d:"Gain 35% movement speed for 3 seconds. Does not remove stuns or pass through obstacles.",a3d:"Hold F (or .) to cook; release to throw. The 3-second fuse never resets. Up to 25 damage with distance falloff, modest knockback, terrain bounces and cover blocking. Can kill Patch. Death drops the live grenade.",d:"A reliable survivalist. Find cover to heal, use Stim to reposition, and time a live grenade carefully. No passive or special resource."});
 
 // Champion text is generated from the same settings as the real hitboxes.
 HEROES[0].ad=HEROES[0].ad.replace(/A \d+-degree(?: forward)?,/,`A ${COMBAT_SETTINGS.brunoAttackDegrees}-degree forward,`);
 HEROES[6].a1d=HEROES[6].a1d.replace(/\d+\u00b0 front arc/,`${COMBAT_SETTINGS.dentleyShieldDegrees}\u00b0 front arc`);
 HEROES[6].ad=HEROES[6].ad.replace('Longsword: ',`Longsword: Attacks cover a ${COMBAT_SETTINGS.dentleyAttackDegrees}-degree arc in front of Dentley. `).replace('Dagger: ',`Dagger: Attacks cover a ${COMBAT_SETTINGS.squireAttackDegrees}-degree arc. `);
 
-const JACKPOT={hero:7,baseDamage:6,headsDamage:20,allInDamage:20,flipDuration:0.5,allInDuration:6,wagerFraction:0.25,allInSpeedMultiplier:1.25};
+const JACKPOT={hero:7,baseDamage:7,headsDamage:20,allInDamage:20,flipDuration:0.5,allInDuration:7,wagerFraction:0.25,allInSpeedMultiplier:1.25};
 
 const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
 
@@ -3977,6 +3989,7 @@ function endChain(e) {
   if(e.chain) { disposeHierarchy(e.chain.mesh); e.chain = null; }
 }
 function disposeEntityExtras(e) {
+ if(e.upEvents){for(const q of e.upEvents)disposeHierarchy(q.mesh);e.upEvents=[];}if(e.upDecoy){disposeHierarchy(e.upDecoy.mesh);e.upDecoy=null;}
   endChain(e);
   if(e.jackpotAllInMesh) { disposeHierarchy(e.jackpotAllInMesh); e.jackpotAllInMesh = null; }
   if(e.jackpotDiceMesh) { disposeHierarchy(e.jackpotDiceMesh); e.jackpotDiceMesh = null; }
@@ -3997,6 +4010,9 @@ function removePeerEntity(peerId) {
 }
 
 function applyAbilitySnapshotState(entity, item) {
+ if(Number.isInteger(item.ru))entity.roundUpgrade=item.ru;
+ entity.upBoostAmount=Number(item.ub)||0;entity.upBoostUntil=matchTime+(Number(item.ut)||0);entity.upSpeed=item.ut>0?1+entity.upBoostAmount:1;
+ if(Array.isArray(item.us))entity.upShields=item.us.map(q=>({amount:q.amount,until:matchTime+q.remaining}));
   entity.sporeSlowT=Math.max(0,Number(item.psl)||0);
   entity.jackpotFlipT=Math.max(0,Number(item.jft)||0);
   entity.jackpotCoinRevealT=Math.max(0,Number(item.jrt)||0);
@@ -4212,11 +4228,11 @@ function createJackpotDice(value) {
 }
 
 function jackpotDieResultText(value) {
-  return ["","Lose 15 HP","50% slower for 2 seconds","Heal 25 HP","35% faster for 3 seconds","Gain a 40-damage shield","Heal 40 HP \u00b7 +35% speed for 3s \u00b7 next 3 shots Heads"][value]||"";
+  return ["","Lose 15 HP","40% slower for 2 seconds","Heal 25 HP","35% faster for 3 seconds","Gain a 40-damage shield","Heal 40 HP \u00b7 +35% speed for 3s \u00b7 next 3 shots Heads"][value]||"";
 }
 
 function applyJackpotDieResult(entity,value) {
-  if(value===1)hurt(entity,15,0,0,null);
+  if(value===1)hurt(entity,hasUp(entity,7,1)?8:15,0,0,null);
   else if(value===2)entity.jackpotSlowT=2;
   else if(value===3){entity.hp=Math.min(Math.max(entity.mhp,entity.hp),entity.hp+25);spawnDamageNumber(entity.x,entity.z,"+25 HP","#45d988");}
   else if(value===4)entity.speedBoost=Math.max(entity.speedBoost||0,3);
@@ -4428,7 +4444,10 @@ function hurt(t, rawDmg, a, kb, attacker = null, damageType = "impact") {
     t.chan = 0; // any damage interrupts re-armouring
   }
   if(rawDmg>0&&attacker&&attacker!==t)t.medkitT=0;
+  if(hasUp(t,0,4))kb*=.75;
+  if(t.upShields&&rawDmg>0){for(const q of t.upShields){if(q.until<=matchTime)continue;const n=Math.min(q.amount,rawDmg);q.amount-=n;rawDmg-=n;}t.upShields=t.upShields.filter(q=>q.until>matchTime&&q.amount>0);}
   t.hp -= rawDmg;
+  if(rawDmg>0&&attacker&&areEnemies(attacker,t)&&t.hp>0&&t.hp<t.mhp*.3&&hasUp(t,4,3)&&upProc(t,'thrusters',15))upBoost(t,.15,1.5);
   if(damageType==="projectile"&&attacker&&attacker!==t&&attacker===pl&&rawDmg>0)showProjectileHit(t.username||(HEROES[t.ci]&&HEROES[t.ci].n)||"Player",rawDmg);
   if(attacker && attacker !== t && rawDmg > 0) attacker.dmg += rawDmg;
   t.fl = 0.12;
@@ -4543,7 +4562,7 @@ function spawnMeleeSector(e,radius,halfArc,color){
  mesh.add(line);mesh.position.set(e.x,0,e.z);scene.add(mesh);F.push({mesh,life:.25,maxLife:.25});
 }
 function melee(e, rng, d, kb, noReflect) {
-  const halfArc=meleeHalfArc(e);
+  let hammerHit=false;const halfArc=meleeHalfArc(e);
   e.swing = 0.25;
   spawnMeleeSector(e,rng,halfArc,0xffb042);
   if(isMultiplayer && !isLobbyLeader) return;
@@ -4556,7 +4575,7 @@ function melee(e, rng, d, kb, noReflect) {
         let da = Math.atan2(dz, dx) - e.a;
         da = Math.atan2(Math.sin(da), Math.cos(da));
         if(Math.abs(da) <= halfArc && hasLOS(e.x, e.z, targetPos.x, targetPos.z) && areEnemies(e, t)) {
-          hurt(t, d, Math.atan2(dz, dx), kb, e);
+          hammerHit=true;hurt(t, d, Math.atan2(dz, dx), kb, e);
           if(!noReflect) t.slow = 0.7;
         }
       }
@@ -4575,6 +4594,7 @@ function melee(e, rng, d, kb, noReflect) {
       if(h.owner !== e && Math.hypot(hx, hz) < rng + 14 && Math.abs(ha) <= halfArc) { h.hp -= d; spawnSparks(h.x, h.z, 0xaab2c0, 3); }
     }
   }
+  if(!hammerHit&&hasUp(e,0,0)){spawnMeleeSector(e,rng+25,.3,0x9ce0ff);for(const t of E){const dx=t.x-e.x,dz=t.z-e.z,angle=Math.atan2(Math.sin(Math.atan2(dz,dx)-e.a),Math.cos(Math.atan2(dz,dx)-e.a));if(!t.dead&&areEnemies(e,t)&&Math.hypot(dx,dz)>rng+t.r&&Math.hypot(dx,dz)<rng+25+t.r&&Math.abs(angle)<.3&&hasLOS(e.x,e.z,t.x,t.z))hurt(t,6,Math.atan2(dz,dx),0,e);}}
   if(!noReflect) reflect(e, rng);
 }
 
@@ -4587,6 +4607,7 @@ function reflect(e,r){
   if(Math.abs(da)>meleeHalfArc(e))continue;
   spawn3DRing(p.x,p.z,20,0xffffff);
   const speed=Math.hypot(p.vx,p.vz)*1.1;
+  if(hasUp(e,0,3)&&areEnemies(e,p.o)&&upProc(e,'reflect',5))e.hp=Math.min(e.mhp,e.hp+6);
   p.vx=Math.cos(e.a)*speed;p.vz=Math.sin(e.a)*speed;p.o=e;p.hit.clear();p.life=Math.min(p.life+0.3,1.2);orientProjectile(p);
  }
 }
@@ -4600,6 +4621,9 @@ function orientProjectile(p){
 }
 
 function shot(e, a, o) {
+ const normal=!!e.executingBasicAttack;o={...o,normal};
+ if(normal&&hasUp(e,8,3))o={...o,s:o.s*1.15,life:o.life/1.15};
+ if(normal&&hasUp(e,3,1))o={...o,d:32,pierce:1};
  if(e.executingBasicAttack&&e.upWeaponDamage)o={...o,d:o.d*e.upWeaponDamage};
 
   e.fire = 0.22;
@@ -4650,7 +4674,7 @@ function releaseDentleyGuard(e) {
   if(!canReleaseDentleyGuard(e)) return false;
   const earnsBoost = earnsDentleyReleaseBoost(e);
   e.guard = 0;
-  e.guardBoost = earnsBoost ? BALANCE_PATCH.dentley.releaseBoostDuration : 0;
+  e.guardBoost = earnsBoost ? BALANCE_PATCH.dentley.releaseBoostDuration : 0;if(earnsBoost&&hasUp(e,6,4))upShield(e,8,1.5);
   return true; // Guard's original cooldown continues, even on late release.
 }
 function canRecallDentleyHusk(e) {
@@ -4688,7 +4712,7 @@ function executeAbility3(e) {
 
   if(e.ci!==JACKPOT.hero||e.c4>0||jackpotCoinBlocksAttack(e)||e.jackpotLoaded||
      e.jackpotAutoHeads>0||e.jackpotAllInT>0)return;
-  e.c4=HEROES[e.ci].a3cd;e.jackpotFlipPending=true;e.jackpotFlipT=JACKPOT.flipDuration;
+  e.c4=HEROES[e.ci].a3cd;e.jackpotFlipPending=true;e.jackpotFlipT=hasUp(e,7,0)?.4:JACKPOT.flipDuration;
   e.jackpotPendingHeads=e.jackpotPityHead||Math.random()<0.5;
   e.jackpotCoinT=2.8;e.jackpotEffectX=e.x;e.jackpotEffectZ=e.z;e.jackpotEffectA=e.a;
   Snd.abilityCue(e.ci,3);
@@ -4705,10 +4729,11 @@ function executeBasicAttack(e) {
   if(jackpotCoinBlocksAttack(e)) return;
   if(dentleyGuardActive(e)) return;
   const c = HEROES[e.ci];
-  e.c1 = c.cd;
+  e.c1 = c.cd;if(hasUp(e,1,3)&&e.upReloadUntil>=matchTime){e.c1*=.8;e.upReloadUntil=-1;}if(hasUp(e,2,1))e.c1=.9;
   Snd.play(c.melee ? "melee" : "shoot");
   if(e.ci===JACKPOT.hero) {
     const loaded=e.jackpotLoaded,hasAutoHead=e.jackpotAutoHeads>0;
+    if(loaded&&e.jackpotAllInT<=0&&!hasAutoHead){if(loaded==='heads'&&hasUp(e,7,2)&&upProc(e,'heads',3))upBoost(e,.10,1);if(loaded==='tails'&&hasUp(e,7,4)&&upProc(e,'tails',4))upShield(e,6,1.5);}
     e.jackpotLoaded=null;
     e.jackpotCoinT=0;
     if(hasAutoHead)e.jackpotAutoHeads--;
@@ -4734,6 +4759,7 @@ function executeBasicAttack(e) {
   } else if(e.ci === 4) {
     shot(e, e.a + (Math.random()-0.5)*ATTACK_TUNING.quackbot.spread, {t:"s", s:ATTACK_TUNING.quackbot.speed, d:ATTACK_TUNING.quackbot.damage, kb:ATTACK_TUNING.quackbot.knockback, life:ATTACK_TUNING.quackbot.life});
   } else if(e.ci === 5) {
+    if(hasUp(e,5,1))e.c3=10;
     shot(e, e.a, {t:"spore", s:ATTACK_TUNING.mycelis.speed, d:ATTACK_TUNING.mycelis.damage, kb:ATTACK_TUNING.mycelis.knockback, life:ATTACK_TUNING.mycelis.life});
   }
 }
@@ -4751,7 +4777,7 @@ function attack(e) {
 
 function executeAbility1(e) {
  if(e.liveGrenade)return;
- if(e.ci===8){if(e.liveGrenade||e.c2>0||startupAbilityCooldownRemaining()>0)return;e.c2=13;e.medkitT=3;return;}
+ if(e.ci===8){if(e.liveGrenade||e.c2>0||startupAbilityCooldownRemaining()>0)return;e.c2=hasUp(e,8,0)?14:13;e.medkitT=hasUp(e,8,0)?2:3;return;}
 
   if(startupAbilityCooldownRemaining()>0)return;
   if(dentleyGuardActive(e)) { releaseDentleyGuard(e); return; }
@@ -4766,13 +4792,13 @@ function executeAbility1(e) {
   if(e.ci === 0) {
     e.c2 = c.a1cd;
     shakeIfNearby(e.x, e.z, 7, 145);
-    spawn3DRing(e.x, e.z, 110, 0xffb042);
+    spawn3DRing(e.x, e.z, 110, 0xffb042);if(hasUp(e,0,2)){const x=e.x,z=e.z;upLater(e,.7,x,z,55,()=>upBurst(e,x,z,55,6));}
     if(!isMultiplayer || isLobbyLeader) {
       for(const t of E) {
         const targetPos = getCombatPosition(t, e);
         if(t !== e && !t.dead && Math.hypot(targetPos.x-e.x, targetPos.z-e.z) < 110 + t.r && areEnemies(e, t)) {
           if(hasLOS(e.x, e.z, targetPos.x, targetPos.z)) {
-            hurt(t, BALANCE_PATCH.bruno.slamDamage, Math.atan2(targetPos.z-e.z, targetPos.x-e.x), 280, e);
+            hurt(t, hasUp(e,0,2)?12:BALANCE_PATCH.bruno.slamDamage, Math.atan2(targetPos.z-e.z, targetPos.x-e.x), 280, e);
             t.stun = BALANCE_PATCH.bruno.slamStun;
           }
         }
@@ -4789,17 +4815,19 @@ function executeAbility1(e) {
       onDeath: (bx, bz) => {
         shakeIfNearby(bx, bz, 6, 190);
         spawn3DRing(bx, bz, 65, 0xffe853);
-        for(let i = 0; i < 6; i++) {
+        for(let i = 0; i < (hasUp(e,2,4)?4:6); i++) {
           const ang = (Math.PI * 2 / 6) * i + (Math.random() - 0.5) * 0.2;
           shot(e, ang, {
             t: "b", s: 330, d: BALANCE_PATCH.mango.bananaDamage, kb: 110, life: 99,
             x: bx, z: bz
           });
         }
+        if(hasUp(e,2,4))upLater(e,.7,bx,bz,30,()=>{for(let i=4;i<6;i++)shot(e,Math.PI*2/6*i,{t:'b',s:330,d:11,kb:110,life:99,x:bx,z:bz});});
       }
     });
   } else if(e.ci === 3) {
     e.c2 = c.a1cd;
+    if(hasUp(e,3,4))e.c2=8.5;
     const placeX = e.x + Math.cos(e.a) * 80;
     const placeZ = e.z + Math.sin(e.a) * 80;
     const geo = new THREE.CylinderGeometry(BALANCE_PATCH.sizzle.sauceRadius, BALANCE_PATCH.sizzle.sauceRadius, 1.5, 20);
@@ -4808,12 +4836,15 @@ function executeAbility1(e) {
     mesh.position.set(placeX, 1, placeZ);
     scene.add(mesh);
 
-    Zones.push({ kind: "marinara", x: placeX, z: placeZ, r: BALANCE_PATCH.sizzle.sauceRadius, life: BALANCE_PATCH.sizzle.sauceDuration, owner: e, mesh });
+    Zones.push({ kind: "marinara", x: placeX, z: placeZ, r: BALANCE_PATCH.sizzle.sauceRadius, life: hasUp(e,3,0)?4:BALANCE_PATCH.sizzle.sauceDuration, owner: e, mesh });
   } else if(e.ci === 4) {
     e.c2 = c.a1cd;
     spawn3DRing(e.x, e.z, 28, 0x36c0eb);
+    if(hasUp(e,4,0))e.c2=5.5;
+    if(hasUp(e,4,1)){if(e.upDecoy)disposeHierarchy(e.upDecoy.mesh);const mesh=createDetailedHeroModel(4,false,true);mesh.position.set(e.x,0,e.z);mesh.rotation.y=-e.a+Math.PI/2;mesh.traverse(n=>{if(n.isMesh){n.material=n.material.clone();n.material.transparent=true;n.material.opacity=.55;}});e.upDecoy={mesh,life:.8};}
     for(let i = 0; i < 15; i++) {
-      const nx = e.x + Math.cos(e.a)*11, nz = e.z + Math.sin(e.a)*11;
+      const step=11*(hasUp(e,4,0)?.85:1);
+      const nx = e.x + Math.cos(e.a)*step, nz = e.z + Math.sin(e.a)*step;
       if(blocked(nx, nz, e.r)) break;
       e.x = nx; e.z = nz;
     }
@@ -4855,8 +4886,8 @@ function executeAbility1(e) {
       x: px,
       z: pz,
       r: 26,
-      life: BALANCE_PATCH.mycelis.podWait,
-      maxLife: BALANCE_PATCH.mycelis.podWait,
+      life: hasUp(e,5,0)?4:BALANCE_PATCH.mycelis.podWait,
+      maxLife: hasUp(e,5,0)?4:BALANCE_PATCH.mycelis.podWait,
       owner: e,
       mesh: trapGrp
     };
@@ -4888,6 +4919,7 @@ function applyMycelisRootDot(target, attacker, angle) {
   target.kz=(target.kz||0)+Math.sin(angle)*20;
 }
 function tickMycelisEffects(e, dt) {
+ if(e.upWeakPoisons)for(let i=e.upWeakPoisons.length-1;i>=0;i--){const q=e.upWeakPoisons[i],step=Math.min(dt,q.remaining);q.remaining-=step;hurt(e,2*step,0,0,q.owner,'unblockable');if(q.remaining<=0)e.upWeakPoisons.splice(i,1);}
   const cfg = BALANCE_PATCH.mycelis;
   e.sporeSlowT=Math.max(0,(e.sporeSlowT||0)-Math.max(0,dt));
   if(e.sporePoison > 0) {
@@ -4909,7 +4941,7 @@ function tickMycelisEffects(e, dt) {
 }
 
 function executeAbility2(e) {
- if(e.ci===8){if(e.c3>0||startupAbilityCooldownRemaining()>0)return;e.c3=11;e.stimT=3;return;}
+ if(e.ci===8){if(e.c3>0||startupAbilityCooldownRemaining()>0)return;e.c3=hasUp(e,8,1)?12:11;e.stimT=hasUp(e,8,1)?3.5:3;return;}
 
   if(startupAbilityCooldownRemaining()>0)return;
   if(dentleyGuardActive(e)) return;
@@ -4920,27 +4952,28 @@ function executeAbility2(e) {
   if(e.ci===JACKPOT.hero) {
     const wager=e.hp*JACKPOT.wagerFraction;
     e.hp-=wager;
-    e.jackpotWager=wager;e.jackpotAllInT=JACKPOT.allInDuration;e.jackpotAllInPaid=false;
+    e.jackpotWager=wager;e.jackpotAllInT=JACKPOT.allInDuration+(hasUp(e,7,3)?.5:0);e.jackpotAllInPaid=false;
     spawnDamageNumber(e.x,e.z,"-"+Math.round(wager)+" WAGER","#ff8b79");
     spawn3DRing(e.x,e.z,34,0xf2c14e);
     return;
   }
-  if(e.ci === 6) { dentleyLunge(e); return; }
+  if(e.ci === 6) {if(hasUp(e,6,1))e.c3=9;dentleyLunge(e); return; }
   if(e.ci === 0) {
-    e.chargeT = 0.32; 
+    e.chargeT = hasUp(e,0,1)?.384:.32;if(hasUp(e,0,1))e.c3=15; 
     e.chargeVx = Math.cos(e.a) * 460;
     e.chargeVz = Math.sin(e.a) * 460;
     spawn3DRing(e.x, e.z, 32, 0x8c5835);
   } else if(e.ci === 1) {
+    if(hasUp(e,1,3))e.upReloadUntil=matchTime+3;if(hasUp(e,1,4))e.c3=11;
     shot(e, e.a, {
-      t:"cannonball", s:420, d:25, kb:440, life:0.9,
+      t:"cannonball", s:420, d:hasUp(e,1,1)?22:25, kb:440, life:0.9,
       onDeath: (bx, bz) => {
         shakeIfNearby(bx, bz, 8, 220);
-        spawn3DRing(bx, bz, 80, 0xff9933);
+        const radius=hasUp(e,1,1)?92:80;spawn3DRing(bx, bz, radius, 0xff9933);if(hasUp(e,1,4)&&Math.hypot(e.x-bx,e.z-bz)<radius&&!e.dead)upMove(e,Math.atan2(e.z-bz,e.x-bx),35*(1-Math.min(1,Math.hypot(e.x-bx,e.z-bz)/radius)));
         if(!isMultiplayer || isLobbyLeader) {
           for(const t of E) {
             const targetPos = getCombatPosition(t, e);
-            if(t !== e && !t.dead && Math.hypot(targetPos.x - bx, targetPos.z - bz) < 80 + t.r && areEnemies(e, t)) {
+            if(t !== e && !t.dead && Math.hypot(targetPos.x - bx, targetPos.z - bz) < radius + t.r && areEnemies(e, t)) {
               hurt(t, 15, Math.atan2(targetPos.z - bz, targetPos.x - bx), 380, e);
               t.stun = 0.5;
             }
@@ -4958,16 +4991,18 @@ function executeAbility2(e) {
     mesh.position.set(peelX, 2, peelZ);
     scene.add(mesh);
 
-    Zones.push({ kind: "peel", x: peelX, z: peelZ, r: 24, life: 5.0, owner: e, mesh });
+    for(let j=Zones.length-1;j>=0;j--)if(Zones[j].kind==='peel'&&Zones[j].owner===e){disposeHierarchy(Zones[j].mesh);Zones.splice(j,1);}
+    if(hasUp(e,2,0))e.c3=10;
+    Zones.push({ kind: "peel", x: peelX, z: peelZ, r: 24, life: hasUp(e,2,0)?4:5, owner: e, mesh });
   } else if(e.ci === 3) {
-    const backAngle = e.a + Math.PI;
-    e.kx += Math.cos(backAngle) * 650;
-    e.kz += Math.sin(backAngle) * 650;
+    const backAngle = e.a + Math.PI;if(hasUp(e,3,2))e.c3=9.5;
+    e.kx += Math.cos(backAngle) * 650*(hasUp(e,3,2)?1.15:1);
+    e.kz += Math.sin(backAngle) * 650*(hasUp(e,3,2)?1.15:1);
     shakeIfNearby(e.x, e.z, 6, 180);
 
     for(let i = 0; i <= 4; i++) {
-      const fx = e.x + Math.cos(backAngle) * (i * 16);
-      const fz = e.z + Math.sin(backAngle) * (i * 16);
+      const fx = e.x + Math.cos(backAngle) * (i * 16)*(hasUp(e,3,2)?1.15:1);
+      const fz = e.z + Math.sin(backAngle) * (i * 16)*(hasUp(e,3,2)?1.15:1);
       const geo = new THREE.CylinderGeometry(18, 18, 2, 12);
       const mat = new THREE.MeshBasicMaterial({ color: 0xff5500, transparent: true, opacity: 0.5 });
       const mesh = new THREE.Mesh(geo, mat);
@@ -4978,18 +5013,19 @@ function executeAbility2(e) {
   } else if(e.ci === 4) {
     // Barrage is simulated inside the game loop (scheduleShot) instead of setTimeout,
     // so pending shots can never leak out of a finished match.
-    for(let i = 0; i < 7; i++) {
-      scheduleShot(e, i * 0.055, {t:"s", s:540, d:7.5, kb:32, life:0.4});
+    for(let i = 0; i < (hasUp(e,4,2)?8:7); i++) {
+      scheduleShot(e, i * 0.055, {t:"s", s:540, d:hasUp(e,4,2)?7:7.5, kb:32, life:0.4});
     }
   } else if(e.ci === 5) {
+    if(hasUp(e,5,1))e.c3=10;
     shot(e, e.a, {
       t: "vine", s: 420, d: BALANCE_PATCH.mycelis.rootDirectDamage, kb: 20, life: 0.85,
       onDeath: (vx, vz) => {
-        spawn3DRing(vx, vz, BALANCE_PATCH.mycelis.rootRadius, 0x55bb33);
+        const radius=BALANCE_PATCH.mycelis.rootRadius*(hasUp(e,5,1)?1.15:1);spawn3DRing(vx, vz, radius, 0x55bb33);
         if(!isMultiplayer || isLobbyLeader) {
           for(const t of E) {
             const targetPos = getCombatPosition(t, e);
-            if(t !== e && !t.dead && Math.hypot(targetPos.x - vx, targetPos.z - vz) < BALANCE_PATCH.mycelis.rootRadius + t.r && areEnemies(e, t)) {
+            if(t !== e && !t.dead && Math.hypot(targetPos.x - vx, targetPos.z - vz) < radius + t.r && areEnemies(e, t)) {
               applyMycelisRootDot(t, e, Math.atan2(targetPos.z - vz, targetPos.x - vx));
               t.stun = Math.max(t.stun || 0, BALANCE_PATCH.mycelis.rootDuration);
               spawnDamageNumber(targetPos.x, targetPos.z, "ROOTED", "#55dd44");
@@ -5102,7 +5138,7 @@ function updateChain(e, dt) {
     if(e === pl || e.ai) {
       moveChampion(e,cs*CHAIN.pullSelfSpd*dt,sn*CHAIN.pullSelfSpd*dt);
     }
-    if(Math.hypot(c.tx - e.x, c.tz - e.z) <= e.r + 6 || c.t > 0.7) done = true;
+    if(Math.hypot(c.tx-e.x,c.tz-e.z)<=e.r+6){if(hasUp(e,1,0))upBoost(e,.15,1.5);done=true;}else if(c.t>.7)done=true;
   } else if(c.phase === "pullEnemy") {
     const t = c.target;
     if(!t || t.dead) {
@@ -5120,6 +5156,7 @@ function updateChain(e, dt) {
         }
       }
       if(arrived || c.t > 0.7) {
+        if(arrived&&auth&&hasUp(e,1,2))upShield(e,10,2);
         if(auth) t.stun = Math.max(t.stun, 0.9); // "a little bit" of stun once they land
         done = true;
       }
@@ -5381,7 +5418,7 @@ function syncHUD() {
 
   const cd3Bar=document.getElementById("cd3-bar");
   if(cd3Bar) {
-    cd3Bar.style.display=targetEnt.ci===JACKPOT.hero?"flex":"none";
+    cd3Bar.style.display=(targetEnt.ci===JACKPOT.hero||targetEnt.ci===8)?"flex":"none";
     if(targetEnt.ci===JACKPOT.hero) {
       cd3Bar.setAttribute("role","button");cd3Bar.setAttribute("tabindex","0");cd3Bar.setAttribute("aria-label","Flip and load a coin");
       if(!cd3Bar.dataset.bbBound) {
@@ -5859,7 +5896,14 @@ function startReceivedRound(data) {
 
 function handleIncomingData(conn, data) {
  if(data?.type==="PATCH_INPUT"){if(isLobbyLeader&&conn.peer!==data.id)return;const e=E.find(e=>e.netId===data.id);if(!e)return;e.verticalAim=!!data.vertical;if(Number.isFinite(data.pitch))e.pitch=Math.max(-1.42,Math.min(1.42,data.pitch));if(data.release){if(Number.isFinite(data.a))e.a=Math.atan2(Math.sin(data.a),Math.cos(data.a));releasePatchGrenade(e,!!data.drop);}if(isLobbyLeader)broadcastToPeers(data);return;}
- if(data?.type==="UPGRADE_PICK"){if(isLobbyLeader&&conn.peer!==data.id)return;const e=E.find(e=>e.netId===data.id);if(e&&draftActive&&upgradeOffer(e).includes(data.pick))applyRoundUpgrade(e,data.pick);if(isLobbyLeader)broadcastToPeers(data);return;}
+ if(data?.type==="UPGRADE_PICK"){
+  if(isLobbyLeader&&conn.peer!==data.id)return;
+  if(!isLobbyLeader&&conn.peer!==leaderId)return;
+  if(!draftActive||data.offerSeed!==arenaLayoutSeed||!Number.isInteger(data.pick))return;
+  const e=E.find(e=>e.netId===data.id);if(!e||!upgradeOffer(e).includes(data.pick))return;
+  if(e.roundUpgrade!=null&&e.roundUpgrade!==data.pick)return;
+  applyRoundUpgrade(e,data.pick);if(isLobbyLeader)broadcastToPeers(data);return;
+ }
 
   if(!data || !data.type) return;
 
@@ -6201,7 +6245,7 @@ setInterval(() => {
       kz: Math.round(e.kz),
       kl: e.killedBy,
       fm: e.form, mh: e.mhp, gd: e.guard > 0 ? e.guard : 0, rp: e.riposte, gb:e.guardBoost||0, dc3:e.c3, hr:!!e.huskRecallUsed,
-      c2: e.c2, c3: e.c3, c4:e.c4,
+      c2: e.c2, c3: e.c3, c4:e.c4, ru:e.roundUpgrade, ub:e.upBoostAmount||0, ut:Math.max(0,(e.upBoostUntil||0)-matchTime), us:(e.upShields||[]).filter(q=>q.until>matchTime).map(q=>({amount:q.amount,remaining:q.until-matchTime})),
       jft:e.jackpotFlipT||0,jrt:e.jackpotCoinRevealT||0,jfp:!!e.jackpotFlipPending,jhl:e.jackpotLoaded||null,jhb:!!e.jackpotPendingHeads,
       jph:!!e.jackpotPityHead,jct:e.jackpotCoinT||0,jah:e.jackpotAutoHeads||0,
       jat:e.jackpotAllInT||0,jw:e.jackpotWager||0,jap:!!e.jackpotAllInPaid,
@@ -6889,7 +6933,7 @@ function dentleyLunge(e) {
   const dmg = BALANCE_PATCH.dentley.lungeBaseDamage + charge;
   const stun = BALANCE_PATCH.dentley.minStun + charge / BALANCE_PATCH.dentley.maxCharge * (BALANCE_PATCH.dentley.maxStun-BALANCE_PATCH.dentley.minStun);
   e.riposte = 0; // charge is spent even if the lunge misses
-  beginDentleyLunge(e, 110, 0.24, dmg, 220, false, stun);
+  beginDentleyLunge(e, hasUp(e,6,1)?126.5:110, 0.24, dmg, 220, false, stun);
 }
 
 function makeHuskMesh() {
@@ -6908,7 +6952,7 @@ function makeHuskMesh() {
 // Armor hits 0 HP: it bursts off and Dentley lives on as the Squire (host / solo only)
 function breakArmor(t, a) {
   t.armorBreakUsed = true;
-  t.form=1;t.hp=60;t.mhp=60;applyChampionBodySize(t);
+  t.form=1;t.hp=hasUp(t,6,2)?70:60;t.mhp=t.hp;applyChampionBodySize(t);
   t.guard = 0; t.guardBoost=0; t.grace = BALANCE_PATCH.dentley.squireGrace; t.c3=BALANCE_PATCH.dentley.recallDelay; t.huskRecallUsed=false; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
   t.kx = Math.cos(a) * 520; t.kz = Math.sin(a) * 520; // send the Squire farther from the armor husk
   const h = { id: "hk_" + Math.random().toString(36).slice(2, 8), x: t.x, z: t.z, hp: 100, life: BALANCE_PATCH.dentley.huskLife, owner: t, mesh: makeHuskMesh() };
@@ -6953,7 +6997,7 @@ function updateHusks(dt) {
     if(e.ci !== 6 || e.form !== 1 || e.dead || !e.husk) { e.chan = 0; continue; }
     if(Math.hypot(e.x - e.husk.x, e.z - e.husk.z) <= BALANCE_PATCH.dentley.rearmRange && e.moveSpd < 14 && e.stun <= 0) {
       e.chan += dt;
-      if(e.chan >= BALANCE_PATCH.dentley.rearmTime) rearm(e);
+      if(e.chan >= (hasUp(e,6,3)?1.25:BALANCE_PATCH.dentley.rearmTime)) rearm(e);
     } else e.chan = 0;
   }
 }
@@ -7637,33 +7681,39 @@ function createPatchGrenadeMesh(warning=true){
 function startGrenadeFuseSound(g){if(g.o!==pl||isSpectating)return;try{Snd.ensure();if(!Snd.ctx||!Snd.sfxGain)return;const c=Snd.ctx,buffer=c.createBuffer(1,Math.floor(c.sampleRate*.4),c.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.4;const src=c.createBufferSource(),filter=c.createBiquadFilter(),gain=c.createGain();src.buffer=buffer;src.loop=true;filter.type='highpass';filter.frequency.value=1700;gain.gain.value=.09;src.connect(filter);filter.connect(gain);gain.connect(Snd.sfxGain);src.start();g.fuseAudio={src,filter,gain};crateTone(1700,.06);}catch(err){console.warn('Grenade audio',err);}}
 function stopGrenadeFuseSound(g){if(!g.fuseAudio)return;try{g.fuseAudio.src.stop();g.fuseAudio.src.disconnect();g.fuseAudio.filter.disconnect();g.fuseAudio.gain.disconnect();}catch(_){}g.fuseAudio=null;}
 function beginPatchGrenade(e){if(e.dead||e.stun>0||e.c4>0||e.liveGrenade||startupAbilityCooldownRemaining()>0||state!=='play'||hostVisibilityPaused)return;e.c4=12;e.medkitT=0;const mesh=createPatchGrenadeMesh();scene.add(mesh);const now=performance.now(),g={o:e,held:true,...patchThrowOrigin(e),vx:0,vy:0,vz:0,deadline:now+3000,mesh,lastBeep:now,lastTime:now};e.liveGrenade=g;liveGrenades.push(g);startGrenadeFuseSound(g);}
-function launchVelocity(e){const p=e.verticalAim?(e===pl?pitch:e.pitch||0):.34;return {vx:Math.cos(e.a)*260*Math.cos(p),vz:Math.sin(e.a)*260*Math.cos(p),vy:260*Math.sin(p)};}
+function launchVelocity(e){const p=(e===pl?verticalAim:e.verticalAim)?(e===pl?pitch:e.pitch||0):.34,speed=260*(hasUp(e,8,4)?1.2:1);return {vx:Math.cos(e.a)*speed*Math.cos(p),vz:Math.sin(e.a)*speed*Math.cos(p),vy:speed*Math.sin(p)};}
 function releasePatchGrenade(e,drop=false){const g=e.liveGrenade;if(!g)return;stopGrenadeFuseSound(g);e.liveGrenade=null;g.held=false;Object.assign(g,drop?{x:e.x,y:(e.y||0)+20,z:e.z}:patchThrowOrigin(e));g.lastTime=performance.now();if(!drop&&g.deadline>g.lastTime)Object.assign(g,launchVelocity(e));}
 function requestGrenadeRelease(drop=false){if(!pl?.liveGrenade)return;sendPatchInput(true,drop);releasePatchGrenade(pl,drop);drawGrenadePreview(null);syncPatchCookingView();}
+function advanceGrenade(g,dt){g.physicsRemainder=(g.physicsRemainder||0)+Math.max(0,dt);let collided=false;while(g.physicsRemainder>=.008-1e-10){grenadeStep(g,.008);collided=collided||g.collided;g.physicsRemainder=Math.max(0,g.physicsRemainder-.008);}g.collided=collided;}
 function grenadeStep(g,dt){g.collided=false;g.vy-=190*dt;for(const [axis,v] of [['x','vx'],['y','vy'],['z','vz']]){const old=g[axis];g[axis]+=g[v]*dt;if(terrainAt(g.x,g.y,g.z,4)){g.collided=true;g[axis]=old;g[v]*=-.48;if(axis==='y'){g.vx*=.78;g.vz*=.78;if(Math.abs(g.vy)<8)g.vy=0;}}}}
-function explodePatch(g){if(g.exploded)return;g.exploded=true;stopGrenadeFuseSound(g);if(g.o.liveGrenade===g)g.o.liveGrenade=null;spawn3DRing(g.x,g.z,85,0xffb568);spawnSparks(g.x,g.z,0xffbb66,18);Snd.play('explosion');if(!isMultiplayer||isLobbyLeader)for(const e of E){if(e.dead||(e!==g.o&&!areEnemies(g.o,e)))continue;const d=Math.hypot(e.x-g.x,e.z-g.z,(e.y||0)+16-g.y);if(d<85&&blastLOS(g,e))hurt(e,25*(1-d/85)*(g.o.upGrenade||1),Math.atan2(e.z-g.z,e.x-g.x),100*(1-d/85),g.o,'explosion');}disposeHierarchy(g.mesh);}
-function clearPatchGrenades(){patchGrenadeKeyHeld=false;for(const g of liveGrenades){stopGrenadeFuseSound(g);g.o.liveGrenade=null;disposeHierarchy(g.mesh);}liveGrenades.length=0;for(const obj of [previewLine,previewMarker,previewEndMarker,patchHandGrenade])if(obj)disposeHierarchy(obj);previewLine=previewMarker=previewEndMarker=patchHandGrenade=null;document.getElementById('grenade-cook-status')?.remove();cacheTerrain();}
+function explodePatch(g){if(g.exploded)return;g.exploded=true;stopGrenadeFuseSound(g);if(g.o.liveGrenade===g)g.o.liveGrenade=null;const radius=85*(hasUp(g.o,8,2)?1.15:1),damage=hasUp(g.o,8,2)?23:25;spawn3DRing(g.x,g.z,radius,0xffb568);spawnSparks(g.x,g.z,0xffbb66,18);Snd.play('explosion');if(!isMultiplayer||isLobbyLeader)for(const e of E){if(e.dead||(e!==g.o&&!areEnemies(g.o,e)))continue;const d=Math.hypot(e.x-g.x,e.z-g.z,(e.y||0)+16-g.y);if(d<radius&&blastLOS(g,e))hurt(e,damage*(1-d/radius),Math.atan2(e.z-g.z,e.x-g.x),100*(1-d/radius),g.o,'explosion');}disposeHierarchy(g.mesh);}
+
+function clearPatchGrenades(){patchGrenadeKeyHeld=false;for(const e of E){if(e.upEvents){for(const q of e.upEvents)disposeHierarchy(q.mesh);e.upEvents=[];}if(e.upDecoy){disposeHierarchy(e.upDecoy.mesh);e.upDecoy=null;}}for(const g of liveGrenades){stopGrenadeFuseSound(g);g.o.liveGrenade=null;disposeHierarchy(g.mesh);}liveGrenades.length=0;for(const obj of [previewLine,previewMarker,previewEndMarker,patchHandGrenade])if(obj)disposeHierarchy(obj);previewLine=previewMarker=previewEndMarker=patchHandGrenade=null;document.getElementById('grenade-cook-status')?.remove();cacheTerrain();}
 function drawGrenadePreview(e){
  if(!e?.liveGrenade){for(const obj of [previewLine,previewMarker,previewEndMarker])if(obj)obj.visible=false;return;}
  if(!previewLine){const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(400*3),3));previewLine=new THREE.Line(geometry,new THREE.LineDashedMaterial({color:0xc2f5b7,dashSize:4,gapSize:2,transparent:true,opacity:.95}));previewLine.frustumCulled=false;scene.add(previewLine);}
  if(!previewMarker){previewMarker=new THREE.Mesh(new THREE.SphereGeometry(2.4,8,6),new THREE.MeshBasicMaterial({color:0xffcc77}));scene.add(previewMarker);}
  if(!previewEndMarker){previewEndMarker=new THREE.Mesh(new THREE.OctahedronGeometry(3,0),new THREE.MeshBasicMaterial({color:0xff7656,wireframe:true}));scene.add(previewEndMarker);}
  const g={...patchThrowOrigin(e),...launchVelocity(e)},left=Math.max(0,(e.liveGrenade.deadline-performance.now())/1000),positions=previewLine.geometry.attributes.position;positions.setXYZ(0,g.x,g.y,g.z);let count=1,collision=false;
- for(let elapsed=0;elapsed<left&&count<400;elapsed+=.008){grenadeStep(g,Math.min(.008,left-elapsed));positions.setXYZ(count++,g.x,g.y,g.z);if(!collision&&g.collided){collision=true;previewMarker.position.set(g.x,g.y,g.z);}}
+ for(let elapsed=0;elapsed<left&&count<400;elapsed+=.008){advanceGrenade(g,Math.min(.008,left-elapsed));positions.setXYZ(count++,g.x,g.y,g.z);if(!collision&&g.collided){collision=true;previewMarker.position.set(g.x,g.y,g.z);}}
  positions.needsUpdate=true;previewLine.geometry.setDrawRange(0,count);previewLine.computeLineDistances();previewLine.visible=true;previewMarker.visible=collision;previewEndMarker.visible=true;previewEndMarker.position.set(g.x,g.y,g.z);
 }
 function syncPatchCookingView(){const e=isSpectating?spectateTarget:pl,cooking=e?.ci===8&&!!e.liveGrenade;if(viewmodelCi===8&&viewmodelHolder.wep)viewmodelHolder.wep.visible=!cooking;if(cooking){if(!patchHandGrenade){patchHandGrenade=createPatchGrenadeMesh(false);patchHandGrenade.scale.setScalar(.35);patchHandGrenade.position.set(3,-2.5,-8);camera.add(patchHandGrenade);}patchHandGrenade.visible=true;patchHandGrenade.rotation.z=.12*Math.sin(performance.now()/180);patchHandGrenade.material.emissiveIntensity=.3+Math.max(0,Math.sin(performance.now()/(e.liveGrenade.deadline-performance.now()<1000?45:130)));}else if(patchHandGrenade){disposeHierarchy(patchHandGrenade);patchHandGrenade=null;}}
 function updatePatchHUD(){
- syncPatchCookingView();if(pl?.ci!==8){document.getElementById('grenade-cook-status')?.remove();return;}
+ syncPatchCookingView();const e=isSpectating?spectateTarget:pl;if(e?.ci!==8){document.getElementById('grenade-cook-status')?.remove();return;}
  let status=document.getElementById('grenade-cook-status');if(!status){status=document.createElement('div');status.id='grenade-cook-status';document.getElementById('hud').append(status);}
- const remaining=pl.liveGrenade?Math.max(0,(pl.liveGrenade.deadline-performance.now())/1000):0;status.hidden=!pl.liveGrenade;status.classList.toggle('urgent',remaining<1);status.innerHTML=pl.liveGrenade?`<span>PIN PULLED · RELEASE ${controlScheme==='wasd'?'F':'.'} TO THROW</span><strong>${remaining.toFixed(1)}s</strong><div><i style="width:${remaining/3*100}%"></i></div><small>${remaining<1?'THROW NOW · IN-HAND EXPLOSION IMMINENT':'COOKING · THE FUSE DOES NOT RESET'}</small>`:'';
+ const remaining=e.liveGrenade?Math.max(0,(e.liveGrenade.deadline-performance.now())/1000):0;status.hidden=!e.liveGrenade;status.classList.toggle('urgent',remaining<1);status.innerHTML=e.liveGrenade?`<span>${isSpectating?'PIN PULLED · SPECTATING':"PIN PULLED · RELEASE "+(controlScheme==='wasd'?'F':'.')+" TO THROW"}</span><strong>${remaining.toFixed(1)}s</strong><div><i style="width:${remaining/3*100}%"></i></div><small>${remaining<1?'THROW NOW · IN-HAND EXPLOSION IMMINENT':'COOKING · THE FUSE DOES NOT RESET'}</small>`:'';
  const bar=document.getElementById('cd3-bar');bar.style.display='flex';bar.style.pointerEvents='auto';bar.setAttribute('aria-label','Hold to cook grenade, release to throw');
- if(!bar.dataset.patchHoldBound){bar.dataset.patchHoldBound='1';bar.addEventListener('pointerdown',ev=>{if(pl?.ci!==8)return;ev.preventDefault();ev.stopImmediatePropagation();if(state==='play'&&pl.c4<=0&&!pl.dead&&pl.stun<=0){ability3(pl);bar.setPointerCapture?.(ev.pointerId);}},true);bar.addEventListener('pointerup',()=>{if(pl?.ci===8)requestGrenadeRelease();});bar.addEventListener('pointercancel',()=>{if(pl?.ci===8)requestGrenadeRelease(true);});}
- document.getElementById('cd3-label').textContent=pl.liveGrenade?'RELEASE · '+remaining.toFixed(1)+'s':(controlScheme==='wasd'?'[F] GRENADE':'[.] GRENADE')+(pl.c4>0?' · '+Math.ceil(pl.c4)+'s':'');document.getElementById('cd3-fill').style.width=(pl.liveGrenade?remaining/3*100:100*Math.max(0,1-pl.c4/12))+'%';
+ if(!bar.dataset.patchHoldBound){bar.dataset.patchHoldBound='1';bar.addEventListener('pointerdown',ev=>{if(pl?.ci!==8||isSpectating)return;ev.preventDefault();ev.stopImmediatePropagation();if(state==='play'&&pl.c4<=0&&!pl.dead&&pl.stun<=0){ability3(pl);bar.setPointerCapture?.(ev.pointerId);}},true);bar.addEventListener('pointerup',()=>{if(pl?.ci===8)requestGrenadeRelease();});bar.addEventListener('pointercancel',()=>{if(pl?.ci===8)requestGrenadeRelease(true);});}
+ const startup=startupAbilityCooldownRemaining(),cooldown=Math.max(0,Number(e.c4)||0);
+ document.getElementById('cd3-label').textContent=(controlScheme==='wasd'?'[F] GRENADE':'[.] GRENADE')+(startup>0?' · LOCKED '+Math.ceil(startup)+'s':cooldown>0?' · '+Math.ceil(cooldown)+'s':' · READY');
+ document.getElementById('cd3-fill').style.width=(100*Math.max(0,Math.min(1,startup>0?1-startup/ROUND_START_ABILITY_COOLDOWN:1-cooldown/12)))+'%';
+ bar.style.pointerEvents=isSpectating?'none':'auto';
 }
-function tickPatchGrenades(now){for(let i=liveGrenades.length-1;i>=0;i--){const g=liveGrenades[i],left=(g.deadline-now)/1000;if(g.held){if(g.o.dead)releasePatchGrenade(g.o,true);else Object.assign(g,patchThrowOrigin(g.o));}else{let time=Math.max(0,Math.min(3,(Math.min(now,g.deadline)-g.lastTime)/1000));while(time>0){const step=Math.min(time,.008);grenadeStep(g,step);time-=step;}}g.lastTime=now;g.mesh.position.set(g.x,g.y,g.z);g.mesh.material.emissiveIntensity=.4+1.8*Math.max(0,Math.sin(now/(left<1?40:120)));if(g.fuseAudio)g.fuseAudio.gain.gain.value=.07+(1-Math.max(0,left)/3)*.08;if(now-g.lastBeep>Math.max(70,left*200)){if(Math.hypot((pl?.x||0)-g.x,(pl?.z||0)-g.z)<330)crateTone(left<1?1400:850,.035);g.lastBeep=now;}if(left<=0){explodePatch(g);liveGrenades.splice(i,1);}}}
-function updatePatchSystems(dt){const now=performance.now();tickPatchGrenades(now);if(state==='play')for(const e of E){e.stimT=Math.max(0,(e.stimT||0)-dt);if(e.medkitT>0&&!e.dead){const t=Math.min(dt,e.medkitT);e.medkitT-=t;if(!isMultiplayer||isLobbyLeader)e.hp=Math.min(e.mhp,e.hp+(35/3)*t*(e.upMedkit||1));}if(e.ai&&e.ci===8&&!e.dead){if(e.liveGrenade&&(e.liveGrenade.deadline-now)<1200)releasePatchGrenade(e);else if(e.c4<=0&&Math.random()<dt*.35)beginPatchGrenade(e);}}
- drawGrenadePreview(pl?.ci===8?pl:null);let a=document.getElementById('aim-mode');if(!a){a=document.createElement('div');a.id='aim-mode';document.getElementById('hud').append(a);}a.textContent=(verticalAim?'VERTICAL AIM':'LEVEL AIM')+' · C';a.dataset.vertical=verticalAim;
+
+function tickPatchGrenades(now){for(let i=liveGrenades.length-1;i>=0;i--){const g=liveGrenades[i],left=(g.deadline-now)/1000;if(g.held){if(g.o.dead)releasePatchGrenade(g.o,true);else Object.assign(g,patchThrowOrigin(g.o));}else{let time=Math.max(0,Math.min(3,(Math.min(now,g.deadline)-g.lastTime)/1000));advanceGrenade(g,time);}g.lastTime=now;g.mesh.position.set(g.x,g.y,g.z);g.mesh.material.emissiveIntensity=.4+1.8*Math.max(0,Math.sin(now/(left<1?40:120)));if(g.fuseAudio)g.fuseAudio.gain.gain.value=.07+(1-Math.max(0,left)/3)*.08;if(now-g.lastBeep>Math.max(70,left*200)){if(Math.hypot((pl?.x||0)-g.x,(pl?.z||0)-g.z)<330)crateTone(left<1?1400:850,.035);g.lastBeep=now;}if(left<=0){explodePatch(g);liveGrenades.splice(i,1);}}}
+function updatePatchSystems(dt){const now=performance.now();tickPatchGrenades(now);if(state==='play')for(const e of E){e.stimT=Math.max(0,(e.stimT||0)-dt);if(e.medkitT>0&&!e.dead){const t=Math.min(dt,e.medkitT);e.medkitT-=t;if(!isMultiplayer||isLobbyLeader)e.hp=Math.min(e.mhp,e.hp+(hasUp(e,8,0)?21:35/3)*t);}if(e.ai&&e.ci===8&&!e.dead){if(e.liveGrenade&&(e.liveGrenade.deadline-now)<1200)releasePatchGrenade(e);else if(e.c4<=0&&Math.random()<dt*.35)beginPatchGrenade(e);}}
+ let a=document.getElementById('aim-mode');if(!a){a=document.createElement('div');a.id='aim-mode';document.getElementById('hud').append(a);}a.textContent=(verticalAim?'VERTICAL AIM':'LEVEL AIM')+' · C';a.dataset.vertical=verticalAim;
 }
 setInterval(()=>{if(liveGrenades.length&&(document.hidden||hostVisibilityPaused))tickPatchGrenades(performance.now());},50);
 window.addEventListener('keydown',ev=>{if(ev.code!==(controlScheme==='wasd'?'KeyF':'Period')||pl?.ci!==8||state!=='play'||draftActive||/INPUT|TEXTAREA|SELECT/.test(ev.target.tagName))return;ev.preventDefault();ev.stopImmediatePropagation();if(ev.repeat||patchGrenadeKeyHeld)return;patchGrenadeKeyHeld=true;if(!pl.dead&&pl.stun<=0&&pl.c4<=0&&!hostVisibilityPaused){ability3(pl);drawGrenadePreview(pl);updatePatchHUD();}},true);
@@ -7672,22 +7722,33 @@ window.addEventListener('blur',()=>{patchGrenadeKeyHeld=false;requestGrenadeRele
 document.addEventListener('visibilitychange',()=>{if(document.hidden){patchGrenadeKeyHeld=false;requestGrenadeRelease(true);}});
 window.addEventListener('keydown',ev=>{if(/INPUT|TEXTAREA|SELECT/.test(ev.target.tagName)||state!=='play')return;if(ev.code==='KeyC'&&!ev.repeat){verticalAim=!verticalAim;if(pl)pl.verticalAim=verticalAim;sendPatchInput(false,false);}});
 
-const UPGRADE_NAMES=HEROES.map((h,i)=>[
- ['Ironhide','Reinforced Hull','Thick Peel','Chef Armor','Plated Chassis','Barkskin','Tempered Plate','House Insurance','Reinforced Vest'][i],
- ['Weighted Hammer','Refined Scrap','Sharp Bananas','Seasoned Rounds','Focused Plasma','Honed Spores','Keen Edge','High Caliber','Tuned Blaster'][i],
- ['Long Stride','Sea Legs','Jungle Runner','Fleet Feet','Efficient Servos','Forest Step','Light Greaves','Fast Shuffle','Trail Runner'][i],
- i===8?'Advanced Medkit':'Victory Supplies',i===8?'Fragmentation':'Practiced Technique']);
-function upgradeOffer(e){let seed=(e.netId||String(e.ci)).split('').reduce((a,c)=>(Math.imul(a,31)+c.charCodeAt(0))>>>0,e.ci+179);const arr=[0,1,2,3,4];for(let i=4;i>0;i--){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const j=seed%(i+1);[arr[i],arr[j]]=[arr[j],arr[i]];}return arr.slice(0,3);}
-function upgradeText(e,i){return [
- `+${Math.round(HEROES[e.ci].hp*.10)} maximum HP (10% of base HP). No damage reduction.`,
- 'Basic weapon attacks deal 8% more damage. Abilities and status damage are unchanged.',
- 'Movement speed +6%. Does not increase dash distance or bypass stuns and obstacles.',
- e.ci===8?'Medkit heals 42 HP over 3 seconds instead of 35. Enemy damage still interrupts it.':'Eliminations heal 30% of maximum HP instead of 25%. No passive healing or overheal.',
- e.ci===8?'Grenade maximum damage increases from 25 to 28. Also increases self-damage. Fuse, falloff and cover rules are unchanged.':'Main ability cooldowns recover 10% faster (about 9% less waiting). Starting lockout, durations and extra actions are unchanged.'
- ][i];}
-function applyRoundUpgrade(e,i){if(e.roundUpgrade!=null||!Number.isInteger(i)||i<0||i>4)return;e.roundUpgrade=i;if(i===0){const bonus=Math.round(HEROES[e.ci].hp*.1);e.mhp+=bonus;e.hp+=bonus;}if(i===1)e.upWeaponDamage=1.08;if(i===2)e.upSpeed=1.06;if(i===3){if(e.ci===8)e.upMedkit=1.2;else e.upElimHeal=1.2;}if(i===4){if(e.ci===8)e.upGrenade=1.12;else e.upCooldown=1.10;}}
+const UPGRADE_NAMES=[["Shockwave Hammer", "Freight Train", "Double Slam", "Return to Sender", "Moving Mountain"], ["Boarding Hook", "Heavy Cannonball", "Scrap Shield", "Quick Reload", "Blast Jump"], ["Fresh Peel", "Long Return", "Slipstream", "Fruit Shield", "Delayed Harvest"], ["Extra Sauce", "Meatball Skewer", "Backdraft Express", "Takeout Order", "Boiling Point"], ["Quick Blink", "Afterimage", "Extended Barrage", "Emergency Thrusters", "Target Lock"], ["Quick Cultivation", "Overgrowth", "Mushroom Shelter", "Spreading Spores", "Forest Footwork"], ["Walking Fortress", "Longer Lunge", "Second Wind", "Quick Repairs", "Royal Release"], ["Fast Flip", "Safe Bet", "Lucky Escape", "Extended Credit", "Cushion the Fall"], ["Field Dressing", "Extended Stim", "Blast Radius", "Field Tuning", "Long Throw"]];
+const UPGRADE_DESCRIPTIONS=[["A missed swing sends a short 6-damage wave 25 units beyond hammer reach. No knockback, no wall penetration, and no repeat hits on hammer targets.", "Charge travels 20% farther. Cooldown: 15s instead of 14s. Damage and stun unchanged.", "Slam deals 12 damage. A warned second blast after 0.7s covers half the radius for 6 damage, with no stun or knockback.", "Reflecting an enemy projectile heals 6 HP. Once per 5s. No overheal.", "Incoming knockback reduced by 25%. Damage, stuns, roots, hooks and other forced movement unchanged."], ["Completing a wall hook grants +15% movement speed for 1.5s. Enemy hooks do not activate it.", "Cannonball explosion radius +15%. Direct damage: 22 instead of 25. Explosion damage unchanged.", "Completing an enemy pull grants a 10-damage shield for 2s. Missed and interrupted hooks grant nothing.", "After Cannonball, fire a normal attack within 3s for 20% less recovery. Existing attack cooldown is not reset.", "Your Cannonball explosion pushes you away by up to 35 units without self-damage. Walls stop movement. Cannonball cooldown: 11s."], ["Peel cooldown: 10s. Trap lifetime: 4s. Only one active peel.", "Normal bananas travel 15% farther before returning. Attack cooldown: 0.9s. Damage unchanged.", "An enemy triggering your peel grants +15% movement speed for 1.5s.", "A returning normal banana hitting an enemy grants an 8-damage shield for 2s. Once per 6s. Cluster bananas excluded.", "Cluster Bomb releases four bananas immediately, then two warned bananas after 0.7s. Delayed bananas deal 11 damage each."], ["Marinara lasts 4s, but deals 20% less damage per second (10.4 DPS). Slow unchanged.", "Normal meatballs deal 32 damage to the first enemy and pierce once for 10 damage to another. Walls stop them.", "Backdraft travels 15% farther and spreads its five flame patches along the longer route. Cooldown: 9.5s instead of 9s.", "A normal meatball hitting an enemy grants +10% movement speed for 1s. Once per 3s.", "Marinara ends with a warned 6-damage burst in its existing area. Cooldown: 8.5s. No added stun or knockback."], ["Blink cooldown: 5.5s. Travel distance reduced by 15%. Still one charge.", "Blink leaves a stationary decoy for 0.8s. It flickers after 0.3s and has no collision, attack absorption or health bar.", "Barrage fires eight darts for 7 damage each. The extra dart extends the sequence at the same firing rate.", "Enemy damage leaving you alive below 30% HP grants +15% movement speed for 1.5s. Once per 15s.", "Four consecutive normal darts hitting the same enemy reduce remaining Blink cooldown by 0.5s. Misses or another target reset progress. Once per 6s."], ["Spore Pod cooldown: 6s, starting on trigger or expiry. Untriggered lifetime: 4s. One active pod.", "Root Entangle burst radius +15%. Cooldown: 10s. Damage and root duration unchanged.", "A pod triggering on an enemy grants a 10-damage shield for 2s, once per pod.", "A triggered pod leaves a visible cloud for 1.5s. Previously missed enemies receive 10 poison damage over 5s and a 30% slow for 3s. Once per enemy per pod; cannot stack with its original poison.", "A direct Root Entangle hit grants +15% movement speed for 1.5s. Burst-only hits do not count."], ["Shield Guard slows movement by 15% instead of 25%. Attacks and other abilities remain blocked.", "Counter Lunge travels 15% farther. Cooldown: 9s. Damage, charge spending and stun unchanged.", "Armor break starts Squire at 70 HP instead of 60. Armor HP and rearming health unchanged.", "Rearming takes 1.25s instead of 1.5s. Taking damage still interrupts it.", "Successful early Guard release grants an 8-damage shield for 1.5s. Natural expiry grants nothing."], ["Coin Toss lands in 0.4s instead of 0.5s. Cooldown and firing requirement unchanged.", "Rolling a 1 deals 8 self-damage instead of 15. No shield. Other results unchanged.", "A manually loaded Heads shot grants +10% movement speed for 1s. Once per 3s. All In and Dice 6 Heads excluded.", "Initial All In duration: 7.5s instead of 7s. Eliminations reset it to the normal 7s.", "A loaded Tails shot grants a 6-damage shield for 1.5s. Once per 4s."], ["Medkit heals 42 HP over 2s. Cooldown: 14s. Enemy damage interrupts remaining healing.", "Stim lasts 3.5s. Cooldown: 12s. Movement speed remains +35%.", "Grenade blast radius +15%, maximum damage 23 instead of 25. Falloff uses the larger radius, including self-damage.", "Blaster projectile speed +15%; lifetime reduced to preserve maximum range. Damage and attack interval unchanged.", "Grenade throw speed +20%. Damage, fuse and explosion radius unchanged."]];
+function upgradeOffer(e){
+ if(Array.isArray(e.roundUpgradeOffers)&&e.roundUpgradeOfferSeed===arenaLayoutSeed)return e.roundUpgradeOffers.slice();
+ let seed=(Number(arenaLayoutSeed)>>>0)^0x9e3779b9;
+ for(const ch of String(e.netId||e.ci))seed=Math.imul(seed^ch.charCodeAt(0),16777619)>>>0;
+ seed=(seed^Math.imul(e.ci+1,0x85ebca6b))>>>0;
+ const random=()=>{seed=(seed+0x6d2b79f5)>>>0;let t=seed;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};
+ const pool=[0,1,2,3,4];for(let i=pool.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+ e.roundUpgradeOfferSeed=arenaLayoutSeed;e.roundUpgradeOffers=pool.slice(0,3);return e.roundUpgradeOffers.slice();
+}
+function resetRoundUpgradeDraft(){
+ for(const e of E){e.roundUpgrade=null;e.roundUpgradeOffers=null;e.roundUpgradeOfferSeed=null;e.upWeaponDamage=1;e.upSpeed=1;e.upMedkit=1;e.upElimHeal=1;e.upGrenade=1;e.upCooldown=1;upgradeOffer(e);}
+}
 
-function beginUpgradeDraft(){if(demoActive||!pl)return;draftActive=true;draftUntil=Date.now()+12000;document.exitPointerLock?.();let panel=document.getElementById('upgrade-draft');if(!panel){panel=document.createElement('section');panel.id='upgrade-draft';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Choose a round upgrade');document.getElementById('wrap').append(panel);}panel.style.display='flex';panel.innerHTML=`<div class="draft-eyebrow">ROUND LOADOUT / ${escapeHtml(HEROES[pl.ci].n)}</div><h1>Make it your round.</h1><p>Choose one upgrade. Three offers. Five possibilities. Resets next round.</p><div class="draft-cards">${upgradeOffer(pl).map((i,n)=>`<button data-upgrade="${i}"><span>0${n+1} / ROUND UPGRADE</span><h2>${UPGRADE_NAMES[pl.ci][i]}</h2><p>${upgradeText(pl,i)}</p><small>SELECT UPGRADE →</small></button>`).join('')}</div><div id="draft-clock"></div>`;panel.querySelectorAll('[data-upgrade]').forEach(b=>b.onclick=()=>{if(pl.roundUpgrade!=null)return;const pick=Number(b.dataset.upgrade);applyRoundUpgrade(pl,pick);sendPatchPacket({type:'UPGRADE_PICK',id:myNetId,pick});b.classList.add('chosen');panel.querySelectorAll('button').forEach(x=>x.disabled=true);if(!isMultiplayer)finishDraft();});for(const e of E)if(e.ai)applyRoundUpgrade(e,upgradeOffer(e)[Math.floor(Math.random()*3)]);}
+function upgradeText(e,i){return UPGRADE_DESCRIPTIONS[e.ci][i];}
+function hasUp(e,ci,i){return !!e&&e.ci===ci&&e.roundUpgrade===i;}
+function applyRoundUpgrade(e,i){if(e.roundUpgrade!=null||!Number.isInteger(i)||i<0||i>4)return;e.roundUpgrade=i;e.upWeaponDamage=1;e.upSpeed=1;e.upMedkit=1;e.upElimHeal=1;e.upGrenade=1;e.upCooldown=1;}
+function upProc(e,key,seconds){e.upGates=e.upGates||{};if((e.upGates[key]||0)>matchTime)return false;e.upGates[key]=matchTime+seconds;return true;}
+function upShield(e,amount,duration){if(isMultiplayer&&!isLobbyLeader)return;e.upShields=e.upShields||[];e.upShields.push({amount,until:matchTime+duration});spawn3DRing(e.x,e.z,24,0x98dfff);}
+function upBoost(e,amount,duration){e.upBoostAmount=amount;e.upBoostUntil=matchTime+duration;}
+function upMove(e,angle,distance){for(let d=0;d<distance;){const step=Math.min(2,distance-d),x=e.x+Math.cos(angle)*step,z=e.z+Math.sin(angle)*step;if(blocked(x,z,e.r))break;e.x=x;e.z=z;d+=step;}}
+function upLater(e,delay,x,z,r,callback){e.upEvents=e.upEvents||[];const mesh=new THREE.Mesh(new THREE.RingGeometry(r*.93,r,48).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffca72,transparent:true,opacity:.65,side:THREE.DoubleSide}));mesh.position.set(x,1.8,z);scene.add(mesh);e.upEvents.push({until:matchTime+delay,mesh,callback});}
+function upBurst(e,x,z,r,damage){spawn3DRing(x,z,r,0xffbb66);if(isMultiplayer&&!isLobbyLeader)return;for(const t of E)if(!t.dead&&areEnemies(e,t)&&Math.hypot(t.x-x,t.z-z)<r+t.r&&hasLOS(x,z,t.x,t.z))hurt(t,damage,Math.atan2(t.z-z,t.x-x),0,e);}
+function tickUpgrades(dt){for(const e of E){e.upSpeed=(e.upBoostUntil||0)>matchTime?1+e.upBoostAmount:1;if(e.upEvents)for(let i=e.upEvents.length-1;i>=0;i--){const q=e.upEvents[i];if(q.until<=matchTime||e.dead){disposeHierarchy(q.mesh);e.upEvents.splice(i,1);if(!e.dead)q.callback();}else q.mesh.material.opacity=.35+.3*Math.sin(matchTime*20);}if(e.upDecoy){e.upDecoy.life-=dt;e.upDecoy.mesh.visible=e.upDecoy.life>.5||Math.sin(matchTime*65)>0;if(e.upDecoy.life<=0){disposeHierarchy(e.upDecoy.mesh);e.upDecoy=null;}}}}
+
+function beginUpgradeDraft(){if(demoActive||!pl)return;resetRoundUpgradeDraft();draftActive=true;draftUntil=Date.now()+12000;document.exitPointerLock?.();let panel=document.getElementById('upgrade-draft');if(!panel){panel=document.createElement('section');panel.id='upgrade-draft';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Choose a round upgrade');document.getElementById('wrap').append(panel);}panel.style.display='flex';panel.innerHTML=`<div class="draft-eyebrow">ROUND LOADOUT / ${escapeHtml(HEROES[pl.ci].n)}</div><h1>Make it your round.</h1><p>Choose one upgrade. Three offers. Five possibilities. Resets next round.</p><div class="draft-cards">${upgradeOffer(pl).map((i,n)=>`<button data-upgrade="${i}"><span>0${n+1} / ROUND UPGRADE</span><h2>${UPGRADE_NAMES[pl.ci][i]}</h2><p>${upgradeText(pl,i)}</p><small>SELECT UPGRADE →</small></button>`).join('')}</div><div id="draft-clock"></div>`;panel.querySelectorAll('[data-upgrade]').forEach(b=>b.onclick=()=>{if(pl.roundUpgrade!=null)return;const pick=Number(b.dataset.upgrade);applyRoundUpgrade(pl,pick);sendPatchPacket({type:'UPGRADE_PICK',id:myNetId,pick,offerSeed:arenaLayoutSeed});b.classList.add('chosen');panel.querySelectorAll('button').forEach(x=>x.disabled=true);if(!isMultiplayer)finishDraft();});for(const e of E)if(e.ai)applyRoundUpgrade(e,upgradeOffer(e)[Math.floor(Math.random()*3)]);}
 function finishDraft(){for(const e of E)if(e.roundUpgrade==null)applyRoundUpgrade(e,upgradeOffer(e)[0]);draftActive=false;document.getElementById('upgrade-draft').style.display='none';patchLastClock=performance.now();}
 function updateDraft(){document.getElementById('draft-clock').textContent='ROUND STARTS IN '+Math.max(0,Math.ceil((draftUntil-Date.now())/1000))+'s';if(Date.now()>=draftUntil)finishDraft();}
 
@@ -7704,6 +7765,7 @@ function updateCountdownFacing(dt) {
 function upd(dt) {
  if(draftActive){updateDraft();return;}
  updatePatchSystems(dt);
+ if(state==='play')tickUpgrades(dt);
 
   if(state === "intro") {
     updateMatchIntro(dt);
@@ -7747,7 +7809,7 @@ function upd(dt) {
   mouseVelY *= 0.8;
 
   syncHUD();
-  updatePatchHUD();
+  updatePatchHUD();drawGrenadePreview(isSpectating?spectateTarget:pl);
 
   if(isSpectating) {
     const st = spectateTarget;
@@ -7890,53 +7952,35 @@ function upd(dt) {
       if(!e.dead && e !== z.owner && !(teamMode && z.owner && e.team === z.owner.team) && Math.hypot(targetPos.x - z.x, targetPos.z - z.z) < z.r + e.r) {
         if(z.kind === "marinara") {
           e.slow = 0.5;
-          hurt(e, 13 * dt, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 0, z.owner);
+          hurt(e, (hasUp(z.owner,3,0)?10.4:13) * dt, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 0, z.owner);
         } else if(z.kind === "flame") {
           e.slow = 0.4;
           hurt(e, 19 * dt, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 25, z.owner);
         } else if(z.kind === "peel") {
-          e.stun = 1.5;
+          e.stun = 1.5;if(hasUp(z.owner,2,2))upBoost(z.owner,.15,1.5);
           hurt(e, BALANCE_PATCH.mango.peelDamage, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 150, z.owner);
           spawn3DRing(z.x, z.z, 34, 0xffe853);
           z.life = 0;
-        } else if(z.kind === "spore_pod") {
-          spawn3DRing(z.x, z.z, 55, 0x9955ff);
-          const geo = new THREE.CylinderGeometry(55, 55, 1.5, 20);
-          const mat = new THREE.MeshBasicMaterial({ color: 0x8844ee, transparent: true, opacity: 0.35 });
-          const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(z.x, 1, z.z);
-          scene.add(mesh);
-
-          Zones.push({ kind: "spore_cloud", x: z.x, z: z.z, r: 55, life: 3.0, owner: z.owner, mesh });
-
-          e.sporePoison = BALANCE_PATCH.mycelis.podPoisonDuration;
-          e.sporeSlowT = BALANCE_PATCH.mycelis.podSlowDuration;
-          e.sporeAttacker = z.owner;
-          spawnDamageNumber(e.x, e.z, "BLIGHTED", "#a855f7");
-
-          if(z.owner) {
-            z.owner.c2 = BALANCE_PATCH.mycelis.podCooldown;
-            z.owner.activePod = null;
-          }
-          z.life = 0;
+         } else if(z.kind === "spore_pod"&&!z.upTriggered) {
+          z.upTriggered=true;z.upAffected=new Set();spawn3DRing(z.x,z.z,55,0x9955ff);
+          for(const target of E)if(!target.dead&&areEnemies(z.owner,target)&&Math.hypot(target.x-z.x,target.z-z.z)<55+target.r){z.upAffected.add(target);target.sporePoison=5;target.sporeSlowT=3;target.sporeWeak=false;target.sporeAttacker=z.owner;spawnDamageNumber(target.x,target.z,'BLIGHTED','#a855f7');}
+          if(hasUp(z.owner,5,2))upShield(z.owner,10,2);
+          if(hasUp(z.owner,5,3)){const mesh=new THREE.Mesh(new THREE.CylinderGeometry(55,55,1.5,20),new THREE.MeshBasicMaterial({color:0x8844ee,transparent:true,opacity:.35}));mesh.position.set(z.x,1,z.z);scene.add(mesh);Zones.push({kind:'spore_cloud',x:z.x,z:z.z,r:55,life:1.5,owner:z.owner,mesh,upAffected:z.upAffected});}
+          z.owner.c2=hasUp(z.owner,5,0)?6:BALANCE_PATCH.mycelis.podCooldown;z.owner.activePod=null;z.life=0;
         } else if(z.kind === "spore_cloud") {
-          if(e.sporePoison < 0.5) {
-            e.sporePoison = BALANCE_PATCH.mycelis.podPoisonDuration;
-          e.sporeSlowT = BALANCE_PATCH.mycelis.podSlowDuration;
-            e.sporeAttacker = z.owner;
-            spawnDamageNumber(e.x, e.z, "BLIGHTED", "#a855f7");
-          }
+          if(z.upAffected&&!z.upAffected.has(e)){z.upAffected.add(e);e.upWeakPoisons=e.upWeakPoisons||[];e.upWeakPoisons.push({remaining:5,owner:z.owner});e.upWeakSlowUntil=matchTime+3;}
         }
       }
     }
 
     if(z.kind === "spore_pod" && z.life <= 0) {
       if(z.owner && z.owner.activePod === z) {
-        z.owner.c2 = BALANCE_PATCH.mycelis.podCooldown;
+        z.owner.c2 = hasUp(z.owner,5,0)?6:BALANCE_PATCH.mycelis.podCooldown;
         z.owner.activePod = null;
       }
     }
 
+    if(z.kind==='marinara'&&hasUp(z.owner,3,4)&&z.life<=.7&&!z.upWarned){z.upWarned=true;const owner=z.owner,x=z.x,zz=z.z,r=z.r;upLater(owner,Math.max(0,z.life),x,zz,r,()=>upBurst(owner,x,zz,r,6));}
     if(z.life <= 0) {
       disposeHierarchy(z.mesh);
       Zones.splice(i, 1);
@@ -8079,9 +8123,9 @@ function upd(dt) {
       ab1 = P1_ab1;
       ab2 = P1_ab2;
 
-      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.30:1) * (e.upSpeed||1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
-      const slowMod = ((e.sporeSlowT > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.6:1);
-      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
+      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.35:1) * (e.upSpeed||1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
+      const slowMod = ((e.sporeSlowT > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : ((e.upWeakSlowUntil||0)>matchTime?.7:(e.slow > 0 ? 0.6 : 1.0))) * (e.jackpotSlowT>0?0.6:1);
+      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? (hasUp(e,6,0)?.85:BALANCE_PATCH.dentley.guardMove) : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
 
@@ -8091,9 +8135,9 @@ function upd(dt) {
       if(P1_ab3 && e.stun<=0 && e.c4<=0)ability3(e);
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
-      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.30:1) * (e.upSpeed||1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
-      const slowMod = ((e.sporeSlowT > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : (e.slow > 0 ? 0.6 : 1.0)) * (e.jackpotSlowT>0?0.6:1);
-      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? BALANCE_PATCH.dentley.guardMove : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
+      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.35:1) * (e.upSpeed||1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
+      const slowMod = ((e.sporeSlowT > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : ((e.upWeakSlowUntil||0)>matchTime?.7:(e.slow > 0 ? 0.6 : 1.0))) * (e.jackpotSlowT>0?0.6:1);
+      const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? (hasUp(e,6,0)?.85:BALANCE_PATCH.dentley.guardMove) : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
       moveChampion(e,(mx/l)*s*dt,(mz/l)*s*dt);
 
@@ -8177,7 +8221,7 @@ function upd(dt) {
 
     if(p.t === "b") {
       p.age += dt;
-      if(p.out && p.age > 0.48) { p.out = false; p.hit.clear(); }
+      if(p.out && p.age > (p.normal&&hasUp(p.o,2,1)?.552:.48)) { p.out = false; p.hit.clear(); }
       if(!p.out) {
         const a = Math.atan2(p.o.z - p.z, p.o.x - p.x);
         p.vx = Math.cos(a)*390;
@@ -8237,6 +8281,11 @@ function upd(dt) {
            && Math.hypot(targetPos.x - p.x, targetPos.z - p.z) < t.r + 9) {
           p.hit.add(t);
           hurt(t, p.d, Math.atan2(p.vz, p.vx), p.kb, p.o, "projectile");
+          if(p.normal&&hasUp(p.o,2,3)&&!p.out&&upProc(p.o,'fruitShield',6))upShield(p.o,8,2);
+          if(p.normal&&hasUp(p.o,3,3)&&upProc(p.o,'takeout',3))upBoost(p.o,.1,1);
+          if(p.t==='vine'&&hasUp(p.o,5,4))upBoost(p.o,.15,1.5);
+          if(p.normal&&hasUp(p.o,4,4)){const o=p.o;o.lockCount=o.lockTarget===t?(o.lockCount||0)+1:1;o.lockTarget=t;p.lockHit=true;if(o.lockCount>=4){if(upProc(o,'targetLock',6))o.c2=Math.max(0,o.c2-.5);o.lockCount=0;}}
+          if(p.pierce>0){p.pierce--;p.d=10;continue;}
           if(p.t !== "b") {
             finalize = true;
             break; // a terminating hit stops further collisions this frame
@@ -8246,6 +8295,7 @@ function upd(dt) {
     }
 
     if(finalize) {
+      if(p.normal&&hasUp(p.o,4,4)&&!p.lockHit){p.o.lockCount=0;p.o.lockTarget=null;}
       if(p.onDeath && !p.finalized) {
         p.finalized = true;
         p.onDeath(p.x, p.z);
@@ -8473,14 +8523,28 @@ requestAnimationFrame(loop);
 (() => {
   // ============== EDIT YOUR UPDATE NOTES HERE ==============
 const VERSION_UPDATES = {
- version:"BRAWLBOUND v1.3.3 · AURA & BALANCE UPDATE",
- game:[
-  "PATCH: Permanently unlock the Ranged Survivalist for 500 Shinies. Redesigned champion, Field Blaster and survivalist insignia.",
-  "PATCH SKINS: Buy Beacon Field Blaster for 400 Shinies or Nightwatch Patch for 600 Shinies directly in the Shinies Shop. Both remain available in their corresponding cosmetic caches.",
-  "MENU: Restored the transparent live-battle background and the bottom-right Updates & Balance panel.",
-  "ROUND UPGRADES: Five tuned options per champion, three offers per round. Descriptions state exact effects and exclusions. All bonuses reset next round."
- ],
- champions:[]
+  "version": "BRAWLBOUND · CHAMPION BALANCE UPDATE",
+  "game": [
+    "PATCH: Permanently unlock the Ranged Survivalist for 500 Shinies. Redesigned champion, Field Blaster and survivalist insignia.",
+    "PATCH SKINS: Buy Beacon Field Blaster for 400 Shinies or Nightwatch Patch for 600 Shinies directly in the Shinies Shop. Both remain available in their corresponding cosmetic caches.",
+    "MENU: Restored the transparent live-battle background and the bottom-right Updates & Balance panel.",
+    "PATCH FIX: Grenade trajectory preview uses matching flight simulation and current aiming direction.",
+    "PATCH FIX: Grenade cooldown correctly displays the opening 3-second ability lockout separately from its normal cooldown and cooking fuse.",
+    "PATCH FIX: Spectating Patch shows the Grenade option and its cooldown."
+  ],
+  "champions": [
+    "Patch — Stim: movement-speed bonus increased from 30% to 35%.",
+    "Jackpot — Dice 2: slowness reduced from 50% to 40% for 2 seconds (already implemented).",
+    "Jackpot — Lucky Revolver: normal and loaded Tails shots deal 7 damage instead of 6.",
+    "Jackpot — All In: duration increased from 6 to 7 seconds. Eliminations reset the timer to the normal 7-second duration.",
+    "Sir Dentley — Movement speed increased from 125 to 130 (already implemented).",
+    "Bruno — Sledgehammer: damage reduced from 30 to 25; attack interval reduced from 1.25 to 1.2 seconds.",
+    "Bruno — Reflection rework: cannot reflect Captain Oink’s Cannonball; can reflect Patch’s Field Blaster. These reflection rules are already implemented.",
+    "Chef Sizzle — Culinary Sniper Rifle: fires 0.1 seconds slower; attack interval increased from 1.1 to 1.2 seconds.",
+    "Chef Sizzle — Backdraft: cooldown increased from 8.5 to 9 seconds.",
+    "Chef Sizzle — Marinara: description now states its damage rate of 13 damage per second. This is a description clarification, not a damage change.",
+    "Mycelis — Spore Pod: slow duration reduced from 5 to 3 seconds (already implemented). Poison remains 20 total damage over 5 seconds; the slow and poison durations are separate."
+  ]
 };
 
 // =================== END EDIT SECTION ===================
