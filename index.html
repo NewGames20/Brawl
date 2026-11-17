@@ -734,6 +734,14 @@ html, body {
 @media(max-width:860px){.detail-col{width:100%}.draft-cards{gap:10px}.draft-cards button{padding:18px;min-height:240px}}@media(max-width:600px){#ov{padding:18px 14px}.hero-grid{grid-template-columns:repeat(2,1fr)}.draft-cards{grid-template-columns:1fr}.draft-cards button{min-height:170px;gap:12px}#upgrade-draft{justify-content:flex-start;padding:28px 18px}.cd-bar{width:105px;font-size:9px}#hud-player{left:12px;top:12px;min-width:190px}#compass{right:12px;top:105px;font-size:10px}.lobby-btn{flex:1 1 130px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
+<style id="champion-balance-labels">
+#menu-updates-panel .updates-content li.change-buff {color:#b8efcb;}
+#menu-updates-panel .updates-content li.change-nerf {color:#ffb8bc;}
+#menu-updates-panel .updates-content li.change-rework {color:#fff0ae;}
+#menu-updates-panel .change-buff .change-label {color:#70e59a;background:#173b25;border-color:#70e59a;}
+#menu-updates-panel .change-nerf .change-label {color:#ff858d;background:#481d25;border-color:#ff858d;}
+#menu-updates-panel .change-rework .change-label {color:#ffe071;background:#443b16;border-color:#ffe071;}
+</style>
 </head>
 <body>
 <div id="wrap">
@@ -846,17 +854,18 @@ const PATCH_UPDATES = {
     "PATCH FIX: Grenade trajectory preview uses matching flight simulation and current aiming direction.",
     "PATCH FIX: Grenade cooldown correctly displays the opening 3-second ability lockout separately from its normal cooldown and cooking fuse.",
     "PATCH FIX: Spectating Patch shows the Grenade option and its cooldown.",
-    "Patch — Stim: movement-speed bonus increased from 30% to 35%.",
-    "Jackpot — Dice 2: slowness reduced from 50% to 40% for 2 seconds (already implemented).",
-    "Jackpot — Lucky Revolver: normal and loaded Tails shots deal 7 damage instead of 6.",
-    "Jackpot — All In: duration increased from 6 to 7 seconds. Eliminations reset the timer to the normal 7-second duration.",
-    "Sir Dentley — Movement speed increased from 125 to 130 (already implemented).",
-    "Bruno — Sledgehammer: damage reduced from 30 to 25; attack interval reduced from 1.25 to 1.2 seconds.",
-    "Bruno — Reflection rework: cannot reflect Captain Oink’s Cannonball; can reflect Patch’s Field Blaster. These reflection rules are already implemented.",
-    "Chef Sizzle — Culinary Sniper Rifle: fires 0.1 seconds slower; attack interval increased from 1.1 to 1.2 seconds.",
-    "Chef Sizzle — Backdraft: cooldown increased from 8.5 to 9 seconds.",
-    "Chef Sizzle — Marinara: description now states its damage rate of 13 damage per second. This is a description clarification, not a damage change.",
-    "Mycelis — Spore Pod: slow duration reduced from 5 to 3 seconds (already implemented). Poison remains 20 total damage over 5 seconds; the slow and poison durations are separate."
+    "CHEF SIZZLE: Marinara’s description now states 13 damage per second. This is a description clarification, not a damage change.",
+    "BUFF — Patch — Stim: movement-speed bonus increased from 30% to 35%.",
+    "BUFF — Jackpot — Dice 2: self-slowness reduced from 50% to 40% for 2 seconds.",
+    "BUFF — Jackpot — Lucky Revolver: normal and loaded Tails shots deal 7 damage instead of 6.",
+    "BUFF — Jackpot — All In: duration increased from 6 to 7 seconds. Eliminations reset the timer to the normal 7-second duration.",
+    "BUFF — Sir Dentley — Movement speed increased from 125 to 130.",
+    "NERF — Bruno — Sledgehammer: damage reduced from 30 to 25.",
+    "BUFF — Bruno — Sledgehammer: attack interval reduced from 1.25 to 1.2 seconds.",
+    "REWORK — Bruno — Projectile reflection: cannot reflect Captain Oink’s Cannonball; can reflect Patch’s Field Blaster.",
+    "NERF — Chef Sizzle — Culinary Sniper Rifle: fires 0.1 seconds slower; attack interval increased from 1.1 to 1.2 seconds.",
+    "NERF — Chef Sizzle — Backdraft: cooldown increased from 8.5 to 9 seconds.",
+    "NERF — Mycelis — Spore Pod: slow duration reduced from 5 to 3 seconds. Poison remains 20 total damage over 5 seconds; the slow and poison durations are separate."
   ]
 };
 // HEROES: hp=max health, sp=movement speed, cd=attack cooldown, a1cd/a2cd=ability cooldown.
@@ -7733,9 +7742,7 @@ function upgradeOffer(e){
  const pool=[0,1,2,3,4];for(let i=pool.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
  e.roundUpgradeOfferSeed=arenaLayoutSeed;e.roundUpgradeOffers=pool.slice(0,3);return e.roundUpgradeOffers.slice();
 }
-function resetRoundUpgradeDraft(){
- for(const e of E){e.roundUpgrade=null;e.roundUpgradeOffers=null;e.roundUpgradeOfferSeed=null;e.upWeaponDamage=1;e.upSpeed=1;e.upMedkit=1;e.upElimHeal=1;e.upGrenade=1;e.upCooldown=1;upgradeOffer(e);}
-}
+function resetRoundUpgradeDraft(){for(const e of E){e.roundUpgrade=null;e.roundUpgradeOffers=null;e.roundUpgradeOfferSeed=null;e.upWeaponDamage=1;e.upSpeed=1;e.upMedkit=1;e.upElimHeal=1;e.upGrenade=1;e.upCooldown=1;upgradeOffer(e);}}
 
 function upgradeText(e,i){return UPGRADE_DESCRIPTIONS[e.ci][i];}
 function hasUp(e,ci,i){return !!e&&e.ci===ci&&e.roundUpgrade===i;}
@@ -8522,6 +8529,9 @@ requestAnimationFrame(loop);
 <script>
 (() => {
   // ============== EDIT YOUR UPDATE NOTES HERE ==============
+// Future champion balance entries must use {type: "buff" | "nerf" | "rework", text: "..."}.
+// Buff = improvement (green), Nerf = reduction (red), Rework = roughly balanced gains/losses (yellow).
+// Put description-only corrections and other non-balance changes in game, not champions.
 const VERSION_UPDATES = {
   "version": "BRAWLBOUND · CHAMPION BALANCE UPDATE",
   "game": [
@@ -8530,20 +8540,54 @@ const VERSION_UPDATES = {
     "MENU: Restored the transparent live-battle background and the bottom-right Updates & Balance panel.",
     "PATCH FIX: Grenade trajectory preview uses matching flight simulation and current aiming direction.",
     "PATCH FIX: Grenade cooldown correctly displays the opening 3-second ability lockout separately from its normal cooldown and cooking fuse.",
-    "PATCH FIX: Spectating Patch shows the Grenade option and its cooldown."
+    "PATCH FIX: Spectating Patch shows the Grenade option and its cooldown.",
+    "CHEF SIZZLE: Marinara’s description now states 13 damage per second. This is a description clarification, not a damage change."
   ],
   "champions": [
-    "Patch — Stim: movement-speed bonus increased from 30% to 35%.",
-    "Jackpot — Dice 2: slowness reduced from 50% to 40% for 2 seconds (already implemented).",
-    "Jackpot — Lucky Revolver: normal and loaded Tails shots deal 7 damage instead of 6.",
-    "Jackpot — All In: duration increased from 6 to 7 seconds. Eliminations reset the timer to the normal 7-second duration.",
-    "Sir Dentley — Movement speed increased from 125 to 130 (already implemented).",
-    "Bruno — Sledgehammer: damage reduced from 30 to 25; attack interval reduced from 1.25 to 1.2 seconds.",
-    "Bruno — Reflection rework: cannot reflect Captain Oink’s Cannonball; can reflect Patch’s Field Blaster. These reflection rules are already implemented.",
-    "Chef Sizzle — Culinary Sniper Rifle: fires 0.1 seconds slower; attack interval increased from 1.1 to 1.2 seconds.",
-    "Chef Sizzle — Backdraft: cooldown increased from 8.5 to 9 seconds.",
-    "Chef Sizzle — Marinara: description now states its damage rate of 13 damage per second. This is a description clarification, not a damage change.",
-    "Mycelis — Spore Pod: slow duration reduced from 5 to 3 seconds (already implemented). Poison remains 20 total damage over 5 seconds; the slow and poison durations are separate."
+    {
+      "type": "buff",
+      "text": "Patch — Stim: movement-speed bonus increased from 30% to 35%."
+    },
+    {
+      "type": "buff",
+      "text": "Jackpot — Dice 2: self-slowness reduced from 50% to 40% for 2 seconds."
+    },
+    {
+      "type": "buff",
+      "text": "Jackpot — Lucky Revolver: normal and loaded Tails shots deal 7 damage instead of 6."
+    },
+    {
+      "type": "buff",
+      "text": "Jackpot — All In: duration increased from 6 to 7 seconds. Eliminations reset the timer to the normal 7-second duration."
+    },
+    {
+      "type": "buff",
+      "text": "Sir Dentley — Movement speed increased from 125 to 130."
+    },
+    {
+      "type": "nerf",
+      "text": "Bruno — Sledgehammer: damage reduced from 30 to 25."
+    },
+    {
+      "type": "buff",
+      "text": "Bruno — Sledgehammer: attack interval reduced from 1.25 to 1.2 seconds."
+    },
+    {
+      "type": "rework",
+      "text": "Bruno — Projectile reflection: cannot reflect Captain Oink’s Cannonball; can reflect Patch’s Field Blaster."
+    },
+    {
+      "type": "nerf",
+      "text": "Chef Sizzle — Culinary Sniper Rifle: fires 0.1 seconds slower; attack interval increased from 1.1 to 1.2 seconds."
+    },
+    {
+      "type": "nerf",
+      "text": "Chef Sizzle — Backdraft: cooldown increased from 8.5 to 9 seconds."
+    },
+    {
+      "type": "nerf",
+      "text": "Mycelis — Spore Pod: slow duration reduced from 5 to 3 seconds. Poison remains 20 total damage over 5 seconds; the slow and poison durations are separate."
+    }
   ]
 };
 
@@ -8636,6 +8680,9 @@ const VERSION_UPDATES = {
     list.replaceChildren();
 
     for (const note of notes) {
+      if(selector==="#updates-balance-list" && (!note || typeof note!=="object" || !["buff","nerf","rework"].includes(String(note.type||"").toLowerCase()))) {
+        console.error('Champion balance entries require a buff, nerf, or rework type:',note);continue;
+      }
       const item = document.createElement("li");
 
       // Normal Game Updates entries remain unchanged.
@@ -8653,7 +8700,7 @@ const VERSION_UPDATES = {
 
           item.appendChild(label);
           item.appendChild(
-            document.createTextNode(" " + note.text)
+            document.createTextNode(" " + String(note.text||"").replace(/\s*\(already implemented\)/gi,""))
           );
         } else {
           item.textContent = note.text || "";
