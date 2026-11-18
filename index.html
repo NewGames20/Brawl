@@ -968,8 +968,8 @@ HEROES.push({n:"Jackpot",e:"\ud83c\udfb0",w:"\ud83e\ude99",wn:"Lucky Revolver",r
 HEROES.push({n:"Patch",e:"⛨",w:"⌖",wn:"FIELD BLASTER",role:"Survivalist",roleCol:"#7cdbb0",hp:185,sp:172,col:0x527560,cd:.6,melee:false,atkRange:480,a1n:"Medkit",a1cd:14,a2n:"Stim",a2cd:11,a3n:"Cooked Grenade",a3cd:12,ad:"Accurate projectile: 13 damage every 0.6 seconds.",a1d:"Restore 35 HP over 3 seconds. Enemy damage interrupts healing. Cannot exceed maximum HP. Unavailable while cooking.",a2d:"Gain 35% movement speed for 3 seconds. Does not remove stuns or pass through obstacles.",a3d:"Hold F (or .) to cook; release to throw. The 3-second fuse never resets. Up to 25 damage with distance falloff, modest knockback, terrain bounces and cover blocking. Can kill Patch. Death drops the live grenade.",d:"A reliable survivalist. Find cover to heal, use Stim to reposition, and time a live grenade carefully. No passive or special resource."});
 
 HEROES.push({n:"Tether",e:"◎",w:"◎",wn:"Yo-Yo Strike",role:"Trapper / Control",roleCol:"#e6a963",hp:165,sp:155,col:0xc47845,cd:1.15,melee:false,atkRange:235,ab1Range:170,ab2Range:130,isNew:true,
- ad:"Throw one yo-yo up to 225 units. While outbound, touching its head OR attached string deals 5 damage every 0.2s, sharing one timer per enemy. It snaps back at 550 speed (outbound: 235), dealing 15 damage and a 0.7s stun once per enemy touched by the returning head. The returning string deals no damage. Cover blocks both directions and clips the damaging string.",
- a1n:"Bungee Snare",a1cd:12,a1d:"Plant a visible, 60 HP anchor up to 150 units ahead. Waits 6s. The first enemy touching it takes 10 damage and is tethered for 3s within 70 units. Crossing the boundary yanks toward the center for 5 damage and a 0.5s stun. Maximum two yanks, at least 1.2s apart. Enemies can destroy the anchor. One anchor per Tether. Solid cover blocks placement and pulls.",
+ ad:"Throw one yo-yo up to 225 units. While outbound, touching its head OR attached string deals 5 damage every 0.5s, sharing one timer per enemy. It snaps back at 1600 speed (outbound: 235), dealing 15 damage and a 0.8s stun once per enemy touched by the returning head. The returning string deals no damage. Cover blocks both directions and clips the damaging string.",
+ a1n:"Bungee Snare",a1cd:12,a1d:"Plant a visible, 60 HP anchor up to 150 units ahead. Waits 6s. The first enemy touching it takes 10 damage and is tethered for 4s within 70 units. Crossing the boundary yanks toward the center for 5 damage and a 0.5s stun. Maximum two yanks, at least 1.2s apart. Enemies can destroy the anchor; its owner cannot damage it. One anchor per Tether. Solid cover blocks placement and pulls.",
  a2n:"Recoil Spring",a2cd:10,a2d:"Compress visibly for 0.25s, then release into a 130-unit spring launch over 0.32s. A wall collision creates a 70-unit rebound over 0.24s and grants +25% speed for 2s. Remain damageable throughout; stuns interrupt the wind-up or launch. Movement, attacks and other abilities are committed until release finishes. Walls stop unsafe travel.",d:"A nimble toy-maker who controls approach routes with a destructible bungee anchor, returning yo-yo and wall-bounce escape. Free for every player."});
 // Champion text is generated from the same settings as the real hitboxes.
 HEROES[0].ad=HEROES[0].ad.replace(/A \d+-degree(?: forward)?,/,`A ${COMBAT_SETTINGS.brunoAttackDegrees}-degree forward,`);
@@ -4597,7 +4597,7 @@ function spawnMeleeSector(e,radius,halfArc,color){
 }
 function melee(e, rng, d, kb, noReflect) {
   let hammerHit=false;const halfArc=meleeHalfArc(e);
-  if(!isMultiplayer||isLobbyLeader)for(const q of tetherAnchors){const dx=q.x-e.x,dz=q.z-e.z,a=Math.atan2(Math.sin(Math.atan2(dz,dx)-e.a),Math.cos(Math.atan2(dz,dx)-e.a));if(q.hp>0&&areEnemies(e,q.owner)&&Math.hypot(dx,dz)<rng+12&&Math.abs(a)<=halfArc&&hasLOS(e.x,e.z,q.x,q.z))q.hp-=d;}
+  if(!isMultiplayer||isLobbyLeader)for(const q of tetherAnchors){const dx=q.x-e.x,dz=q.z-e.z,a=Math.atan2(Math.sin(Math.atan2(dz,dx)-e.a),Math.cos(Math.atan2(dz,dx)-e.a));if(canDamageTetherAnchor(e,q)&&Math.hypot(dx,dz)<rng+12&&Math.abs(a)<=halfArc&&hasLOS(e.x,e.z,q.x,q.z))damageTetherAnchor(q,d,e);}
   e.swing = 0.25;
   spawnMeleeSector(e,rng,halfArc,0xffb042);
   if(isMultiplayer && !isLobbyLeader) return;
@@ -5613,7 +5613,7 @@ window.returnToMenu = function(message = "Select a champion to battle in the are
 let roundVote=null,roundVoteSerial=0,pendingRoundReady=false,lastRoundStatePacket=null,lastRoundStartPacket=null,pendingStartGamePacket=null,lastStartedRoundId=null;
 const REMATCH_COUNTDOWN_MS=10000,MAP_VOTE_DURATION_MS=7000;
 const HOST_AWAY_TIMEOUT_MS=20000;
-const ARENA_PROTOCOL_VERSION="23-tether-spring:"+Object.values(COMBAT_SETTINGS).join(":");
+const ARENA_PROTOCOL_VERSION="24-tether-snap:"+Object.values(COMBAT_SETTINGS).join(":");
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,m)=>total+(votes[m.id]===i?1:0),0)),max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===MAPS.length?Math.floor(random()*MAPS.length):winner;
 }
@@ -8326,7 +8326,7 @@ function upd(dt) {
       }else{damageWorldCrate(p.d||8,p.o);finalize=true;}
     }
 
-    if(!finalize&&(!isMultiplayer||isLobbyLeader)){for(const q of tetherAnchors)if(q.hp>0&&areEnemies(p.o,q.owner)&&Math.hypot(q.x-p.x,q.z-p.z)<15&&p.y>0&&p.y<25){q.hp-=p.d||5;spawnSparks(q.x,q.z,0xffce83,3);finalize=true;break;}}
+    if(!finalize&&(!isMultiplayer||isLobbyLeader)){for(const q of tetherAnchors)if(canDamageTetherAnchor(p.o,q)&&Math.hypot(q.x-p.x,q.z-p.z)<15&&p.y>0&&p.y<25){damageTetherAnchor(q,p.d||5,p.o);spawnSparks(q.x,q.z,0xffce83,3);finalize=true;break;}}
     if(!finalize) {
       for(const t of E) {
         const targetPos = getCombatPosition(t, p.o, p.age * 1000);
@@ -8448,6 +8448,18 @@ function buildTetherWeapon(isViewmodel=false){
  const axle=new THREE.Mesh(new THREE.CylinderGeometry(2,2,5,10),rim);axle.rotation.x=Math.PI/2;g.add(axle);
  if(isViewmodel){g.scale.setScalar(.7);const string=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(-1,10,1)]),new THREE.LineBasicMaterial({color:0xffedbd}));g.add(string);}return g;
 }
+function canDamageTetherAnchor(attacker,q){
+ if(!attacker||!q||!q.owner||q.hp<=0)return false;
+ if(attacker===q.owner)return false;
+ // Ownership survives entity replacement / network snapshot reconstruction.
+ const id=attacker.netId,ownerId=q.owner.netId;
+ if(typeof id==='string'&&id.length>0&&typeof ownerId==='string'&&id===ownerId)return false;
+ return areEnemies(attacker,q.owner);
+}
+function damageTetherAnchor(q,amount,attacker){
+ if((isMultiplayer&&!isLobbyLeader)||!Number.isFinite(amount)||amount<=0||!canDamageTetherAnchor(attacker,q))return false;
+ q.hp=Math.max(0,q.hp-amount);return true;
+}
 function clearTetherAnchors(){for(const q of tetherAnchors)disposeHierarchy(q.mesh);tetherAnchors=[];toyLastEvent=-1;}
 function anchorMesh(q){
  const g=new THREE.Group(),base=new THREE.Mesh(new THREE.CylinderGeometry(11,13,5,12),new THREE.MeshStandardMaterial({color:0xb7814e,metalness:.5,roughness:.4}));base.position.y=3;g.add(base);
@@ -8547,9 +8559,9 @@ function tetherVisibleStringEnd(p){
 function tickTetherYoyo(p,dt){
  if(p.o.dead)return true;p.age+=dt;if(p.age>4)return true;
  p.travel=p.travel||0;p.contact=p.contact||new Map();p.returnHits=p.returnHits||new Set();p.objectReturnHits=p.objectReturnHits||new Set();const auth=!isMultiplayer||isLobbyLeader;
- const steps=Math.max(1,Math.ceil((hasUp(p.o,9,4)?605:550)*dt/3));
+ const steps=Math.max(1,Math.ceil((hasUp(p.o,9,4)?1760:1600)*dt/3));
  for(let i=0;i<steps;i++){
-  const wasOut=p.out,speed=wasOut?235:(hasUp(p.o,9,4)?605:550),subdt=dt/steps;
+  const wasOut=p.out,speed=wasOut?235:(hasUp(p.o,9,4)?1760:1600),subdt=dt/steps;
   if(!wasOut){const dx=p.o.x-p.x,dz=p.o.z-p.z,d=Math.hypot(dx,dz);if(d<17)return true;p.vx=dx/d*speed;p.vz=dz/d*speed;}
   const nx=p.x+p.vx*subdt,nz=p.z+p.vz*subdt;
   if(terrainAt(nx,14,nz,3)){if(!wasOut)return true;p.out=false;continue;}
@@ -8562,17 +8574,17 @@ function tickTetherYoyo(p,dt){
    if(wasOut){const c=tetherSegmentContact(p.o.x,p.o.z,end.x,end.z,t.x,t.z);lineTouch=c.distance<=t.r+2.5&&hasLOS(c.x,c.z,t.x,t.z);}
    if(wasOut&&(headTouch||lineTouch)){
     // A single timer covers head + string, so overlapping them never doubles damage.
-    if((p.contact.get(t)??-Infinity)<=stamp+1e-7){hurt(t,5,Math.atan2(t.z-p.o.z,t.x-p.o.x),0,p.o,'projectile');p.contact.set(t,stamp+.2);}
+    if((p.contact.get(t)??-Infinity)<=stamp+1e-7){hurt(t,5,Math.atan2(t.z-p.o.z,t.x-p.o.x),0,p.o,'projectile');p.contact.set(t,stamp+.5);}
    }else if(!wasOut&&headTouch&&!p.returnHits.has(t)){
-    p.returnHits.add(t);const immune=t.feintInvuln>0||(t.chain&&t.chain.inv);hurt(t,15,Math.atan2(p.vz,p.vx),35,p.o,'projectile');if(!immune&&!t.dead)t.stun=Math.max(t.stun||0,.7);
+    p.returnHits.add(t);const immune=t.feintInvuln>0||(t.chain&&t.chain.inv);hurt(t,15,Math.atan2(p.vz,p.vx),35,p.o,'projectile');if(!immune&&!t.dead)t.stun=Math.max(t.stun||0,.8);
    }
   }
   if(auth)for(const q of tetherAnchors){
-   if(q.hp<=0||!areEnemies(p.o,q.owner))continue;
+   if(!canDamageTetherAnchor(p.o,q))continue;
    const c=tetherSegmentContact(p.o.x,p.o.z,end.x,end.z,q.x,q.z),touch=wasOut?(c.distance<=15&&hasLOS(c.x,c.z,q.x,q.z)):(Math.hypot(q.x-p.x,q.z-p.z)<18&&hasLOS(p.x,p.z,q.x,q.z));
    if(!touch)continue;
-   if(wasOut&&(p.contact.get(q)??-Infinity)<=stamp+1e-7){q.hp-=5;p.contact.set(q,stamp+.2);}
-   else if(!wasOut&&!p.objectReturnHits.has(q)){p.objectReturnHits.add(q);q.hp-=15;}
+   if(wasOut&&(p.contact.get(q)??-Infinity)<=stamp+1e-7){damageTetherAnchor(q,5,p.o);p.contact.set(q,stamp+.5);}
+   else if(!wasOut&&!p.objectReturnHits.has(q)){p.objectReturnHits.add(q);damageTetherAnchor(q,15,p.o);}
   }
   if(auth&&worldCrate&&!(worldCrate.y>0)&&worldCrate.bombT===null&&Math.hypot(worldCrate.x-p.x,worldCrate.z-p.z)<worldCrate.r+7){p.crateHits=p.crateHits||new Set();const key=worldCrate.id+':'+wasOut;if(!p.crateHits.has(key)){p.crateHits.add(key);damageWorldCrate(wasOut?5:15,p.o);}}
   if(wasOut&&p.travel>=(hasUp(p.o,9,0)?250:225))p.out=false;
@@ -8584,7 +8596,7 @@ function tickTetherYoyo(p,dt){
 function tickTetherAnchors(dt){
  const auth=!isMultiplayer||isLobbyLeader;
  for(let i=tetherAnchors.length-1;i>=0;i--){const q=tetherAnchors[i];if(auth){q.life-=dt;if(q.owner.dead)q.hp=0;
-  if(!q.target&&q.life>0&&q.hp>0)for(const t of E)if(!t.dead&&!(t.feintInvuln>0||(t.chain&&t.chain.inv))&&areEnemies(q.owner,t)&&Math.hypot(t.x-q.x,t.z-q.z)<t.r+12&&hasLOS(q.x,q.z,t.x,t.z)){q.target=t;q.life=3;hurt(t,10,0,0,q.owner);spawn3DRing(q.x,q.z,70,0xffcc83);break;}
+  if(!q.target&&q.life>0&&q.hp>0)for(const t of E)if(!t.dead&&!(t.feintInvuln>0||(t.chain&&t.chain.inv))&&areEnemies(q.owner,t)&&Math.hypot(t.x-q.x,t.z-q.z)<t.r+12&&hasLOS(q.x,q.z,t.x,t.z)){q.target=t;q.life=4;hurt(t,10,0,0,q.owner);spawn3DRing(q.x,q.z,70,0xffcc83);break;}
   const t=q.target;if(t&&!t.dead&&!(t.feintInvuln>0||(t.chain&&t.chain.inv))&&q.hp>0&&q.life>0&&q.yanks<2&&matchTime>=q.nextYank&&Math.hypot(t.x-q.x,t.z-q.z)>70&&hasLOS(q.x,q.z,t.x,t.z)){
    const angle=Math.atan2(q.z-t.z,q.x-t.x),distance=Math.hypot(t.x-q.x,t.z-q.z);
    for(let d=0;d<distance;d+=2){const n=Math.min(2,distance-d),nx=t.x+Math.cos(angle)*n,nz=t.z+Math.sin(angle)*n;if(blocked(nx,nz,t.r))break;t.x=nx;t.z=nz;}
@@ -8767,7 +8779,8 @@ requestAnimationFrame(loop);
 const VERSION_UPDATES = {
   "version": "BRAWLBOUND · TETHER & TOYBOX UPDATE",
   "game": [
-    "TETHER FEEL UPDATE: Outbound yo-yo head and string share 5-damage / 0.2s contact ticks. Fast return head retains 15 damage and 0.7s stun. Recoil Spring now compresses for 0.25s before a timed, animated spring launch and wall rebound.",
+    "TETHER SNAP UPDATE: Outbound yo-yo / string contact now deals 5 damage every 0.5s. Return snaps back at 1600 speed, deals 15 damage and stuns 0.8s. Triggered snares tether for 4s and cannot be damaged by their owner. Recoil Spring unchanged.",
+    "PREVIOUS UPDATE: TETHER FEEL UPDATE: Outbound yo-yo head and string share 5-damage / 0.2s contact ticks. Fast return head retains 15 damage and 0.7s stun. Recoil Spring now compresses for 0.25s before a timed, animated spring launch and wall rebound.",
     "TETHER: Free new control champion. Yo-Yo Strike, destructible Bungee Snare and Recoil Spring; bot support, multiplayer anchor state and five round upgrades.",
     "MAPS: Toybox Trouble added. All three arenas now have richer themed cover, materials, floor markings and environmental dressing.",
     "CONVEYOR KITCHEN: Eight randomized prep islands / partition pieces per round, one more than before. They reposition between rounds, not during combat.",
@@ -8784,6 +8797,14 @@ const VERSION_UPDATES = {
     "PREVIOUS UPDATE: CHEF SIZZLE: Marinara’s description now states 13 damage per second. This is a description clarification, not a damage change."
   ],
   "champions": [
+    {
+      "type": "rework",
+      "text": "Tether — Yo-Yo Strike: outbound head/string damage interval 0.2 → 0.5s, still 5 damage with a shared timer. Return speed 550 → 1600 for a sharp snap; Quick Spool 605 → 1760. Return hit remains 15 damage; stun 0.7 → 0.8s. Returning string remains harmless."
+    },
+    {
+      "type": "buff",
+      "text": "Tether — Bungee Snare: tether duration after triggering 3 → 4s. Owner damage is blocked for yo-yo, string, normal projectiles and melee, including matching network ownership. Waiting lifetime remains 6s; two-yank cap, 1.2s retrigger delay and 60 HP remain unchanged."
+    },
     {
       "type": "rework",
       "text": "HP / SPEED: Bruno 285 / 108; Captain Oink 205 / 137; Mango 145 / 180; Chef Sizzle 135 / 153; Quackbot 105 / 190; Mycelis 175 / 147; Sir Dentley 230 / 128; Jackpot 155 / 163; Patch 185 / 172; Tether 165 / 155."
