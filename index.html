@@ -8,7 +8,7 @@
 <script>
 const COMBAT_SETTINGS = {
   brunoAttackDegrees:   150, // Bruno's hammer attack
-  dentleyAttackDegrees: 110, // Armored Dentley's sword attack
+  dentleyAttackDegrees: 120, // Armored Dentley's sword attack
   dentleyShieldDegrees: 200, // Dentley's shield coverage
   squireAttackDegrees:  250, // Unarmored Dentley's dagger attack
 };
@@ -827,13 +827,13 @@ const BALANCE_PATCH = {
   // Release from minGuard through this elapsed time to earn the boost.
   releaseBoostDeadline:1.8,
   // Squire Dagger Feint: cooldown, damage per enemy crossed, and stun.
-  feintCooldown:7, feintDamage:10, feintStun:0.4,
-  guardHalfArc:combatHalfAngle(COMBAT_SETTINGS.dentleyShieldDegrees), lungeCooldown:8.5, lungeBaseDamage:10,
-  maxCharge:40, minStun:0.3, maxStun:1.5,
+  feintCooldown:7, feintDamage:10, feintStun:0.6,
+  guardHalfArc:combatHalfAngle(COMBAT_SETTINGS.dentleyShieldDegrees), lungeCooldown:9, lungeBaseDamage:10,
+  maxCharge:40, minStun:0.4, maxStun:1.7,
   squireGrace:1, squireDamageMultiplier:0.5,
   recallDelay:5, recallDistance:32, rearmRange:50, rearmTime:1.5, huskLife:10},
  bruno:{slamDamage:15, slamStun:1.1, chargeDamage:10},
- mango:{bombCooldown:9, peelCooldown:11, peelDistance:40, peelDamage:10, bananaDamage:9},
+ mango:{bombCooldown:9.5, peelCooldown:12, peelDistance:40, peelDamage:5, bananaDamage:9},
  sizzle:{sauceRadius:60,sauceDuration:3},
  quackbot:{barrageCooldown:9},
  mycelis:{
@@ -845,11 +845,11 @@ const BALANCE_PATCH = {
  }
 };
 const PATCH_UPDATES = {
-  "version": "BRAWLBOUND · CHAMPION BALANCE UPDATE",
+  "version": "BRAWLBOUND · TETHER & TOYBOX UPDATE",
   "announcement": "SURVIVALIST UPDATE: Patch · Vertical aiming · Round upgrades",
   "notes": [
     "PATCH: Permanently unlock the Survivalist for 500 Shinies!!",
-    "PATCH SKINS: Buy Beacon Field Blaster for 500 Shinies or Nightwatch Patch for 700 Shinies directly in the Shinies Shop.",
+    "PATCH SKINS: Buy Beacon Field Blaster for 400 Shinies or Nightwatch Patch for 600 Shinies directly in the Shinies Shop.",
     "MENU: New UI,options, and more!",
     "PATCH FIX: Grenade trajectory preview uses matching flight simulation and current aiming direction.",
     "PATCH FIX: Grenade cooldown correctly displays the opening 3-second ability lockout separately from its normal cooldown and cooking fuse.",
@@ -875,7 +875,7 @@ const HEROES = [
  {
    n:"Bruno", e:"\ud83d\udc3b", w:"\ud83d\udd28", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
-   hp: 250, sp: 120, col: 0x5e381b, cd: 1.2,
+   hp: 285, sp: 108, col: 0x5e381b, cd: 1.2,
    a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 15 damage, heavy knockback, and a 1.1-second stun.",
    a2n:"Charge", a2cd: 14.0,
    ad:"A 270-degree, 80-unit hammer sweep deals 25 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink\u2019s scrap bullets, Sizzle\u2019s meatballs, Quackbot\u2019s and Patch\u2019s bullets, and Jackpot\u2019s bullets unless fired during ALL IN. Captain Oink\u2019s Cannonball, boomerangs, bananas, grenades, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
@@ -884,26 +884,26 @@ const HEROES = [
  {
    n:"Captain Oink", e:"\ud83d\udc37", w:"\u2693", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
-   hp: 180, sp: 140, col: 0xdf84a5, cd: 1,
+   hp: 205, sp: 137, col: 0xdf84a5, cd: 1,
    a1n:"Chain Hook", a1cd: 12, a1d:"Launch a hook up to 200 units ahead. Hitting an enemy pulls them toward Captain Oink and stuns them when they arrive; striking a wall pulls him to it. He is protected while the hook flies or reels in a target, but a miss leaves him rooted and vulnerable for a longer return.",
    a2n:"Cannonball", a2cd: 10,
-   ad:"Fire five scrap pellets in a spread, each dealing 8.5 damage. It rewards close aim, where more pellets can connect.", a2d:"Fire a heavy cannonball for 25 direct damage and a blast that can hit enemies within 80 units for 15 damage, knockback, and a half-second stun.",
+   ad:"Fire five scrap pellets in a wider spread, each dealing 9 damage. It rewards close aim, where more pellets can connect.", a2d:"Fire a heavy cannonball for 25 direct damage and a blast that can hit enemies within 80 units for 15 damage, knockback, and a half-second stun.",
    melee: false, d:"A sturdy close-range bruiser who can start fights with a hook, then punish clustered opponents with his scrap shotgun or explosive cannonball. Hooked foes are dragged into Captain Oink\u2019s preferred range, while a wall hit gives him a quick route through the arena. A missed hook creates a brief opening, so choose the angle carefully."
  },
  {
    n:"Mango the Monkey", e:"\ud83d\udc35", w:"\ud83c\udf4c", wn:"Banana Boomerang",
    role: "Skirmisher", roleCol: "#d6a71e",
-   hp: 150, sp: 170, col: 0xa87132, cd: 0.85,
+   hp: 145, sp: 180, col: 0xa87132, cd: 0.85,
    a1n:"Cluster Bomb", a1cd: BALANCE_PATCH.mango.bombCooldown, a1d:"Lob a fruit bomb ahead. When it bursts, six returning banana boomerangs fan out from the blast point, each dealing 9 damage and knockback on a hit.",
    a2n:"Peel Trap", a2cd: BALANCE_PATCH.mango.peelCooldown,
-   ad:"Throw a Banana Boomerang for 15 damage. Cannot be reflected: they are bananas, not bullets! It travels forward, then curves back toward Mango. It passes through supply crates and can damage the same crate once outbound and once returning.", a2d:"Drop a peel 40 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 10 damage, is launched, and is stunned for 1.5 seconds.",
+   ad:"Throw a Banana Boomerang for 15 damage. Cannot be reflected: they are bananas, not bullets! It travels forward, then curves back toward Mango. It passes through supply crates and can damage the same crate once outbound and once returning.", a2d:"Drop a peel 40 units ahead. It waits for up to 5 seconds; the first enemy who steps within range takes 5 damage, is launched, and is stunned for 1.7 seconds.",
    melee: false, d:"A fast skirmisher who keeps moving while boomerangs pressure opponents from different angles. Cluster Bomb scatters returning blades across a fight, and Peel Trap can punish a pursuer or guard a narrow route. Mango is less durable than the frontliners, so use speed and spacing to avoid being pinned down."
  },
  {
    n:"Chef Sizzle", e:"\ud83e\uddd1\u200d\ud83c\udf73", w:"\ud83c\udf5d", wn:"Culinary Sniper Rifle",
    role: "Sniper", roleCol: "#d44722",
-   hp: 130, sp: 155, col: 0xededed, cd: 1.2,
-   a1n:"Marinara", a1cd: 7.5, a1d:"Place a 60-unit sauce pool 80 units ahead for 3 seconds. Enemies standing in it are slowed and take 13 damage per second.",
+   hp: 135, sp: 153, col: 0xededed, cd: 1.2,
+   a1n:"Marinara", a1cd: 7.5, a1d:"Place a 60-unit sauce pool 80 units ahead for 3 seconds. Enemies standing in it are slowed and take 10 damage per second.",
    a2n:"Backdraft", a2cd: 9,
    ad:"Fire a long-range meatball projectile for 35 damage and knockback. Its travel time rewards aiming where an opponent is moving.", a2d:"Burst backward to make space and leave five patches of flame along the retreat path. Each patch burns and slows enemies who cross it for a short time.",
    melee: false, d:"A fragile ranged specialist who controls lanes with heavy meatball shots and lingering fire. Marinara makes a section of the arena costly to hold, while Backdraft creates distance and leaves a dangerous trail behind. Sizzle performs best when she can see a route ahead and keep opponents outside close range."
@@ -911,7 +911,7 @@ const HEROES = [
  {
    n:"Quackbot", e:"\ud83e\udd16", w:"\ud83e\udd86", wn:"Cybernetic Plasma Blaster",
    role: "Assassin", roleCol: "#2b9bc4",
-   hp: 110, sp: 185, col: 0x309bb0, cd: 0.25,
+   hp: 105, sp: 190, col: 0x309bb0, cd: 0.25,
    a1n:"Blink", a1cd: 6.0, a1d:"Dash instantly forward in up to fifteen short steps. Walls stop the movement, so Blink can slip around cover but cannot pass through it.",
    a2n:"Barrage", a2cd: BALANCE_PATCH.quackbot.barrageCooldown,
    ad:"Fire quick plasma darts for 7 damage each with a tight, simple firing spread. Quackbot's short attack cooldown favors steady aim and repeated pressure over one large hit.", a2d:"Queue seven plasma darts in a rapid burst. Each dart deals 7.5 damage, letting the full stream punish a target who stays in the firing lane.",
@@ -920,7 +920,7 @@ const HEROES = [
  {
    n:"Mycelis", e:"\ud83c\udf44", w:"\ud83e\ude84", wn:"Chitinous Spore Staff",
    role: "Tactician", roleCol: "#7d5ba6",
-   hp: 160, sp: 150, col: 0x472f59, cd: 0.95,
+   hp: 175, sp: 147, col: 0x472f59, cd: 0.95,
    a1n:"Spore Pod", a1cd: BALANCE_PATCH.mycelis.podCooldown, a1d:"Plant a hidden pod 40 units ahead. It waits for up to 6 seconds. Triggering it releases a cloud that poisons affected enemies for 20 total damage over 5 seconds (4 per second) and slows movement by 60% for 3 seconds, leaving 40% normal movement speed during that time. Poison continues for the full 5 seconds. The 7-second cooldown begins when the pod triggers or expires.",
    a2n:"Root Entangle", a2cd: 9.0,
    ad:"Cannot be reflected: these are shots of magical powers beyond reflection. Fire a spore bolt for 20 damage and knockback. Spore Pod poison deals 20 total damage over 5 seconds and slows movement by 60% for 3 seconds; Root Entangle uses a separate damage-over-time effect.", a2d:"Launch an overgrowth projectile for 10 direct damage. On impact, a burst in a 55-unit radius roots affected enemies for 1.7 seconds and deals 10 damage over 3 seconds, with no instant burst damage. A direct hit plus the full damage-over-time effect deals 20 total damage before damage reduction; enemies hit only by the burst take 10 over time.",
@@ -929,18 +929,18 @@ const HEROES = [
  {
    n:"Sir Dentley", e:"\ud83d\udee1\ufe0f", w:"\u2694\ufe0f", wn:"Longsword",
    role: "Duelist", roleCol: "#9fb4d6",
-   hp: 210, sp: 130, col: 0x8d97a8, cd: 0.5,
+   hp: 230, sp: 128, col: 0x8d97a8, cd: 0.5,
 
    a1n:"Shield Guard",
    a1cd: BALANCE_PATCH.dentley.guardCooldown,
    a1cdSquire: BALANCE_PATCH.dentley.feintCooldown,
-   a1d:"Armored \u2014 Shield Guard: Guard for 2.2 seconds in a 180\u00b0 front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage builds Counter Charge, up to 40. Movement is 25% slower while guarding, and attacks and other abilities are unavailable. Press this ability again between 0.5 and 1.8 seconds after raising the shield to release it and gain 25% movement speed for 0.8 seconds. Releasing after 1.8 seconds is allowed but grants no boost; letting Guard expire naturally also grants no boost. Early release does not refund the cooldown. Squire \u2014 Dagger Feint: Dash forward up to 70 units with 0.2 seconds of invulnerability. Each enemy crossed takes 10 damage before damage reduction and is stunned for 0.4 seconds, once per activation. Walls stop the forward dash. Cooldown: 7 seconds.",
+   a1d:"Armored \u2014 Shield Guard: Guard for 2.2 seconds in a 180\u00b0 front arc, reducing projectile damage by 75% and melee/zone damage by 60%. Blocked damage builds Counter Charge, up to 40. Movement is 25% slower while guarding, and attacks and other abilities are unavailable. Press this ability again between 0.5 and 1.8 seconds after raising the shield to release it and gain 25% movement speed for 0.8 seconds. Releasing after 1.8 seconds is allowed but grants no boost; letting Guard expire naturally also grants no boost. Early release does not refund the cooldown. Squire \u2014 Dagger Feint: Dash forward up to 70 units with 0.2 seconds of invulnerability. Each enemy crossed takes 10 damage before damage reduction and is stunned for 0.6 seconds, once per activation. Walls stop the forward dash. Cooldown: 7 seconds.",
 
    a2n:"Counter Lunge",
    a2cd: BALANCE_PATCH.dentley.lungeCooldown,
-   a2d:"Armored \u2014 Counter Lunge: Lunge forward up to 110 units, dealing 10 damage plus stored Counter Charge, up to 50 total damage. Stun scales from 0.3 seconds at zero charge to 1.5 seconds at 40 charge. All charge is spent when used, even if the lunge misses. Squire \u2014 Recall Armor: Becomes available 5 seconds after turning into Squire. Press this ability to place the surviving armor husk directly in front of you. Usable once per armor break. Recall does not restore the husk's health, refresh its remaining lifetime, or immediately rearm you. Destroyed or expired armor cannot be recalled.",
+   a2d:"Armored \u2014 Counter Lunge: Lunge forward up to 120 units, dealing 10 damage plus stored Counter Charge, up to 50 total damage. Stun scales from 0.4 seconds at zero charge to 1.7 seconds at 40 charge. All charge is spent when used, even if the lunge misses. Squire \u2014 Recall Armor: Becomes available 5 seconds after turning into Squire. Press this ability to place the surviving armor husk directly in front of you. Usable once per armor break. Recall does not restore the husk's health, refresh its remaining lifetime, or immediately rearm you. Destroyed or expired armor cannot be recalled.",
 
-   ad:"Armored \u2014 Longsword: A 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 50 units. The combo resets after 0.9 seconds without another hit. Squire \u2014 Dagger: Close-range attacks deal 8 damage.",
+   ad:"Armored \u2014 Longsword: A 3-hit combo deals 15 / 15 / 25 damage. The third strike is a physical lunge up to 60 units. The combo resets after 1 second without another hit. Squire \u2014 Dagger: Close-range attacks deal 9 damage.",
 
    melee: true,
    atkRange: 70,
@@ -948,47 +948,51 @@ const HEROES = [
    ab2Range: 110,
 
    passiveName: "Hollow Armor",
-   passive: "Dentley's armor can break once per match. At 0 armor HP, he becomes a 60 HP Squire. The armor bursts for 25 damage and knocks back nearby enemies, while Squire is knocked away from the dropped husk. Squire moves faster and gains 50% damage reduction for 1 second after the armor breaks. The husk lasts 10 seconds and can be destroyed. Stand still within 50 units of it for 1.5 seconds to rearm with 70 HP. Taking damage interrupts the rearming channel.",
+   passive: "Dentley's armor can break once per match. At 0 armor HP, he becomes a 60 HP Squire. The armor bursts for 25 damage and knocks back nearby enemies, while Squire is knocked away from the dropped husk. Squire moves faster and gains 50% damage reduction for 1 second after the armor breaks. The husk lasts 10 seconds and can be destroyed. Stand still within 50 units of it for 1.5 seconds to rearm with 80 HP. Taking damage interrupts the rearming channel.",
 
    d: "A duelist who turns defense into a counterattack. In armor, Shield Guard builds Counter Charge to strengthen Counter Lunge, while early shield release creates a brief opportunity to reposition. If his armor breaks, Dentley survives once as a faster, vulnerable Squire. Use Dagger Feint to evade attacks and Recall Armor to reposition the surviving husk, then find an opening to stand still and rearm."
 }
 ];
 
 
-HEROES.push({n:"Jackpot",e:"\ud83c\udfb0",w:"\ud83e\ude99",wn:"Lucky Revolver",role:"Gambler",roleCol:"#f2c14e",hp:160,sp:150,col:0x8c3d39,cd:0.6,
- a1n:"Roll the Dice",a1cd:9,a2n:"All In",a2cd:17,a3n:"Coin Toss",a3cd:1,melee:false,atkRange:500,
+HEROES.push({n:"Jackpot",e:"\ud83c\udfb0",w:"\ud83e\ude99",wn:"Lucky Revolver",role:"Gambler",roleCol:"#f2c14e",hp:155,sp:163,col:0x8c3d39,cd:0.6,
+ a1n:"Roll the Dice",a1cd:9,a2n:"All In",a2cd:16,a3n:"Coin Toss",a3cd:1,melee:false,atkRange:500,
  ad:"Fire for 7 damage every 0.6 seconds. A loaded Heads coin makes the next shot deal 20 damage; Tails deals 7.",
  a1d:"Roll a visible die: 1 takes 15 damage; 2 slows you by 40% for 2 seconds; 3 heals 25; 4 grants 35% speed for 3 seconds; 5 absorbs 40 damage; 6 heals 40, boosts speed, and guarantees Heads on your next 3 shots.",
- a2d:"Wager 25% of your current HP. For 7 seconds, move 25% faster and fire guaranteed 20-damage Heads. Every kill heals twice the original wager and restarts the 7-second window without another wager. Payouts can exceed max HP until damage removes the excess; normal healing cannot refill excess HP.",
+ a2d:"Wager 20% of your current HP. For 7 seconds, move 25% faster and fire guaranteed 20-damage Heads. Every kill heals twice the original wager and restarts the 7-second window without another wager. Payouts can exceed max HP until damage removes the excess; normal healing cannot refill excess HP.",
  a3d:"Flip and load one coin. It takes 0.5 seconds to land: Heads deals 20 damage on your next shot, Tails deals 7. A Tail guarantees Heads on your next flip. Fire to clear the chamber before flipping again.",
  d:"A high-variance gunslinger who can flip for a stronger shot, gamble on a die, or wager health for a short all-in burst."
 });
 
 
-HEROES.push({n:"Patch",e:"⛨",w:"⌖",wn:"FIELD BLASTER",role:"Survivalist",roleCol:"#7cdbb0",hp:170,sp:160,col:0x527560,cd:.6,melee:false,atkRange:480,a1n:"Medkit",a1cd:13,a2n:"Stim",a2cd:11,a3n:"Cooked Grenade",a3cd:12,ad:"Accurate projectile: 13 damage every 0.6 seconds.",a1d:"Restore 35 HP over 3 seconds. Enemy damage interrupts healing. Cannot exceed maximum HP. Unavailable while cooking.",a2d:"Gain 35% movement speed for 3 seconds. Does not remove stuns or pass through obstacles.",a3d:"Hold F (or .) to cook; release to throw. The 3-second fuse never resets. Up to 25 damage with distance falloff, modest knockback, terrain bounces and cover blocking. Can kill Patch. Death drops the live grenade.",d:"A reliable survivalist. Find cover to heal, use Stim to reposition, and time a live grenade carefully. No passive or special resource."});
+HEROES.push({n:"Patch",e:"⛨",w:"⌖",wn:"FIELD BLASTER",role:"Survivalist",roleCol:"#7cdbb0",hp:185,sp:172,col:0x527560,cd:.6,melee:false,atkRange:480,a1n:"Medkit",a1cd:14,a2n:"Stim",a2cd:11,a3n:"Cooked Grenade",a3cd:12,ad:"Accurate projectile: 13 damage every 0.6 seconds.",a1d:"Restore 35 HP over 3 seconds. Enemy damage interrupts healing. Cannot exceed maximum HP. Unavailable while cooking.",a2d:"Gain 35% movement speed for 3 seconds. Does not remove stuns or pass through obstacles.",a3d:"Hold F (or .) to cook; release to throw. The 3-second fuse never resets. Up to 25 damage with distance falloff, modest knockback, terrain bounces and cover blocking. Can kill Patch. Death drops the live grenade.",d:"A reliable survivalist. Find cover to heal, use Stim to reposition, and time a live grenade carefully. No passive or special resource."});
 
+HEROES.push({n:"Tether",e:"◎",w:"◎",wn:"Yo-Yo Strike",role:"Trapper / Control",roleCol:"#e6a963",hp:165,sp:155,col:0xc47845,cd:1.15,melee:false,atkRange:235,ab1Range:170,ab2Range:130,isNew:true,
+ ad:"Throw one yo-yo up to 225 units. While outbound, touching its head OR attached string deals 5 damage every 0.2s, sharing one timer per enemy. It snaps back at 550 speed (outbound: 235), dealing 15 damage and a 0.7s stun once per enemy touched by the returning head. The returning string deals no damage. Cover blocks both directions and clips the damaging string.",
+ a1n:"Bungee Snare",a1cd:12,a1d:"Plant a visible, 60 HP anchor up to 150 units ahead. Waits 6s. The first enemy touching it takes 10 damage and is tethered for 3s within 70 units. Crossing the boundary yanks toward the center for 5 damage and a 0.5s stun. Maximum two yanks, at least 1.2s apart. Enemies can destroy the anchor. One anchor per Tether. Solid cover blocks placement and pulls.",
+ a2n:"Recoil Spring",a2cd:10,a2d:"Compress visibly for 0.25s, then release into a 130-unit spring launch over 0.32s. A wall collision creates a 70-unit rebound over 0.24s and grants +25% speed for 2s. Remain damageable throughout; stuns interrupt the wind-up or launch. Movement, attacks and other abilities are committed until release finishes. Walls stop unsafe travel.",d:"A nimble toy-maker who controls approach routes with a destructible bungee anchor, returning yo-yo and wall-bounce escape. Free for every player."});
 // Champion text is generated from the same settings as the real hitboxes.
 HEROES[0].ad=HEROES[0].ad.replace(/A \d+-degree(?: forward)?,/,`A ${COMBAT_SETTINGS.brunoAttackDegrees}-degree forward,`);
 HEROES[6].a1d=HEROES[6].a1d.replace(/\d+\u00b0 front arc/,`${COMBAT_SETTINGS.dentleyShieldDegrees}\u00b0 front arc`);
 HEROES[6].ad=HEROES[6].ad.replace('Longsword: ',`Longsword: Attacks cover a ${COMBAT_SETTINGS.dentleyAttackDegrees}-degree arc in front of Dentley. `).replace('Dagger: ',`Dagger: Attacks cover a ${COMBAT_SETTINGS.squireAttackDegrees}-degree arc. `);
 
-const JACKPOT={hero:7,baseDamage:7,headsDamage:20,allInDamage:20,flipDuration:0.5,allInDuration:7,wagerFraction:0.25,allInSpeedMultiplier:1.25};
+const JACKPOT={hero:7,baseDamage:7,headsDamage:20,allInDamage:20,flipDuration:0.5,allInDuration:7,wagerFraction:0.20,allInSpeedMultiplier:1.25};
 
-const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 0.9 };
+const CHAIN = { max: 200, outSpd: 700, pullSelfSpd: 550, pullEnemySpd: 400, retractTime: 1.05 };
 
-const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5,16,16];
+const CHAMPION_RADII=[19,17,14.5,15,13,15.5,16.5,16,16,15.5];
 
-const SHINY_REWARDS = { daily: 50, kill: 15, win: 75 };
+const SHINY_REWARDS = { daily: 100, kill: 15, win: 75 };
 
 const DAILY_POOL=[
- {id:"play1",event:"matches",target:1,reward:35,text:"Finish 1 Quick Match"},
-  {id:"play2",event:"matches",target:2,reward:65,text:"Finish 2 Quick Matches"},
- {id:"play3",event:"matches",target:3,reward:100,text:"Finish 3 Quick Matches"},
- {id:"kill4",event:"kills",target:4,reward:60,text:"Get 4 Quick Match eliminations"},
- {id:"kill7",event:"kills",target:7,reward:100,text:"Get 7 Quick Match eliminations"},
-  {id:"win1",event:"wins",target:1,reward:75,text:"Win 1 Quick Match"},
- {id:"win2",event:"wins",target:2,reward:100,text:"Win 2 Quick Matches"},
- {id:"win3",event:"wins",target:3,reward:150,text:"Win 3 Quick Matches"}
+ {id:"play1",event:"matches",target:1,reward:50,text:"Finish 1 Quick Match"},
+  {id:"play2",event:"matches",target:2,reward:80,text:"Finish 2 Quick Matches"},
+ {id:"play3",event:"matches",target:3,reward:115,text:"Finish 3 Quick Matches"},
+ {id:"kill4",event:"kills",target:4,reward:75,text:"Get 4 Quick Match eliminations"},
+ {id:"kill7",event:"kills",target:7,reward:115,text:"Get 7 Quick Match eliminations"},
+  {id:"win1",event:"wins",target:1,reward:90,text:"Win 1 Quick Match"},
+ {id:"win2",event:"wins",target:2,reward:115,text:"Win 2 Quick Matches"},
+ {id:"win3",event:"wins",target:3,reward:165,text:"Win 3 Quick Matches"}
 ];
 
 const CRATE_RARITY_ODDS = [
@@ -997,7 +1001,7 @@ const CRATE_RARITY_ODDS = [
 ];
 const ATTACK_TUNING = {
  bruno:{range:80,damage:25,knockback:360},
- oink:{speed:410,damage:8.5,knockback:100,life:0.32,spread:0.14},
+ oink:{speed:410,damage:9,knockback:100,life:0.32,spread:0.18},
  mango:{speed:380,damage:15,knockback:140,life:99},
  sizzle:{speed:380,damage:35,knockback:95,life:1.6},
  quackbot:{speed:540,damage:7,knockback:35,life:0.48,spread:0.12},
@@ -1205,7 +1209,7 @@ const ACCOUNT_STORAGE_KEY = "bb_account_single_v2";
 
 const COSMETIC_HERO_COUNT = HEROES.length;
 
-const MENU_ANNOUNCEMENT = "NEW CHAMPION, ROUND UPGRADES, and UI CHANGES!";
+const MENU_ANNOUNCEMENT = "TETHER IS HERE · TOYBOX TROUBLE · THREE REFRESHED ARENAS";
 const NAMEPLATE_CATEGORIES = [
   { key: "nameColors", label: "Nametag Colors", cratePrice: 250, crateName: "Prismatic Color Cache", crateIcon: "\ud83c\udf08", items: [
     { id: "ember-soul", name: "Ember Soul", rarity: "Common", color: { from: "#fff0a6", to: "#ff552e" } },
@@ -1277,12 +1281,12 @@ SKIN_CATEGORIES.find(c=>c.key==="championSkins").items.push({id:"jackpot-high-ro
 
 // v1.3.1: Inventory, sequential champion challenges and full-body prestige auras.
 HEROES[8].isNew=true;HEROES[8].rarity='Rare';
-SKIN_CATEGORIES.find(c=>c.key==='weaponSkins').items.push({id:'patch-beacon',hero:8,name:'Beacon Field Blaster',rarity:'Rare',directPrice:500,base:'#e2dbc1',accent:'#7ce4bf',glow:'#228e74'});
-SKIN_CATEGORIES.find(c=>c.key==='championSkins').items.push({id:'patch-nightwatch',hero:8,name:'Nightwatch Patch',rarity:'Rare',directPrice:700,base:'#26303a',accent:'#edb974',glow:'#ba7234'});
+SKIN_CATEGORIES.find(c=>c.key==='weaponSkins').items.push({id:'patch-beacon',hero:8,name:'Beacon Field Blaster',rarity:'Rare',directPrice:400,base:'#e2dbc1',accent:'#7ce4bf',glow:'#228e74'});
+SKIN_CATEGORIES.find(c=>c.key==='championSkins').items.push({id:'patch-nightwatch',hero:8,name:'Nightwatch Patch',rarity:'Rare',directPrice:600,base:'#26303a',accent:'#edb974',glow:'#ba7234'});
 
-const MASTERY_NAMES=[['Titanfall','Arena Colossus'],['Royal Broadside','Dread Admiral'],['Solar Crescent','Sun Temple Mango'],['Starlight Supper','Celestial Chef'],['Ion Needle','Quantum Quackbot'],['Eclipse Scepter','Eclipse Mycelis'],['Kingsguard Edge','Sovereign Dentley'],['Royal Flush','Casino Sovereign'],['Trailblazer','Field Commander']];
+const MASTERY_NAMES=[['Titanfall','Arena Colossus'],['Royal Broadside','Dread Admiral'],['Solar Crescent','Sun Temple Mango'],['Starlight Supper','Celestial Chef'],['Ion Needle','Quantum Quackbot'],['Eclipse Scepter','Eclipse Mycelis'],['Kingsguard Edge','Sovereign Dentley'],['Royal Flush','Casino Sovereign'],['Trailblazer','Field Commander'],['Golden Spool','Master of Strings']];
 for(let hero=0;hero<HEROES.length;hero++){
- const colors=[['#30221a','#ffe08a','#ff9d38'],['#122c48','#99edff','#46bfff'],['#3d2037','#ffdc7a','#ff963a'],['#291838','#e8baff','#bd78ff'],['#122c36','#8effdf','#30eacd'],['#291b40','#e9aaff','#b47aff'],['#273248','#fff0ba','#ffd16b'],['#35172e','#ffe09b','#ff68b5'],['#183d30','#b8ffcf','#51e7b2']][hero];
+ const colors=[['#30221a','#ffe08a','#ff9d38'],['#122c48','#99edff','#46bfff'],['#3d2037','#ffdc7a','#ff963a'],['#291838','#e8baff','#bd78ff'],['#122c36','#8effdf','#30eacd'],['#291b40','#e9aaff','#b47aff'],['#273248','#fff0ba','#ffd16b'],['#35172e','#ffe09b','#ff68b5'],['#183d30','#b8ffcf','#51e7b2'],['#413049','#ffd19a','#f5a35b']][hero];
  for(const [key,index] of [['weaponSkins',0],['championSkins',1]])SKIN_CATEGORIES.find(c=>c.key===key).items.push({id:`mastery-${key}-${hero}`,hero,name:MASTERY_NAMES[hero][index],rarity:'Legendary',base:colors[0],accent:colors[1],glow:colors[2],masteryOnly:true});
 }
 SKIN_CATEGORIES.find(c=>c.key==='weaponSkins').cratePrice=500;
@@ -2305,6 +2309,10 @@ const MAPS=[
  spawns:[[W*.18,H*.22],[W*.82,H*.78],[W*.82,H*.22],[W*.18,H*.78],[W*.5,62],[W*.5,H-62],[W*.285,H*.5],[W*.715,H*.5]],
  vents:[],belts:[[W*.21,H*.43,W*.58,36,1,0],[W*.21,H*.53,W*.58,36,-1,0]]}
 ];
+MAPS.push({id:"toybox",name:"Toybox Trouble",floorCol:0x665444,wallCol:0x536c79,accent:0xffce73,
+ outline:[[14,14],[W-14,14],[W-14,H-14],[14,H-14]],voids:[],belts:[],vents:[],
+ cover:[[W*.23,H*.24,72,60],[W*.67,H*.24,72,60],[W*.23,H*.68,72,60],[W*.67,H*.68,72,60],[W*.43,H*.23,100,38],[W*.43,H*.71,100,38],[W*.30,H*.46,48,85],[W*.65,H*.46,48,85]],
+ toyPads:[[W*.5,H*.50],[W*.17,H*.50],[W*.83,H*.50]]});
 for(const def of MAPS)def.rects=[...def.cover,...def.voids];
 
 
@@ -2324,15 +2332,15 @@ function setArenaLayout(seed){
   if(def.id==="bbq"){
    def.vents=[];
    for(let tries=0;tries<2500&&def.vents.length<4;tries++){
-    const r=[45+random()*(W-160),45+random()*(H-130),64,30];
+    const r=[45+random()*(W-180),45+random()*(H-150),80,40];
     if(valid(r,[...def.originalCover,...def.vents],18))def.vents.push(r);
    }
-  }else{
+  }else if(def.id==="conveyor"){
    const cover=[];
-   for(let tries=0;tries<3000&&cover.length<7;tries++){
-    const wide=random()>.5,w=wide?84:52,d=wide?44:76;
+   for(let tries=0;tries<3000&&cover.length<8;tries++){
+    const wide=random()>.5,w=wide?84:44,d=wide?30:68;
     const r=[45+random()*(W-90-w),45+random()*(H-90-d),w,d];
-    if(!valid(r,cover,66)||def.belts.some(b=>overlap(r,b,18)))continue;
+    if(!valid(r,cover,34)||def.belts.some(b=>overlap(r,b,18)))continue;
     cover.push(r);
    }
    def.cover=cover;
@@ -3043,6 +3051,7 @@ function skyTexture(id) {
 let arenaVents=[],arenaBeltArrows=[];
 function kitchenFloorTexture(def){
  const c=document.createElement("canvas");c.width=c.height=1024;const x=c.getContext("2d"),warm=def.id==="bbq";
+ if(def.id==='toybox'){x.fillStyle='#725b43';x.fillRect(0,0,1024,1024);for(let row=0;row<16;row++)for(let col=-1;col<5;col++){const xx=col*256+(row%2)*128;x.fillStyle=['#9b805e','#a78b68','#927957'][(row+col+9)%3];x.fillRect(xx+2,row*64+2,252,60);x.strokeStyle='rgba(55,35,18,.18)';for(let k=0;k<5;k++){x.beginPath();x.moveTo(xx+8,row*64+8+k*10);x.lineTo(xx+246,row*64+11+k*10);x.stroke();}}const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;return tex;}
  x.fillStyle=warm?"#30241e":"#15252e";x.fillRect(0,0,1024,1024);
  for(let row=0;row<16;row++)for(let col=0;col<16;col++){
  x.fillStyle=warm?((row+col)%2?"#5b4738":"#4c3d32"):((row+col)%2?"#2f4853":"#263e48");x.fillRect(col*64+2,row*64+2,60,60);
@@ -3064,7 +3073,12 @@ function buildThemedCover(def){
  const grout=new THREE.MeshStandardMaterial({color:0xb68a6d,roughness:1});
  for(let index=0;index<def.cover.length;index++){
  const [x,z,w,d]=def.cover[index],cx=x+w/2,cz=z+d/2;
- if(def.id==="bbq"){
+ if(def.id==="toybox"){
+  const colors=[0xe16d55,0xe6bd52,0x668db6,0x76a783],mat=new THREE.MeshStandardMaterial({color:colors[index%4],roughness:.6});
+  arenaBox(cx,25,cz,w,50,d,mat);arenaBox(cx,2,cz,w,3,d,wood);arenaBox(cx,51,cz,w,3,d,wood);
+  const label=makeTextSprite(['A','B','C','D'][index%4],'#fff1d1',48);label.material.depthTest=true;label.position.set(cx,30,z+d+.5);label.scale.set(24,12,1);mapGroup.add(label);
+  for(const dx of [-w*.27,w*.27]){const stud=new THREE.Mesh(new THREE.CylinderGeometry(5,5,2,12),mat);stud.position.set(cx+dx,54,cz);mapGroup.add(stud);}
+ }else if(def.id==="bbq"){
   if(index<4){
    arenaBox(cx,24,cz,w,48,d,dark);arenaBox(cx,49,cz,w+2,3,d+2,wood);
    for(let k=0;k<6;k++)arenaBox(cx,51,z+5+k*(d-10)/5,w-6,2,2.2,steel);
@@ -3089,15 +3103,17 @@ function buildThemedCover(def){
  }
  }
 }
-function ventPhase(index,time=matchTime){return ((time+index*5)%12+12)%12;}
+function ventPhase(index,time=matchTime){return ((time+index*.85+(arenaLayoutSeed%19)*.08)%14+14)%14;}
 function updateArenaVisuals(){
- for(let i=0;i<arenaVents.length;i++){const phase=ventPhase(i),hot=phase>=6.8,warn=phase>=6&&phase<6.8,v=arenaVents[i];v.top.material.color.setHex(hot?0xff692b:warn?0xffc15b:0x2a2829);v.top.material.emissive.setHex(hot?0xff4b0f:warn?0xc57513:0x120a05);v.top.material.emissiveIntensity=hot?1.7:warn?.35+Math.sin(matchTime*10)*.15:.15;v.fire.visible=hot;v.fire.scale.y=hot?1+Math.sin(matchTime*21+i)*.16:1;}
+ for(let i=0;i<arenaVents.length;i++){const phase=ventPhase(i),hot=phase>=10,warn=phase>=8&&phase<10,v=arenaVents[i];v.top.material.color.setHex(hot?0xff692b:warn?0xffc15b:0x2a2829);v.top.material.emissive.setHex(hot?0xff4b0f:warn?0xc57513:0x120a05);v.top.material.emissiveIntensity=hot?1.7:warn?.35+Math.sin(matchTime*10)*.15:.15;v.fire.visible=hot;v.fire.scale.y=hot?1+Math.sin(matchTime*21+i)*.16:1;
+ v.warning.material.opacity=hot?.22:warn?.25+.3*Math.abs(Math.sin(matchTime*8)):0;v.label.visible=hot||warn;v.label.material.opacity=hot?1:.65+.35*Math.abs(Math.sin(matchTime*8));}
  for(const a of arenaBeltArrows){const b=a.userData.belt;a.position.x=b[0]+(((a.userData.offset+matchTime*b[4]*38)%(b[2]-20)+(b[2]-20))%(b[2]-20))+10;}
 }
 function updateArenaMechanics(dt){
+ updateToyEvent();
  if(state!=="play"||demoActive)return;const def=MAPS[selectedMapIndex],auth=!isMultiplayer||isLobbyLeader;
  for(const e of E){if(e.dead)continue;
- if(auth)for(let i=0;i<def.vents.length;i++){const [x,z,w,d]=def.vents[i];if(ventPhase(i)>=6.8&&e.x>x-e.r*.3&&e.x<x+w+e.r*.3&&e.z>z-e.r*.3&&e.z<z+d+e.r*.3)hurt(e,11*dt,0,0,null);}
+ if(auth)for(let i=0;i<def.vents.length;i++){const [x,z,w,d]=def.vents[i];if(ventPhase(i)>=10&&e.x>x-e.r*.3&&e.x<x+w+e.r*.3&&e.z>z-e.r*.3&&e.z<z+d+e.r*.3)hurt(e,17*dt,0,0,null);}
  if(e===pl||(!isMultiplayer&&e.ai))for(const b of def.belts)if(e.x>b[0]&&e.x<b[0]+b[2]&&e.z>b[1]&&e.z<b[1]+b[3]){const nx=e.x+b[4]*42*dt,nz=e.z+b[5]*42*dt;if(!blocked(nx,e.z,e.r))e.x=nx;if(!blocked(e.x,nz,e.r))e.z=nz;}
  }
 }
@@ -3114,16 +3130,19 @@ function build3DMap(def){
  const surround=new THREE.Mesh(new THREE.PlaneGeometry(W+600,H+600),new THREE.MeshStandardMaterial({color:def.id==="bbq"?0x103a48:0x080e19,roughness:def.id==="bbq"?.25:.8,metalness:.45}));surround.rotation.x=-Math.PI/2;surround.position.set(W/2,-8,H/2);mapGroup.add(surround);
  const wallMat=new THREE.MeshStandardMaterial({color:def.wallCol,roughness:.42,metalness:def.id==="conveyor"?.72:.35}),trimMat=new THREE.MeshStandardMaterial({color:def.accent,emissive:def.accent,emissiveIntensity:.5,roughness:.3,metalness:.6});
  for(let i=0;i<def.outline.length;i++){const a=def.outline[i],b=def.outline[(i+1)%def.outline.length],length=Math.hypot(b[0]-a[0],b[1]-a[1]),angle=-Math.atan2(b[1]-a[1],b[0]-a[0]);const wall=arenaBox((a[0]+b[0])/2,32.5,(a[1]+b[1])/2,length,65,B,wallMat);wall.position.x+=(b[1]-a[1])/length*B/2;wall.position.z-=(b[0]-a[0])/length*B/2;wall.rotation.y=angle;const trim=arenaBox(wall.position.x,65,wall.position.z,length,2,2.2,trimMat);trim.rotation.y=angle;}
- buildThemedCover(def);addKitchenServiceMarkers(def);
- for(const [x,z,w,d] of def.vents){const top=arenaBox(x+w/2,1,z+d/2,w,1.5,d,new THREE.MeshStandardMaterial({color:0x2a2829,emissive:0x220900,emissiveIntensity:.2,metalness:.7,roughness:.35}));const fire=new THREE.Group();for(let j=0;j<7;j++){const f=new THREE.Mesh(new THREE.ConeGeometry(4.5,26+(j%3)*7,6),new THREE.MeshBasicMaterial({color:j%2?0xffb333:0xff592b,transparent:true,opacity:.75,depthWrite:false}));f.position.set(x+8+j*(w-16)/6,16,z+d/2);fire.add(f);}fire.visible=false;mapGroup.add(fire);arenaVents.push({top,fire});for(let k=0;k<8;k++)arenaBox(x+5+k*(w-10)/7,2.5,z+d/2,2,2,d,wallMat);}
+ buildThemedCover(def);addKitchenServiceMarkers(def);buildArenaDetails(def);
+ for(const [x,z,w,d] of def.vents){const top=arenaBox(x+w/2,1,z+d/2,w,1.5,d,new THREE.MeshStandardMaterial({color:0x2a2829,emissive:0x220900,emissiveIntensity:.2,metalness:.7,roughness:.35}));const fire=new THREE.Group();for(let j=0;j<7;j++){const f=new THREE.Mesh(new THREE.ConeGeometry(4.5,26+(j%3)*7,6),new THREE.MeshBasicMaterial({color:j%2?0xffb333:0xff592b,transparent:true,opacity:.75,depthWrite:false}));f.position.set(x+8+j*(w-16)/6,16,z+d/2);fire.add(f);}fire.visible=false;mapGroup.add(fire);const warning=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshBasicMaterial({color:0xffb23f,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}));warning.rotation.x=-Math.PI/2;warning.position.set(x+w/2,2,z+d/2);mapGroup.add(warning);
+ const label=makeTextSprite('HOT VENT','#ffcc78',22);label.material.depthTest=true;label.position.set(x+w/2,15,z+d/2);label.visible=false;mapGroup.add(label);
+ arenaVents.push({top,fire,warning,label});for(let k=0;k<8;k++)arenaBox(x+5+k*(w-10)/7,2.5,z+d/2,2,2,d,wallMat);}
  for(const b of def.belts){arenaBox(b[0]+b[2]/2,1,b[1]+b[3]/2,b[2],2,b[3],new THREE.MeshStandardMaterial({color:0x132d35,roughness:.65,metalness:.45}));for(const side of [-1,1])arenaBox(b[0]+b[2]/2,2,b[1]+b[3]/2+side*b[3]/2,b[2],2,2,trimMat);
  for(let j=0;j<12;j++){const arrow=new THREE.Group();for(const side of [-1,1]){const line=new THREE.Mesh(new THREE.BoxGeometry(12,.7,2),trimMat);line.position.z=side*4;line.rotation.y=side*(b[4]>0?Math.PI/4:-Math.PI/4);arrow.add(line);}arrow.position.set(b[0]+10+j*(b[2]-20)/12,2.6,b[1]+b[3]/2);arrow.userData={belt:b,offset:j*(b[2]-20)/12};mapGroup.add(arrow);arenaBeltArrows.push(arrow);}}
- skyDome.material.map=skyTexture(def.id==="bbq"?"forge":"ruins");skyDome.material.needsUpdate=true;rimLight.color.setHex(def.accent);hemiLight.color.setHex(def.id==="bbq"?0xffb789:0x9aeaff);dustMat.color.setHex(def.accent);scene.fog.color.setHex(def.id==="bbq"?0x160d12:0x081822);scene.fog.density=.00115;kitchenSign(def.name.toUpperCase(),def.id==="bbq"?"#ffb567":"#6ef5eb");
+ skyDome.material.map=skyTexture(def.id==="bbq"?"forge":"ruins");skyDome.material.needsUpdate=true;rimLight.color.setHex(def.accent);hemiLight.color.setHex(def.id==="bbq"?0xffb789:0x9aeaff);dustMat.color.setHex(def.accent);scene.fog.color.setHex(def.id==="bbq"?0x160d12:0x081822);scene.fog.density=.00115;cacheTerrain(def);kitchenSign(def.name.toUpperCase(),def.id==="bbq"?"#ffb567":def.id==="toybox"?"#ffe1a0":"#6ef5eb");
 }
 
 
 // --- HERO & WEAPON BUILDER ---
 function createHighQualityWeapon(heroIndex, isViewmodel = false) {
+ if(heroIndex===9)return buildTetherWeapon(isViewmodel);
  if(heroIndex===8)return buildPatchBlaster(isViewmodel);
 
   const root = new THREE.Group();
@@ -3233,6 +3252,8 @@ function createHighQualityWeapon(heroIndex, isViewmodel = false) {
 
 // Per-hero visual identity: ears, snouts, hats, tails \u2014 so every champion reads at a glance
 function addHeroDetails(grp, headGrp, heroIndex) {
+ if(heroIndex===9){const m=new THREE.MeshStandardMaterial({color:0x533a64,roughness:.7});const cap=new THREE.Mesh(new THREE.SphereGeometry(8.9,12,8,0,Math.PI*2,0,Math.PI/2),m);cap.position.y=3.5;headGrp.add(cap);const brim=new THREE.Mesh(new THREE.BoxGeometry(13,1.5,9),m);brim.position.set(0,4,6);headGrp.add(brim);for(const side of [-1,1]){const spool=buildTetherWeapon(false);spool.scale.setScalar(.45);spool.position.set(side*12,12,0);grp.add(spool);}return;}
+
   const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.55 }, o || {}));
   if(heroIndex===7){
     const hat=new THREE.Mesh(new THREE.CylinderGeometry(7.5,8,3,12),M(0x392c2b));
@@ -3733,6 +3754,7 @@ function syncDentleyViewmodel(entity) {
 
 function spawnProjectileMesh(type, opts = {}) {
   let mesh;
+  if(type==='yoyo'){mesh=buildTetherWeapon(false);scene.add(mesh);return mesh;}
   if(type === "jackpot_bullet") {
     mesh=new THREE.Group();
     const slug=new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.4,9,10),new THREE.MeshStandardMaterial({color:0xf6d76b,emissive:0x73501a,emissiveIntensity:.7,metalness:.65,roughness:.22}));
@@ -4019,6 +4041,9 @@ function removePeerEntity(peerId) {
 }
 
 function applyAbilitySnapshotState(entity, item) {
+ applyTetherSpringSnapshot(entity,item);
+ entity.springUntil=matchTime+(Number(item.ts)||0);
+ if(Number(item.tps)>(entity.tetherPullSeq||0)){entity.tetherPullSeq=item.tps;entity.x=item.x;entity.z=item.z;entity.targetX=item.x;entity.targetZ=item.z;entity.lastSafeX=item.x;entity.lastSafeZ=item.z;}
  if(Number.isInteger(item.ru))entity.roundUpgrade=item.ru;
  entity.upBoostAmount=Number(item.ub)||0;entity.upBoostUntil=matchTime+(Number(item.ut)||0);entity.upSpeed=item.ut>0?1+entity.upBoostAmount:1;
  if(Array.isArray(item.us))entity.upShields=item.us.map(q=>({amount:q.amount,until:matchTime+q.remaining}));
@@ -4572,6 +4597,7 @@ function spawnMeleeSector(e,radius,halfArc,color){
 }
 function melee(e, rng, d, kb, noReflect) {
   let hammerHit=false;const halfArc=meleeHalfArc(e);
+  if(!isMultiplayer||isLobbyLeader)for(const q of tetherAnchors){const dx=q.x-e.x,dz=q.z-e.z,a=Math.atan2(Math.sin(Math.atan2(dz,dx)-e.a),Math.cos(Math.atan2(dz,dx)-e.a));if(q.hp>0&&areEnemies(e,q.owner)&&Math.hypot(dx,dz)<rng+12&&Math.abs(a)<=halfArc&&hasLOS(e.x,e.z,q.x,q.z))q.hp-=d;}
   e.swing = 0.25;
   spawnMeleeSector(e,rng,halfArc,0xffb042);
   if(isMultiplayer && !isLobbyLeader) return;
@@ -4664,7 +4690,7 @@ function shot(e, a, o) {
     mesh
   }, o);
   projectile.y=14;projectile.vy=0;
-  if(e.verticalAim){const p=e===pl?pitch:(e.pitch||0);projectile.vy=Math.sin(p)*o.s;projectile.vx*=Math.cos(p);projectile.vz*=Math.cos(p);}
+  if(e.verticalAim&&o.t!=="yoyo"){const p=e===pl?pitch:(e.pitch||0);projectile.vy=Math.sin(p)*o.s;projectile.vx*=Math.cos(p);projectile.vz*=Math.cos(p);}
   orientProjectile(projectile);P.push(projectile);
 }
 
@@ -4733,6 +4759,8 @@ function dentleyGuardActive(e) {
 
 function executeAttack(e){e.executingBasicAttack=true;try{return executeBasicAttack(e);}finally{e.executingBasicAttack=false;}}
 function executeBasicAttack(e) {
+ if(e.tetherSpring)return;
+ if(e.ci===9){if(P.some(p=>p.t==='yoyo'&&p.o===e))return;e.c1=HEROES[9].cd;shot(e,e.a,{t:'yoyo',s:235,d:5,kb:0,life:4,unreflectable:true});Snd.play('bounce');return;}
  if(e.ci===8){if(e.liveGrenade)return;e.c1=.6;shot(e,e.a,{t:"s",s:550,d:13,kb:35,life:1});Snd.play("shoot");return;}
 
   if(jackpotCoinBlocksAttack(e)) return;
@@ -4785,8 +4813,10 @@ function attack(e) {
 }
 
 function executeAbility1(e) {
+ if(e.tetherSpring)return;
+ if(e.ci===9){if(e.c2>0||startupAbilityCooldownRemaining()>0)return;placeTetherAnchor(e);return;}
  if(e.liveGrenade)return;
- if(e.ci===8){if(e.liveGrenade||e.c2>0||startupAbilityCooldownRemaining()>0)return;e.c2=hasUp(e,8,0)?14:13;e.medkitT=hasUp(e,8,0)?2:3;return;}
+ if(e.ci===8){if(e.liveGrenade||e.c2>0||startupAbilityCooldownRemaining()>0)return;e.c2=hasUp(e,8,0)?15:14;e.medkitT=hasUp(e,8,0)?2:3;return;}
 
   if(startupAbilityCooldownRemaining()>0)return;
   if(dentleyGuardActive(e)) { releaseDentleyGuard(e); return; }
@@ -4950,6 +4980,8 @@ function tickMycelisEffects(e, dt) {
 }
 
 function executeAbility2(e) {
+ if(e.tetherSpring)return;
+ if(e.ci===9){if(e.c3>0||startupAbilityCooldownRemaining()>0)return;e.c3=HEROES[9].a2cd;recoilTether(e);return;}
  if(e.ci===8){if(e.c3>0||startupAbilityCooldownRemaining()>0)return;e.c3=hasUp(e,8,1)?12:11;e.stimT=hasUp(e,8,1)?3.5:3;return;}
 
   if(startupAbilityCooldownRemaining()>0)return;
@@ -4966,7 +4998,7 @@ function executeAbility2(e) {
     spawn3DRing(e.x,e.z,34,0xf2c14e);
     return;
   }
-  if(e.ci === 6) {if(hasUp(e,6,1))e.c3=9;dentleyLunge(e); return; }
+  if(e.ci === 6) {if(hasUp(e,6,1))e.c3=9.5;dentleyLunge(e); return; }
   if(e.ci === 0) {
     e.chargeT = hasUp(e,0,1)?.384:.32;if(hasUp(e,0,1))e.c3=15; 
     e.chargeVx = Math.cos(e.a) * 460;
@@ -5166,7 +5198,7 @@ function updateChain(e, dt) {
       }
       if(arrived || c.t > 0.7) {
         if(arrived&&auth&&hasUp(e,1,2))upShield(e,10,2);
-        if(auth) t.stun = Math.max(t.stun, 0.9); // "a little bit" of stun once they land
+        if(auth) t.stun = Math.max(t.stun, 0.8); // arrival of stun once they land
         done = true;
       }
     }
@@ -5356,6 +5388,7 @@ function updateAI(e, dt) {
   e.ai.ab1 = (abilityDistance && Math.random() < 0.22 * e.ai.abilityBias) ? 1 : 0;
   e.ai.ab2 = (ultimateDistance && Math.random() < 0.18 * e.ai.abilityBias) ? 1 : 0;
 
+  if(e.ci===9){e.ai.ab2=canSeeTarget&&targetDist<130&&e.c3<=0?1:0;e.ai.ab1=canSeeTarget&&targetDist<175&&e.c2<=0?1:0;}
   return [e.ai.mx, e.ai.mz, e.ai.at, e.ai.ab1, e.ai.ab2];
 }
 
@@ -5580,7 +5613,7 @@ window.returnToMenu = function(message = "Select a champion to battle in the are
 let roundVote=null,roundVoteSerial=0,pendingRoundReady=false,lastRoundStatePacket=null,lastRoundStartPacket=null,pendingStartGamePacket=null,lastStartedRoundId=null;
 const REMATCH_COUNTDOWN_MS=10000,MAP_VOTE_DURATION_MS=7000;
 const HOST_AWAY_TIMEOUT_MS=20000;
-const ARENA_PROTOCOL_VERSION="21:"+Object.values(COMBAT_SETTINGS).join(":");
+const ARENA_PROTOCOL_VERSION="23-tether-spring:"+Object.values(COMBAT_SETTINGS).join(":");
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,m)=>total+(votes[m.id]===i?1:0),0)),max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===MAPS.length?Math.floor(random()*MAPS.length):winner;
 }
@@ -6070,7 +6103,7 @@ function handleIncomingData(conn, data) {
         ent.targetP=Number.isFinite(data.p)?Math.max(-Math.PI/2.2,Math.min(Math.PI/2.2,data.p)):0;
         return;
       }
-      if(ent.stun>0){ent.targetA=data.a;ent.targetP=data.p||0;return;}
+      if(ent.stun>0||ent.tetherSpring||(ent.springInputLockUntil||0)>matchTime){ent.targetA=data.a;ent.targetP=data.p||0;return;}
       if(blocked(data.x,data.z,ent.r))return;
       ent.targetX = data.x;
       ent.targetZ = data.z;
@@ -6151,7 +6184,7 @@ function handleIncomingData(conn, data) {
     }
     syncRemotePickups(data.pickups || []);
     syncRemoteCrate(data.crate || null);
-    syncRemoteHusks(data.husks || []);
+    syncRemoteHusks(data.husks || []);syncTetherAnchors(data.tether||[]);
     // Authoritative storm state (keeps mid-round spectators in sync with the host)
     if(data.storm !== undefined) stormRadius = data.storm;
   }
@@ -6192,7 +6225,7 @@ function handleIncomingData(conn, data) {
     if(isLobbyLeader) {
       accepted = false;
       if(data.id !== conn.peer || !ent || ent.dead) return;
-      if(ent.stun>0&&data.act!=="EMOTE")return;
+      if((ent.stun>0||ent.tetherSpring)&&data.act!=="EMOTE")return;
       if(data.act === "EMOTE") {
         accepted = executeEmote(ent, Math.round(data.a));
       } else {
@@ -6249,7 +6282,7 @@ setInterval(() => {
       sl: e.slow > 0 ? e.slow : 0,
       po: e.sporePoison > 0 ? e.sporePoison : 0,
       psl: e.sporeSlowT > 0 ? e.sporeSlowT : 0,
-      sb: e.speedBoost > 0 ? e.speedBoost : 0,
+      sb: e.speedBoost > 0 ? e.speedBoost : 0,ts:Math.max(0,(e.springUntil||0)-matchTime),tps:e.tetherPullSeq||0,tss:e.tetherSpringSeq||0,tsp:tetherSpringSnapshot(e),
       kx: Math.round(e.kx),
       kz: Math.round(e.kz),
       kl: e.killedBy,
@@ -6269,6 +6302,7 @@ setInterval(() => {
       seq: outgoingSeq,
       entities: snapEntities,
       pickups: Pickups.map(pk => ({ id: pk.uid, k: pk.kind, x: pk.x, z: pk.z })),
+      tether:tetherAnchorSnapshot(),
       husks: Husks.map(h => ({ id: h.id, x: h.x, z: h.z, hp: h.hp, l: h.life, ownerId:h.owner?h.owner.netId:null })),
       crate: worldCrate ? { id:worldCrate.id, x:worldCrate.x, z:worldCrate.z, y:worldCrate.y||0, hp:worldCrate.hp, bombT:worldCrate.bombT, exploded:!!worldCrate.exploded } : null,
       arenaTime:matchTime,
@@ -6878,13 +6912,13 @@ function beginDentleyLunge(e, distance, duration, damage, knockback, finisher = 
 }
 
 function dentleyAttack(e) {
-  if(e.form === 1) { e.c1 = 0.3; melee(e, 50, 8, 40, true); return; } // Squire dagger
+  if(e.form === 1) { e.c1 = 0.3; melee(e, 50, 9, 40, true); return; } // Squire dagger
   if(!(e.comboT > 0)) e.combo = 0;
   const n = e.combo;
-  e.combo = (n + 1) % 3; e.comboT = 0.9;
+  e.combo = (n + 1) % 3; e.comboT = 1.0;
   e.c1 = n === 2 ? 0.8 : 0.5;
   if(n === 2) {
-    beginDentleyLunge(e, 50, 0.18, 25*(e.upWeaponDamage||1), 220, true);
+    beginDentleyLunge(e, 60, 0.18, 25*(e.upWeaponDamage||1), 220, true);
     return;
   }
   melee(e, 70, 15, 90, true);
@@ -6942,7 +6976,7 @@ function dentleyLunge(e) {
   const dmg = BALANCE_PATCH.dentley.lungeBaseDamage + charge;
   const stun = BALANCE_PATCH.dentley.minStun + charge / BALANCE_PATCH.dentley.maxCharge * (BALANCE_PATCH.dentley.maxStun-BALANCE_PATCH.dentley.minStun);
   e.riposte = 0; // charge is spent even if the lunge misses
-  beginDentleyLunge(e, hasUp(e,6,1)?126.5:110, 0.24, dmg, 220, false, stun);
+  beginDentleyLunge(e, hasUp(e,6,1)?138:120, 0.24, dmg, 220, false, stun);
 }
 
 function makeHuskMesh() {
@@ -6963,7 +6997,7 @@ function breakArmor(t, a) {
   t.armorBreakUsed = true;
   t.form=1;t.hp=hasUp(t,6,2)?70:60;t.mhp=t.hp;applyChampionBodySize(t);
   t.guard = 0; t.guardBoost=0; t.grace = BALANCE_PATCH.dentley.squireGrace; t.c3=BALANCE_PATCH.dentley.recallDelay; t.huskRecallUsed=false; t.c1 = 0.5; t.c2 = 0; t.chan = 0; t.combo = 0;
-  t.kx = Math.cos(a) * 520; t.kz = Math.sin(a) * 520; // send the Squire farther from the armor husk
+  t.kx = Math.cos(a) * 590; t.kz = Math.sin(a) * 590; // send the Squire farther from the armor husk
   const h = { id: "hk_" + Math.random().toString(36).slice(2, 8), x: t.x, z: t.z, hp: 100, life: BALANCE_PATCH.dentley.huskLife, owner: t, mesh: makeHuskMesh() };
   h.mesh.position.set(t.x, 0, t.z);
   scene.add(h.mesh);
@@ -6975,14 +7009,14 @@ function breakArmor(t, a) {
   Snd.play("crate");
   for(const o of E) {
     if(o !== t && !o.dead && areEnemies(t, o) && Math.hypot(o.x - t.x, o.z - t.z) < 70 + o.r) {
-      hurt(o, 25, Math.atan2(o.z - t.z, o.x - t.x), 140, t);
+      hurt(o, 25, Math.atan2(o.z - t.z, o.x - t.x), 205, t);
     }
   }
 }
 
 function rearm(e) {
   const h = e.husk;
-  e.form=0;applyChampionBodySize(e);e.mhp=HEROES[6].hp;e.hp=70; e.chan = 0; e.c2 = 0; e.c3=HEROES[6].a2cd; e.husk = null;
+  e.form=0;applyChampionBodySize(e);e.mhp=HEROES[6].hp;e.hp=80; e.chan = 0; e.c2 = 0; e.c3=HEROES[6].a2cd; e.husk = null;
   if(h) { disposeHierarchy(h.mesh); const i = Husks.indexOf(h); if(i >= 0) Husks.splice(i, 1); }
   spawn3DRing(e.x, e.z, 40, 0x9fc5ff);
   spawnDamageNumber(e.x, e.z, "RE-ARMORED", "#9fc5ff");
@@ -7081,7 +7115,7 @@ function champDetailHTML(ci) {
     </div>
     <div class="cd-weapon">\u2753 <b>Who will you be?</b> \u2014 You won't find out until the match begins. Every match rolls a new champion!</div>`;
   const c = HEROES[ci];
-  const hpPct = Math.min(100, Math.round(c.hp / 240 * 100));
+  const hpPct = Math.min(100, Math.round(c.hp / 285 * 100));
   const spPct = Math.min(100, Math.round(c.sp / 190 * 100));
   return `
     <div class="cd-hero">
@@ -7283,6 +7317,7 @@ window.cancelLobby = function() {
 };
 
 function clearSceneEntities() {
+ clearTetherAnchors();
  if(typeof liveGrenades!=="undefined"){clearPatchGrenades();draftActive=false;const d=document.getElementById("upgrade-draft");if(d)d.style.display="none";}
  clearProjectileHitNotices();
   for(const e of E) { disposeEntityExtras(e); disposeHierarchy(e.mesh); }
@@ -7675,7 +7710,11 @@ function decoratePatchChampion(grp,headGrp,body,head){
 let verticalAim=false,draftActive=false,draftUntil=0,patchLastClock=performance.now();
 const liveGrenades=[];
 let previewLine=null,previewMarker=null,previewEndMarker=null,patchHandGrenade=null,terrainBoxes=[],patchGrenadeKeyHeld=false;
-function cacheTerrain(){mapGroup.updateMatrixWorld(true);terrainBoxes=[];mapGroup.traverse(m=>{if(m.isMesh&&m.geometry){const b=new THREE.Box3().setFromObject(m);if(b.max.y>5&&b.min.y<70)terrainBoxes.push(b);}});}
+function cacheTerrain(def=MAPS[selectedMapIndex]){
+ terrainBoxes=[];
+ for(const [x,z,w,d] of def.cover){const height=def.id==='bbq'?66:55;terrainBoxes.push(new THREE.Box3(new THREE.Vector3(x,0,z),new THREE.Vector3(x+w,height,z+d)));}
+ for(const [x,z,w,d] of def.voids)terrainBoxes.push(new THREE.Box3(new THREE.Vector3(x,0,z),new THREE.Vector3(x+w,65,z+d)));
+}
 function terrainAt(x,y,z,r=2){if(y<r)return true;if(x<B+r||z<B+r||x>W-B-r||z>H-B-r)return y<65;return terrainBoxes.some(b=>x>=b.min.x-r&&x<=b.max.x+r&&y>=b.min.y-r&&y<=b.max.y+r&&z>=b.min.z-r&&z<=b.max.z+r);}
 function blastLOS(g,e){const dx=e.x-g.x,dy=(e.y||0)+16-g.y,dz=e.z-g.z,n=Math.ceil(Math.hypot(dx,dy,dz)/3);for(let i=1;i<n;i++)if(terrainAt(g.x+dx*i/n,g.y+dy*i/n,g.z+dz*i/n,0))return false;return true;}
 function sendPatchPacket(data){if(!isMultiplayer)return;if(isLobbyLeader)broadcastToPeers(data);else{const c=peerConnections.get(leaderId);if(c?.open)c.send(data);}}
@@ -7732,7 +7771,9 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){patchGrena
 window.addEventListener('keydown',ev=>{if(/INPUT|TEXTAREA|SELECT/.test(ev.target.tagName)||state!=='play')return;if(ev.code==='KeyC'&&!ev.repeat){verticalAim=!verticalAim;if(pl)pl.verticalAim=verticalAim;sendPatchInput(false,false);}});
 
 const UPGRADE_NAMES=[["Shockwave Hammer", "Freight Train", "Double Slam", "Return to Sender", "Moving Mountain"], ["Boarding Hook", "Heavy Cannonball", "Scrap Shield", "Quick Reload", "Blast Jump"], ["Fresh Peel", "Long Return", "Slipstream", "Fruit Shield", "Delayed Harvest"], ["Extra Sauce", "Meatball Skewer", "Backdraft Express", "Takeout Order", "Boiling Point"], ["Quick Blink", "Afterimage", "Extended Barrage", "Emergency Thrusters", "Target Lock"], ["Quick Cultivation", "Overgrowth", "Mushroom Shelter", "Spreading Spores", "Forest Footwork"], ["Walking Fortress", "Longer Lunge", "Second Wind", "Quick Repairs", "Royal Release"], ["Fast Flip", "Safe Bet", "Lucky Escape", "Extended Credit", "Cushion the Fall"], ["Field Dressing", "Extended Stim", "Blast Radius", "Field Tuning", "Long Throw"]];
-const UPGRADE_DESCRIPTIONS=[["A missed swing sends a short 6-damage wave 25 units beyond hammer reach. No knockback, no wall penetration, and no repeat hits on hammer targets.", "Charge travels 20% farther. Cooldown: 15s instead of 14s. Damage and stun unchanged.", "Slam deals 12 damage. A warned second blast after 0.7s covers half the radius for 6 damage, with no stun or knockback.", "Reflecting an enemy projectile heals 6 HP. Once per 5s. No overheal.", "Incoming knockback reduced by 25%. Damage, stuns, roots, hooks and other forced movement unchanged."], ["Completing a wall hook grants +15% movement speed for 1.5s. Enemy hooks do not activate it.", "Cannonball explosion radius +15%. Direct damage: 22 instead of 25. Explosion damage unchanged.", "Completing an enemy pull grants a 10-damage shield for 2s. Missed and interrupted hooks grant nothing.", "After Cannonball, fire a normal attack within 3s for 20% less recovery. Existing attack cooldown is not reset.", "Your Cannonball explosion pushes you away by up to 35 units without self-damage. Walls stop movement. Cannonball cooldown: 11s."], ["Peel cooldown: 10s. Trap lifetime: 4s. Only one active peel.", "Normal bananas travel 15% farther before returning. Attack cooldown: 0.9s. Damage unchanged.", "An enemy triggering your peel grants +15% movement speed for 1.5s.", "A returning normal banana hitting an enemy grants an 8-damage shield for 2s. Once per 6s. Cluster bananas excluded.", "Cluster Bomb releases four bananas immediately, then two warned bananas after 0.7s. Delayed bananas deal 11 damage each."], ["Marinara lasts 4s, but deals 20% less damage per second (10.4 DPS). Slow unchanged.", "Normal meatballs deal 32 damage to the first enemy and pierce once for 10 damage to another. Walls stop them.", "Backdraft travels 15% farther and spreads its five flame patches along the longer route. Cooldown: 9.5s instead of 9s.", "A normal meatball hitting an enemy grants +10% movement speed for 1s. Once per 3s.", "Marinara ends with a warned 6-damage burst in its existing area. Cooldown: 8.5s. No added stun or knockback."], ["Blink cooldown: 5.5s. Travel distance reduced by 15%. Still one charge.", "Blink leaves a stationary decoy for 0.8s. It flickers after 0.3s and has no collision, attack absorption or health bar.", "Barrage fires eight darts for 7 damage each. The extra dart extends the sequence at the same firing rate.", "Enemy damage leaving you alive below 30% HP grants +15% movement speed for 1.5s. Once per 15s.", "Four consecutive normal darts hitting the same enemy reduce remaining Blink cooldown by 0.5s. Misses or another target reset progress. Once per 6s."], ["Spore Pod cooldown: 6s, starting on trigger or expiry. Untriggered lifetime: 4s. One active pod.", "Root Entangle burst radius +15%. Cooldown: 10s. Damage and root duration unchanged.", "A pod triggering on an enemy grants a 10-damage shield for 2s, once per pod.", "A triggered pod leaves a visible cloud for 1.5s. Previously missed enemies receive 10 poison damage over 5s and a 30% slow for 3s. Once per enemy per pod; cannot stack with its original poison.", "A direct Root Entangle hit grants +15% movement speed for 1.5s. Burst-only hits do not count."], ["Shield Guard slows movement by 15% instead of 25%. Attacks and other abilities remain blocked.", "Counter Lunge travels 15% farther. Cooldown: 9s. Damage, charge spending and stun unchanged.", "Armor break starts Squire at 70 HP instead of 60. Armor HP and rearming health unchanged.", "Rearming takes 1.25s instead of 1.5s. Taking damage still interrupts it.", "Successful early Guard release grants an 8-damage shield for 1.5s. Natural expiry grants nothing."], ["Coin Toss lands in 0.4s instead of 0.5s. Cooldown and firing requirement unchanged.", "Rolling a 1 deals 8 self-damage instead of 15. No shield. Other results unchanged.", "A manually loaded Heads shot grants +10% movement speed for 1s. Once per 3s. All In and Dice 6 Heads excluded.", "Initial All In duration: 7.5s instead of 7s. Eliminations reset it to the normal 7s.", "A loaded Tails shot grants a 6-damage shield for 1.5s. Once per 4s."], ["Medkit heals 42 HP over 2s. Cooldown: 14s. Enemy damage interrupts remaining healing.", "Stim lasts 3.5s. Cooldown: 12s. Movement speed remains +35%.", "Grenade blast radius +15%, maximum damage 23 instead of 25. Falloff uses the larger radius, including self-damage.", "Blaster projectile speed +15%; lifetime reduced to preserve maximum range. Damage and attack interval unchanged.", "Grenade throw speed +20%. Damage, fuse and explosion radius unchanged."]];
+const UPGRADE_DESCRIPTIONS=[["A missed swing sends a short 6-damage wave 25 units beyond hammer reach. No knockback, no wall penetration, and no repeat hits on hammer targets.", "Charge travels 20% farther. Cooldown: 15s instead of 14s. Damage and stun unchanged.", "Slam deals 12 damage. A warned second blast after 0.7s covers half the radius for 6 damage, with no stun or knockback.", "Reflecting an enemy projectile heals 6 HP. Once per 5s. No overheal.", "Incoming knockback reduced by 25%. Damage, stuns, roots, hooks and other forced movement unchanged."], ["Completing a wall hook grants +15% movement speed for 1.5s. Enemy hooks do not activate it.", "Cannonball explosion radius +15%. Direct damage: 22 instead of 25. Explosion damage unchanged.", "Completing an enemy pull grants a 10-damage shield for 2s. Missed and interrupted hooks grant nothing.", "After Cannonball, fire a normal attack within 3s for 20% less recovery. Existing attack cooldown is not reset.", "Your Cannonball explosion pushes you away by up to 35 units without self-damage. Walls stop movement. Cannonball cooldown: 11s."], ["Peel cooldown: 10s. Trap lifetime: 4s. Only one active peel.", "Normal bananas travel 15% farther before returning. Attack cooldown: 0.9s. Damage unchanged.", "An enemy triggering your peel grants +15% movement speed for 1.5s.", "A returning normal banana hitting an enemy grants an 8-damage shield for 2s. Once per 6s. Cluster bananas excluded.", "Cluster Bomb releases four bananas immediately, then two warned bananas after 0.7s. Delayed bananas deal 11 damage each."], ["Marinara lasts 4s, but deals 20% less damage per second (8 DPS). Slow unchanged.", "Normal meatballs deal 32 damage to the first enemy and pierce once for 10 damage to another. Walls stop them.", "Backdraft travels 15% farther and spreads its five flame patches along the longer route. Cooldown: 9.5s instead of 9s.", "A normal meatball hitting an enemy grants +10% movement speed for 1s. Once per 3s.", "Marinara ends with a warned 6-damage burst in its existing area. Cooldown: 8.5s. No added stun or knockback."], ["Blink cooldown: 5.5s. Travel distance reduced by 15%. Still one charge.", "Blink leaves a stationary decoy for 0.8s. It flickers after 0.3s and has no collision, attack absorption or health bar.", "Barrage fires eight darts for 7 damage each. The extra dart extends the sequence at the same firing rate.", "Enemy damage leaving you alive below 30% HP grants +15% movement speed for 1.5s. Once per 15s.", "Four consecutive normal darts hitting the same enemy reduce remaining Blink cooldown by 0.5s. Misses or another target reset progress. Once per 6s."], ["Spore Pod cooldown: 6s, starting on trigger or expiry. Untriggered lifetime: 4s. One active pod.", "Root Entangle burst radius +15%. Cooldown: 10s. Damage and root duration unchanged.", "A pod triggering on an enemy grants a 10-damage shield for 2s, once per pod.", "A triggered pod leaves a visible cloud for 1.5s. Previously missed enemies receive 10 poison damage over 5s and a 30% slow for 3s. Once per enemy per pod; cannot stack with its original poison.", "A direct Root Entangle hit grants +15% movement speed for 1.5s. Burst-only hits do not count."], ["Shield Guard slows movement by 15% instead of 25%. Attacks and other abilities remain blocked.", "Counter Lunge travels 15% farther. Cooldown: 9.5s. Damage, charge spending and stun unchanged.", "Armor break starts Squire at 70 HP instead of 60. Armor HP and rearming health unchanged.", "Rearming takes 1.25s instead of 1.5s. Taking damage still interrupts it.", "Successful early Guard release grants an 8-damage shield for 1.5s. Natural expiry grants nothing."], ["Coin Toss lands in 0.4s instead of 0.5s. Cooldown and firing requirement unchanged.", "Rolling a 1 deals 8 self-damage instead of 15. No shield. Other results unchanged.", "A manually loaded Heads shot grants +10% movement speed for 1s. Once per 3s. All In and Dice 6 Heads excluded.", "Initial All In duration: 7.5s instead of 7s. Eliminations reset it to the normal 7s.", "A loaded Tails shot grants a 6-damage shield for 1.5s. Once per 4s."], ["Medkit heals 42 HP over 2s. Cooldown: 15s. Enemy damage interrupts remaining healing.", "Stim lasts 3.5s. Cooldown: 12s. Movement speed remains +35%.", "Grenade blast radius +15%, maximum damage 23 instead of 25. Falloff uses the larger radius, including self-damage.", "Blaster projectile speed +15%; lifetime reduced to preserve maximum range. Damage and attack interval unchanged.", "Grenade throw speed +20%. Damage, fuse and explosion radius unchanged."]];
+UPGRADE_NAMES.push(['Long String','Reinforced Anchor','Spring Shoes','Soft Landing','Quick Spool']);
+UPGRADE_DESCRIPTIONS.push(['Yo-yo range: 250 instead of 225. Damage and stun unchanged.','Anchors have 75 HP instead of 60. No extra yanks or duration.','Wall-bounce speed bonus lasts 2.5s instead of 2s.','Recoil Spring grants an 8 HP shield for 1.5s. No invulnerability.','Yo-yo return speed +10%. Damage and stun unchanged.']);
 function upgradeOffer(e){
  if(Array.isArray(e.roundUpgradeOffers)&&e.roundUpgradeOfferSeed===arenaLayoutSeed)return e.roundUpgradeOffers.slice();
  let seed=(Number(arenaLayoutSeed)>>>0)^0x9e3779b9;
@@ -7823,7 +7864,7 @@ function upd(dt) {
     if(st) {
       const shake = Math.min(2.4, screenShake * 0.12);
       const phase = matchTime * 86;
-      cameraHolder.position.set(st.x + Math.sin(phase) * shake, 22 + Math.cos(phase * 1.13) * shake, st.z + Math.cos(phase) * shake);
+      cameraHolder.position.set(st.x + Math.sin(phase) * shake, 22 + (tetherSpringSquash(st)-1)*7 + Math.cos(phase * 1.13) * shake, st.z + Math.cos(phase) * shake);
       cameraHolder.rotation.y = -st.a - Math.PI / 2;
       camera.rotation.x = st.pitch || 0;
       camera.rotation.z = Math.sin(phase * 0.72) * Math.min(0.04, screenShake * 0.002);
@@ -7834,7 +7875,7 @@ function upd(dt) {
   } else if(pl && !pl.dead) {
     const shake = Math.min(2.4, screenShake * 0.12);
     const phase = matchTime * 86;
-    cameraHolder.position.set(pl.x + Math.sin(phase) * shake, 22 + Math.cos(phase * 1.13) * shake, pl.z + Math.cos(phase) * shake);
+    cameraHolder.position.set(pl.x + Math.sin(phase) * shake, 22 + (tetherSpringSquash(pl)-1)*7 + Math.cos(phase * 1.13) * shake, pl.z + Math.cos(phase) * shake);
     camera.rotation.z = Math.sin(phase * 0.72) * Math.min(0.04, screenShake * 0.002);
   }
 
@@ -7890,7 +7931,7 @@ function upd(dt) {
   }
 
   matchTime += dt;
-  updateArenaMechanics(dt);
+  updateArenaMechanics(dt);tickTetherAnchors(dt);
   updateStormAudio();
   if(!demoActive && matchTime > 4.0 && stormRadius > minStormRadius) {
     stormRadius=Math.max(minStormRadius,stormRadius-dt*4.5);
@@ -7959,12 +8000,12 @@ function upd(dt) {
       if(!e.dead && e !== z.owner && !(teamMode && z.owner && e.team === z.owner.team) && Math.hypot(targetPos.x - z.x, targetPos.z - z.z) < z.r + e.r) {
         if(z.kind === "marinara") {
           e.slow = 0.5;
-          hurt(e, (hasUp(z.owner,3,0)?10.4:13) * dt, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 0, z.owner);
+          hurt(e, (hasUp(z.owner,3,0)?8:10) * dt, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 0, z.owner);
         } else if(z.kind === "flame") {
           e.slow = 0.4;
           hurt(e, 19 * dt, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 25, z.owner);
         } else if(z.kind === "peel") {
-          e.stun = 1.5;if(hasUp(z.owner,2,2))upBoost(z.owner,.15,1.5);
+          e.stun = 1.7;if(hasUp(z.owner,2,2))upBoost(z.owner,.15,1.5);
           hurt(e, BALANCE_PATCH.mango.peelDamage, Math.atan2(targetPos.z - z.z, targetPos.x - z.x), 150, z.owner);
           spawn3DRing(z.x, z.z, 34, 0xffe853);
           z.life = 0;
@@ -8007,6 +8048,7 @@ function upd(dt) {
     }
 
     const prevX = e.x, prevZ = e.z;
+    const springCommitted=!!e.tetherSpring;tickTetherSpring(e,dt);
 
     // Simulated delayed shots (Quackbot Barrage) \u2014 lives inside the loop,
     // so it can never fire after the match is over or the entity is gone.
@@ -8026,7 +8068,7 @@ function upd(dt) {
       e.mesh.visible = !(isSpectating && e === spectateTarget);
       if(!e.ai) { // remote players follow network targets; bots drive themselves
         const netFollow = 1 - Math.exp(-dt * 15);
-        if(!(isMultiplayer&&isLobbyLeader&&e.stun>0))moveChampion(e,(e.targetX-e.x)*netFollow,(e.targetZ-e.z)*netFollow);
+        if((!e.tetherSpring||(isMultiplayer&&!isLobbyLeader&&e!==pl))&&!(isMultiplayer&&isLobbyLeader&&e.stun>0))moveChampion(e,(e.targetX-e.x)*netFollow,(e.targetZ-e.z)*netFollow);
         e.a = lerpAngle(e.a, e.targetA, netFollow);
         e.pitch += ((e.targetP || 0) - e.pitch) * netFollow;
       }
@@ -8110,6 +8152,8 @@ function upd(dt) {
 
     if(e.stun > 0) {
       e.stun -= dt;
+    } else if(springCommitted||e.tetherSpring) {
+      // Compression and spring launch own movement; damage and knockback still apply.
     } else if(e.chain) {
       // Oink is committed to his chain: no moving or attacking until it finishes
     } else if(lunging) {
@@ -8130,7 +8174,7 @@ function upd(dt) {
       ab1 = P1_ab1;
       ab2 = P1_ab2;
 
-      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.35:1) * (e.upSpeed||1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
+      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.35:1) * (e.upSpeed||1) * (e.springUntil>matchTime?1.25:1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
       const slowMod = ((e.sporeSlowT > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : ((e.upWeakSlowUntil||0)>matchTime?.7:(e.slow > 0 ? 0.6 : 1.0))) * (e.jackpotSlowT>0?0.6:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? (hasUp(e,6,0)?.85:BALANCE_PATCH.dentley.guardMove) : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
@@ -8142,7 +8186,7 @@ function upd(dt) {
       if(P1_ab3 && e.stun<=0 && e.c4<=0)ability3(e);
     } else if(e.ai) {
       [mx, mz, at, ab1, ab2] = updateAI(e, dt);
-      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.35:1) * (e.upSpeed||1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
+      const baseSpd = (e.ci === 6 && e.form === 1 ? 210 : HEROES[e.ci].sp) * (e.speedBoost > 0 ? 1.35 : 1.0) * (e.stimT>0?1.35:1) * (e.upSpeed||1) * (e.springUntil>matchTime?1.25:1) * (e.ci===JACKPOT.hero && e.jackpotAllInT>0 ? JACKPOT.allInSpeedMultiplier : 1);
       const slowMod = ((e.sporeSlowT > 0) ? (1 - BALANCE_PATCH.mycelis.podSlow) : ((e.upWeakSlowUntil||0)>matchTime?.7:(e.slow > 0 ? 0.6 : 1.0))) * (e.jackpotSlowT>0?0.6:1);
       const s = baseSpd * slowMod * (e.fire > 0 ? 0.8 : 1.0) * (e.guard > 0 ? (hasUp(e,6,0)?.85:BALANCE_PATCH.dentley.guardMove) : 1.0) * (e.guardBoost > 0 ? BALANCE_PATCH.dentley.releaseBoost : 1.0);
       const l = Math.hypot(mx, mz) || 1;
@@ -8208,6 +8252,7 @@ function upd(dt) {
         if(e.mesh.shield) e.mesh.shield.visible = e.guard > 0 && !sq;
         applyChampionBodySize(e);
       }
+      syncTetherSpringVisual(e);
       const ratio = Math.max(0, e.hp / e.mhp);
       e.mesh.hpBar.scale.x = ratio;
       e.mesh.hpBar.position.x = -13 * (1 - ratio);
@@ -8224,15 +8269,17 @@ function upd(dt) {
   if(isMultiplayer && isLobbyLeader) recordCombatHistory();
   for(let i = P.length - 1; i >= 0; i--) {
     const p = P[i];
+    if(p.t==='yoyo'){if(tickTetherYoyo(p,dt)){disposeHierarchy(p.mesh);P.splice(i,1);}continue;}
     let finalize = false;
 
     if(p.t === "b") {
       p.age += dt;
-      if(p.out && p.age > (p.normal&&hasUp(p.o,2,1)?.552:.48)) { p.out = false; p.hit.clear(); }
+      if(p.out && p.age > (p.normal?(hasUp(p.o,2,1)?.483:.42):.48)) { p.out = false; p.hit.clear(); }
       if(!p.out) {
-        const a = Math.atan2(p.o.z - p.z, p.o.x - p.x);
-        p.vx = Math.cos(a)*390;
-        p.vz = Math.sin(a)*390;
+        const mx=p.o.x-(p.ownerPrevX??p.o.x),mz=p.o.z-(p.ownerPrevZ??p.o.z);p.ownerPrevX=p.o.x;p.ownerPrevZ=p.o.z;
+        const lead=p.normal?Math.max(0,1-p.age/1.5)*.65:0;
+        const a=Math.atan2(p.o.z+mz/Math.max(dt,.001)*lead-p.z,p.o.x+mx/Math.max(dt,.001)*lead-p.x),speed=p.normal?335:390,blend=1-Math.exp(-dt*(p.normal?11:25));
+        p.vx+=(Math.cos(a)*speed-p.vx)*blend;p.vz+=(Math.sin(a)*speed-p.vz)*blend;
         if(Math.hypot(p.o.x - p.x, p.o.z - p.z) < 22) finalize = true;
       }
       // Bruno's hammer deflect destroys boomerangs mid-flight (reflect() zeroes life)
@@ -8279,6 +8326,7 @@ function upd(dt) {
       }else{damageWorldCrate(p.d||8,p.o);finalize=true;}
     }
 
+    if(!finalize&&(!isMultiplayer||isLobbyLeader)){for(const q of tetherAnchors)if(q.hp>0&&areEnemies(p.o,q.owner)&&Math.hypot(q.x-p.x,q.z-p.z)<15&&p.y>0&&p.y<25){q.hp-=p.d||5;spawnSparks(q.x,q.z,0xffce83,3);finalize=true;break;}}
     if(!finalize) {
       for(const t of E) {
         const targetPos = getCombatPosition(t, p.o, p.age * 1000);
@@ -8391,6 +8439,190 @@ window.addEventListener("storage",event=>{
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{uiNametagCache.clear();updateEconomyDisplays();});
 document.getElementById("patch-version").textContent=PATCH_UPDATES.version;
 document.getElementById("patch-update-list").innerHTML=PATCH_UPDATES.notes.map(n=>`<li>${escapeHtml(n)}</li>`).join("");
+
+// Tether combat objects use host authority; arena events use the shared round seed.
+let tetherAnchors=[],tetherAnchorSerial=0,toyEventVisuals=[],toyLastEvent=-1;
+function buildTetherWeapon(isViewmodel=false){
+ const g=new THREE.Group(),wood=new THREE.MeshStandardMaterial({color:0xc67b45,roughness:.45,metalness:.15}),rim=new THREE.MeshStandardMaterial({color:0xe9c576,metalness:.7,roughness:.3});
+ for(const z of [-2.2,2.2]){const disc=new THREE.Mesh(new THREE.CylinderGeometry(7,7,2.8,20),wood);disc.rotation.x=Math.PI/2;disc.position.z=z;g.add(disc);const ring=new THREE.Mesh(new THREE.TorusGeometry(5,.65,6,20),rim);ring.position.z=z+Math.sign(z)*1.5;g.add(ring);}
+ const axle=new THREE.Mesh(new THREE.CylinderGeometry(2,2,5,10),rim);axle.rotation.x=Math.PI/2;g.add(axle);
+ if(isViewmodel){g.scale.setScalar(.7);const string=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(-1,10,1)]),new THREE.LineBasicMaterial({color:0xffedbd}));g.add(string);}return g;
+}
+function clearTetherAnchors(){for(const q of tetherAnchors)disposeHierarchy(q.mesh);tetherAnchors=[];toyLastEvent=-1;}
+function anchorMesh(q){
+ const g=new THREE.Group(),base=new THREE.Mesh(new THREE.CylinderGeometry(11,13,5,12),new THREE.MeshStandardMaterial({color:0xb7814e,metalness:.5,roughness:.4}));base.position.y=3;g.add(base);
+ const ring=new THREE.Mesh(new THREE.RingGeometry(68,70,48).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffcc83,transparent:true,opacity:.12,side:THREE.DoubleSide,depthWrite:false}));ring.position.y=1.2;g.add(ring);g.userData.ring=ring;
+ const label=makeTextSprite('ANCHOR '+Math.ceil(q.hp),'#ffdfab',24);label.material.depthTest=true;label.position.y=20;g.add(label);g.userData.label=label;q.shownHP=Math.ceil(q.hp);
+ const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0xffdb99}));g.add(line);g.userData.line=line;g.position.set(q.x,0,q.z);scene.add(g);return g;
+}
+function placeTetherAnchor(e){
+ let x=e.x,z=e.z,found=false;for(let d=20;d<=150;d+=5){const nx=e.x+Math.cos(e.a)*d,nz=e.z+Math.sin(e.a)*d;if(blocked(nx,nz,13))break;x=nx;z=nz;found=true;}
+ if(!found){if(e===pl)spawnDamageNumber(e.x,e.z,'BLOCKED','#ffb090');return;}
+ e.c2=HEROES[9].a1cd;Snd.play('ability');if(isMultiplayer&&!isLobbyLeader)return;
+ for(const q of tetherAnchors)if(q.owner===e)q.hp=0;
+ const q={id:'ta_'+(++tetherAnchorSerial),x,z,owner:e,hp:hasUp(e,9,1)?75:60,life:6,target:null,nextYank:0,yanks:0};q.mesh=anchorMesh(q);tetherAnchors.push(q);
+}
+function recoilTether(e){
+ if(e.tetherSpring||e.dead||e.stun>0)return;
+ e.tetherSpringSeq=(e.tetherSpringSeq||0)+1;
+ e.tetherSpring={phase:'wind',t:0,duration:.25,a:e.a+Math.PI,distance:130,travel:0,bounced:false};
+ e.targetX=e.x;e.targetZ=e.z;Snd.play('ability');spawn3DRing(e.x,e.z,20,0xffd79b);
+}
+function tetherSpringCurve(u){
+ u=Math.max(0,Math.min(1,u));return u<.2?2.5*u*u:1-1.40625*(1-u)*(1-u);
+}
+function finishTetherSpring(e,interrupted=false){
+ e.tetherSpring=null;e.springSettleUntil=matchTime+.16;e.springInputLockUntil=matchTime+.12;
+ e.targetX=e.x;e.targetZ=e.z;e.lastSafeX=e.x;e.lastSafeZ=e.z;
+ if(!interrupted)spawn3DRing(e.x,e.z,25,0xffcf88);
+}
+function tickTetherSpring(e,dt){
+ const q=e.tetherSpring;if(!q)return;
+ if(e.dead||e.stun>0){finishTetherSpring(e,true);return;}
+ const simulate=!isMultiplayer||isLobbyLeader||e===pl;
+ let remain=dt;
+ while(remain>1e-8&&e.tetherSpring){
+  const q=e.tetherSpring,step=Math.min(remain,Math.max(0,q.duration-q.t));
+  const before=tetherSpringCurve(q.t/q.duration);q.t=Math.min(q.duration,q.t+step);remain-=step;
+  if(q.phase==='wind'){
+   if(q.t>=q.duration-1e-8){q.phase='launch';q.t=0;q.duration=.32;q.travel=0;e.kx=0;e.kz=0;if(simulate&&hasUp(e,9,3))upShield(e,8,1.5);Snd.play('bounce');}
+   else break;
+  }else{
+   let distance=q.distance*(tetherSpringCurve(q.t/q.duration)-before),collision=false;
+   if(simulate)while(distance>1e-8){
+    const d=Math.min(2,distance),vx=Math.cos(q.a),vz=Math.sin(q.a),nx=e.x+vx*d,nz=e.z+vz*d;
+    if(blocked(nx,nz,e.r)){
+     collision=true;
+     if(!q.bounced){const bx=blocked(e.x+vx*d,e.z,e.r),bz=blocked(e.x,e.z+vz*d,e.r);let rx=bx?-vx:vx,rz=bz?-vz:vz;if(!bx&&!bz){rx=-vx;rz=-vz;}
+      q.a=Math.atan2(rz,rx);q.bounced=true;q.phase='bounce';q.t=0;q.duration=.24;q.distance=70;q.travel=0;
+      e.springUntil=matchTime+(hasUp(e,9,2)?2.5:2);spawn3DRing(e.x,e.z,22,0xffe1a9);Snd.play('bounce');
+     }else finishTetherSpring(e);
+     break;
+    }
+    e.x=nx;e.z=nz;q.travel+=d;distance-=d;
+   }
+   if(simulate){e.targetX=e.x;e.targetZ=e.z;e.lastSafeX=e.x;e.lastSafeZ=e.z;}
+   if(!collision&&q.t>=q.duration-1e-8)finishTetherSpring(e);
+   if(!simulate&&q.t>=q.duration-1e-8)finishTetherSpring(e);
+  }
+  if(step<=1e-8&&e.tetherSpring&&e.tetherSpring.phase==='wind')break;
+ }
+}
+function tetherSpringSquash(e){
+ const q=e?.tetherSpring;if(!q)return 1;
+ const u=Math.max(0,Math.min(1,q.t/q.duration));return q.phase==='wind'?1-.28*Math.sin(u*Math.PI/2):1+.16*Math.sin(Math.PI*u);
+}
+function buildTetherSpringCoil(){
+ const points=[];for(let i=0;i<=96;i++){const u=i/96,a=u*Math.PI*10;points.push(new THREE.Vector3(Math.cos(a)*10,1+u*8,Math.sin(a)*10));}
+ const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:0xffdf9b,transparent:true,opacity:1}));line.visible=false;line.frustumCulled=false;return line;
+}
+function syncTetherSpringVisual(e){
+ if(e.ci!==9||!e.mesh)return;const y=tetherSpringSquash(e),xz=1/Math.sqrt(y);e.mesh.scale.x*=xz;e.mesh.scale.z*=xz;e.mesh.scale.y*=y;
+ if(!e.mesh.userData.springCoil){const coil=buildTetherSpringCoil();e.mesh.add(coil);e.mesh.userData.springCoil=coil;}
+ const coil=e.mesh.userData.springCoil,q=e.tetherSpring;coil.visible=!!q;
+ if(q){const u=Math.max(0,Math.min(1,q.t/q.duration));coil.scale.y=q.phase==='wind'?1-.65*u:1.5-.5*u;coil.rotation.y=matchTime*8;}
+
+}
+function tetherSpringSnapshot(e){const q=e.tetherSpring;return q?{phase:q.phase,t:q.t,duration:q.duration,a:q.a,distance:q.distance,travel:q.travel,bounced:q.bounced}:null;}
+function applyTetherSpringSnapshot(e,item){
+ if(e.ci!==9||!Number.isInteger(item.tss)||item.tss<(e.tetherSpringSeq||0))return;
+ e.tetherSpringSeq=item.tss;const q=item.tsp;
+ if(q&&['wind','launch','bounce'].includes(q.phase)&&Number.isFinite(q.t)&&Number.isFinite(q.duration)&&q.duration>0&&Number.isFinite(q.a)){
+  e.tetherSpring={...q};
+  if(e===pl){e.x=item.x;e.z=item.z;e.targetX=item.x;e.targetZ=item.z;}
+ }else if(!q){
+  if(e.tetherSpring||(item.tss>0&&(e.springEndSeq||0)<item.tss)){e.tetherSpring=null;e.springEndSeq=item.tss;e.x=item.x;e.z=item.z;e.targetX=item.x;e.targetZ=item.z;e.springSettleUntil=matchTime+.16;}
+ }
+}
+
+function tetherSegmentContact(ax,az,bx,bz,x,z){
+ const dx=bx-ax,dz=bz-az,len=dx*dx+dz*dz,u=len>1e-8?Math.max(0,Math.min(1,((x-ax)*dx+(z-az)*dz)/len)):0;
+ const px=ax+dx*u,pz=az+dz*u;return {x:px,z:pz,distance:Math.hypot(x-px,z-pz)};
+}
+function tetherVisibleStringEnd(p){
+ const dx=p.x-p.o.x,dz=p.z-p.o.z,d=Math.hypot(dx,dz),steps=Math.max(1,Math.ceil(d/3));
+ for(let i=1;i<=steps;i++){const x=p.o.x+dx*i/steps,z=p.o.z+dz*i/steps;if(terrainAt(x,14,z,1)){const u=Math.max(0,(i-1)/steps);return {x:p.o.x+dx*u,z:p.o.z+dz*u};}}
+ return {x:p.x,z:p.z};
+}
+function tickTetherYoyo(p,dt){
+ if(p.o.dead)return true;p.age+=dt;if(p.age>4)return true;
+ p.travel=p.travel||0;p.contact=p.contact||new Map();p.returnHits=p.returnHits||new Set();p.objectReturnHits=p.objectReturnHits||new Set();const auth=!isMultiplayer||isLobbyLeader;
+ const steps=Math.max(1,Math.ceil((hasUp(p.o,9,4)?605:550)*dt/3));
+ for(let i=0;i<steps;i++){
+  const wasOut=p.out,speed=wasOut?235:(hasUp(p.o,9,4)?605:550),subdt=dt/steps;
+  if(!wasOut){const dx=p.o.x-p.x,dz=p.o.z-p.z,d=Math.hypot(dx,dz);if(d<17)return true;p.vx=dx/d*speed;p.vz=dz/d*speed;}
+  const nx=p.x+p.vx*subdt,nz=p.z+p.vz*subdt;
+  if(terrainAt(nx,14,nz,3)){if(!wasOut)return true;p.out=false;continue;}
+  p.x=nx;p.z=nz;if(wasOut)p.travel+=speed*subdt;
+  const end=tetherVisibleStringEnd(p),stamp=matchTime-dt+(i+1)*subdt;
+  if(auth)for(const t of E){
+   if(t.dead||!areEnemies(p.o,t))continue;
+   const headTouch=Math.hypot(t.x-p.x,t.z-p.z)<=t.r+7&&hasLOS(p.x,p.z,t.x,t.z);
+   let lineTouch=false;
+   if(wasOut){const c=tetherSegmentContact(p.o.x,p.o.z,end.x,end.z,t.x,t.z);lineTouch=c.distance<=t.r+2.5&&hasLOS(c.x,c.z,t.x,t.z);}
+   if(wasOut&&(headTouch||lineTouch)){
+    // A single timer covers head + string, so overlapping them never doubles damage.
+    if((p.contact.get(t)??-Infinity)<=stamp+1e-7){hurt(t,5,Math.atan2(t.z-p.o.z,t.x-p.o.x),0,p.o,'projectile');p.contact.set(t,stamp+.2);}
+   }else if(!wasOut&&headTouch&&!p.returnHits.has(t)){
+    p.returnHits.add(t);const immune=t.feintInvuln>0||(t.chain&&t.chain.inv);hurt(t,15,Math.atan2(p.vz,p.vx),35,p.o,'projectile');if(!immune&&!t.dead)t.stun=Math.max(t.stun||0,.7);
+   }
+  }
+  if(auth)for(const q of tetherAnchors){
+   if(q.hp<=0||!areEnemies(p.o,q.owner))continue;
+   const c=tetherSegmentContact(p.o.x,p.o.z,end.x,end.z,q.x,q.z),touch=wasOut?(c.distance<=15&&hasLOS(c.x,c.z,q.x,q.z)):(Math.hypot(q.x-p.x,q.z-p.z)<18&&hasLOS(p.x,p.z,q.x,q.z));
+   if(!touch)continue;
+   if(wasOut&&(p.contact.get(q)??-Infinity)<=stamp+1e-7){q.hp-=5;p.contact.set(q,stamp+.2);}
+   else if(!wasOut&&!p.objectReturnHits.has(q)){p.objectReturnHits.add(q);q.hp-=15;}
+  }
+  if(auth&&worldCrate&&!(worldCrate.y>0)&&worldCrate.bombT===null&&Math.hypot(worldCrate.x-p.x,worldCrate.z-p.z)<worldCrate.r+7){p.crateHits=p.crateHits||new Set();const key=worldCrate.id+':'+wasOut;if(!p.crateHits.has(key)){p.crateHits.add(key);damageWorldCrate(wasOut?5:15,p.o);}}
+  if(wasOut&&p.travel>=(hasUp(p.o,9,0)?250:225))p.out=false;
+ }
+ p.mesh.position.set(p.x,14,p.z);
+ if(!p.string){p.string=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0xffe8be,transparent:true,opacity:.95}));p.mesh.add(p.string);p.string.frustumCulled=false;}
+ const end=tetherVisibleStringEnd(p),a=p.string.geometry.attributes.position;a.setXYZ(0,end.x-p.x,0,end.z-p.z);a.setXYZ(1,p.o.x-p.x,0,p.o.z-p.z);a.needsUpdate=true;p.string.geometry.computeBoundingSphere();p.string.material.color.setHex(p.out?0xffe8be:0xffb774);return false;
+}
+function tickTetherAnchors(dt){
+ const auth=!isMultiplayer||isLobbyLeader;
+ for(let i=tetherAnchors.length-1;i>=0;i--){const q=tetherAnchors[i];if(auth){q.life-=dt;if(q.owner.dead)q.hp=0;
+  if(!q.target&&q.life>0&&q.hp>0)for(const t of E)if(!t.dead&&!(t.feintInvuln>0||(t.chain&&t.chain.inv))&&areEnemies(q.owner,t)&&Math.hypot(t.x-q.x,t.z-q.z)<t.r+12&&hasLOS(q.x,q.z,t.x,t.z)){q.target=t;q.life=3;hurt(t,10,0,0,q.owner);spawn3DRing(q.x,q.z,70,0xffcc83);break;}
+  const t=q.target;if(t&&!t.dead&&!(t.feintInvuln>0||(t.chain&&t.chain.inv))&&q.hp>0&&q.life>0&&q.yanks<2&&matchTime>=q.nextYank&&Math.hypot(t.x-q.x,t.z-q.z)>70&&hasLOS(q.x,q.z,t.x,t.z)){
+   const angle=Math.atan2(q.z-t.z,q.x-t.x),distance=Math.hypot(t.x-q.x,t.z-q.z);
+   for(let d=0;d<distance;d+=2){const n=Math.min(2,distance-d),nx=t.x+Math.cos(angle)*n,nz=t.z+Math.sin(angle)*n;if(blocked(nx,nz,t.r))break;t.x=nx;t.z=nz;}
+   t.targetX=t.x;t.targetZ=t.z;t.tetherPullSeq=(t.tetherPullSeq||0)+1;
+   const immune=t.feintInvuln>0||(t.chain&&t.chain.inv);hurt(t,5,angle,0,q.owner);if(!immune&&!t.dead)t.stun=Math.max(t.stun||0,.5);q.nextYank=matchTime+1.2;q.yanks++;spawn3DRing(q.x,q.z,24,0xffd494);
+  }
+  if(t&&t.dead)q.life=0;
+ }
+ if(q.hp<=0||q.life<=0){disposeHierarchy(q.mesh);tetherAnchors.splice(i,1);continue;}
+ const line=q.mesh.userData.line,t=q.target;line.visible=!!t&&!t.dead;if(line.visible){const a=line.geometry.attributes.position;a.setXYZ(0,0,6,0);a.setXYZ(1,t.x-q.x,12,t.z-q.z);a.needsUpdate=true;line.geometry.computeBoundingSphere();}
+ q.mesh.userData.ring.material.opacity=t?.35:.12;const shown=Math.max(0,Math.ceil(q.hp));if(q.shownHP!==shown){q.shownHP=shown;disposeHierarchy(q.mesh.userData.label);const label=makeTextSprite('ANCHOR '+shown,'#ffdfab',24);label.material.depthTest=true;label.position.y=20;q.mesh.add(label);q.mesh.userData.label=label;}
+ }
+}
+function tetherAnchorSnapshot(){return tetherAnchors.filter(q=>q.hp>0&&q.life>0).map(q=>({id:q.id,x:q.x,z:q.z,hp:q.hp,life:q.life,owner:q.owner.netId,target:q.target?.netId||null}));}
+function syncTetherAnchors(list){if(!isMultiplayer||isLobbyLeader)return;const seen=new Set();for(const a of list){const owner=E.find(e=>e.netId===a.owner);if(!owner)continue;seen.add(a.id);let q=tetherAnchors.find(q=>q.id===a.id);if(!q){q={...a,owner};q.mesh=anchorMesh(q);tetherAnchors.push(q);}q.hp=a.hp;q.life=a.life;q.target=E.find(e=>e.netId===a.target)||null;}for(let i=tetherAnchors.length-1;i>=0;i--)if(!seen.has(tetherAnchors[i].id)){disposeHierarchy(tetherAnchors[i].mesh);tetherAnchors.splice(i,1);}}
+function toyEventState(time=matchTime){const event=Math.floor(Math.max(0,time)/14),phase=((time%14)+14)%14;let h=(arenaLayoutSeed^Math.imul(event+1,2654435761))>>>0;h=Math.imul(h^(h>>>16),2246822507)>>>0;return {event,phase,index:h%3,warning:phase>=9&&phase<11,pulse:phase>=11};}
+function updateToyEvent(){
+ const def=MAPS[selectedMapIndex];if(def.id!=='toybox'||state!=='play'||demoActive)return;const ev=toyEventState();
+ for(let i=0;i<toyEventVisuals.length;i++){const v=toyEventVisuals[i],active=i===ev.index;v.ring.material.opacity=active&&ev.warning?.2+.3*Math.abs(Math.sin(matchTime*8)):active&&ev.phase>=11&&ev.phase<11.5?.6:0;v.lid.rotation.z=active&&ev.phase>=11&&ev.phase<12?-1.1:0;v.label.visible=active&&ev.warning;}
+ if(ev.pulse&&toyLastEvent!==ev.event){toyLastEvent=ev.event;const [x,z]=def.toyPads[ev.index];spawn3DRing(x,z,95,0xffd86c);Snd.play('bounce');if(!isMultiplayer||isLobbyLeader)for(const e of E)if(!e.dead&&Math.hypot(e.x-x,e.z-z)<95+e.r&&hasLOS(x,z,e.x,e.z)){const a=Math.atan2(e.z-z,e.x-x);e.kx=(e.kx||0)+Math.cos(a)*190;e.kz=(e.kz||0)+Math.sin(a)*190;}}
+}
+function buildArenaDetails(def){
+ toyEventVisuals=[];toyLastEvent=-1;
+ const metal=new THREE.MeshStandardMaterial({color:0x9eaeb3,metalness:.7,roughness:.4}),wood=new THREE.MeshStandardMaterial({color:0x765235,roughness:.85}),dark=new THREE.MeshStandardMaterial({color:0x252d32,roughness:.7});
+ for(let i=0;i<def.cover.length;i++){const [x,z,w,d]=def.cover[i];const mat=new THREE.MeshBasicMaterial({color:def.id==='toybox'?0xe4ba72:0x758587,transparent:true,opacity:.18,depthWrite:false});const g=new THREE.Mesh(new THREE.PlaneGeometry(w+14,d+14),mat);g.rotation.x=-Math.PI/2;g.position.set(x+w/2,.12,z+d/2);mapGroup.add(g);
+  if(def.id==='conveyor'){for(const side of [-1,1])for(const dx of [-w*.35,w*.35]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(3,3,3,10),dark);wheel.rotation.z=Math.PI/2;wheel.position.set(x+w/2+dx,5,z+d/2+side*d*.38);mapGroup.add(wheel);}arenaBox(x+w*.7,52,z+d*.25,18,1.2,12,wood);}
+  if(def.id==='bbq'&&i<4){for(const dx of [-w*.35,w*.35])arenaBox(x+w/2+dx,11,z+d*.8,3,20,3,metal);arenaBox(x+w/2,43,z+d-1,18,2,2,metal);}
+ }
+ // Scenery beyond the arena boundary cannot create invisible gameplay collisions.
+ for(let i=0;i<10;i++){const x=55+i*(W-110)/9;
+  if(def.id==='bbq'){arenaBox(x,12,-28,45,24,28,wood);for(const side of [-1,1])arenaBox(x+side*15,29,-28,3,10,3,wood);arenaBox(x,35,-28,48,4,30,wood);arenaBox(x,57,H+25,3,114,3,wood);}
+  else if(def.id==='conveyor'){arenaBox(x,34,-24,47,68,28,metal);arenaBox(x,70,-24,49,3,30,dark);arenaBox(x,30,-8,16,2,1,dark);}
+  else{arenaBox(x,25,-23,48,50,22,wood);for(const y of [8,25,42]){arenaBox(x,y,-23,46,2,24,wood);for(let k=0;k<3;k++){const m=new THREE.MeshStandardMaterial({color:[0x7da798,0xd48b6b,0xe0c26c][(i+k)%3],roughness:.7});arenaBox(x-14+k*14,y+6,-22,10,10,10,m);}}}
+ }
+ if(def.id==='bbq')for(let i=0;i<14;i++){const bulb=new THREE.Mesh(new THREE.SphereGeometry(2.2,8,6),new THREE.MeshBasicMaterial({color:0xffd493}));bulb.position.set(45+i*(W-90)/13,88-Math.sin(i/13*Math.PI)*12,H+8);mapGroup.add(bulb);}
+ if(def.id==='toybox')for(const [x,z] of def.toyPads){const mat=new THREE.MeshStandardMaterial({color:0x9671ad,metalness:.2,roughness:.5});arenaBox(x,1,z,24,2,24,mat);const lid=new THREE.Mesh(new THREE.BoxGeometry(24,1.5,24),new THREE.MeshStandardMaterial({color:0xebbf61}));lid.position.set(x,2.5,z);mapGroup.add(lid);const ring=new THREE.Mesh(new THREE.RingGeometry(93,95,64).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffdb7e,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}));ring.position.set(x,1.3,z);mapGroup.add(ring);const label=makeTextSprite('POP! MOVE AWAY','#ffda90',25);label.material.depthTest=true;label.position.set(x,25,z);label.visible=false;mapGroup.add(label);toyEventVisuals.push({ring,lid,label});}
+}
+
 // Initial launch
 setArenaLayout(Math.floor(Math.random()*4294967295));
 currentRects = MAPS[0].rects;
@@ -8495,7 +8727,7 @@ requestAnimationFrame(loop);
     margin-top: 8px;
   }
 
-  /* Champion Balance colors */
+  /* Balance Changes colors */
   #menu-updates-panel li.change-buff {
     color: #79e8a6;
   }
@@ -8533,52 +8765,120 @@ requestAnimationFrame(loop);
 // Buff = improvement (green), Nerf = reduction (red), Rework = roughly balanced gains/losses (yellow).
 // Put description-only corrections and other non-balance changes in game, not champions.
 const VERSION_UPDATES = {
-  "version": "BRAWLBOUND · CHAMPION BALANCE UPDATE",
+  "version": "BRAWLBOUND · TETHER & TOYBOX UPDATE",
   "game": [
+    "TETHER FEEL UPDATE: Outbound yo-yo head and string share 5-damage / 0.2s contact ticks. Fast return head retains 15 damage and 0.7s stun. Recoil Spring now compresses for 0.25s before a timed, animated spring launch and wall rebound.",
+    "TETHER: Free new control champion. Yo-Yo Strike, destructible Bungee Snare and Recoil Spring; bot support, multiplayer anchor state and five round upgrades.",
+    "MAPS: Toybox Trouble added. All three arenas now have richer themed cover, materials, floor markings and environmental dressing.",
+    "CONVEYOR KITCHEN: Eight randomized prep islands / partition pieces per round, one more than before. They reposition between rounds, not during combat.",
+    "BBQ BAY: Four randomized 80×40 vents; two-second amber warning before ignition, later activation and 17 DPS. Hazard visuals match their damage footprint.",
+    "TOYBOX TROUBLE: Every 14s, a seeded random jack-in-the-box warns for 2s, then pushes nearby players once. Cover blocks the pulse. No damage or stun.",
+    "ECONOMY: Daily login 100 Shinies, every Daily Challenge +15, Beacon Field Blaster 400 and Nightwatch Patch 600 Shinies.",
+    "COLLISION: Projectile cover now uses explicit cover bounds; decorative props, warning markers and flames do not create invisible projectile walls.",
     "PATCH: Permanently unlock the Survivalist for 500 Shinies. Redesigned champion, Field Blaster and survivalist insignia.",
     "PATCH SKINS: Buy Beacon Field Blaster for 400 Shinies or Nightwatch Patch for 600 Shinies directly in the Shinies Shop. Both remain available in their corresponding cosmetic caches.",
     "MENU: Restored the transparent live-battle background and the bottom-right Updates & Balance panel.",
     "PATCH FIX: Grenade trajectory preview uses matching flight simulation and current aiming direction.",
     "PATCH FIX: Grenade cooldown correctly displays the opening 3-second ability lockout separately from its normal cooldown and cooking fuse.",
     "PATCH FIX: Spectating Patch shows the Grenade option and its cooldown.",
-    "CHEF SIZZLE: Marinara’s description now states 13 damage per second. This is a description clarification, not a damage change."
+    "PREVIOUS UPDATE: CHEF SIZZLE: Marinara’s description now states 13 damage per second. This is a description clarification, not a damage change."
   ],
   "champions": [
     {
-      "type": "buff",
-      "text": "Patch — Stim: movement-speed bonus increased from 30% to 35%."
-    },
-    {
-      "type": "buff",
-      "text": "Jackpot — Dice 2: self-slowness reduced from 50% to 40% for 2 seconds."
-    },
-    {
-      "type": "buff",
-      "text": "Jackpot — Lucky Revolver: normal and loaded Tails shots deal 7 damage instead of 6."
-    },
-    {
-      "type": "buff",
-      "text": "Jackpot — All In: duration increased from 6 to 7 seconds. Eliminations reset the timer to the normal 7-second duration."
-    },
-    {
-      "type": "buff",
-      "text": "Sir Dentley — Movement speed increased from 125 to 130."
+      "type": "rework",
+      "text": "Tether — Yo-Yo Strike: outbound head OR visible string deals 5 damage every 0.2s per enemy, with no double dipping. Return head moves at 550 speed (235 outbound), deals 15 damage and stuns 0.7s once per enemy. Return string deals no damage; cover clips the outbound string."
     },
     {
       "type": "rework",
-      "text": "Bruno: Sledgehammer damage reduced from 30 to 25, and attack interval reduced from 1.25s to 1.2s. Cannot reflect Captain Oink’s Cannonball, but can reflect Patch’s Field Blaster."
+      "text": "Tether — Recoil Spring: 0.25s vulnerable compression, then a 130-unit, 0.32s spring launch with acceleration, momentum loss and squash/stretch. First wall collision rebounds 70 units over 0.24s; a second collision stops it. Stuns interrupt. Cooldown remains 10s."
+    },
+    {
+      "type": "rework",
+      "text": "HP / SPEED: Bruno 285 / 108; Captain Oink 205 / 137; Mango 145 / 180; Chef Sizzle 135 / 153; Quackbot 105 / 190; Mycelis 175 / 147; Sir Dentley 230 / 128; Jackpot 155 / 163; Patch 185 / 172; Tether 165 / 155."
+    },
+    {
+      "type": "buff",
+      "text": "Patch: base speed increased to 172 for a mobile all-rounder. Quackbot: 105 HP and 190 speed. No champion starts below 105 HP; Squire remains a separate unarmored form."
+    },
+    {
+      "type": "buff",
+      "text": "Captain Oink — Scrap Cannon: each pellet deals 9 instead of 8.5 damage."
     },
     {
       "type": "nerf",
-      "text": "Chef Sizzle — Culinary Sniper Rifle: fires 0.1 seconds slower; attack interval increased from 1.1 to 1.2 seconds."
+      "text": "Captain Oink — Pellet angle spacing 0.14 → 0.18 radians. Missed Chain Hook return time 0.9 → 1.05s; arrival stun 0.9 → 0.8s."
+    },
+    {
+      "type": "rework",
+      "text": "Mango — Cluster Bomb cooldown 9 → 9.5s; Peel Trap cooldown 11 → 12s, damage 10 → 5, stun 1.5 → 1.7s. Normal bananas travel 12.5% less before returning, curve toward movement-led return positions, and return at 335 instead of 390 speed."
     },
     {
       "type": "nerf",
-      "text": "Chef Sizzle — Backdraft: cooldown increased from 8.5 to 9 seconds."
+      "text": "Chef Sizzle — Marinara 13 → 10 DPS. Extra Sauce retains its 20% damage reduction, now 8 DPS."
+    },
+    {
+      "type": "buff",
+      "text": "Sir Dentley — Sword arc 110° → 120°; third lunge 50 → 60 units; combo window 0.9 → 1s; Squire dagger 8 → 9 damage; rearm 70 → 80 HP; armor-burst knockback 140 → 205."
+    },
+    {
+      "type": "buff",
+      "text": "Sir Dentley — Dagger Feint crossed-enemy stun 0.4 → 0.6s; Counter Lunge distance 110 → 120, stun 0.3–1.5 → 0.4–1.7s."
     },
     {
       "type": "nerf",
-      "text": "Mycelis — Spore Pod: slow duration reduced from 5 to 3 seconds. Poison remains 20 total damage over 5 seconds; the slow and poison durations are separate."
+      "text": "Sir Dentley — Counter Lunge cooldown 8.5 → 9s. Long Counter keeps +15% range; its cooldown is 9.5s."
+    },
+    {
+      "type": "buff",
+      "text": "Jackpot — All In cooldown 17 → 16s, wager 25% → 20% of current HP."
+    },
+    {
+      "type": "nerf",
+      "text": "Patch — Medkit cooldown 13 → 14s. Field Dressing upgrade cooldown 14 → 15s; healing unchanged."
+    },
+    {
+      "type": "rework",
+      "text": "Economy — Daily login 50 → 100 Shinies; all Daily Challenges +15; Patch guaranteed weapon skin 500 → 400 and champion skin 700 → 600 Shinies."
+    },
+    {
+      "type": "rework",
+      "text": "Map balance — Kitchen cover count 7 → 8. BBQ vents are larger and stronger, with longer warnings. Toybox pulses have a two-second warning, no damage or stun, and are blocked by cover."
+    },
+    {
+      "type": "buff",
+      "text": "PREVIOUS UPDATE: Patch — Stim: movement-speed bonus increased from 30% to 35%."
+    },
+    {
+      "type": "buff",
+      "text": "PREVIOUS UPDATE: Jackpot — Dice 2: self-slowness reduced from 50% to 40% for 2 seconds."
+    },
+    {
+      "type": "buff",
+      "text": "PREVIOUS UPDATE: Jackpot — Lucky Revolver: normal and loaded Tails shots deal 7 damage instead of 6."
+    },
+    {
+      "type": "buff",
+      "text": "PREVIOUS UPDATE: Jackpot — All In: duration increased from 6 to 7 seconds. Eliminations reset the timer to the normal 7-second duration."
+    },
+    {
+      "type": "buff",
+      "text": "PREVIOUS UPDATE: Sir Dentley — Movement speed increased from 125 to 130."
+    },
+    {
+      "type": "rework",
+      "text": "PREVIOUS UPDATE: Bruno: Sledgehammer damage reduced from 30 to 25, and attack interval reduced from 1.25s to 1.2s. Cannot reflect Captain Oink’s Cannonball, but can reflect Patch’s Field Blaster."
+    },
+    {
+      "type": "nerf",
+      "text": "PREVIOUS UPDATE: Chef Sizzle — Culinary Sniper Rifle: fires 0.1 seconds slower; attack interval increased from 1.1 to 1.2 seconds."
+    },
+    {
+      "type": "nerf",
+      "text": "PREVIOUS UPDATE: Chef Sizzle — Backdraft: cooldown increased from 8.5 to 9 seconds."
+    },
+    {
+      "type": "nerf",
+      "text": "PREVIOUS UPDATE: Mycelis — Spore Pod: slow duration reduced from 5 to 3 seconds. Poison remains 20 total damage over 5 seconds; the slow and poison durations are separate."
     }
   ]
 };
@@ -8642,7 +8942,7 @@ const VERSION_UPDATES = {
               aria-selected="false"
               aria-controls="updates-balance-content"
               tabindex="-1">
-        Champion Balance
+        Balance Changes
       </button>
     </div>
 
