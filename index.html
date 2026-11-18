@@ -965,11 +965,11 @@ HEROES.push({n:"Jackpot",e:"\ud83c\udfb0",w:"\ud83e\ude99",wn:"Lucky Revolver",r
 });
 
 
-HEROES.push({n:"Patch",e:"⛨",w:"⌖",wn:"FIELD BLASTER",role:"Survivalist",roleCol:"#7cdbb0",hp:185,sp:172,col:0x527560,cd:.6,melee:false,atkRange:480,a1n:"Medkit",a1cd:14,a2n:"Stim",a2cd:11,a3n:"Cooked Grenade",a3cd:12,ad:"Accurate projectile: 13 damage every 0.6 seconds.",a1d:"Restore 35 HP over 3 seconds. Enemy damage interrupts healing. Cannot exceed maximum HP. Unavailable while cooking.",a2d:"Gain 35% movement speed for 3 seconds. Does not remove stuns or pass through obstacles.",a3d:"Hold F (or .) to cook; release to throw. The 3-second fuse never resets. Up to 25 damage with distance falloff, modest knockback, terrain bounces and cover blocking. Can kill Patch. Death drops the live grenade.",d:"A reliable survivalist. Find cover to heal, use Stim to reposition, and time a live grenade carefully. No passive or special resource."});
+HEROES.push({n:"Patch",e:"◈",w:"⌖",wn:"FIELD BLASTER",role:"Survivalist",roleCol:"#7cdbb0",hp:185,sp:175,col:0x527560,cd:.6,melee:false,atkRange:480,a1n:"Medkit",a1cd:14,a2n:"Stim",a2cd:11,a3n:"Cooked Grenade",a3cd:12,ad:"Accurate projectile: 13 damage every 0.6 seconds.",a1d:"Restore 35 HP over 3 seconds. Enemy damage interrupts healing. Cannot exceed maximum HP. Unavailable while cooking.",a2d:"Gain 35% movement speed for 3 seconds. Does not remove stuns or pass through obstacles.",a3d:"Hold F (or .) to cook; release to throw. The 3-second fuse never resets. Up to 25 damage with distance falloff, modest knockback, terrain bounces and cover blocking. Can kill Patch. Death drops the live grenade.",d:"A reliable survivalist. Find cover to heal, use Stim to reposition, and time a live grenade carefully. No passive or special resource."});
 
-HEROES.push({n:"Tether",e:"◎",w:"◎",wn:"Yo-Yo Strike",role:"Trapper / Control",roleCol:"#e6a963",hp:165,sp:155,col:0xc47845,cd:1.15,melee:false,atkRange:235,ab1Range:170,ab2Range:130,isNew:true,
- ad:"Throw one yo-yo up to 225 units. While outbound, touching its head OR attached string deals 5 damage every 0.5s, sharing one timer per enemy. It snaps back at 1600 speed (outbound: 235), dealing 15 damage and a 0.8s stun once per enemy touched by the returning head. The returning string deals no damage. Cover blocks both directions and clips the damaging string.",
- a1n:"Bungee Snare",a1cd:12,a1d:"Plant a visible, 60 HP anchor up to 150 units ahead. Waits 6s. The first enemy touching it takes 10 damage and is tethered for 4s within 70 units. Crossing the boundary yanks toward the center for 5 damage and a 0.5s stun. Maximum two yanks, at least 1.2s apart. Enemies can destroy the anchor; its owner cannot damage it. One anchor per Tether. Solid cover blocks placement and pulls.",
+HEROES.push({n:"Tether",e:"◎",w:"◎",wn:"Yo-Yo Strike",role:"Controler",roleCol:"#e6a963",hp:165,sp:155,col:0xc47845,cd:1.15,melee:false,atkRange:235,ab1Range:170,ab2Range:130,isNew:true,
+ ad:"Throw one yo-yo up to 225 units. While outbound, touching its head OR attached string deals 5 damage every 0.3s, sharing one timer per enemy. It snaps back at 1600 speed (outbound: 235), dealing 15 damage and a 0.8s stun once per enemy touched by the returning head. The returning string deals no damage. Cover blocks both directions and clips the damaging string.",
+ a1n:"Bungee Snare",a1cd:12,a1d:"Plant a visible, 60 HP anchor up to 150 units ahead. Waits 6s. Any enemy stepping into its visible 60-unit circle takes 10 damage and is tethered for 4s. Each enemy has their own tether timer. They can move within 60 units; crossing that boundary yanks them toward the center for 10 damage and a 0.9s stun. No yank-count limit; yanks on the same enemy are at least 1.2s apart. Enemies can destroy the anchor; its owner cannot damage it. One anchor per Tether. Solid cover blocks placement and pulls.",
  a2n:"Recoil Spring",a2cd:10,a2d:"Compress visibly for 0.25s, then release into a 130-unit spring launch over 0.32s. A wall collision creates a 70-unit rebound over 0.24s and grants +25% speed for 2s. Remain damageable throughout; stuns interrupt the wind-up or launch. Movement, attacks and other abilities are committed until release finishes. Walls stop unsafe travel.",d:"A nimble toy-maker who controls approach routes with a destructible bungee anchor, returning yo-yo and wall-bounce escape. Free for every player."});
 // Champion text is generated from the same settings as the real hitboxes.
 HEROES[0].ad=HEROES[0].ad.replace(/A \d+-degree(?: forward)?,/,`A ${COMBAT_SETTINGS.brunoAttackDegrees}-degree forward,`);
@@ -1275,7 +1275,7 @@ NAMEPLATE_CATEGORIES.push({key:"nameFonts",label:"Nametag Fonts",cratePrice:120,
  {id:"font-copperplate",name:"Imperial Inscription",rarity:"Legendary",family:"'Cinzel',Copperplate,Palatino,serif",weight:700}
 ]});
 
-HEROES[7].rarity="Epic";HEROES[7].isNew=true;
+HEROES[7].rarity="Epic";HEROES[7].isNew=false;
 SKIN_CATEGORIES.find(c=>c.key==="weaponSkins").items.push({id:"jackpot-house-edge",hero:7,name:"House Edge",rarity:"Epic",base:"#211630",accent:"#ffd166",glow:"#a855f7"});
 SKIN_CATEGORIES.find(c=>c.key==="championSkins").items.push({id:"jackpot-high-roller",hero:7,name:"High Roller Jackpot",rarity:"Epic",base:"#29133f",accent:"#ffdc83",glow:"#a855f7"});
 
@@ -5613,7 +5613,7 @@ window.returnToMenu = function(message = "Select a champion to battle in the are
 let roundVote=null,roundVoteSerial=0,pendingRoundReady=false,lastRoundStatePacket=null,lastRoundStartPacket=null,pendingStartGamePacket=null,lastStartedRoundId=null;
 const REMATCH_COUNTDOWN_MS=10000,MAP_VOTE_DURATION_MS=7000;
 const HOST_AWAY_TIMEOUT_MS=20000;
-const ARENA_PROTOCOL_VERSION="24-tether-snap:"+Object.values(COMBAT_SETTINGS).join(":");
+const ARENA_PROTOCOL_VERSION="25-tether-playtest:"+Object.values(COMBAT_SETTINGS).join(":");
 function chooseVotedMap(votes,members,random=Math.random){
  const counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,m)=>total+(votes[m.id]===i?1:0),0)),max=Math.max(...counts);if(max===0)return Math.floor(random()*MAPS.length);const tied=counts.map((n,i)=>n===max?i:-1).filter(i=>i>=0),winner=tied[Math.floor(random()*tied.length)];return winner===MAPS.length?Math.floor(random()*MAPS.length):winner;
 }
@@ -5640,6 +5640,7 @@ function broadcastRoundVote(){
  if(!roundVote||!isMultiplayer||!isLobbyLeader)return;outgoingSeq++;lastRoundStatePacket={type:"ROUND_STATE",id:myNetId,seq:outgoingSeq,roundId:roundVote.id,phase:roundVote.phase,remaining:Math.max(0,roundVote.endsAt-Date.now()),votes:{...roundVote.votes},ready:{...roundVote.ready},heroes:{...roundVote.heroes},chosen:roundVote.chosen};broadcastToPeers(lastRoundStatePacket);
 }
 function acceptRoundChoice(id,data){
+ if(id===myNetId&&data.action==='hero'&&data.hero!==RANDOM_HERO&&!ownsChampion(data.hero))return false;
  if(!roundVote||data.roundId!==roundVote.id||!roundMembers().some(r=>r.id===id))return false;
  if(roundVote.phase==="rematch"&&data.action==="rematch"){roundVote.ready[id]=true;if(roundMembers().every(r=>roundVote.ready[r.id]))beginMapVote();}
  else if(roundVote.phase==="vote"&&data.action==="vote"&&Date.now()<roundVote.endsAt&&Number.isInteger(data.choice)&&data.choice>=0&&data.choice<=MAPS.length)roundVote.votes[id]=data.choice;
@@ -5648,7 +5649,10 @@ function acceptRoundChoice(id,data){
  renderRoundVote();broadcastRoundVote();return true;
 }
 function sendRoundChoice(action,value){
- if(action==="hero"&&Number(value)===7&&!ownsChampion(7)&&!unlockJackpot())return;
+ if(action==="hero"){
+  const hero=Number(value);if(!Number.isInteger(hero)||hero<RANDOM_HERO||hero>=HEROES.length)return;
+  if(hero!==RANDOM_HERO&&!ownsChampion(hero)){showEconomyToast('You do not own '+HEROES[hero].n+'.');return;}
+ }
  if(!roundVote){
   if(action!=="rematch")return;
   if(isMultiplayer&&!isLobbyLeader){pendingRoundReady=true;const button=document.getElementById("rematch-button");if(button){button.disabled=true;button.textContent="\u2713 REMATCH READY";}const c=peerConnections.get(leaderId);if(c&&c.open){outgoingSeq++;c.send({type:"ROUND_CHOICE",id:myNetId,seq:outgoingSeq,action:"request",rematch:true});}}
@@ -5678,6 +5682,15 @@ function voteCard(index,voted,counts,total){
  return `<button class="round-map-card ${selected?"selected":""}" data-vote="${index}" aria-pressed="${selected}"><div class="vote-card-top"><span>0${index+1} / ARENA</span><span>${selected?"YOUR VOTE":"SELECT"}</span></div>${arenaVoteArt(index)}<strong>${escapeHtml(name)}</strong><small>${tips[index]}</small><div class="vote-meter"><i style="width:${share}%"></i></div><span class="round-map-count">${count} ${count===1?"vote":"votes"}<em>${share}%</em></span></button>`;
 }
 
+function roundChampionChoicesHTML(selected){
+ const random=`<button type="button" class="round-champion-choice ${selected===RANDOM_HERO?'is-selected':''}" data-round-hero="-1" aria-pressed="${selected===RANDOM_HERO}">Random</button>`;
+ return random+HEROES.map((h,i)=>{const owned=ownsChampion(i),locked=!owned;return `<button type="button" class="round-champion-choice ${locked?'is-locked':''} ${i===selected?'is-selected':''}" data-round-hero="${i}" data-locked="${locked}" aria-label="${escapeHtml(h.n)}${locked?' — locked; activate for details':''}" aria-pressed="${i===selected}" title="${locked?'You do not own this champion.':'Choose '+escapeHtml(h.n)}">${locked?'<span class="round-lock" aria-hidden="true">&#128274;</span> ':''}<span>${escapeHtml(h.n)}</span></button>`;}).join('');
+}
+function chooseRoundChampion(value){
+ const hero=Number(value);if(hero!==RANDOM_HERO&&(!Number.isInteger(hero)||!HEROES[hero]))return;
+ if(hero!==RANDOM_HERO&&!ownsChampion(hero)){showEconomyToast('You do not own '+HEROES[hero].n+'.');return;}
+ sendRoundChoice('hero',hero);
+}
 function renderRoundVote(){
  if(!roundVote)return;
  const remaining=Math.max(0,Math.ceil((roundVote.endsAt-Date.now())/1000));
@@ -5688,11 +5701,11 @@ function renderRoundVote(){
   const el=document.getElementById("round-panel");if(el)el.remove();document.body.classList.remove("round-open");return;
  }
  document.body.classList.add("round-open");let panel=document.getElementById("round-panel");if(!panel){panel=document.createElement("section");panel.id="round-panel";panel.setAttribute("aria-label","Next round map vote");document.body.appendChild(panel);}
- const members=roundMembers(),key=JSON.stringify([roundVote.id,roundVote.votes,roundVote.heroes,members.map(r=>[r.id,r.username])]),counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,r)=>total+(roundVote.votes[r.id]===i?1:0),0));
+ const members=roundMembers(),key=JSON.stringify([roundVote.id,roundVote.votes,roundVote.heroes,members.map(r=>[r.id,r.username]),HEROES.map((_,i)=>ownsChampion(i))]),counts=Array.from({length:MAPS.length+1},(_,i)=>members.reduce((total,r)=>total+(roundVote.votes[r.id]===i?1:0),0));
  if(panel.dataset.key!==key){const focused=document.activeElement?.dataset?.vote;panel.dataset.key=key;const voted=roundVote.votes[myNetId],hero=roundVote.heroes[myNetId]??p1HeroChoice;
- panel.innerHTML=`<div class="round-title">NEXT STOP: THE ARENA <span id="round-clock"></span></div><div class="round-subtitle">Every player gets one vote. Highest votes wins; ties and no votes are random.</div><div class="round-options">${Array.from({length:MAPS.length+1},(_,i)=>voteCard(i,voted,counts,counts.reduce((a,b)=>a+b,0))).join("")}</div><label class="round-champion">Choose champion <select id="round-champion" class="economy-action"><option value="-1" ${hero===-1?"selected":""}>\ud83c\udfb2 Random</option>${HEROES.map((h,i)=>`<option value="${i}" ${i===hero?"selected":""}>${h.e} ${escapeHtml(h.n)}</option>`).join("")}</select></label><div class="round-status">${members.map(r=>{const vote=roundVote.votes[r.id],voteLabel=Number.isInteger(vote)?(vote===MAPS.length?"\ud83c\udfb2 Random":MAPS[vote]?.name||"hasn't voted yet"):"hasn't voted yet";return `<span>${escapeHtml(r.username||"Player")}: ${escapeHtml(voteLabel)}</span>`;}).join(" \u00b7 ")}</div>`;
+ panel.innerHTML=`<div class="round-title">NEXT STOP: THE ARENA <span id="round-clock"></span></div><div class="round-subtitle">Every player gets one vote. Highest votes wins; ties and no votes are random.</div><div class="round-options">${Array.from({length:MAPS.length+1},(_,i)=>voteCard(i,voted,counts,counts.reduce((a,b)=>a+b,0))).join("")}</div><div class="round-champion"><span>Choose champion</span><div id="round-champion-options" class="round-champion-options" role="group" aria-label="Choose champion">${roundChampionChoicesHTML(hero)}</div></div><div class="round-status">${members.map(r=>{const vote=roundVote.votes[r.id],voteLabel=Number.isInteger(vote)?(vote===MAPS.length?"\ud83c\udfb2 Random":MAPS[vote]?.name||"hasn't voted yet"):"hasn't voted yet";return `<span>${escapeHtml(r.username||"Player")}: ${escapeHtml(voteLabel)}</span>`;}).join(" \u00b7 ")}</div>`;
  if(focused!==undefined)panel.querySelector(`[data-vote="${focused}"]`)?.focus();
- panel.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>sendRoundChoice("vote",Number(b.dataset.vote)));panel.querySelector("#round-champion").onchange=e=>sendRoundChoice("hero",Number(e.target.value));
+ panel.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>sendRoundChoice("vote",Number(b.dataset.vote)));panel.querySelectorAll("[data-round-hero]").forEach(b=>b.onclick=()=>chooseRoundChampion(b.dataset.roundHero));
  }
  const clock=panel.querySelector("#round-clock");if(clock)clock.textContent=`${remaining}s`;panel.querySelectorAll("[data-vote]").forEach(b=>b.disabled=remaining===0);
 }
@@ -7680,7 +7693,7 @@ function initMatchView() {
 
 
 // Field-ready art: shared by roster, live champions, viewmodel and cosmetic previews.
-function patchEmblem(){return `<svg class="patch-emblem" viewBox="0 0 64 64" role="img" aria-label="Patch survivalist insignia"><path d="M32 4 53 13v18c0 13-12 23-21 29C23 54 11 44 11 31V13Z" fill="#203b2d" stroke="#c2d7a6" stroke-width="2.5"/><path d="m18 16 14-6 14 6" fill="none" stroke="#d6b982" stroke-width="2"/><path d="M27 20h10v8h8v10h-8v8H27v-8h-8V28h8Z" fill="#e1ebcc"/><path d="M32 49v5M6 32h7m38 0h7" stroke="#d6b982" stroke-width="2.5"/></svg>`;}
+function patchEmblem(){return `<svg class="patch-emblem" viewBox="0 0 64 64" role="img" aria-label="Patch field survivalist compass insignia"><path d="M32 4 53 13v18c0 13-12 23-21 29C23 54 11 44 11 31V13Z" fill="#243642" stroke="#ddbf82" stroke-width="2.5"/><path d="m17 43 10-12 7 8 6-6 9 10" fill="none" stroke="#8cc5a6" stroke-width="2.8" stroke-linejoin="round"/><circle cx="32" cy="24" r="11" fill="#15232c" stroke="#91b5bd" stroke-width="1.5"/><path d="m37 16-2 11-8 5 2-11Z" fill="#edb56b" stroke="#ffe1a7" stroke-width="1"/><path d="m30 25 5 2-8 5Z" fill="#607a8c"/><path d="M25 49h14" stroke="#ddbf82" stroke-width="2.5" stroke-linecap="round"/></svg>`;}
 function buildPatchBlaster(isViewmodel){
  const g=new THREE.Group();g.name='Field Blaster';
  const steel=new THREE.MeshStandardMaterial({color:0x29312e,metalness:.78,roughness:.35}),olive=new THREE.MeshStandardMaterial({color:0x667254,roughness:.65,metalness:.32}),rubber=new THREE.MeshStandardMaterial({color:0x19231d,roughness:.9}),brass=new THREE.MeshStandardMaterial({color:0xcdbb85,metalness:.7,roughness:.3}),light=new THREE.MeshStandardMaterial({color:0xa4eac0,emissive:0x298561,emissiveIntensity:.7});
@@ -8463,7 +8476,7 @@ function damageTetherAnchor(q,amount,attacker){
 function clearTetherAnchors(){for(const q of tetherAnchors)disposeHierarchy(q.mesh);tetherAnchors=[];toyLastEvent=-1;}
 function anchorMesh(q){
  const g=new THREE.Group(),base=new THREE.Mesh(new THREE.CylinderGeometry(11,13,5,12),new THREE.MeshStandardMaterial({color:0xb7814e,metalness:.5,roughness:.4}));base.position.y=3;g.add(base);
- const ring=new THREE.Mesh(new THREE.RingGeometry(68,70,48).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffcc83,transparent:true,opacity:.12,side:THREE.DoubleSide,depthWrite:false}));ring.position.y=1.2;g.add(ring);g.userData.ring=ring;
+ const ring=new THREE.Mesh(new THREE.RingGeometry(58,60,48).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffcc83,transparent:true,opacity:.12,side:THREE.DoubleSide,depthWrite:false}));ring.position.y=1.2;g.add(ring);g.userData.ring=ring;
  const label=makeTextSprite('ANCHOR '+Math.ceil(q.hp),'#ffdfab',24);label.material.depthTest=true;label.position.y=20;g.add(label);g.userData.label=label;q.shownHP=Math.ceil(q.hp);
  const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0xffdb99}));g.add(line);g.userData.line=line;g.position.set(q.x,0,q.z);scene.add(g);return g;
 }
@@ -8472,7 +8485,7 @@ function placeTetherAnchor(e){
  if(!found){if(e===pl)spawnDamageNumber(e.x,e.z,'BLOCKED','#ffb090');return;}
  e.c2=HEROES[9].a1cd;Snd.play('ability');if(isMultiplayer&&!isLobbyLeader)return;
  for(const q of tetherAnchors)if(q.owner===e)q.hp=0;
- const q={id:'ta_'+(++tetherAnchorSerial),x,z,owner:e,hp:hasUp(e,9,1)?75:60,life:6,target:null,nextYank:0,yanks:0};q.mesh=anchorMesh(q);tetherAnchors.push(q);
+ const q={id:'ta_'+(++tetherAnchorSerial),x,z,owner:e,hp:hasUp(e,9,1)?75:60,life:6,bindings:[],activated:false,lastPositions:new Map(E.map(t=>[t,{x:t.x,z:t.z}]))};q.mesh=anchorMesh(q);tetherAnchors.push(q);
 }
 function recoilTether(e){
  if(e.tetherSpring||e.dead||e.stun>0)return;
@@ -8574,7 +8587,7 @@ function tickTetherYoyo(p,dt){
    if(wasOut){const c=tetherSegmentContact(p.o.x,p.o.z,end.x,end.z,t.x,t.z);lineTouch=c.distance<=t.r+2.5&&hasLOS(c.x,c.z,t.x,t.z);}
    if(wasOut&&(headTouch||lineTouch)){
     // A single timer covers head + string, so overlapping them never doubles damage.
-    if((p.contact.get(t)??-Infinity)<=stamp+1e-7){hurt(t,5,Math.atan2(t.z-p.o.z,t.x-p.o.x),0,p.o,'projectile');p.contact.set(t,stamp+.5);}
+    if((p.contact.get(t)??-Infinity)<=stamp+1e-7){hurt(t,5,Math.atan2(t.z-p.o.z,t.x-p.o.x),0,p.o,'projectile');p.contact.set(t,stamp+.3);}
    }else if(!wasOut&&headTouch&&!p.returnHits.has(t)){
     p.returnHits.add(t);const immune=t.feintInvuln>0||(t.chain&&t.chain.inv);hurt(t,15,Math.atan2(p.vz,p.vx),35,p.o,'projectile');if(!immune&&!t.dead)t.stun=Math.max(t.stun||0,.8);
    }
@@ -8583,7 +8596,7 @@ function tickTetherYoyo(p,dt){
    if(!canDamageTetherAnchor(p.o,q))continue;
    const c=tetherSegmentContact(p.o.x,p.o.z,end.x,end.z,q.x,q.z),touch=wasOut?(c.distance<=15&&hasLOS(c.x,c.z,q.x,q.z)):(Math.hypot(q.x-p.x,q.z-p.z)<18&&hasLOS(p.x,p.z,q.x,q.z));
    if(!touch)continue;
-   if(wasOut&&(p.contact.get(q)??-Infinity)<=stamp+1e-7){damageTetherAnchor(q,5,p.o);p.contact.set(q,stamp+.5);}
+   if(wasOut&&(p.contact.get(q)??-Infinity)<=stamp+1e-7){damageTetherAnchor(q,5,p.o);p.contact.set(q,stamp+.3);}
    else if(!wasOut&&!p.objectReturnHits.has(q)){p.objectReturnHits.add(q);damageTetherAnchor(q,15,p.o);}
   }
   if(auth&&worldCrate&&!(worldCrate.y>0)&&worldCrate.bombT===null&&Math.hypot(worldCrate.x-p.x,worldCrate.z-p.z)<worldCrate.r+7){p.crateHits=p.crateHits||new Set();const key=worldCrate.id+':'+wasOut;if(!p.crateHits.has(key)){p.crateHits.add(key);damageWorldCrate(wasOut?5:15,p.o);}}
@@ -8593,25 +8606,67 @@ function tickTetherYoyo(p,dt){
  if(!p.string){p.string=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0xffe8be,transparent:true,opacity:.95}));p.mesh.add(p.string);p.string.frustumCulled=false;}
  const end=tetherVisibleStringEnd(p),a=p.string.geometry.attributes.position;a.setXYZ(0,end.x-p.x,0,end.z-p.z);a.setXYZ(1,p.o.x-p.x,0,p.o.z-p.z);a.needsUpdate=true;p.string.geometry.computeBoundingSphere();p.string.material.color.setHex(p.out?0xffe8be:0xffb774);return false;
 }
+function tetherAnchorContact(q,t,previous){
+ const old=previous||{x:t.x,z:t.z},c=tetherSegmentContact(old.x,old.z,t.x,t.z,q.x,q.z);
+ // The whole visible circle triggers; swept contact catches fast crossings between updates.
+ return c.distance<=60+(t.r||0)&&hasLOS(q.x,q.z,c.x,c.z);
+}
+function makeTetherBindingLine(){
+ return new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0xffdb99}));
+}
 function tickTetherAnchors(dt){
  const auth=!isMultiplayer||isLobbyLeader;
- for(let i=tetherAnchors.length-1;i>=0;i--){const q=tetherAnchors[i];if(auth){q.life-=dt;if(q.owner.dead)q.hp=0;
-  if(!q.target&&q.life>0&&q.hp>0)for(const t of E)if(!t.dead&&!(t.feintInvuln>0||(t.chain&&t.chain.inv))&&areEnemies(q.owner,t)&&Math.hypot(t.x-q.x,t.z-q.z)<t.r+12&&hasLOS(q.x,q.z,t.x,t.z)){q.target=t;q.life=4;hurt(t,10,0,0,q.owner);spawn3DRing(q.x,q.z,70,0xffcc83);break;}
-  const t=q.target;if(t&&!t.dead&&!(t.feintInvuln>0||(t.chain&&t.chain.inv))&&q.hp>0&&q.life>0&&q.yanks<2&&matchTime>=q.nextYank&&Math.hypot(t.x-q.x,t.z-q.z)>70&&hasLOS(q.x,q.z,t.x,t.z)){
-   const angle=Math.atan2(q.z-t.z,q.x-t.x),distance=Math.hypot(t.x-q.x,t.z-q.z);
-   for(let d=0;d<distance;d+=2){const n=Math.min(2,distance-d),nx=t.x+Math.cos(angle)*n,nz=t.z+Math.sin(angle)*n;if(blocked(nx,nz,t.r))break;t.x=nx;t.z=nz;}
-   t.targetX=t.x;t.targetZ=t.z;t.tetherPullSeq=(t.tetherPullSeq||0)+1;
-   const immune=t.feintInvuln>0||(t.chain&&t.chain.inv);hurt(t,5,angle,0,q.owner);if(!immune&&!t.dead)t.stun=Math.max(t.stun||0,.5);q.nextYank=matchTime+1.2;q.yanks++;spawn3DRing(q.x,q.z,24,0xffd494);
+ for(let i=tetherAnchors.length-1;i>=0;i--){
+  const q=tetherAnchors[i];q.bindings=q.bindings||[];
+  if(auth){
+   q.life-=dt;if(q.owner.dead)q.hp=0;
+   for(const b of q.bindings)b.life-=dt;
+   q.bindings=q.bindings.filter(b=>b.life>0&&!b.target.dead);
+   if(q.life>0&&q.hp>0){
+    q.lastPositions=q.lastPositions||new Map();
+    for(const t of E){
+     const prev=q.lastPositions.get(t);q.lastPositions.set(t,{x:t.x,z:t.z});
+     if(t.dead||t.feintInvuln>0||(t.chain&&t.chain.inv)||!areEnemies(q.owner,t)||q.bindings.some(b=>b.target===t))continue;
+     if(tetherAnchorContact(q,t,prev)){
+      hurt(t,10,Math.atan2(t.z-q.z,t.x-q.x),0,q.owner);
+      if(t.dead)continue;
+      q.bindings.push({target:t,life:4,nextYank:matchTime});
+      q.life=q.activated?Math.max(q.life,4):4;q.activated=true;
+      spawn3DRing(q.x,q.z,60,0xffcc83);
+     }
+    }
+    for(const b of q.bindings){
+     const t=b.target;
+     if(t.dead||t.feintInvuln>0||(t.chain&&t.chain.inv)||matchTime+1e-7<b.nextYank||Math.hypot(t.x-q.x,t.z-q.z)<=60||!hasLOS(q.x,q.z,t.x,t.z))continue;
+     const angle=Math.atan2(q.z-t.z,q.x-t.x),distance=Math.hypot(t.x-q.x,t.z-q.z);
+     for(let d=0;d<distance;d+=2){const n=Math.min(2,distance-d),nx=t.x+Math.cos(angle)*n,nz=t.z+Math.sin(angle)*n;if(blocked(nx,nz,t.r))break;t.x=nx;t.z=nz;}
+     t.targetX=t.x;t.targetZ=t.z;t.tetherPullSeq=(t.tetherPullSeq||0)+1;
+     hurt(t,10,angle,0,q.owner);if(!t.dead)t.stun=Math.max(t.stun||0,.9);
+     b.nextYank=matchTime+1.2;spawn3DRing(q.x,q.z,24,0xffd494);
+    }
+   }
   }
-  if(t&&t.dead)q.life=0;
- }
- if(q.hp<=0||q.life<=0){disposeHierarchy(q.mesh);tetherAnchors.splice(i,1);continue;}
- const line=q.mesh.userData.line,t=q.target;line.visible=!!t&&!t.dead;if(line.visible){const a=line.geometry.attributes.position;a.setXYZ(0,0,6,0);a.setXYZ(1,t.x-q.x,12,t.z-q.z);a.needsUpdate=true;line.geometry.computeBoundingSphere();}
- q.mesh.userData.ring.material.opacity=t?.35:.12;const shown=Math.max(0,Math.ceil(q.hp));if(q.shownHP!==shown){q.shownHP=shown;disposeHierarchy(q.mesh.userData.label);const label=makeTextSprite('ANCHOR '+shown,'#ffdfab',24);label.material.depthTest=true;label.position.y=20;q.mesh.add(label);q.mesh.userData.label=label;}
+  if(q.hp<=0||q.life<=0){disposeHierarchy(q.mesh);tetherAnchors.splice(i,1);continue;}
+  const bindings=q.bindings.filter(b=>!b.target.dead&&b.life>0),ud=q.mesh.userData;
+  ud.bindingLines=ud.bindingLines||[ud.line];
+  while(ud.bindingLines.length<bindings.length){const line=makeTetherBindingLine();q.mesh.add(line);ud.bindingLines.push(line);}
+  for(let k=0;k<ud.bindingLines.length;k++){
+   const line=ud.bindingLines[k],b=bindings[k];line.visible=!!b;
+   if(b){const t=b.target,a=line.geometry.attributes.position;a.setXYZ(0,0,6,0);a.setXYZ(1,t.x-q.x,12,t.z-q.z);a.needsUpdate=true;line.geometry.computeBoundingSphere();}
+  }
+  ud.ring.material.opacity=bindings.length?.35:.18;
+  const shown=Math.max(0,Math.ceil(q.hp));if(q.shownHP!==shown){q.shownHP=shown;disposeHierarchy(ud.label);const label=makeTextSprite('ANCHOR '+shown,'#ffdfab',24);label.material.depthTest=true;label.position.y=20;q.mesh.add(label);ud.label=label;}
  }
 }
-function tetherAnchorSnapshot(){return tetherAnchors.filter(q=>q.hp>0&&q.life>0).map(q=>({id:q.id,x:q.x,z:q.z,hp:q.hp,life:q.life,owner:q.owner.netId,target:q.target?.netId||null}));}
-function syncTetherAnchors(list){if(!isMultiplayer||isLobbyLeader)return;const seen=new Set();for(const a of list){const owner=E.find(e=>e.netId===a.owner);if(!owner)continue;seen.add(a.id);let q=tetherAnchors.find(q=>q.id===a.id);if(!q){q={...a,owner};q.mesh=anchorMesh(q);tetherAnchors.push(q);}q.hp=a.hp;q.life=a.life;q.target=E.find(e=>e.netId===a.target)||null;}for(let i=tetherAnchors.length-1;i>=0;i--)if(!seen.has(tetherAnchors[i].id)){disposeHierarchy(tetherAnchors[i].mesh);tetherAnchors.splice(i,1);}}
+function tetherAnchorSnapshot(){return tetherAnchors.filter(q=>q.hp>0&&q.life>0).map(q=>({id:q.id,x:q.x,z:q.z,hp:q.hp,life:q.life,owner:q.owner.netId,bindings:(q.bindings||[]).filter(b=>b.life>0&&!b.target.dead).map(b=>({target:b.target.netId,life:b.life}))}));}
+function syncTetherAnchors(list){
+ if(!isMultiplayer||isLobbyLeader)return;const seen=new Set();
+ for(const a of list){const owner=E.find(e=>e.netId===a.owner);if(!owner)continue;seen.add(a.id);let q=tetherAnchors.find(q=>q.id===a.id);
+  if(!q){q={...a,owner,bindings:[]};q.mesh=anchorMesh(q);tetherAnchors.push(q);}
+  q.hp=a.hp;q.life=a.life;q.bindings=(a.bindings||[]).map(b=>({target:E.find(e=>e.netId===b.target),life:b.life})).filter(b=>b.target&&b.life>0);
+ }
+ for(let i=tetherAnchors.length-1;i>=0;i--)if(!seen.has(tetherAnchors[i].id)){disposeHierarchy(tetherAnchors[i].mesh);tetherAnchors.splice(i,1);}
+}
 function toyEventState(time=matchTime){const event=Math.floor(Math.max(0,time)/14),phase=((time%14)+14)%14;let h=(arenaLayoutSeed^Math.imul(event+1,2654435761))>>>0;h=Math.imul(h^(h>>>16),2246822507)>>>0;return {event,phase,index:h%3,warning:phase>=9&&phase<11,pulse:phase>=11};}
 function updateToyEvent(){
  const def=MAPS[selectedMapIndex];if(def.id!=='toybox'||state!=='play'||demoActive)return;const ev=toyEventState();
@@ -9252,5 +9307,20 @@ function bbConfirm(message){return new Promise(resolve=>{
 @media(prefers-reduced-motion:reduce){.bb-aura-orbit{animation:none!important}}
 </style>
 
+
+<style id="tether-playtest-ui">
+.hc-rarity.hc-new,.cd-rarity.cd-new,.hero-card[data-i] .hc-rarity.hc-new{color:#40200b!important;background:#ff913b!important;border-color:#ffc088!important;box-shadow:0 0 12px #ff842c33!important}
+.hero-card[data-new="true"]{border-color:#ff913b88}
+#round-panel .round-champion{display:flex;flex-direction:column;align-items:stretch;gap:9px;max-width:760px;width:100%;box-sizing:border-box}
+.round-champion-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;max-height:190px;overflow-y:auto;padding:2px}
+.round-champion-choice{display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid #ffffff32;border-radius:7px;background:#1c293a;color:#e5edf8;padding:9px 8px;font:700 12px Outfit,system-ui;cursor:pointer;min-height:36px}
+.round-champion-choice:hover{background:#293e55;border-color:#b9c9dc}
+.round-champion-choice.is-selected{border-color:#ffad5b;box-shadow:inset 0 0 0 1px #ffad5b;background:#3b3027}
+.round-champion-choice.is-locked{color:#898f9b;background:#222832;border-color:#ffffff19}
+.round-champion-choice.is-locked:hover{color:#a5aab3;background:#2c313a;border-color:#7c818a}
+.round-champion-choice:focus-visible{outline:2px solid #ffad5b;outline-offset:2px}
+.round-lock{filter:grayscale(1);opacity:.75;font-size:12px}
+#economy-toast{z-index:10000!important;pointer-events:none}
+</style>
 </body>
 </html>
