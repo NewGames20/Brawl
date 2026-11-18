@@ -875,7 +875,7 @@ const HEROES = [
  {
    n:"Bruno", e:"\ud83d\udc3b", w:"\ud83d\udd28", wn:"Grand Sledgehammer",
    role: "Tank", roleCol: "#8c5835",
-   hp: 285, sp: 108, col: 0x5e381b, cd: 1.2,
+   hp: 285, sp: 110, col: 0x5e381b, cd: 1.2,
    a1n:"Slam", a1cd: 11.0, a1d:"Strike the arena in a 110-unit radius. Enemies in line of sight take 15 damage, heavy knockback, and a 1.1-second stun.",
    a2n:"Charge", a2cd: 14.0,
    ad:"A 270-degree, 80-unit hammer sweep deals 25 damage and strong knockback. Its follow-through slows struck enemies and can reflect Captain Oink\u2019s scrap bullets, Sizzle\u2019s meatballs, Quackbot\u2019s and Patch\u2019s bullets, and Jackpot\u2019s bullets unless fired during ALL IN. Captain Oink\u2019s Cannonball, boomerangs, bananas, grenades, and magical shots cannot be reflected.", a2d:"Charge straight ahead for a short burst. Bruno can bowl through enemies along the way, dealing 10 damage, heavy knockback, and a brief stun.",
@@ -884,7 +884,7 @@ const HEROES = [
  {
    n:"Captain Oink", e:"\ud83d\udc37", w:"\u2693", wn:"Scrap Cannon",
    role: "Bruiser", roleCol: "#d66b96",
-   hp: 205, sp: 137, col: 0xdf84a5, cd: 1,
+   hp: 205, sp: 140, col: 0xdf84a5, cd: 1,
    a1n:"Chain Hook", a1cd: 12, a1d:"Launch a hook up to 200 units ahead. Hitting an enemy pulls them toward Captain Oink and stuns them when they arrive; striking a wall pulls him to it. He is protected while the hook flies or reels in a target, but a miss leaves him rooted and vulnerable for a longer return.",
    a2n:"Cannonball", a2cd: 10,
    ad:"Fire five scrap pellets in a wider spread, each dealing 9 damage. It rewards close aim, where more pellets can connect.", a2d:"Fire a heavy cannonball for 25 direct damage and a blast that can hit enemies within 80 units for 15 damage, knockback, and a half-second stun.",
@@ -902,7 +902,7 @@ const HEROES = [
  {
    n:"Chef Sizzle", e:"\ud83e\uddd1\u200d\ud83c\udf73", w:"\ud83c\udf5d", wn:"Culinary Sniper Rifle",
    role: "Sniper", roleCol: "#d44722",
-   hp: 135, sp: 153, col: 0xededed, cd: 1.2,
+   hp: 135, sp: 155, col: 0xededed, cd: 1.2,
    a1n:"Marinara", a1cd: 7.5, a1d:"Place a 60-unit sauce pool 80 units ahead for 3 seconds. Enemies standing in it are slowed and take 10 damage per second.",
    a2n:"Backdraft", a2cd: 9,
    ad:"Fire a long-range meatball projectile for 35 damage and knockback. Its travel time rewards aiming where an opponent is moving.", a2d:"Burst backward to make space and leave five patches of flame along the retreat path. Each patch burns and slows enemies who cross it for a short time.",
@@ -920,7 +920,7 @@ const HEROES = [
  {
    n:"Mycelis", e:"\ud83c\udf44", w:"\ud83e\ude84", wn:"Chitinous Spore Staff",
    role: "Tactician", roleCol: "#7d5ba6",
-   hp: 175, sp: 147, col: 0x472f59, cd: 0.95,
+   hp: 175, sp: 150, col: 0x472f59, cd: 0.95,
    a1n:"Spore Pod", a1cd: BALANCE_PATCH.mycelis.podCooldown, a1d:"Plant a hidden pod 40 units ahead. It waits for up to 6 seconds. Triggering it releases a cloud that poisons affected enemies for 20 total damage over 5 seconds (4 per second) and slows movement by 60% for 3 seconds, leaving 40% normal movement speed during that time. Poison continues for the full 5 seconds. The 7-second cooldown begins when the pod triggers or expires.",
    a2n:"Root Entangle", a2cd: 9.0,
    ad:"Cannot be reflected: these are shots of magical powers beyond reflection. Fire a spore bolt for 20 damage and knockback. Spore Pod poison deals 20 total damage over 5 seconds and slows movement by 60% for 3 seconds; Root Entangle uses a separate damage-over-time effect.", a2d:"Launch an overgrowth projectile for 10 direct damage. On impact, a burst in a 55-unit radius roots affected enemies for 1.7 seconds and deals 10 damage over 3 seconds, with no instant burst damage. A direct hit plus the full damage-over-time effect deals 20 total damage before damage reduction; enemies hit only by the burst take 10 over time.",
@@ -929,7 +929,7 @@ const HEROES = [
  {
    n:"Sir Dentley", e:"\ud83d\udee1\ufe0f", w:"\u2694\ufe0f", wn:"Longsword",
    role: "Duelist", roleCol: "#9fb4d6",
-   hp: 230, sp: 128, col: 0x8d97a8, cd: 0.5,
+   hp: 230, sp: 130, col: 0x8d97a8, cd: 0.5,
 
    a1n:"Shield Guard",
    a1cd: BALANCE_PATCH.dentley.guardCooldown,
@@ -955,7 +955,7 @@ const HEROES = [
 ];
 
 
-HEROES.push({n:"Jackpot",e:"\ud83c\udfb0",w:"\ud83e\ude99",wn:"Lucky Revolver",role:"Gambler",roleCol:"#f2c14e",hp:155,sp:163,col:0x8c3d39,cd:0.6,
+HEROES.push({n:"Jackpot",e:"\ud83c\udfb0",w:"\ud83e\ude99",wn:"Lucky Revolver",role:"Gambler",roleCol:"#f2c14e",hp:155,sp:165,col:0x8c3d39,cd:0.6,
  a1n:"Roll the Dice",a1cd:9,a2n:"All In",a2cd:16,a3n:"Coin Toss",a3cd:1,melee:false,atkRange:500,
  ad:"Fire for 7 damage every 0.6 seconds. A loaded Heads coin makes the next shot deal 20 damage; Tails deals 7.",
  a1d:"Roll a visible die: 1 takes 15 damage; 2 slows you by 40% for 2 seconds; 3 heals 25; 4 grants 35% speed for 3 seconds; 5 absorbs 40 damage; 6 heals 40, boosts speed, and guarantees Heads on your next 3 shots.",
@@ -1275,7 +1275,7 @@ NAMEPLATE_CATEGORIES.push({key:"nameFonts",label:"Nametag Fonts",cratePrice:120,
  {id:"font-copperplate",name:"Imperial Inscription",rarity:"Legendary",family:"'Cinzel',Copperplate,Palatino,serif",weight:700}
 ]});
 
-HEROES[7].rarity="Epic";HEROES[7].isNew=false;
+HEROES[7].rarity="";HEROES[7].isNew=false;
 SKIN_CATEGORIES.find(c=>c.key==="weaponSkins").items.push({id:"jackpot-house-edge",hero:7,name:"House Edge",rarity:"Epic",base:"#211630",accent:"#ffd166",glow:"#a855f7"});
 SKIN_CATEGORIES.find(c=>c.key==="championSkins").items.push({id:"jackpot-high-roller",hero:7,name:"High Roller Jackpot",rarity:"Epic",base:"#29133f",accent:"#ffdc83",glow:"#a855f7"});
 
@@ -7115,7 +7115,7 @@ function controlsHTML() {
 
 function championBadgeHTML(champion,detail=false){
  const base=detail?"cd-rarity":"hc-rarity";
- if(champion.isNew)return `<span class="${base} ${detail?"cd-new":"hc-new"}">NEW!</span>`;
+ if(champion.isNew)return `<span class="${base} ${detail?"cd-new":"hc-new"}${champion===HEROES[8]?" patch-new":""}">NEW!</span>`;
  return champion.rarity?`<span class="${base}">${escapeHtml(champion.rarity)}${detail?" CHAMPION":""}</span>`:"";
 }
 
@@ -9321,6 +9321,11 @@ function bbConfirm(message){return new Promise(resolve=>{
 .round-champion-choice:focus-visible{outline:2px solid #ffad5b;outline-offset:2px}
 .round-lock{filter:grayscale(1);opacity:.75;font-size:12px}
 #economy-toast{z-index:10000!important;pointer-events:none}
+</style>
+
+<style id="patch-yellow-new">
+.hc-rarity.hc-new.patch-new,.cd-rarity.cd-new.patch-new,.hero-card[data-i="8"] .hc-rarity.hc-new.patch-new{color:#382700!important;background:#ffdb63!important;border-color:#ffeaa1!important;box-shadow:0 0 12px #ffd75c33!important}
+.hero-card[data-i="8"][data-new="true"]{border-color:#ffd75c88}
 </style>
 </body>
 </html>
